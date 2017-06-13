@@ -1,0 +1,9 @@
+showTables: show tables
+tabComments: show table status
+tbFields: show full fields from %s
+tbName: NAME
+tbComment: COMMENT
+fieldName: FIELD
+fieldType: TYPE
+fieldComment: COMMENT
+fieldKey: KEY

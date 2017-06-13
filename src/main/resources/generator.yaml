@@ -1,0 +1,64 @@
+#生成器配置
+#数据源配置
+dataSource:
+    driverName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/quartz?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
+    userName: root
+    password: 123456
+#全局配置
+global:
+    #输出路径
+    outputDir: d:/output
+    #是否覆盖已有文件      
+    fileOverride: true
+    #是否打开输出目录
+    dirOpen: true
+    #开发人员
+    author: heyw
+    #可选组件(枚举类Component)：mybatis、jpa、springmvc
+    components: [mybatis,springmvc] 
+    #service接口类名
+    serviceName: '%sService'
+    #service接口实现类类名
+    serviceImplName: '%sServiceImpl'
+    #springmvc控制器类类名
+    controllerName: '%sController'
+#策略配置
+strategy:
+    #表名、字段名、是否使用下划线命名
+    columnUnderline: false
+    #是否大写命名
+    capitalMode: false
+    #数据库表映射到实体的命名策略  
+    naming: TOCAMEL
+    #表前缀
+    tablePrefix: ['tb_','batch_']
+    #Entity父类
+    superEntityClass: com.tzg.tools.generator.dao.entity.BaseEntity
+    #Entity父类的公共字段
+    superEntityColumns: ['id']
+    #service父类
+    superServiceClass: com.tzg.tools.generator.service.BaseService
+    #自定义继承的Controller类全称，带包名
+    superControllerClass: 
+    #需要包含的表名（与exclude二选一配置）
+    include: 
+    #需要排除的表名
+    exclude: 
+    #是否生成字段常量,默认 false） 
+    columnConstant: false
+    #是否为构建者模型（默认 false） 
+    builderModel: false
+    #父包名
+    rootPackage: com.tzg
+    #模块名。
+    moduleName: test
+    #Entity包名
+    entity: entity
+    #Service包名
+    service: service
+    #Service Impl包名
+    serviceImpl: service.impl
+    #Controller包名
+    controller: controller
+          

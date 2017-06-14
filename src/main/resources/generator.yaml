@@ -16,7 +16,13 @@ global:
     #开发人员
     author: heyw
     #可选组件(枚举类Component)：mybatis、jpa、springmvc
-    components: [mybatis,springmvc] 
+    components: [mybatis]
+    #模块配置
+    modules: {entity: api,service: api,mapper: app,mapper.xml: app,serviceImpl: app}
+    sourceDirectory: src/main/java
+    resource: src/main/resources
+    testSourceDirectory: src/test/java
+    testResource: src/test/java  
     #service接口类名
     serviceName: '%sService'
     #service接口实现类类名
@@ -41,15 +47,7 @@ strategy:
     exclude: 
     #是否生成字段常量,默认 false） 
     columnConstant: false
-    #是否为构建者模型（默认 false） 
-    builderModel: false
     #父包名
     rootPackage: com.tzg
-    #模块名。
-    moduleName: test
-    #Entity包名
-    entity: entity
-    #Service包名
-    service: service
-    #Service Impl包名
-    serviceImpl: service.impl
+    #包配置
+    packages: {entity: entitys,service: services,mapper: dao,mapper.xml: mappers,serviceImpl: service.impl}

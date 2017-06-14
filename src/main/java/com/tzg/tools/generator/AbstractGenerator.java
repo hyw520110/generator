@@ -5,7 +5,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +16,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import com.tzg.tools.generator.conf.BaseBean;
 import com.tzg.tools.generator.conf.ComponentConf;
 import com.tzg.tools.generator.conf.Consts;
 import com.tzg.tools.generator.conf.GlobalConf;
@@ -27,7 +30,9 @@ import com.tzg.tools.generator.enums.DBType;
 import com.tzg.tools.generator.enums.Naming;
 import com.tzg.tools.generator.utils.StringUtils;
 
-public abstract class AbstractGenerator {
+public abstract class AbstractGenerator extends BaseBean {
+    
+    private static final long serialVersionUID = 1L;
     /**
      * 数据源配置
      */
@@ -44,15 +49,9 @@ public abstract class AbstractGenerator {
     /**
      * 包配置详情
      */
-    protected Map<String, String> packages;
-
-    /**
-     * 包配置详情
-     */
     protected Map<String, String> paths;
 
     public void initConf() {
-        initPackages();
         initPaths();
     }
 
@@ -178,7 +177,23 @@ public abstract class AbstractGenerator {
     }
 
     public void mkdirs() {
-        // TODO 
+        List<String> list = new ArrayList<>();
+        list.add(global.getSourceDirectory());
+        list.add(global.getTestSourceDirectory());
+        list.add(global.getResource());
+        list.add(global.getTestResource());
+        mkdirs(global.getModules().values());
+        mkdirs(list);
+    }
+
+    private void mkdirs(Collection<String> modules) {
+        for (String module:modules) {
+            File dir = new File(MessageFormat.format("{0}{1}{2}{1}{3}", global.getOutputDir(),File.separator,module));
+            if(dir.exists()){
+               continue; 
+            }
+            dir.mkdirs();
+        };
     }
 
     private void initPaths() {
@@ -195,17 +210,6 @@ public abstract class AbstractGenerator {
         }
     }
 
-    private void initPackages() {
-        packages = new HashMap<>();
-        packages.put(Consts.MODULENAME, strategy.getModuleName());
-        packages.put(Consts.ENTITY, concat(strategy.getRootPackage(), strategy.getEntity()));
-        //TODO
-        //        packages.put(Consts.MAPPER, concat(strategy.getRootPackage(), global.getComponentConfs().values().iterator().next().getResourceDir()));
-        //        packages.put(Consts.XML, concat(strategy.getRootPackage(), global.getComponentConfs().values().iterator().next().getResourceDir()));
-
-        packages.put(Consts.SERIVCE, concat(strategy.getRootPackage(), strategy.getService()));
-        packages.put(Consts.SERVICEIMPL, concat(strategy.getRootPackage(), strategy.getServiceImpl()));
-    }
 
     /**
      * 连接父子包名
@@ -244,14 +248,7 @@ public abstract class AbstractGenerator {
         this.strategy = strategy;
     }
 
-    public Map<String, String> getPackages() {
-        return packages;
-    }
-
-    public void setPackages(Map<String, String> packages) {
-        this.packages = packages;
-    }
-
+   
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);

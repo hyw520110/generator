@@ -1,5 +1,7 @@
 package com.tzg.tools.generator.conf;
 
+import java.util.Map;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
@@ -65,38 +67,14 @@ public class StrategyConf extends BaseBean {
     private boolean  columnConstant = false;
 
     /**
-     * 【实体】是否为构建者模型（默认 false） 
-     */
-    private boolean builderModel = false;
-
-    /**
      * 父包名,如果为空，将下面子包名必须写全部， 否则就只需写子包名
      */
     private String rootPackage = "com.tzg";
 
     /**
-     * 模块名。
+     * 包配置详情
      */
-    private String moduleName = null;
-
-    /**
-     * Entity包名
-     */
-    private String entity = "entity";
-
-    /**
-     * Service包名
-     */
-    private String service = "service";
-
-    /**
-     * Service Impl包名
-     */
-    private String serviceImpl = "service.impl";
-    /**
-     * Mapper包名
-     */
-    private String dao         = "dao";
+    protected Map<String, String> packages;
 
     public boolean isCapitalMode() {
         return isCapitalMode;
@@ -162,54 +140,6 @@ public class StrategyConf extends BaseBean {
         this.columnConstant = columnConstant;
     }
 
-    public boolean isBuilderModel() {
-        return builderModel;
-    }
-
-    public void setBuilderModel(boolean builderModel) {
-        this.builderModel = builderModel;
-    }
-
-    public String getModuleName() {
-        return moduleName;
-    }
-
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
-    }
-
-    public String getEntity() {
-        return entity;
-    }
-
-    public void setEntity(String entity) {
-        this.entity = entity;
-    }
-
-    public String getService() {
-        return service;
-    }
-
-    public void setService(String service) {
-        this.service = service;
-    }
-
-    public String getServiceImpl() {
-        return serviceImpl;
-    }
-
-    public void setServiceImpl(String serviceImpl) {
-        this.serviceImpl = serviceImpl;
-    }
-
-    public String getDao() {
-        return dao;
-    }
-
-    public void setDao(String dao) {
-        this.dao = dao;
-    }
-
     public String getRootPackage() {
         return rootPackage;
     }
@@ -233,5 +163,13 @@ public class StrategyConf extends BaseBean {
 
     public void setSeparators(String[] separators) {
         this.separators = separators;
+    }
+
+    public Map<String, String> getPackages() {
+        return packages;
+    }
+
+    public void setPackages(Map<String, String> packages) {
+        this.packages = packages;
     }
 }

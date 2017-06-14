@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -24,7 +22,7 @@ import com.tzg.tools.generator.enums.Component;
  *
  */
 public class GlobalConf extends BaseBean {
-     
+
     private static final long serialVersionUID = -2678498334219769129L;
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalConf.class.getName());
@@ -47,11 +45,19 @@ public class GlobalConf extends BaseBean {
     /**
      * 开发人员
      */
-    private String                        author;
+    private String author;
     /**
      * 组件配置 
      */
     private Map<Component, ComponentConf> components;
+    /**
+     * 模块配置
+     */
+    private Map<String, String>           modules;
+    private String                        sourceDirectory     = "src/main/java";
+    private String                        testSourceDirectory = "src/test/java";
+    private String                        resource            = "src/main/resources";
+    private String                        testResource        = "src/test/resources";
     private String                        serviceName;
     private String                        serviceImplName;
 
@@ -96,7 +102,7 @@ public class GlobalConf extends BaseBean {
                     logger.warn("unknown type of component:{}", item);
                     continue;
                 }
-                map.put(c, new Yaml().loadAs(getClass().getResourceAsStream(String.format("/conf/%s.yaml", item)), ComponentConf.class));
+                map.put(c, new Yaml().loadAs(getResourceAsStream(String.format("/conf/%s.yaml", item)), ComponentConf.class));
             } catch (Throwable e) {
                 logger.error("load {} config {}:{}", item, e.getClass(), e.getLocalizedMessage());
             }
@@ -124,5 +130,53 @@ public class GlobalConf extends BaseBean {
             components = new HashMap<Component, ComponentConf>();
         }
         return components;
+    }
+
+    public Map<String, String> getModules() {
+        return modules;
+    }
+
+    public void setModules(Map<String, String> modules) {
+        this.modules = modules;
+    }
+
+    public String getSourceDirectory() {
+        return sourceDirectory;
+    }
+
+    public void setSourceDirectory(String sourceDirectory) {
+        this.sourceDirectory = sourceDirectory;
+    }
+
+    public String getTestSourceDirectory() {
+        return testSourceDirectory;
+    }
+
+    public void setTestSourceDirectory(String testSourceDirectory) {
+        this.testSourceDirectory = testSourceDirectory;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    public String getTestResource() {
+        return testResource;
+    }
+
+    public void setTestResource(String testResource) {
+        this.testResource = testResource;
+    }
+
+    public static long getSerialversionuid() {
+        return serialVersionUID;
+    }
+
+    public static Logger getLogger() {
+        return logger;
     }
 }

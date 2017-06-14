@@ -18,12 +18,8 @@ public enum IdType {
     }
 
     /**
-     * <p>
      * 主键策略 （默认 ID_WORKER）
-     * </p>
-     *
-     * @param idType
-     *            ID 策略类型
+     * @param idType  ID 策略类型
      * @return
      */
     public static IdType getIdType(int idType) {

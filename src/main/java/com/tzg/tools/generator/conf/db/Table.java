@@ -10,10 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import com.tzg.tools.generator.annotations.TabId;
 import com.tzg.tools.generator.conf.BaseBean;
-import com.tzg.tools.generator.conf.StrategyConf;
-import com.tzg.tools.generator.enums.IdType;
 import com.tzg.tools.generator.utils.StringUtils;
 
 public class Table extends BaseBean {
@@ -84,16 +81,6 @@ public class Table extends BaseBean {
         for (TabField field : fields) {
             if (null != field.getColumnType() && field.getColumnType().getClaz() != null) {
                 list.add(field.getColumnType().getClaz().getName());
-            }
-            if (field.isKeyFlag()) {
-                // 主键
-                if (field.isNameChange() || field.isKeyIdentityFlag()) {
-                    list.add(TabId.class.getName());
-                }
-                // 自增
-                if (field.isKeyIdentityFlag()) {
-                    list.add(IdType.class.getName());
-                }
             }
         }
         if (list.isEmpty()) {

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -64,25 +66,18 @@ public class Generator extends AbstractGenerator {
         mkdirs();
         List<Table> tables = getTables();
         VelocityEngine engine = getVelocityEngine();
-        File dir = new File(getClass().getResource("/templates").getPath()).getAbsoluteFile();
         //TODO 根据配置过滤模板文件
-        List<File> files = listFiles(dir, new ArrayList<File>());
+        File dir = new File(getClass().getResource("/templates").getPath()).getAbsoluteFile();
+        Map<Component, ComponentConf> map = global.getComponentConfs();
+        Set<Component> set = map.keySet();
+        List<File> files = listFiles(dir, new ArrayList<File>(), set);
         if (null == files) {
             return;
         }
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        VelocityContext context = getVelocityContext(map);
+        
         StringWriter writer = new StringWriter();
-        Map<Component, ComponentConf> map = global.getComponentConfs();
-        VelocityContext context = new VelocityContext();
-        for (ComponentConf conf : map.values()) {
-            Map<String, String> confs = conf.getConf();
-            context.put("subPackage", conf.getSubPackage());
-            context.put("resourceDir", conf.getResourceDir());
-            for (Entry<String, String> entry : confs.entrySet()) {
-                context.put(entry.getKey(), entry.getValue());
-            }
-        }
-        context.put("author", global.getAuthor());
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         for (Table table : tables) {
             System.out.println(table);
             for (File file : files) {
@@ -93,20 +88,34 @@ public class Generator extends AbstractGenerator {
 //                System.out.println(writer.toString());
             }
         }
-
     }
 
-    private List<File> listFiles(File dir, final List<File> list) {
-        if (dir.isFile()) {
-            list.add(dir);
+    private VelocityContext getVelocityContext(Map<Component, ComponentConf> map) {
+        VelocityContext context = new VelocityContext();
+        for (ComponentConf conf : map.values()) {
+            Map<String, String> confs = conf.getConf();
+            for (Entry<String, String> entry : confs.entrySet()) {
+                context.put(entry.getKey(), entry.getValue());
+            }
+        }
+        context.put("author", global.getAuthor());
+        return context;
+    }
+
+    private List<File> listFiles(File file, final List<File> list, final Set<Component> set) {
+        if (file.isFile()) {
+            list.add(file);
             return list;
         }
-        dir.listFiles(new FilenameFilter() {
+        file.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 File f = new File(dir, name);
                 if (f.isDirectory()) {
-                    listFiles(f, list);
+                    Component component = Component.getComonent(name);
+                    if (component != null && set.contains(component)) {
+                        listFiles(f, list, set);
+                    }
                     return false;
                 }
                 list.add(f);
@@ -123,7 +132,7 @@ public class Generator extends AbstractGenerator {
      * @return
      */
     public static Generator getInstance(String yamlConf) {
-        return new Yaml().loadAs(Generator.class.getResourceAsStream(yamlConf), Generator.class);
+        return new Yaml().loadAs(getResourceAsStream(yamlConf), Generator.class);
     }
 
     /**

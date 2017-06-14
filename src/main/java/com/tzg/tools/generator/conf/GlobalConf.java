@@ -23,7 +23,10 @@ import com.tzg.tools.generator.enums.Component;
  * Create at:   2017年6月13日 上午10:03:10  
  *
  */
-public class GlobalConf {
+public class GlobalConf extends BaseBean {
+     
+    private static final long serialVersionUID = -2678498334219769129L;
+
     private static final Logger logger = LoggerFactory.getLogger(GlobalConf.class.getName());
 
     /**
@@ -46,12 +49,11 @@ public class GlobalConf {
      */
     private String                        author;
     /**
-     * 组件配置
+     * 组件配置 
      */
     private Map<Component, ComponentConf> components;
     private String                        serviceName;
     private String                        serviceImplName;
-    private String                        controllerName;
 
     public String getOutputDir() {
         return outputDir;
@@ -94,7 +96,7 @@ public class GlobalConf {
                     logger.warn("unknown type of component:{}", item);
                     continue;
                 }
-                map.put(c, new Yaml().loadAs(getClass().getResourceAsStream(String.format("/conf/%s.yaml", item)), c.getConfClass()));
+                map.put(c, new Yaml().loadAs(getClass().getResourceAsStream(String.format("/conf/%s.yaml", item)), ComponentConf.class));
             } catch (Throwable e) {
                 logger.error("load {} config {}:{}", item, e.getClass(), e.getLocalizedMessage());
             }
@@ -117,24 +119,10 @@ public class GlobalConf {
         this.serviceImplName = serviceImplName;
     }
 
-    public String getControllerName() {
-        return controllerName;
-    }
-
-    public void setControllerName(String controllerName) {
-        this.controllerName = controllerName;
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    }
-
     public Map<Component, ComponentConf> getComponentConfs() {
         if (null == components) {
             components = new HashMap<Component, ComponentConf>();
         }
         return components;
     }
-
 }

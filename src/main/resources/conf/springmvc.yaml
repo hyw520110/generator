@@ -1,0 +1,3 @@
+subPackage: controller
+resourceDir: spring
+conf: {controllerName: '%sController',rest: true,crud: true,superControllerClass: }

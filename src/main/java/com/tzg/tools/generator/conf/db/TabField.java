@@ -1,50 +1,35 @@
 package com.tzg.tools.generator.conf.db;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
-import com.tzg.tools.generator.conf.StrategyConf;
+import com.tzg.tools.generator.conf.BaseBean;
 import com.tzg.tools.generator.enums.FieldType;
-import com.tzg.tools.generator.utils.StringUtils;
 
-public class TabField {
-
-
-    private boolean convert;
-    private boolean keyFlag;
+public class TabField extends BaseBean {
+    private static final long serialVersionUID = 1L;
+    private boolean           keyFlag;
     /**
      * 主键是否为自增类型
      */
-    private boolean keyIdentityFlag;
-    private String name;
-    private String type;
-    private String propertyName;
-    private FieldType fieldType;
-    private String comment;
-
-    public boolean isConvert() {
-        return convert;
-    }
-
-    protected void setConvert(StrategyConf conf) {
-        if (conf.isCapitalModeNaming(name)) {
-            this.convert = false;
-        } else {
-            // 转换字段
-            if (conf.columnUnderline) {
-                // 包含大写处理
-                if (StringUtils.containsUpperCase(name)) {
-                    this.convert = true;
-                }
-            } else if (!name.equals(propertyName)) {
-                this.convert = true;
-            }
-        }
-    }
-
-    public void setConvert(boolean convert) {
-        this.convert = convert;
-    }
+    private boolean           keyIdentityFlag;
+    /**
+     * 字段名
+     */
+    private String            name;
+    /**
+     * 字段类型
+     */
+    private String            type;
+    /**
+     * java属性名
+     */
+    private String            propertyName;
+    /**
+     * 属性类型
+     */
+    private FieldType         fieldType;
+    /**
+     * 字段说明
+     */
+    private String            comment;
 
     public boolean isKeyFlag() {
         return keyFlag;
@@ -82,9 +67,8 @@ public class TabField {
         return propertyName;
     }
 
-    public void setPropertyName(StrategyConf strategyConfig, String propertyName) {
+    public void setPropertyName(String propertyName) {
         this.propertyName = propertyName;
-        this.setConvert(strategyConfig);
     }
 
     public FieldType getColumnType() {
@@ -119,15 +103,14 @@ public class TabField {
         }
         // 第一个字母 小写、 第二个字母 大写 ，特殊处理
         String firstChar = propertyName.substring(0, 1);
-        if (Character.isLowerCase(firstChar.toCharArray()[0])
-                && Character.isUpperCase(propertyName.substring(1, 2).toCharArray()[0])) {
+        if (Character.isLowerCase(firstChar.toCharArray()[0]) && Character.isUpperCase(propertyName.substring(1, 2).toCharArray()[0])) {
             return firstChar.toLowerCase() + propertyName.substring(1);
         }
         return firstChar.toUpperCase() + propertyName.substring(1);
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    public boolean isNameChange() {
+        return !getName().equals(getPropertyName());
     }
+
 }

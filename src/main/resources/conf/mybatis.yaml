@@ -1,16 +1,6 @@
 #mybatis配置
-
-enableCache: true
-activeRecord: true
-baseResultMap: false
-baseColumnList: false
-#xml名称
-mapperXmlName: '%sMapper'
-#xml资源文件目录
-resourceDir: mappers
-#dao名称
-daoName: '%sMapper'
 #dao包名(子包)
 subPackage: mybatis
-#dao父类
-superDaoClass: com.tzg.tools.generator.dao.BaseDao
+#xml资源文件目录
+resourceDir: mappers
+conf: {enableCache: true,activeRecord: true,baseResultMap: false,baseResultMap: false,baseColumnList: false,mapperXmlName: '%sMapper',daoName: '%sMapper',superDaoClass: com.tzg.tools.generator.dao.BaseDao,superEntityClass: com.tzg.tools.generator.dao.entity.BaseEntity}

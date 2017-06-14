@@ -5,22 +5,14 @@ import ${pkg};
 #end
 
 /**
- * <p>
- * $!{table.comment}
- * </p>
- *
+ * ${table.name}：$!{table.comment}
  * @author ${author}
  * @since ${date}
  */
-#if(${table.convert})
-@TableName("${table.name}")
-#end
 #if(${superEntityClass})
-public class ${entity} extends ${superEntityClass}#if(${activeRecord})<${entity}>#end {
-#elseif(${activeRecord})
-public class ${entity} extends Model<${entity}> {
+public class ${table.entityName} extends ${superEntityClass} {
 #else
-public class ${entity} implements Serializable {
+public class ${table.entityName} implements Serializable {
 #end
 
     private static final long serialVersionUID = 1L;
@@ -35,15 +27,7 @@ public class ${entity} implements Serializable {
      */
 #end
 #if(${field.keyFlag})
-#if(${field.keyIdentityFlag})
-	@TableId(value="${field.name}", type= IdType.AUTO)
-#elseif(${field.convert})
-    @TableId("${field.name}")
-#end
-#elseif(${field.convert})
-	@TableField("${field.name}")
-#end
-	private ${field.propertyType} ${field.propertyName};
+    private ${field.propertyType} ${field.propertyName};
 #end
 
 #foreach($field in ${table.fields})
@@ -52,38 +36,36 @@ public class ${entity} implements Serializable {
 #else
 #set($getprefix="get")
 #end
-
-	public ${field.propertyType} ${getprefix}${field.capitalName}() {
-		return ${field.propertyName};
-	}
+#end
+    public ${field.propertyType} ${getprefix}${field.capitalName}() {
+        return ${field.propertyName};
+    }
 
 #if(${entityBuilderModel})
-	public ${entity} set${field.capitalName}(${field.propertyType} ${field.propertyName}) {
+    public ${entity} set${field.capitalName}(${field.propertyType} ${field.propertyName}) {
 #else
-	public void set${field.capitalName}(${field.propertyType} ${field.propertyName}) {
+    public void set${field.capitalName}(${field.propertyType} ${field.propertyName}) {
 #end
-		this.${field.propertyName} = ${field.propertyName};
+        this.${field.propertyName} = ${field.propertyName};
 #if(${entityBuilderModel})
-		return this;
+        return this;
 #end
-	}
+    }
 #end
 
 #if(${entityColumnConstant})
 #foreach($field in ${table.fields})
-	public static final String ${field.name.toUpperCase()} = "${field.name}";
+    public static final String ${field.name.toUpperCase()} = "${field.name}";
 
 #end
 #end
 #if(${activeRecord})
-	@Override
-	protected Serializable pkVal() {
+    protected Serializable getPK() {
 #if(${keyPropertyName})
-		return this.${keyPropertyName};
+        return this.${keyPropertyName};
 #else
-		return this.id;
+        return this.id;
 #end
-	}
-
+    }
 #end
 }

@@ -8,6 +8,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.yaml.snakeyaml.Yaml;
 
+import com.tzg.tools.generator.conf.BaseBean;
 import com.tzg.tools.generator.conf.converts.TypeConvertor;
 import com.tzg.tools.generator.conf.converts.impl.MySqlTypeConvert;
 import com.tzg.tools.generator.conf.converts.impl.OracleTypeConvert;
@@ -26,7 +27,9 @@ import com.tzg.tools.generator.enums.DBType;
  * Create at:   2017年6月13日 上午10:03:24  
  *
  */
-public class DataSourceConf {
+public class DataSourceConf extends BaseBean{
+     
+    private static final long serialVersionUID = 1L;
     /**
      * 驱动名称
      */
@@ -104,7 +107,7 @@ public class DataSourceConf {
 
     public void setDbType(DBType dbType) {
         this.dbType = dbType;
-        this.querySQL=new Yaml().loadAs(getClass().getResourceAsStream(String.format("/conf/%s.yaml",dbType.getValue())),QuerySQL.class);
+        this.querySQL = new Yaml().loadAs(getClass().getResourceAsStream(String.format("/conf/%s.yaml", dbType.getValue())), QuerySQL.class);
         TypeConvertor typeConvertor = null;
         switch (dbType) {
             case ORACLE:
@@ -129,11 +132,6 @@ public class DataSourceConf {
 
     public void setTypeConvertor(TypeConvertor typeConvertor) {
         this.typeConvertor = typeConvertor;
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 
     public QuerySQL getQuerySQL() {

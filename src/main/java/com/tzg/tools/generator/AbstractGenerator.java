@@ -31,25 +31,25 @@ public abstract class AbstractGenerator {
     /**
      * 数据源配置
      */
-    private DataSourceConf dataSource;
+    protected DataSourceConf dataSource;
     /**
      * 全局配置
      */
-    private GlobalConf     global;
+    protected GlobalConf     global;
     /**
      * 策略配置   
      */
-    private StrategyConf   strategy;
+    protected StrategyConf   strategy;
 
     /**
      * 包配置详情
      */
-    private Map<String, String> packages;
+    protected Map<String, String> packages;
 
     /**
      * 包配置详情
      */
-    private Map<String, String> paths;
+    protected Map<String, String> paths;
 
     public void initConf() {
         initPackages();
@@ -66,22 +66,26 @@ public abstract class AbstractGenerator {
             pst = con.prepareStatement(sql.getTabComments());
             ResultSet results = pst.executeQuery();
             while (results.next()) {
-                String tableName = results.getString(sql.getTbName());
-                if (StringUtils.isEmpty(tableName)) {
+                String tabName = results.getString(sql.getTbName());
+                if (StringUtils.isEmpty(tabName)) {
                     System.err.println("当前数据库为空！！！");
                     break;
                 }
-                if (!StringUtils.contains(strategy.getInclude(), tableName, true) || StringUtils.contains(strategy.getExclude(), tableName, false)) {
+                if (!StringUtils.contains(strategy.getInclude(), tabName, true) || StringUtils.contains(strategy.getExclude(), tabName, false)) {
                     continue;
                 }
                 String tableComment = results.getString(sql.getTbComment());
-                Table table = new Table(tableName);
+                Table table = new Table(tabName);
                 table.setComment(tableComment);
+                table.setEntityName(StringUtils.capitalFirst(processName(tabName)));
                 tables.add(this.setTableFields(table, con));
             }
         } catch (Exception e) {
             throw e;
         } finally {
+            if (pst != null) {
+                pst.close();
+            }
             if (con != null) {
                 con.close();
             }
@@ -97,15 +101,17 @@ public abstract class AbstractGenerator {
      * @param table 表信息
      * @param strategy  命名策略
      * @return
+     * @throws SQLException 
      */
-    private Table setTableFields(Table table, Connection con) {
+    private Table setTableFields(Table table, Connection con) throws SQLException {
         boolean haveId = false;
         List<TabField> fields = new ArrayList<>();
         List<TabField> commonFields = new ArrayList<>();
+        PreparedStatement pst = null;
         try {
             QuerySQL sql = dataSource.getQuerySQL();
-            PreparedStatement preparedStatement = con.prepareStatement(String.format(sql.getTbFields(), table.getName()));
-            ResultSet results = preparedStatement.executeQuery();
+            pst = con.prepareStatement(String.format(sql.getTbFields(), table.getName()));
+            ResultSet results = pst.executeQuery();
             while (results.next()) {
                 TabField field = new TabField();
                 String key = results.getString(sql.getFieldKey());
@@ -121,10 +127,11 @@ public abstract class AbstractGenerator {
                 } else {
                     field.setKeyFlag(false);
                 }
-                // 处理其它信息
                 field.setName(results.getString(sql.getFieldName()));
                 field.setType(results.getString(sql.getFieldType()));
-                field.setPropertyName(strategy, processName(field.getName()));
+                //处理字段名
+                field.setPropertyName(processName(field.getName()));
+                //转换字段类型
                 field.setColumnType(dataSource.getTypeConvertor().convert(field.getType()));
                 field.setComment(results.getString(sql.getFieldComment()));
                 if (StringUtils.contains(strategy.getSuperEntityColumns(), field.getName(), false)) {
@@ -136,6 +143,10 @@ public abstract class AbstractGenerator {
             }
         } catch (SQLException e) {
             System.err.println("SQL Exception：" + e.getMessage());
+        } finally {
+            if (pst != null) {
+                pst.close();
+            }
         }
         table.setFields(fields);
         table.setCommonFields(commonFields);
@@ -148,6 +159,9 @@ public abstract class AbstractGenerator {
      * @return 根据策略返回处理后的名称
      */
     private String processName(String name) {
+        if (StringUtils.isCapitalMode(name) && !strategy.isCapitalMode()) {
+            name = name.toLowerCase();
+        }
         String[] tablePrefix = strategy.getTablePrefix();
         if (tablePrefix != null && tablePrefix.length >= 1) {
             // 删除前缀
@@ -186,12 +200,11 @@ public abstract class AbstractGenerator {
         packages.put(Consts.MODULENAME, strategy.getModuleName());
         packages.put(Consts.ENTITY, concat(strategy.getRootPackage(), strategy.getEntity()));
         //TODO
-//        packages.put(Consts.MAPPER, concat(strategy.getRootPackage(), global.getComponentConfs().values().iterator().next().getResourceDir()));
-//        packages.put(Consts.XML, concat(strategy.getRootPackage(), global.getComponentConfs().values().iterator().next().getResourceDir()));
+        //        packages.put(Consts.MAPPER, concat(strategy.getRootPackage(), global.getComponentConfs().values().iterator().next().getResourceDir()));
+        //        packages.put(Consts.XML, concat(strategy.getRootPackage(), global.getComponentConfs().values().iterator().next().getResourceDir()));
 
         packages.put(Consts.SERIVCE, concat(strategy.getRootPackage(), strategy.getService()));
         packages.put(Consts.SERVICEIMPL, concat(strategy.getRootPackage(), strategy.getServiceImpl()));
-        packages.put(Consts.CONTROLLER, concat(strategy.getRootPackage(), strategy.getController()));
     }
 
     /**
@@ -223,11 +236,6 @@ public abstract class AbstractGenerator {
         this.global = global;
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-    }
-
     public StrategyConf getStrategy() {
         return strategy;
     }
@@ -242,5 +250,10 @@ public abstract class AbstractGenerator {
 
     public void setPackages(Map<String, String> packages) {
         this.packages = packages;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
     }
 }

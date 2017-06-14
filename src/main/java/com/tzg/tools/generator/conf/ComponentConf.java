@@ -1,22 +1,23 @@
 package com.tzg.tools.generator.conf;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ComponentConf {
+public class ComponentConf extends BaseBean {
+    private static final long serialVersionUID = 1L;
     /**
      * 包名(子包)
      */
-    private String subPackage="";
+    private String subPackage  = "";
     /**
      * 资源文件目录(子目录)
      */
-    private String resourceDir="";
-    
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    }
+    private String resourceDir = "";
+
+    /**
+     * 组件配置信息 
+     */
+    private Map<String, String> conf = new HashMap<>();
 
     public String getSubPackage() {
         return subPackage;
@@ -32,5 +33,13 @@ public class ComponentConf {
 
     public void setResourceDir(String resourceDir) {
         this.resourceDir = resourceDir;
+    }
+
+    public Map<String, String> getConf() {
+        return conf;
+    }
+
+    public void setConf(Map<String, String> conf) {
+        this.conf = conf;
     }
 }

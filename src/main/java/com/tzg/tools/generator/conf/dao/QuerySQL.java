@@ -3,7 +3,11 @@ package com.tzg.tools.generator.conf.dao;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-public class QuerySQL {
+import com.tzg.tools.generator.conf.BaseBean;
+
+public class QuerySQL extends BaseBean {
+     
+    private static final long serialVersionUID = 1L;
     /**
      * 查看所有表
      */

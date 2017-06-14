@@ -21,26 +21,20 @@ global:
     serviceName: '%sService'
     #service接口实现类类名
     serviceImplName: '%sServiceImpl'
-    #springmvc控制器类类名
-    controllerName: '%sController'
 #策略配置
 strategy:
     #表名、字段名、是否使用下划线命名
-    columnUnderline: false
+    separators: [_,-]
     #是否大写命名
     capitalMode: false
     #数据库表映射到实体的命名策略  
     naming: TOCAMEL
     #表前缀
     tablePrefix: ['tb_','batch_']
-    #Entity父类
-    superEntityClass: com.tzg.tools.generator.dao.entity.BaseEntity
     #Entity父类的公共字段
     superEntityColumns: ['id']
     #service父类
     superServiceClass: com.tzg.tools.generator.service.BaseService
-    #自定义继承的Controller类全称，带包名
-    superControllerClass: 
     #需要包含的表名（与exclude二选一配置）
     include: 
     #需要排除的表名
@@ -59,6 +53,3 @@ strategy:
     service: service
     #Service Impl包名
     serviceImpl: service.impl
-    #Controller包名
-    controller: controller
-          

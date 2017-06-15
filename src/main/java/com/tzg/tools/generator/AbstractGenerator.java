@@ -1,6 +1,8 @@
 package com.tzg.tools.generator;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,10 +17,11 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.tzg.tools.generator.conf.BaseBean;
 import com.tzg.tools.generator.conf.ComponentConf;
-import com.tzg.tools.generator.conf.Consts;
 import com.tzg.tools.generator.conf.GlobalConf;
 import com.tzg.tools.generator.conf.StrategyConf;
 import com.tzg.tools.generator.conf.dao.DataSourceConf;
@@ -31,8 +34,10 @@ import com.tzg.tools.generator.enums.Naming;
 import com.tzg.tools.generator.utils.StringUtils;
 
 public abstract class AbstractGenerator extends BaseBean {
-    
-    private static final long serialVersionUID = 1L;
+
+    private static final long   serialVersionUID = 1L;
+    private static final Logger logger           = LoggerFactory.getLogger(AbstractGenerator.class.getName());
+
     /**
      * 数据源配置
      */
@@ -49,11 +54,7 @@ public abstract class AbstractGenerator extends BaseBean {
     /**
      * 包配置详情
      */
-    protected Map<String, String> paths;
-
-    public void initConf() {
-        initPaths();
-    }
+    protected Map<String, File> paths;
 
     public List<Table> getTables() throws Exception {
         Connection con = null;
@@ -103,7 +104,6 @@ public abstract class AbstractGenerator extends BaseBean {
      * @throws SQLException 
      */
     private Table setTableFields(Table table, Connection con) throws SQLException {
-        boolean haveId = false;
         List<TabField> fields = new ArrayList<>();
         List<TabField> commonFields = new ArrayList<>();
         PreparedStatement pst = null;
@@ -113,21 +113,17 @@ public abstract class AbstractGenerator extends BaseBean {
             ResultSet results = pst.executeQuery();
             while (results.next()) {
                 TabField field = new TabField();
-                String key = results.getString(sql.getFieldKey());
-                // 避免多重主键设置，目前只取第一个找到ID，并放到list中的索引为0的位置
-                boolean isId = StringUtils.isNotEmpty(key) && key.toUpperCase().equals("PRI");
-                // 处理ID
-                if (isId && !haveId) {
-                    field.setKeyFlag(true);
-                    if (DBType.MYSQL == this.dataSource.getDbType() && "auto_increment".equals(results.getString("Extra"))) {
-                        field.setKeyIdentityFlag(true);
-                    }
-                    haveId = true;
-                } else {
-                    field.setKeyFlag(false);
+                String key = results.getString(sql.getFieldKeyValue().getKey());
+                //是否主键 TODO 复合主键处理
+                field.setKey(StringUtils.equals(key, sql.getFieldKeyValue().getValue()));
+                //其他数据库的字段是否为空以及自增 处理
+                if (DBType.MYSQL == this.dataSource.getDbType()) {
+                    field.setNullAble(Boolean.valueOf(results.getString(sql.getFieldNull())));
+                    field.setIdentity(StringUtils.equals(results.getString(sql.getExtraKeyValue().getKey()), sql.getExtraKeyValue().getValue()));
                 }
                 field.setName(results.getString(sql.getFieldName()));
                 field.setType(results.getString(sql.getFieldType()));
+
                 //处理字段名
                 field.setPropertyName(processName(field.getName()));
                 //转换字段类型
@@ -158,7 +154,7 @@ public abstract class AbstractGenerator extends BaseBean {
      * @return 根据策略返回处理后的名称
      */
     private String processName(String name) {
-        if (StringUtils.isCapitalMode(name) && !strategy.isCapitalMode()) {
+        if (!strategy.isCapitalMode() && StringUtils.isCapitalMode(name)) {
             name = name.toLowerCase();
         }
         String[] tablePrefix = strategy.getTablePrefix();
@@ -171,57 +167,59 @@ public abstract class AbstractGenerator extends BaseBean {
         }
         if (strategy.getNaming() == Naming.TOCAMEL) {
             // 删除前缀、下划线转驼峰
-            return StringUtils.removePrefixAndCamel(name, tablePrefix);
+            return StringUtils.removePrefixAndCamel(name, tablePrefix, strategy.getSeparators());
         }
         return name;
     }
 
     public void mkdirs() {
-        List<String> list = new ArrayList<>();
-        list.add(global.getSourceDirectory());
-        list.add(global.getTestSourceDirectory());
-        list.add(global.getResource());
-        list.add(global.getTestResource());
-        mkdirs(global.getModules().values());
-        mkdirs(list);
-    }
-
-    private void mkdirs(Collection<String> modules) {
-        for (String module:modules) {
-            File dir = new File(MessageFormat.format("{0}{1}{2}{1}{3}", global.getOutputDir(),File.separator,module));
-            if(dir.exists()){
-               continue; 
-            }
-            dir.mkdirs();
-        };
-    }
-
-    private void initPaths() {
         // 生成路径信息 TODO 
         paths = new HashMap<>();
-        String template = getClass().getResource("/templates").getFile();
-        Map<Component, ComponentConf> map = global.getComponentConfs();
-        for (Entry<Component, ComponentConf> entry : map.entrySet()) {
-            String name = entry.getKey().name();
-            File[] files = new File(template, name).listFiles();
-            for (File file : files) {
-                paths.put(concat(name, file.getName()), file.getAbsolutePath());
+        String[] dirs = new String[] { global.getSourceDirectory(), global.getTestSourceDirectory(), global.getResource(), global.getTestResource() };
+        Collection<String> modules = global.getModules().values();
+        for (String module : modules) {
+            File dir = new File(global.getOutputDir(), module);
+            if (paths.containsKey(module)) {
+                continue;
+            }
+            paths.put(module, dir);
+            for (String d : dirs) {
+                File file = new File(dir, StringUtils.isBlank(d) ? "" : d);
+                if (file.exists()) {
+                    continue;
+                }
+                file.mkdirs();
             }
         }
     }
 
-
-    /**
-     * 连接父子包名
-     * @param rootPackage     父包名
-     * @param subPackage 子包名
-     * @return 连接后的包名
-     */
-    private String concat(String rootPackage, String subPackage) {
-        if (StringUtils.isEmpty(rootPackage)) {
-            return subPackage;
+    protected void openDir() {
+        String dir = global.getOutputDir();
+        try {
+            String osName = System.getProperty("os.name");
+            if (!global.isDirOpen() || StringUtils.isEmpty(osName)) {
+                logger.info("文件已生成:{}", dir);
+                return;
+            }
+            //打开windows or Mac的输出目录
+            Runtime.getRuntime().exec((osName.contains("Windows") ? "cmd /c start " : "open ") + dir);
+        } catch (IOException e) {
+            logger.error("打开目录:{},发生异常:{}", dir, e.getLocalizedMessage());
         }
-        return rootPackage.concat(".").concat(subPackage);
+    }
+
+    protected void close(Closeable... args) {
+        if (null == args || args.length == 0) {
+            return;
+        }
+        for (Closeable arg : args) {
+            if (null != arg) {
+                try {
+                    arg.close();
+                } catch (IOException ignore) {
+                }
+            }
+        }
     }
 
     public DataSourceConf getDataSource() {
@@ -248,7 +246,6 @@ public abstract class AbstractGenerator extends BaseBean {
         this.strategy = strategy;
     }
 
-   
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);

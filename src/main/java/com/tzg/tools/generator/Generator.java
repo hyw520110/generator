@@ -1,10 +1,15 @@
 package com.tzg.tools.generator;
 
+import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.text.MessageFormat;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,6 +29,7 @@ import org.yaml.snakeyaml.Yaml;
 import com.tzg.tools.generator.conf.ComponentConf;
 import com.tzg.tools.generator.conf.db.Table;
 import com.tzg.tools.generator.enums.Component;
+import com.tzg.tools.generator.utils.StringUtils;
 
 /**
  * 
@@ -37,6 +43,9 @@ import com.tzg.tools.generator.enums.Component;
  *
  */
 public class Generator extends AbstractGenerator {
+
+    private static final long serialVersionUID = 345083252519120430L;
+
     private static final Logger logger = LoggerFactory.getLogger(Generator.class.getName());
 
     /**
@@ -49,7 +58,6 @@ public class Generator extends AbstractGenerator {
 
     public static void main(String[] args) throws Exception {
         Generator generator = getInstance();
-        System.out.println(generator);
         generator.execute();
     }
 
@@ -62,7 +70,6 @@ public class Generator extends AbstractGenerator {
      * @throws Exception 
      */
     public void execute() throws Exception {
-        initConf();
         mkdirs();
         List<Table> tables = getTables();
         VelocityEngine engine = getVelocityEngine();
@@ -75,18 +82,56 @@ public class Generator extends AbstractGenerator {
             return;
         }
         VelocityContext context = getVelocityContext(map);
-        
-        StringWriter writer = new StringWriter();
+        context.put("rootPackage", strategy.getRootPackage());
+        context.put("projectName", global.getProjectName());
+        context.put("superServiceClass", strategy.getSuperServiceClass());
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String encoding = global.getEncoding();
         for (Table table : tables) {
-            System.out.println(table);
             for (File file : files) {
-                Template t = engine.getTemplate(file.getPath().replace(dir.getParent(), ""), "UTF-8");
+                Template t = engine.getTemplate(file.getPath().replace(dir.getParent(), ""), encoding);
                 context.put("date", format.format(new Date()));
                 context.put("table", table);
-                t.merge(context, writer);
-//                System.out.println(writer.toString());
+                String name = file.getName();
+                String prefix = StringUtils.substringBeforeLast(name, ".");
+                boolean isJava = name.endsWith(".java");
+                String moduleName = global.getModules().get(isJava ? prefix : name);
+                String subPackage = strategy.getPackages().get(isJava ? prefix : name);
+                if (isJava) {
+                    context.put(prefix + "Name", table.getEntityName() + prefix);
+                    context.put("package" + prefix, moduleName + "." + subPackage);
+                }
+                String fileName = table.getEntityName() + name;
+                String subPath = StringUtils.toPath(strategy.getRootPackage(), global.getProjectName(), moduleName, subPackage);
+                File f = new File(paths.get(moduleName), (isJava ? global.getSourceDirectory() : global.getResource()) + File.separator
+                                                         + (isJava ? subPath : StringUtils.toPath(subPackage)) + File.separator + fileName);
+                if (!global.isFileOverride() && f.exists()) {
+                    continue;
+                }
+                System.out.println(f);
+                if(!f.getParentFile().exists()){
+                    f.getParentFile().mkdirs();
+                }
+                writer(context, encoding, t, f);
             }
+        }
+        openDir();
+    }
+
+    private void writer(VelocityContext context, String encoding, Template t, File f) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+        FileOutputStream fos = null;
+        OutputStreamWriter osw = null;
+        Writer writer = null;
+        try {
+            fos = new FileOutputStream(f);
+            osw = new OutputStreamWriter(fos, encoding);
+            writer = new BufferedWriter(osw);
+            t.merge(context, writer);
+            writer.flush();
+        } catch (Exception e) {
+            logger.error("write file:{} {}", f, e.getClass(), e);
+        } finally {
+            close(fos, osw, writer);
         }
     }
 

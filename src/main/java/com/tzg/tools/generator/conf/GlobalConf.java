@@ -1,5 +1,6 @@
 package com.tzg.tools.generator.conf;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,11 @@ public class GlobalConf extends BaseBean {
     private String outputDir = "/";
 
     /**
+     * 生成文件的编码
+     */
+    private String encoding = "UTF-8";
+
+    /**
      * 是否覆盖已有文件
      */
     private boolean fileOverride = false;
@@ -45,7 +51,7 @@ public class GlobalConf extends BaseBean {
     /**
      * 开发人员
      */
-    private String author;
+    private String                        author;
     /**
      * 组件配置 
      */
@@ -58,11 +64,19 @@ public class GlobalConf extends BaseBean {
     private String                        testSourceDirectory = "src/test/java";
     private String                        resource            = "src/main/resources";
     private String                        testResource        = "src/test/resources";
-    private String                        serviceName;
-    private String                        serviceImplName;
 
     public String getOutputDir() {
         return outputDir;
+    }
+
+    /**
+     * 获取项目名获取输出路径的子目录名
+     * @author:  heyiwu 
+     * @return
+     */
+    public String getProjectName() {
+        File file = new File(outputDir);
+        return file.getName();
     }
 
     public void setOutputDir(String outputDir) {
@@ -107,22 +121,6 @@ public class GlobalConf extends BaseBean {
                 logger.error("load {} config {}:{}", item, e.getClass(), e.getLocalizedMessage());
             }
         }
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public String getServiceImplName() {
-        return serviceImplName;
-    }
-
-    public void setServiceImplName(String serviceImplName) {
-        this.serviceImplName = serviceImplName;
     }
 
     public Map<Component, ComponentConf> getComponentConfs() {
@@ -178,5 +176,13 @@ public class GlobalConf extends BaseBean {
 
     public static Logger getLogger() {
         return logger;
+    }
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
     }
 }

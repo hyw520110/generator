@@ -5,11 +5,14 @@ import com.tzg.tools.generator.enums.FieldType;
 
 public class TabField extends BaseBean {
     private static final long serialVersionUID = 1L;
-    private boolean           keyFlag;
+    /**
+     * 是否主键
+     */
+    private boolean           isKey;
     /**
      * 主键是否为自增类型
      */
-    private boolean           keyIdentityFlag;
+    private boolean           isIdentity;
     /**
      * 字段名
      */
@@ -19,6 +22,10 @@ public class TabField extends BaseBean {
      */
     private String            type;
     /**
+     * 字段说明
+     */
+    private String            comment;
+    /**
      * java属性名
      */
     private String            propertyName;
@@ -26,25 +33,23 @@ public class TabField extends BaseBean {
      * 属性类型
      */
     private FieldType         fieldType;
-    /**
-     * 字段说明
-     */
-    private String            comment;
 
-    public boolean isKeyFlag() {
-        return keyFlag;
+    //TODO
+    private boolean nullAble;
+    public boolean isKey() {
+        return isKey;
     }
 
-    public void setKeyFlag(boolean keyFlag) {
-        this.keyFlag = keyFlag;
+    public void setKey(boolean isKey) {
+        this.isKey = isKey;
     }
 
-    public boolean isKeyIdentityFlag() {
-        return keyIdentityFlag;
+    public boolean isIdentity() {
+        return isIdentity;
     }
 
-    public void setKeyIdentityFlag(boolean keyIdentityFlag) {
-        this.keyIdentityFlag = keyIdentityFlag;
+    public void setIdentity(boolean isIdentity) {
+        this.isIdentity = isIdentity;
     }
 
     public String getName() {
@@ -94,6 +99,14 @@ public class TabField extends BaseBean {
         this.comment = comment;
     }
 
+    public boolean isNullAble() {
+        return nullAble;
+    }
+
+    public void setNullAble(boolean nullAble) {
+        this.nullAble = nullAble;
+    }
+
     /**
      * 按JavaBean规则来生成get和set方法
      */
@@ -111,6 +124,14 @@ public class TabField extends BaseBean {
 
     public boolean isNameChange() {
         return !getName().equals(getPropertyName());
+    }
+
+    public FieldType getFieldType() {
+        return fieldType;
+    }
+
+    public void setFieldType(FieldType fieldType) {
+        this.fieldType = fieldType;
     }
 
 }

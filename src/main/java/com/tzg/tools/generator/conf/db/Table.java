@@ -25,11 +25,25 @@ public class Table extends BaseBean {
      */
     private String            comment;
 
-    private String entityName;
-
+    /**
+     * bean名称
+     */
+    private String         entityName;
+    /**
+     * 所有字段
+     */
     private List<TabField> fields;
-    private List<TabField> commonFields;                      // 公共字段
+    /**
+     * 公共字段
+     */
+    private List<TabField> commonFields;
+    /**
+     * 导包
+     */
     private List<String>   importPackages = new ArrayList<>();
+    /**
+     * 所有的字段名和属性名的对应字符串 columnName as fieldName,...
+     */
     private String         fieldNames;
 
     public Table(String name) {
@@ -52,13 +66,6 @@ public class Table extends BaseBean {
         this.comment = comment;
     }
 
-    public String getEntityPath() {
-        StringBuilder ep = new StringBuilder();
-        ep.append(entityName.substring(0, 1).toLowerCase());
-        ep.append(entityName.substring(1));
-        return ep.toString();
-    }
-
     public String getEntityName() {
         return entityName;
     }
@@ -70,6 +77,39 @@ public class Table extends BaseBean {
     public List<TabField> getFields() {
         return fields;
     }
+
+    public List<TabField> getCommonFields() {
+        return commonFields;
+    }
+
+    public void setCommonFields(List<TabField> commonFields) {
+        this.commonFields = commonFields;
+    }
+
+    public List<String> getImportPackages() {
+        return importPackages;
+    }
+
+    public void addImportPackages(String pkg) {
+        importPackages.add(pkg);
+    }
+
+    /**
+     * 获取主键字段 
+     * @author:  heyiwu 
+     * @return
+     */
+    public List<TabField> getPkFields() {
+        ArrayList<TabField> list = new ArrayList<>();
+        List<TabField> fields = getFields();
+        for (TabField tabField : fields) {
+            if (tabField.isKey()) {
+                list.add(tabField);
+            }
+        }
+        return list;
+    }
+
 
     public void setFields(List<TabField> fields) {
         this.fields = fields;
@@ -88,22 +128,6 @@ public class Table extends BaseBean {
         }
         this.importPackages = new ArrayList<>(Arrays.asList(list.toArray(new String[] {})));
 
-    }
-
-    public List<TabField> getCommonFields() {
-        return commonFields;
-    }
-
-    public void setCommonFields(List<TabField> commonFields) {
-        this.commonFields = commonFields;
-    }
-
-    public List<String> getImportPackages() {
-        return importPackages;
-    }
-
-    public void addImportPackages(String pkg) {
-        importPackages.add(pkg);
     }
 
     /**

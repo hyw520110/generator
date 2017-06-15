@@ -31,7 +31,7 @@ public class StrategyConf extends BaseBean {
     /**
      * 单词分隔符,常见分隔符:下划线(_)和横线(-),转换驼峰命名时用
      */
-    private String[] separators;
+    private char[] separators;
     /**
      * 是否大写命名
      */
@@ -157,11 +157,11 @@ public class StrategyConf extends BaseBean {
         return isCapitalMode && StringUtils.isCapitalMode(name);
     }
 
-    public String[] getSeparators() {
+    public char[] getSeparators() {
         return separators;
     }
 
-    public void setSeparators(String[] separators) {
+    public void setSeparators(char[] separators) {
         this.separators = separators;
     }
 

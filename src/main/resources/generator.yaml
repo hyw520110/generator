@@ -8,7 +8,9 @@ dataSource:
 #全局配置
 global:
     #输出路径
-    outputDir: d:/output
+    outputDir: d:/output/test
+    #生成文件的编码
+    encoding: UTF-8
     #是否覆盖已有文件      
     fileOverride: true
     #是否打开输出目录
@@ -18,15 +20,15 @@ global:
     #可选组件(枚举类Component)：mybatis、jpa、springmvc
     components: [mybatis]
     #模块配置
-    modules: {entity: api,service: api,mapper: app,mapper.xml: app,serviceImpl: app}
+    modules: {Entity: api,Mapper: app,Mapper.xml: app,Service: api,ServiceImpl: app}
+    #java源码目录
     sourceDirectory: src/main/java
+    #资源文件目录
     resource: src/main/resources
+    #java单元测试源码目录
     testSourceDirectory: src/test/java
+    #测试所需的资源文件目录
     testResource: src/test/java  
-    #service接口类名
-    serviceName: '%sService'
-    #service接口实现类类名
-    serviceImplName: '%sServiceImpl'
 #策略配置
 strategy:
     #表名、字段名、是否使用下划线命名
@@ -50,4 +52,4 @@ strategy:
     #父包名
     rootPackage: com.tzg
     #包配置
-    packages: {entity: entitys,service: services,mapper: dao,mapper.xml: mappers,serviceImpl: service.impl}
+    packages: {Entity: entitys,Mapper: dao,Mapper.xml: mappers,Service: service,ServiceImpl: service.impl}

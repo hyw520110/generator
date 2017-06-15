@@ -4,3 +4,5 @@
 
 配置说明:
 
+配置文件generator.yaml
+

@@ -2,14 +2,13 @@
 <!-- scan扫描配置文件的变化并自动重新配置 -->
 <configuration scan="true" scanPeriod="30 seconds" debug="true" packagingData="${log.packagingData:-true}">
 	<timestamp key="timestamp" datePattern="yyyyMMdd'T'HHmmss"/>
-	<property name="LOG_BASE" value="/srv/logs/${log.dir.name:-${timestamp}}/${log.dir.name:-${timestamp}}"  />
+	<property name="LOG_BASE" value="/logs/${log.dir.name:-${timestamp}}/${log.dir.name:-${timestamp}}"  />
 	<property name="CHARSET" value="UTF-8" />
 	<jmxConfigurator />
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"
 			charset="${CHARSET}">
-				<!-- 日志输出格式，应BI要求加上[for_log_analysis_id]...[for_log_analysis_ip] -->
-			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] [for_log_analysis_id]%X{userId}-%X{_sessionId}-%X{_ip}[for_log_analysis_ip] %msg%n %ex{2}</pattern>
+			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %X{userId}-%X{_sessionId}-%X{_ip} %msg%n %ex{2}</pattern>
 		</encoder>
 	</appender>
 	<!-- 错误日志配置 RollingFileAppender继承自ch.qos.logback.core.FileAppender -->
@@ -35,7 +34,7 @@
 		<append>true</append>
 		<encoder charset="${CHARSET}"
 			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] [for_log_analysis_id]%X{userId}-%X{_sessionId}-%X{_ip}[for_log_analysis_ip]  %msg%n %ex{2}</pattern>
+			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %X{userId}-%X{_sessionId}-%X{_ip}  %msg%n %ex{2}</pattern>
 			<charset>${CHARSET}</charset>
 			<immediateFlush>true</immediateFlush>
 		</encoder>
@@ -59,7 +58,7 @@
 		<append>true</append>
 		<encoder charset="${CHARSET}"
 			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] [for_log_analysis_id]%X{userId}-%X{_sessionId}-%X{_ip}[for_log_analysis_ip]  %msg%n %ex{2}</pattern>
+			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %X{userId}-%X{_sessionId}-%X{_ip}  %msg%n %ex{2}</pattern>
 			<charset>${CHARSET}</charset>
 			<immediateFlush>true</immediateFlush>
 		</encoder>

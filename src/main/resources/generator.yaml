@@ -21,16 +21,12 @@ global:
     author: heyw
     #可选组件(枚举类Component)：MYBATIS、JPA、SPRINGMVC
     components: [MYBATIS,SPRINGMVC]
-    #模块配置
-    modules: {Entity: api,Mapper: app,Mapper.xml: app,Service: api,ServiceImpl: app}
+    #模塊配置
+    modules: [api,app]
     #java源码目录
     sourceDirectory: src/main/java
     #资源文件目录
     resource: src/main/resources
-    #java单元测试源码目录
-    testSourceDirectory: src/test/java
-    #测试所需的资源文件目录
-    testResource: src/test/java  
 #策略配置
 strategy:
     #父包名
@@ -44,7 +40,7 @@ strategy:
     #表前缀
     tablePrefix: ['tb_','batch_']
     #Entity父类的公共字段
-    superEntityColumns: ['id']
+    superEntityColumns: ['id','createDate']
     #service父类
     superServiceClass: 
     #需要包含的表名（与exclude二选一配置）
@@ -53,5 +49,3 @@ strategy:
     exclude: 
     #是否生成字段常量,默认 false） 
     columnConstant: false
-    #包配置
-    packages: {Entity: entitys,Mapper: dao,Mapper.xml: mappers,Service: service,ServiceImpl: service.impl}

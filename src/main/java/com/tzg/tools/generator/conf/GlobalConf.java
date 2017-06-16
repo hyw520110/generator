@@ -3,6 +3,7 @@ package com.tzg.tools.generator.conf;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,13 +63,18 @@ public class GlobalConf extends BaseBean {
      * 组件配置 
      */
     private Map<Component, Map<String, String>> components;
+    
     /**
-     * 模块配置
+     * 模块信息
      */
-    private Map<String, String>                 modules;
+    private List<String> modules;
+    
+	/**
+     * 工程目录，默认遵循maven目录结构
+     */
     private String                              sourceDirectory     = "src/main/java";
-    private String                              testSourceDirectory = "src/test/java";
     private String                              resource            = "src/main/resources";
+    private String                              testSourceDirectory = "src/test/java";
     private String                              testResource        = "src/test/resources";
 
     public String getOutputDir() {
@@ -133,13 +139,13 @@ public class GlobalConf extends BaseBean {
         }
     }
 
-    public Map<String, String> getModules() {
-        return modules;
-    }
+    public List<String> getModules() {
+		return modules;
+	}
 
-    public void setModules(Map<String, String> modules) {
-        this.modules = modules;
-    }
+	public void setModules(List<String> modules) {
+		this.modules = modules;
+	}
 
     public String getSourceDirectory() {
         return sourceDirectory;

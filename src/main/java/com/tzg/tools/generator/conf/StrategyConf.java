@@ -70,10 +70,6 @@ public class StrategyConf extends BaseBean {
      */
     private String rootPackage = "com.tzg";
 
-    /**
-     * 包配置详情
-     */
-    protected Map<String, String> packages;
 
     public boolean isCapitalMode() {
         return isCapitalMode;
@@ -164,11 +160,4 @@ public class StrategyConf extends BaseBean {
         this.separators = separators;
     }
 
-    public Map<String, String> getPackages() {
-        return packages;
-    }
-
-    public void setPackages(Map<String, String> packages) {
-        this.packages = packages;
-    }
 }

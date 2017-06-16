@@ -1,7 +1,7 @@
 package ${packageMapper};
 
 import ${packageEntity}.${EntityName};
-import ${superDaoClass};
+import ${superMapperClass};
 
 /**
  * <p>
@@ -11,6 +11,6 @@ import ${superDaoClass};
  * @author ${author}
  * @since ${date}
  */
-public interface ${MapperName} extends ${superDaoClass}<${EntityName}> {
+public interface ${MapperName} extends ${StringUtils.getClassName(${superMapperClass})}<${EntityName}> {
 
 }

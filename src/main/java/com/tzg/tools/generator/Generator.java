@@ -93,30 +93,26 @@ public class Generator extends AbstractGenerator {
         String encoding = global.getEncoding();
         for (Table table : tables) {
             for (File file : files) {
-                Template t = engine.getTemplate(file.getPath().replace(dir.getParent(), ""), encoding);
+            	String t = file.getPath().replace(dir.getParent(), "");
+                Template template = engine.getTemplate(t, encoding);
                 context.put("date", getDate());
                 context.put("table", table);
                 //模板文件名 
                 String name = file.getName();
                 //模板文件名前缀
                 String prefix = StringUtils.substringBeforeLast(name, ".");
-                //模板文件名后缀
-                String subfix = StringUtils.replace(name, prefix, "");
                 boolean isJava = name.endsWith(".java");
-                //获取模块名
-                String moduleName = global.getModules().get(isJava ? prefix : name);
-                if(null==moduleName){
-                    continue;
-                }
-                //子包或子目录
-                String subPkgOrDir = strategy.getPackages().get(isJava ? prefix : name);
+                String subDir = StringUtils.substringAfter(file.getParent(), t);
                 if (isJava) {
                     context.put(prefix + "Name", table.getBeanName() + prefix);
-                    context.put("package" + prefix, StringUtils.concat(strategy.getRootPackage(), global.getProjectName(), moduleName, subPkgOrDir));
+                    context.put("package" + prefix, StringUtils.toPackage(strategy.getRootPackage(), global.getProjectName(),StringUtils.toPackage(subDir)));
                 }
                 String fileName = table.getBeanName() + name;
-                String subPath = StringUtils.toPath(strategy.getRootPackage(), global.getProjectName(), moduleName, subPkgOrDir);
-                File f = new File(paths.get(moduleName + subfix), (isJava ? subPath : StringUtils.toPath(subPkgOrDir)) + File.separator + fileName);
+                int index = StringUtils.indexOf(subDir, File.separatorChar, 1);
+                String moduleName=StringUtils.substring(subDir, 1,index);
+                subDir=StringUtils.substring(subDir, index);
+				File f = new File(StringUtils.toPath(global.getOutputDir(), moduleName,
+						isJava ? global.getSourceDirectory() : global.getResource(), subDir), fileName);
                 if (!global.isFileOverride() && f.exists()) {
                     continue;
                 }
@@ -124,7 +120,7 @@ public class Generator extends AbstractGenerator {
                 if (!f.getParentFile().exists()) {
                     f.getParentFile().mkdirs();
                 }
-                writer(context, encoding, t, f);
+                writer(context, encoding, template, f);
             }
         }
         openDir();

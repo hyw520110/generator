@@ -11,7 +11,7 @@ import $superEntityClass
  * @author ${author}
  * @since ${date}
  */
-public class ${EntityName} #if(${superEntityClass}) extends ${StringUtils.substringAfterLast($superEntityClass,".")} #else implements Serializable #end{
+public class ${EntityName} #if(${superEntityClass}) extends ${StringUtils.getClassName($superEntityClass)} #else implements Serializable #end{
 
     private static final long serialVersionUID = 1L;
 

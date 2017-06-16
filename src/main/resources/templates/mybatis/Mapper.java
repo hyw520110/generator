@@ -1,7 +1,7 @@
-package ${package.Mapper};
+package ${packageMapper};
 
-import ${package.Entity}.${entity};
-import ${superMapperClassPackage};
+import ${packageEntity}.${EntityName};
+import ${superDaoClass};
 
 /**
  * <p>
@@ -11,6 +11,6 @@ import ${superMapperClassPackage};
  * @author ${author}
  * @since ${date}
  */
-public interface ${table.mapperName} extends ${superMapperClass}<${entity}> {
+public interface ${MapperName} extends ${superDaoClass}<${EntityName}> {
 
 }

@@ -1,3 +1,6 @@
-subPackage: controller
+controllerName: '%sController'
+controllerPackage: controller
 resourceDir: spring
-conf: {controllerName: '%sController',rest: true,crud: true,superControllerClass: }
+rest: true
+crud: true
+superControllerClass: 

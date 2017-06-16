@@ -181,16 +181,23 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
         }
         StringBuilder builder = new StringBuilder();
         for (String s : args) {
-            builder.append(toPath(s) + File.separator);
+            if(StringUtils.isBlank(s)){
+                continue;
+            }
+            builder.append(s.replaceAll("\\.", File.separator + File.separator) + File.separator);
         }
         return builder.deleteCharAt(builder.length() - 1).toString();
     }
 
-    public static String toPath(String sPackage) {
-        return sPackage.replaceAll("\\.", File.separator + File.separator);
+    public static String concat(String... args) {
+        if (null == args || args.length == 0) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (String s : args) {
+            builder.append(s + ".");
+        }
+        return builder.deleteCharAt(builder.length() - 1).toString();
     }
 
-    public static void main(String[] args) {
-        System.out.println(toPath("dsf.sdf.sdf"));
-    }
 }

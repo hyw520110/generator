@@ -1,7 +1,6 @@
 package com.tzg.tools.generator;
 
 import java.io.BufferedWriter;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -12,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import com.tzg.tools.generator.conf.ComponentConf;
 import com.tzg.tools.generator.conf.db.Table;
 import com.tzg.tools.generator.enums.Component;
 import com.tzg.tools.generator.utils.StringUtils;
@@ -73,43 +72,56 @@ public class Generator extends AbstractGenerator {
         mkdirs();
         List<Table> tables = getTables();
         VelocityEngine engine = getVelocityEngine();
-        //TODO 根据配置过滤模板文件
-        File dir = new File(getClass().getResource("/templates").getPath()).getAbsoluteFile();
-        Map<Component, ComponentConf> map = global.getComponentConfs();
-        Set<Component> set = map.keySet();
-        List<File> files = listFiles(dir, new ArrayList<File>(), set);
+        //根据组件配置过滤所需模板文件
+        File dir = global.getTemplateFile();
+        if(dir==null||!dir.exists()){
+            System.err.println(dir+"模板目录不存在!");
+            return ;
+        }
+        Map<Component, Map<String, String>> map = global.getComponentsMap();
+        List<File> files = listFiles(dir, new ArrayList<File>(), map.keySet());
         if (null == files) {
+            System.err.println(dir+"目录下没有所需的模板文件！");
             return;
         }
-        VelocityContext context = getVelocityContext(map);
-        context.put("rootPackage", strategy.getRootPackage());
-        context.put("projectName", global.getProjectName());
-        context.put("superServiceClass", strategy.getSuperServiceClass());
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        VelocityContext context = getVelocityContext(map.values());
+        if (StringUtils.isNotBlank(strategy.getSuperServiceClass())) {
+            context.put("superServiceClass", strategy.getSuperServiceClass());
+            context.put("superServiceClassName", StringUtils.substringAfterLast(strategy.getSuperServiceClass(), "."));
+        }
+
         String encoding = global.getEncoding();
         for (Table table : tables) {
             for (File file : files) {
                 Template t = engine.getTemplate(file.getPath().replace(dir.getParent(), ""), encoding);
-                context.put("date", format.format(new Date()));
+                context.put("date", getDate());
                 context.put("table", table);
+                //模板文件名 
                 String name = file.getName();
+                //模板文件名前缀
                 String prefix = StringUtils.substringBeforeLast(name, ".");
+                //模板文件名后缀
+                String subfix = StringUtils.replace(name, prefix, "");
                 boolean isJava = name.endsWith(".java");
+                //获取模块名
                 String moduleName = global.getModules().get(isJava ? prefix : name);
-                String subPackage = strategy.getPackages().get(isJava ? prefix : name);
-                if (isJava) {
-                    context.put(prefix + "Name", table.getEntityName() + prefix);
-                    context.put("package" + prefix, moduleName + "." + subPackage);
+                if(null==moduleName){
+                    continue;
                 }
-                String fileName = table.getEntityName() + name;
-                String subPath = StringUtils.toPath(strategy.getRootPackage(), global.getProjectName(), moduleName, subPackage);
-                File f = new File(paths.get(moduleName), (isJava ? global.getSourceDirectory() : global.getResource()) + File.separator
-                                                         + (isJava ? subPath : StringUtils.toPath(subPackage)) + File.separator + fileName);
+                //子包或子目录
+                String subPkgOrDir = strategy.getPackages().get(isJava ? prefix : name);
+                if (isJava) {
+                    context.put(prefix + "Name", table.getBeanName() + prefix);
+                    context.put("package" + prefix, StringUtils.concat(strategy.getRootPackage(), global.getProjectName(), moduleName, subPkgOrDir));
+                }
+                String fileName = table.getBeanName() + name;
+                String subPath = StringUtils.toPath(strategy.getRootPackage(), global.getProjectName(), moduleName, subPkgOrDir);
+                File f = new File(paths.get(moduleName + subfix), (isJava ? subPath : StringUtils.toPath(subPkgOrDir)) + File.separator + fileName);
                 if (!global.isFileOverride() && f.exists()) {
                     continue;
                 }
                 System.out.println(f);
-                if(!f.getParentFile().exists()){
+                if (!f.getParentFile().exists()) {
                     f.getParentFile().mkdirs();
                 }
                 writer(context, encoding, t, f);
@@ -135,15 +147,15 @@ public class Generator extends AbstractGenerator {
         }
     }
 
-    private VelocityContext getVelocityContext(Map<Component, ComponentConf> map) {
+    private VelocityContext getVelocityContext(Collection<Map<String, String>> collection) {
         VelocityContext context = new VelocityContext();
-        for (ComponentConf conf : map.values()) {
-            Map<String, String> confs = conf.getConf();
-            for (Entry<String, String> entry : confs.entrySet()) {
+        for (Map<String, String> pars : collection) {
+            for (Entry<String, String> entry : pars.entrySet()) {
                 context.put(entry.getKey(), entry.getValue());
             }
         }
         context.put("author", global.getAuthor());
+        context.put("StringUtils", StringUtils.class);
         return context;
     }
 
@@ -156,15 +168,15 @@ public class Generator extends AbstractGenerator {
             @Override
             public boolean accept(File dir, String name) {
                 File f = new File(dir, name);
-                if (f.isDirectory()) {
-                    Component component = Component.getComonent(name);
-                    if (component != null && set.contains(component)) {
-                        listFiles(f, list, set);
-                    }
-                    return false;
+                if (f.isFile()) {
+                    list.add(f);
+                    return true;
                 }
-                list.add(f);
-                return true;
+                Component component = Component.getComonent(name);
+                if (component != null && set.contains(component)) {
+                    listFiles(f, list, set);
+                }
+                return false;
             }
         });
         return list;

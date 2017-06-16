@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-public interface BaseDao<E, PK extends Serializable> {
+public interface BaseMapper<E, PK extends Serializable> {
 
     /**
     * 根据id获取对象
@@ -17,7 +17,7 @@ public interface BaseDao<E, PK extends Serializable> {
     
     /**
      * 根据指定条件查询一条记录 
-     * @author:  heyiwu 
+     * @author:  heyiwu
      * @param map
      * @return
      */

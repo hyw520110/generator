@@ -6,7 +6,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import com.tzg.tools.generator.enums.Naming;
-import com.tzg.tools.generator.service.BaseService;
 import com.tzg.tools.generator.utils.StringUtils;
 
 /**
@@ -50,7 +49,7 @@ public class StrategyConf extends BaseBean {
     /**
      * 自定义继承的Service类全称，带包名
      */
-    private String superServiceClass = BaseService.class.getName();
+    private String superServiceClass;
 
     /**
      * 需要包含的表名（与exclude二选一配置）

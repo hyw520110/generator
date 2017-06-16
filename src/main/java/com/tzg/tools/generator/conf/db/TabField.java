@@ -36,6 +36,7 @@ public class TabField extends BaseBean {
 
     //TODO
     private boolean nullAble;
+
     public boolean isKey() {
         return isKey;
     }
@@ -74,14 +75,6 @@ public class TabField extends BaseBean {
 
     public void setPropertyName(String propertyName) {
         this.propertyName = propertyName;
-    }
-
-    public FieldType getColumnType() {
-        return fieldType;
-    }
-
-    public void setColumnType(FieldType columnType) {
-        this.fieldType = columnType;
     }
 
     public String getPropertyType() {

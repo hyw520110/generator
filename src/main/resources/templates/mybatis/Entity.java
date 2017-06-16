@@ -1,15 +1,17 @@
-package ${rootPackage}.${projectName}.${packageEntity};
+package ${packageEntity};
 
 #foreach($pkg in ${table.importPackages})
 import ${pkg};
 #end
-
+#if(${superEntityClass})
+import $superEntityClass
+#end
 /**
  * ${table.name}：$!{table.comment}
  * @author ${author}
  * @since ${date}
  */
-public class ${EntityName} #if(${superEntityClass}) extends ${superEntityClass} #else implements Serializable #end{
+public class ${EntityName} #if(${superEntityClass}) extends ${StringUtils.substringAfterLast($superEntityClass,".")} #else implements Serializable #end{
 
     private static final long serialVersionUID = 1L;
 

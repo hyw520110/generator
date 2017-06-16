@@ -28,7 +28,7 @@ public class Table extends BaseBean {
     /**
      * bean名称
      */
-    private String         entityName;
+    private String         beanName;
     /**
      * 所有字段
      */
@@ -46,8 +46,9 @@ public class Table extends BaseBean {
      */
     private String         fieldNames;
 
-    public Table(String name) {
+    public Table(String name, String comment) {
         this.name = name;
+        this.comment = comment;
     }
 
     public String getName() {
@@ -66,12 +67,12 @@ public class Table extends BaseBean {
         this.comment = comment;
     }
 
-    public String getEntityName() {
-        return entityName;
+    public String getBeanName() {
+        return beanName;
     }
 
-    public void setEntityName(String entityName) {
-        this.entityName = entityName;
+    public void setBeanName(String beanName) {
+        this.beanName = beanName;
     }
 
     public List<TabField> getFields() {
@@ -110,7 +111,6 @@ public class Table extends BaseBean {
         return list;
     }
 
-
     public void setFields(List<TabField> fields) {
         this.fields = fields;
         if (CollectionUtils.isEmpty(fields)) {
@@ -119,8 +119,8 @@ public class Table extends BaseBean {
         // 收集导入包信息
         Set<String> list = new HashSet<>();
         for (TabField field : fields) {
-            if (null != field.getColumnType() && field.getColumnType().getClaz() != null) {
-                list.add(field.getColumnType().getClaz().getName());
+            if (null != field.getFieldType() && field.getFieldType().getClaz() != null) {
+                list.add(field.getFieldType().getClaz().getName());
             }
         }
         if (list.isEmpty()) {
@@ -151,6 +151,8 @@ public class Table extends BaseBean {
         fieldNames = names.toString();
         return fieldNames;
     }
+
+   
 
     /**
      * mapper xml中的字字段添加as

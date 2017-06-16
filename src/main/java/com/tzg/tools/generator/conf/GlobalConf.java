@@ -1,9 +1,10 @@
 package com.tzg.tools.generator.conf;
 
 import java.io.File;
+import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,10 @@ public class GlobalConf extends BaseBean {
     private String outputDir = "/";
 
     /**
+     * 模板目录
+     */
+    private String template = "/templates";
+    /**
      * 生成文件的编码
      */
     private String encoding = "UTF-8";
@@ -46,24 +51,25 @@ public class GlobalConf extends BaseBean {
     /**
      * 是否打开输出目录
      */
-    private boolean dirOpen = true;
+    private boolean openDir = true;
 
     /**
      * 开发人员
      */
-    private String                        author;
+    private String author;
+
     /**
      * 组件配置 
      */
-    private Map<Component, ComponentConf> components;
+    private Map<Component, Map<String, String>> components;
     /**
      * 模块配置
      */
-    private Map<String, String>           modules;
-    private String                        sourceDirectory     = "src/main/java";
-    private String                        testSourceDirectory = "src/test/java";
-    private String                        resource            = "src/main/resources";
-    private String                        testResource        = "src/test/resources";
+    private Map<String, String>                 modules;
+    private String                              sourceDirectory     = "src/main/java";
+    private String                              testSourceDirectory = "src/test/java";
+    private String                              resource            = "src/main/resources";
+    private String                              testResource        = "src/test/resources";
 
     public String getOutputDir() {
         return outputDir;
@@ -91,12 +97,12 @@ public class GlobalConf extends BaseBean {
         this.fileOverride = fileOverride;
     }
 
-    public boolean isDirOpen() {
-        return dirOpen;
+    public boolean isOpenDir() {
+        return openDir;
     }
 
-    public void setDirOpen(boolean dirOpen) {
-        this.dirOpen = dirOpen;
+    public void setOpenDir(boolean openDir) {
+        this.openDir = openDir;
     }
 
     public String getAuthor() {
@@ -107,27 +113,24 @@ public class GlobalConf extends BaseBean {
         this.author = author;
     }
 
-    public void setComponents(List<String> components) {
-        Map<Component, ComponentConf> map = getComponentConfs();
-        for (String item : components) {
-            try {
-                Component c = Component.valueOf(item.toUpperCase());
-                if (null == c) {
-                    logger.warn("unknown type of component:{}", item);
-                    continue;
-                }
-                map.put(c, new Yaml().loadAs(getResourceAsStream(String.format("/conf/%s.yaml", item)), ComponentConf.class));
-            } catch (Throwable e) {
-                logger.error("load {} config {}:{}", item, e.getClass(), e.getLocalizedMessage());
-            }
-        }
+    public Map<Component, Map<String, String>> getComponentsMap() {
+        return components;
     }
 
-    public Map<Component, ComponentConf> getComponentConfs() {
-        if (null == components) {
-            components = new HashMap<Component, ComponentConf>();
+    public Set<Component> getComponents() {
+        return components.keySet();
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setComponents(Set<Component> components) {
+        this.components = new HashMap<>();
+        for (Component c : components) {
+            try {
+                this.components.put(c, new Yaml().loadAs(getResourceAsStream(String.format("/conf/%s.yaml", c)), HashMap.class));
+            } catch (Throwable e) {
+                logger.error("load {} config {}:{}", c, e.getClass(), e.getLocalizedMessage());
+            }
         }
-        return components;
     }
 
     public Map<String, String> getModules() {
@@ -185,4 +188,21 @@ public class GlobalConf extends BaseBean {
     public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
+
+    public String getTemplate() {
+        return template;
+    }
+
+    public File getTemplateFile() {
+        URL url = getClass().getResource(getTemplate());
+        if (null == url) {
+            return null;
+        }
+        return new File(url.getFile());
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
+    }
+
 }

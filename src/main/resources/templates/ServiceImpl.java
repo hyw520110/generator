@@ -1,7 +1,7 @@
-package ${rootPackage}.${projectName}.${packageServiceImpl};
+package ${packageServiceImpl};
 
-import ${package.Entity}.${entity};
-import ${package.Mapper}.${table.mapperName};
+import ${packageEntity};
+import ${packageMapper};
 import ${package.Service}.${table.serviceName};
 import ${superServiceImplClassPackage};
 import org.springframework.stereotype.Service;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * @author ${author}
  * @since ${date}
  */
-@Service
-public class ${serviceImplName} extends ${superServiceImplClass}<${EntityName}, ${entity}> implements ${serviceName} {
+@Service("${ServiceName}")
+public class ${ServiceImplName} extends ${superServiceImplClass}<${EntityName}, ${entity}> implements ${ServiceName} {
 	
 }

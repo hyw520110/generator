@@ -7,18 +7,20 @@ dataSource:
     password: 123456
 #全局配置
 global:
-    #输出路径
+    #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
     outputDir: d:/output/test
+    #模板文件目录,自定义模板时复制此目录，并修改此目录名
+    template: /templates
     #生成文件的编码
     encoding: UTF-8
     #是否覆盖已有文件      
-    fileOverride: true
-    #是否打开输出目录
-    dirOpen: true
+    fileOverride: false
+    #文件生成后是否打开输出目录
+    openDir: true
     #开发人员
     author: heyw
-    #可选组件(枚举类Component)：mybatis、jpa、springmvc
-    components: [mybatis]
+    #可选组件(枚举类Component)：MYBATIS、JPA、SPRINGMVC
+    components: [MYBATIS,SPRINGMVC]
     #模块配置
     modules: {Entity: api,Mapper: app,Mapper.xml: app,Service: api,ServiceImpl: app}
     #java源码目录
@@ -31,6 +33,8 @@ global:
     testResource: src/test/java  
 #策略配置
 strategy:
+    #父包名
+    rootPackage: com.tzg
     #表名、字段名、是否使用下划线命名
     separators: [_,-]
     #是否大写命名
@@ -42,14 +46,12 @@ strategy:
     #Entity父类的公共字段
     superEntityColumns: ['id']
     #service父类
-    superServiceClass: com.tzg.tools.generator.service.BaseService
+    superServiceClass: 
     #需要包含的表名（与exclude二选一配置）
     include: 
     #需要排除的表名
     exclude: 
     #是否生成字段常量,默认 false） 
     columnConstant: false
-    #父包名
-    rootPackage: com.tzg
     #包配置
     packages: {Entity: entitys,Mapper: dao,Mapper.xml: mappers,Service: service,ServiceImpl: service.impl}

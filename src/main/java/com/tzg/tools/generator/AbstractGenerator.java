@@ -1,19 +1,16 @@
 package com.tzg.tools.generator;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -21,14 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tzg.tools.generator.conf.BaseBean;
-import com.tzg.tools.generator.conf.ComponentConf;
 import com.tzg.tools.generator.conf.GlobalConf;
 import com.tzg.tools.generator.conf.StrategyConf;
 import com.tzg.tools.generator.conf.dao.DataSourceConf;
 import com.tzg.tools.generator.conf.dao.QuerySQL;
 import com.tzg.tools.generator.conf.db.TabField;
 import com.tzg.tools.generator.conf.db.Table;
-import com.tzg.tools.generator.enums.Component;
 import com.tzg.tools.generator.enums.DBType;
 import com.tzg.tools.generator.enums.Naming;
 import com.tzg.tools.generator.utils.StringUtils;
@@ -74,32 +69,23 @@ public abstract class AbstractGenerator extends BaseBean {
                 if (!StringUtils.contains(strategy.getInclude(), tabName, true) || StringUtils.contains(strategy.getExclude(), tabName, false)) {
                     continue;
                 }
-                String tableComment = results.getString(sql.getTbComment());
-                Table table = new Table(tabName);
-                table.setComment(tableComment);
-                table.setEntityName(StringUtils.capitalFirst(processName(tabName)));
+                String comment = results.getString(sql.getTbComment());
+                Table table = new Table(tabName, comment);
+                table.setBeanName(StringUtils.capitalFirst(processName(tabName)));
                 tables.add(this.setTableFields(table, con));
             }
         } catch (Exception e) {
             throw e;
         } finally {
-            if (pst != null) {
-                pst.close();
-            }
-            if (con != null) {
-                con.close();
-            }
+            close(pst, con);
         }
         return tables;
     }
 
     /**
-     * <p>
-     * 将字段信息与表信息关联
-     * </p>
-     *
+     * 设置表字段信息
      * @param table 表信息
-     * @param strategy  命名策略
+     * @param con 数据库连接对象
      * @return
      * @throws SQLException 
      */
@@ -127,7 +113,7 @@ public abstract class AbstractGenerator extends BaseBean {
                 //处理字段名
                 field.setPropertyName(processName(field.getName()));
                 //转换字段类型
-                field.setColumnType(dataSource.getTypeConvertor().convert(field.getType()));
+                field.setFieldType(dataSource.getTypeConvertor().convert(field.getType()));
                 field.setComment(results.getString(sql.getFieldComment()));
                 if (StringUtils.contains(strategy.getSuperEntityColumns(), field.getName(), false)) {
                     // 跳过公共字段
@@ -137,11 +123,9 @@ public abstract class AbstractGenerator extends BaseBean {
                 fields.add(field);
             }
         } catch (SQLException e) {
-            System.err.println("SQL Exception：" + e.getMessage());
+            logger.error("SQL Exception：{}", e.getMessage());
         } finally {
-            if (pst != null) {
-                pst.close();
-            }
+            close(pst);
         }
         table.setFields(fields);
         table.setCommonFields(commonFields);
@@ -175,7 +159,6 @@ public abstract class AbstractGenerator extends BaseBean {
     public void mkdirs() {
         // 生成路径信息 TODO 
         paths = new HashMap<>();
-        String[] dirs = new String[] { global.getSourceDirectory(), global.getTestSourceDirectory(), global.getResource(), global.getTestResource() };
         Collection<String> modules = global.getModules().values();
         for (String module : modules) {
             File dir = new File(global.getOutputDir(), module);
@@ -183,21 +166,27 @@ public abstract class AbstractGenerator extends BaseBean {
                 continue;
             }
             paths.put(module, dir);
-            for (String d : dirs) {
-                File file = new File(dir, StringUtils.isBlank(d) ? "" : d);
-                if (file.exists()) {
-                    continue;
-                }
-                file.mkdirs();
-            }
+            paths.put(module + ".java", mkdirs(dir, global.getSourceDirectory()));
+            paths.put(module + ".xml", mkdirs(dir, global.getResource()));
+            paths.put(module + ".testJava", mkdirs(dir, global.getTestSourceDirectory()));
+            paths.put(module + ".testXml", mkdirs(dir, global.getTestResource()));
         }
+    }
+
+    private File mkdirs(File dir, String d) {
+        File file = new File(dir, StringUtils.isBlank(d) ? "" : d);
+        if (file.exists()) {
+            return file;
+        }
+        file.mkdirs();
+        return file;
     }
 
     protected void openDir() {
         String dir = global.getOutputDir();
         try {
             String osName = System.getProperty("os.name");
-            if (!global.isDirOpen() || StringUtils.isEmpty(osName)) {
+            if (!global.isOpenDir() || StringUtils.isEmpty(osName)) {
                 logger.info("文件已生成:{}", dir);
                 return;
             }
@@ -205,20 +194,6 @@ public abstract class AbstractGenerator extends BaseBean {
             Runtime.getRuntime().exec((osName.contains("Windows") ? "cmd /c start " : "open ") + dir);
         } catch (IOException e) {
             logger.error("打开目录:{},发生异常:{}", dir, e.getLocalizedMessage());
-        }
-    }
-
-    protected void close(Closeable... args) {
-        if (null == args || args.length == 0) {
-            return;
-        }
-        for (Closeable arg : args) {
-            if (null != arg) {
-                try {
-                    arg.close();
-                } catch (IOException ignore) {
-                }
-            }
         }
     }
 

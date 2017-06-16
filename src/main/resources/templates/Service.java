@@ -1,13 +1,13 @@
-package ${rootPackage}.${projectName}.${packageService};
+package ${packageService};
 
-import ${rootPackage}.${projectName}.${packageEntity};
-import ${superServiceClassPackage};
+import ${packageEntity};
+import ${superServiceClass};
 
 /**
  * $!{table.comment} 服务类
  * @author ${author}
  * @since ${date}
  */
-public interface ${ServiceName} extends ${superServiceClass}<${EntityName}> {
+public interface ${ServiceName} extends ${superServiceClassName}<${EntityName}> {
 	
 }

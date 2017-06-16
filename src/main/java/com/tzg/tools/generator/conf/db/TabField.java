@@ -1,65 +1,56 @@
 package com.tzg.tools.generator.conf.db;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
-import com.tzg.tools.generator.conf.StrategyConf;
+import com.tzg.tools.generator.conf.BaseBean;
 import com.tzg.tools.generator.enums.FieldType;
-import com.tzg.tools.generator.utils.StringUtils;
 
-public class TabField {
-
-
-    private boolean convert;
-    private boolean keyFlag;
+public class TabField extends BaseBean {
+    private static final long serialVersionUID = 1L;
+    /**
+     * 是否主键
+     */
+    private boolean           isKey;
     /**
      * 主键是否为自增类型
      */
-    private boolean keyIdentityFlag;
-    private String name;
-    private String type;
-    private String propertyName;
-    private FieldType fieldType;
-    private String comment;
+    private boolean           isIdentity;
+    /**
+     * 字段名
+     */
+    private String            name;
+    /**
+     * 字段类型
+     */
+    private String            type;
+    /**
+     * 字段说明
+     */
+    private String            comment;
+    /**
+     * java属性名
+     */
+    private String            propertyName;
+    /**
+     * 属性类型
+     */
+    private FieldType         fieldType;
 
-    public boolean isConvert() {
-        return convert;
+    //TODO
+    private boolean nullAble;
+
+    public boolean isKey() {
+        return isKey;
     }
 
-    protected void setConvert(StrategyConf conf) {
-        if (conf.isCapitalModeNaming(name)) {
-            this.convert = false;
-        } else {
-            // 转换字段
-            if (conf.columnUnderline) {
-                // 包含大写处理
-                if (StringUtils.containsUpperCase(name)) {
-                    this.convert = true;
-                }
-            } else if (!name.equals(propertyName)) {
-                this.convert = true;
-            }
-        }
+    public void setKey(boolean isKey) {
+        this.isKey = isKey;
     }
 
-    public void setConvert(boolean convert) {
-        this.convert = convert;
+    public boolean isIdentity() {
+        return isIdentity;
     }
 
-    public boolean isKeyFlag() {
-        return keyFlag;
-    }
-
-    public void setKeyFlag(boolean keyFlag) {
-        this.keyFlag = keyFlag;
-    }
-
-    public boolean isKeyIdentityFlag() {
-        return keyIdentityFlag;
-    }
-
-    public void setKeyIdentityFlag(boolean keyIdentityFlag) {
-        this.keyIdentityFlag = keyIdentityFlag;
+    public void setIdentity(boolean isIdentity) {
+        this.isIdentity = isIdentity;
     }
 
     public String getName() {
@@ -82,17 +73,8 @@ public class TabField {
         return propertyName;
     }
 
-    public void setPropertyName(StrategyConf strategyConfig, String propertyName) {
+    public void setPropertyName(String propertyName) {
         this.propertyName = propertyName;
-        this.setConvert(strategyConfig);
-    }
-
-    public FieldType getColumnType() {
-        return fieldType;
-    }
-
-    public void setColumnType(FieldType columnType) {
-        this.fieldType = columnType;
     }
 
     public String getPropertyType() {
@@ -110,6 +92,14 @@ public class TabField {
         this.comment = comment;
     }
 
+    public boolean isNullAble() {
+        return nullAble;
+    }
+
+    public void setNullAble(boolean nullAble) {
+        this.nullAble = nullAble;
+    }
+
     /**
      * 按JavaBean规则来生成get和set方法
      */
@@ -119,15 +109,22 @@ public class TabField {
         }
         // 第一个字母 小写、 第二个字母 大写 ，特殊处理
         String firstChar = propertyName.substring(0, 1);
-        if (Character.isLowerCase(firstChar.toCharArray()[0])
-                && Character.isUpperCase(propertyName.substring(1, 2).toCharArray()[0])) {
+        if (Character.isLowerCase(firstChar.toCharArray()[0]) && Character.isUpperCase(propertyName.substring(1, 2).toCharArray()[0])) {
             return firstChar.toLowerCase() + propertyName.substring(1);
         }
         return firstChar.toUpperCase() + propertyName.substring(1);
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    public boolean isNameChange() {
+        return !getName().equals(getPropertyName());
     }
+
+    public FieldType getFieldType() {
+        return fieldType;
+    }
+
+    public void setFieldType(FieldType fieldType) {
+        this.fieldType = fieldType;
+    }
+
 }

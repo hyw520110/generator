@@ -1,45 +1,55 @@
 package com.tzg.tools.generator.conf.dao;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import com.tzg.tools.generator.conf.BaseBean;
+import com.tzg.tools.generator.conf.KeyPair;
 
-public class QuerySQL {
+public class QuerySQL extends BaseBean {
+
+    private static final long       serialVersionUID = 1L;
     /**
      * 查看所有表
      */
-    private String showTables;
+    private String                  showTables;
     /**
      * 表注释
      */
-    private String tabComments;
+    private String                  tabComments;
     /**
      * 表字段
      */
-    private String tbFields;
+    private String                  tbFields;
     /**
      * 表名
      */
-    private String tbName;
+    private String                  tbName;
     /**
      * 表注释
      */
-    private String tbComment;
+    private String                  tbComment;
+    /**
+     * 字段名
+     */
+    private String                  fieldName;
     /**
      * 字段类型
      */
-    private String fieldName;
-    /**
-     * 字段类型
-     */
-    private String fieldType;
+    private String                  fieldType;
     /**
      * 字段注释
      */
-    private String fieldComment;
+    private String                  fieldComment;
     /**
-     * key
+     * 字段是否为主键的key TODO 更新配置  
      */
-    private String fieldKey;
+    private KeyPair<String, String> fieldKeyValue;
+    /**
+     * 字段是否为null
+     */
+    private String                  fieldNull;
+    /**
+     * 特别信息 是否自增 mysql值为auto_increment表示自增
+     */
+    private KeyPair<String, String> extraKeyValue;
 
     public String getShowTables() {
         return showTables;
@@ -105,16 +115,28 @@ public class QuerySQL {
         this.fieldComment = fieldComment;
     }
 
-    public String getFieldKey() {
-        return fieldKey;
+    public String getFieldNull() {
+        return fieldNull;
     }
 
-    public void setFieldKey(String fieldKey) {
-        this.fieldKey = fieldKey;
+    public void setFieldNull(String fieldNull) {
+        this.fieldNull = fieldNull;
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    public KeyPair<String, String> getFieldKeyValue() {
+        return fieldKeyValue;
     }
+
+    public void setFieldKeyValue(KeyPair<String, String> fieldKeyValue) {
+        this.fieldKeyValue = fieldKeyValue;
+    }
+
+    public KeyPair<String, String> getExtraKeyValue() {
+        return extraKeyValue;
+    }
+
+    public void setExtraKeyValue(KeyPair<String, String> extraKeyValue) {
+        this.extraKeyValue = extraKeyValue;
+    }
+
 }

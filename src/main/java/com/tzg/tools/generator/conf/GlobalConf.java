@@ -1,11 +1,11 @@
 package com.tzg.tools.generator.conf;
 
+import java.io.File;
+import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -23,13 +23,25 @@ import com.tzg.tools.generator.enums.Component;
  * Create at:   2017年6月13日 上午10:03:10  
  *
  */
-public class GlobalConf {
+public class GlobalConf extends BaseBean {
+
+    private static final long serialVersionUID = -2678498334219769129L;
+
     private static final Logger logger = LoggerFactory.getLogger(GlobalConf.class.getName());
 
     /**
      * 生成文件的输出目录,默认根目录
      */
     private String outputDir = "/";
+
+    /**
+     * 模板目录
+     */
+    private String template = "/templates";
+    /**
+     * 生成文件的编码
+     */
+    private String encoding = "UTF-8";
 
     /**
      * 是否覆盖已有文件
@@ -39,22 +51,38 @@ public class GlobalConf {
     /**
      * 是否打开输出目录
      */
-    private boolean dirOpen = true;
+    private boolean openDir = true;
 
     /**
      * 开发人员
      */
-    private String                        author;
+    private String author;
+
     /**
-     * 组件配置
+     * 组件配置 
      */
-    private Map<Component, ComponentConf> components;
-    private String                        serviceName;
-    private String                        serviceImplName;
-    private String                        controllerName;
+    private Map<Component, Map<String, String>> components;
+    /**
+     * 模块配置
+     */
+    private Map<String, String>                 modules;
+    private String                              sourceDirectory     = "src/main/java";
+    private String                              testSourceDirectory = "src/test/java";
+    private String                              resource            = "src/main/resources";
+    private String                              testResource        = "src/test/resources";
 
     public String getOutputDir() {
         return outputDir;
+    }
+
+    /**
+     * 获取项目名获取输出路径的子目录名
+     * @author:  heyiwu 
+     * @return
+     */
+    public String getProjectName() {
+        File file = new File(outputDir);
+        return file.getName();
     }
 
     public void setOutputDir(String outputDir) {
@@ -69,12 +97,12 @@ public class GlobalConf {
         this.fileOverride = fileOverride;
     }
 
-    public boolean isDirOpen() {
-        return dirOpen;
+    public boolean isOpenDir() {
+        return openDir;
     }
 
-    public void setDirOpen(boolean dirOpen) {
-        this.dirOpen = dirOpen;
+    public void setOpenDir(boolean openDir) {
+        this.openDir = openDir;
     }
 
     public String getAuthor() {
@@ -85,56 +113,96 @@ public class GlobalConf {
         this.author = author;
     }
 
-    public void setComponents(List<String> components) {
-        Map<Component, ComponentConf> map = getComponentConfs();
-        for (String item : components) {
+    public Map<Component, Map<String, String>> getComponentsMap() {
+        return components;
+    }
+
+    public Set<Component> getComponents() {
+        return components.keySet();
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setComponents(Set<Component> components) {
+        this.components = new HashMap<>();
+        for (Component c : components) {
             try {
-                Component c = Component.valueOf(item.toUpperCase());
-                if (null == c) {
-                    logger.warn("unknown type of component:{}", item);
-                    continue;
-                }
-                map.put(c, new Yaml().loadAs(getClass().getResourceAsStream(String.format("/conf/%s.yaml", item)), c.getConfClass()));
+                this.components.put(c, new Yaml().loadAs(getResourceAsStream(String.format("/conf/%s.yaml", c)), HashMap.class));
             } catch (Throwable e) {
-                logger.error("load {} config {}:{}", item, e.getClass(), e.getLocalizedMessage());
+                logger.error("load {} config {}:{}", c, e.getClass(), e.getLocalizedMessage());
             }
         }
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public Map<String, String> getModules() {
+        return modules;
     }
 
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
+    public void setModules(Map<String, String> modules) {
+        this.modules = modules;
     }
 
-    public String getServiceImplName() {
-        return serviceImplName;
+    public String getSourceDirectory() {
+        return sourceDirectory;
     }
 
-    public void setServiceImplName(String serviceImplName) {
-        this.serviceImplName = serviceImplName;
+    public void setSourceDirectory(String sourceDirectory) {
+        this.sourceDirectory = sourceDirectory;
     }
 
-    public String getControllerName() {
-        return controllerName;
+    public String getTestSourceDirectory() {
+        return testSourceDirectory;
     }
 
-    public void setControllerName(String controllerName) {
-        this.controllerName = controllerName;
+    public void setTestSourceDirectory(String testSourceDirectory) {
+        this.testSourceDirectory = testSourceDirectory;
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    public String getResource() {
+        return resource;
     }
 
-    public Map<Component, ComponentConf> getComponentConfs() {
-        if (null == components) {
-            components = new HashMap<Component, ComponentConf>();
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    public String getTestResource() {
+        return testResource;
+    }
+
+    public void setTestResource(String testResource) {
+        this.testResource = testResource;
+    }
+
+    public static long getSerialversionuid() {
+        return serialVersionUID;
+    }
+
+    public static Logger getLogger() {
+        return logger;
+    }
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+
+    public File getTemplateFile() {
+        URL url = getClass().getResource(getTemplate());
+        if (null == url) {
+            return null;
         }
-        return components;
+        return new File(url.getFile());
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
     }
 
 }

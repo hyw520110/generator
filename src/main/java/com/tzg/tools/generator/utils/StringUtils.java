@@ -1,7 +1,9 @@
 package com.tzg.tools.generator.utils;
 
+import java.io.File;
+
 public class StringUtils extends org.apache.commons.lang.StringUtils {
-    
+
     /**
      * 去掉下划线前缀
      * @param name
@@ -26,7 +28,7 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
      * @return
      */
     public static String removePrefix(String name, String[] prefix) {
-        if (StringUtils.isEmpty(name)||null==prefix||prefix.length==0) {
+        if (StringUtils.isEmpty(name) || null == prefix || prefix.length == 0) {
             return name;
         }
         for (String s : prefix) {
@@ -36,7 +38,7 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
                 return name.substring(s.length());
             }
         }
-    
+
         return name;
     }
 
@@ -45,10 +47,20 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
      *
      * @param name
      * @param tablePrefix
+     * @param separators 
      * @return
      */
-    public static String removePrefixAndCamel(String name, String[] tablePrefix) {
-        return StringUtils.toCamelCase(removePrefix(name, tablePrefix));
+    public static String removePrefixAndCamel(String name, String[] tablePrefix, char[] separators) {
+        String s = removePrefix(name, tablePrefix);
+        if (null == separators || separators.length == 0) {
+            return s;
+        }
+        for (char c : separators) {
+            if (StringUtils.contains(s, c)) {
+                s = StringUtils.toCamelCase(s, c);
+            }
+        }
+        return s;
     }
 
     /**
@@ -63,6 +75,7 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
         }
         return "";
     }
+
     public static String toCamelCase(String s) {
         return toCamelCase(s, '_');
     }
@@ -149,7 +162,7 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
         }
         return false;
     }
-    
+
     public static boolean contains(String[] array, String name, boolean bDefault) {
         if (array == null || array.length == 0) {
             return bDefault;
@@ -160,6 +173,31 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
             }
         }
         return false;
+    }
+
+    public static String toPath(String... args) {
+        if (null == args || args.length == 0) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (String s : args) {
+            if(StringUtils.isBlank(s)){
+                continue;
+            }
+            builder.append(s.replaceAll("\\.", File.separator + File.separator) + File.separator);
+        }
+        return builder.deleteCharAt(builder.length() - 1).toString();
+    }
+
+    public static String concat(String... args) {
+        if (null == args || args.length == 0) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (String s : args) {
+            builder.append(s + ".");
+        }
+        return builder.deleteCharAt(builder.length() - 1).toString();
     }
 
 }

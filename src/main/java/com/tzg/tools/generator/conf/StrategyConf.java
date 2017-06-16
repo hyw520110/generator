@@ -1,11 +1,11 @@
 package com.tzg.tools.generator.conf;
 
+import java.util.Map;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import com.tzg.tools.generator.dao.entity.BaseEntity;
 import com.tzg.tools.generator.enums.Naming;
-import com.tzg.tools.generator.service.BaseService;
 import com.tzg.tools.generator.utils.StringUtils;
 
 /**
@@ -19,31 +19,27 @@ import com.tzg.tools.generator.utils.StringUtils;
  * Create at:   2017年6月13日 上午10:01:08  
  *
  */
-public class StrategyConf {
-    /**
-     * 表名、字段名、是否使用下划线命名（默认 false）
-     */
-    public boolean columnUnderline = false;
+public class StrategyConf extends BaseBean {
 
-    /**
-     * 是否大写命名
-     */
-    private boolean isCapitalMode = false;
-
+    private static final long serialVersionUID = -7048808393952407839L;
     /**
      * 数据库表映射到实体的命名策略
      */
-    private Naming naming = Naming.NOCHANGE;
+    private Naming            naming           = Naming.TOCAMEL;
+
+    /**
+     * 单词分隔符,常见分隔符:下划线(_)和横线(-),转换驼峰命名时用
+     */
+    private char[] separators;
+    /**
+     * 是否大写命名
+     */
+    private boolean  isCapitalMode = false;
 
     /**
      * 表前缀
      */
     private String[] tablePrefix;
-
-    /**
-     * 自定义继承的Entity类全称，带包名
-     */
-    private String superEntityClass = BaseEntity.class.getName();
 
     /**
      * 自定义基础的Entity类，公共字段
@@ -53,12 +49,7 @@ public class StrategyConf {
     /**
      * 自定义继承的Service类全称，带包名
      */
-    private String superServiceClass = BaseService.class.getName();
-
-    /**
-     * 自定义继承的Controller类全称，带包名
-     */
-    private String superControllerClass;
+    private String superServiceClass;
 
     /**
      * 需要包含的表名（与exclude二选一配置）
@@ -75,51 +66,14 @@ public class StrategyConf {
     private boolean  columnConstant = false;
 
     /**
-     * 【实体】是否为构建者模型（默认 false） 
-     */
-    private boolean builderModel = false;
-
-    /**
      * 父包名,如果为空，将下面子包名必须写全部， 否则就只需写子包名
      */
     private String rootPackage = "com.tzg";
 
     /**
-     * 模块名。
+     * 包配置详情
      */
-    private String moduleName = null;
-
-    /**
-     * Entity包名
-     */
-    private String entity = "entity";
-
-    /**
-     * Service包名
-     */
-    private String service = "service";
-
-    /**
-     * Service Impl包名
-     */
-    private String serviceImpl = "service.impl";
-    /**
-     * Mapper包名
-     */
-    private String dao         = "dao";
-
-    /**
-     * Controller包名
-     */
-    private String controller = "web";
-
-    public boolean isColumnUnderline() {
-        return columnUnderline;
-    }
-
-    public void setColumnUnderline(boolean columnUnderline) {
-        this.columnUnderline = columnUnderline;
-    }
+    protected Map<String, String> packages;
 
     public boolean isCapitalMode() {
         return isCapitalMode;
@@ -145,14 +99,6 @@ public class StrategyConf {
         this.tablePrefix = tablePrefix;
     }
 
-    public String getSuperEntityClass() {
-        return superEntityClass;
-    }
-
-    public void setSuperEntityClass(String superEntityClass) {
-        this.superEntityClass = superEntityClass;
-    }
-
     public String[] getSuperEntityColumns() {
         return superEntityColumns;
     }
@@ -167,14 +113,6 @@ public class StrategyConf {
 
     public void setSuperServiceClass(String superServiceClass) {
         this.superServiceClass = superServiceClass;
-    }
-
-    public String getSuperControllerClass() {
-        return superControllerClass;
-    }
-
-    public void setSuperControllerClass(String superControllerClass) {
-        this.superControllerClass = superControllerClass;
     }
 
     public String[] getInclude() {
@@ -201,62 +139,6 @@ public class StrategyConf {
         this.columnConstant = columnConstant;
     }
 
-    public boolean isBuilderModel() {
-        return builderModel;
-    }
-
-    public void setBuilderModel(boolean builderModel) {
-        this.builderModel = builderModel;
-    }
-
-    public String getModuleName() {
-        return moduleName;
-    }
-
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
-    }
-
-    public String getEntity() {
-        return entity;
-    }
-
-    public void setEntity(String entity) {
-        this.entity = entity;
-    }
-
-    public String getService() {
-        return service;
-    }
-
-    public void setService(String service) {
-        this.service = service;
-    }
-
-    public String getServiceImpl() {
-        return serviceImpl;
-    }
-
-    public void setServiceImpl(String serviceImpl) {
-        this.serviceImpl = serviceImpl;
-    }
-
-    public String getDao() {
-        return dao;
-    }
-
-    public void setDao(String dao) {
-        this.dao = dao;
-    }
-
-    public String getController() {
-        return controller;
-    }
-
-    public void setController(String controller) {
-        this.controller = controller;
-    }
-
     public String getRootPackage() {
         return rootPackage;
     }
@@ -270,8 +152,23 @@ public class StrategyConf {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 
-    //TODO 
     public boolean isCapitalModeNaming(String name) {
         return isCapitalMode && StringUtils.isCapitalMode(name);
+    }
+
+    public char[] getSeparators() {
+        return separators;
+    }
+
+    public void setSeparators(char[] separators) {
+        this.separators = separators;
+    }
+
+    public Map<String, String> getPackages() {
+        return packages;
+    }
+
+    public void setPackages(Map<String, String> packages) {
+        this.packages = packages;
     }
 }

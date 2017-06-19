@@ -1,4 +1,4 @@
-package com.tzg.tools.generator.service;
+package ${packageBaseService};
 
 import java.io.Serializable;
 import java.util.List;
@@ -6,11 +6,11 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import com.tzg.tools.generator.dao.BaseDao;
+import ${packageBaseDao}.BaseMapper;
 
 public class BaseService<T, PK extends Serializable> {
 
-    private BaseDao<T, PK> baseDao;
+    private BaseMapper<T, PK> baseMapper;
 
     /**
      * <p>
@@ -22,7 +22,7 @@ public class BaseService<T, PK extends Serializable> {
      * @return boolean
      */
     public boolean save(T entity) {
-        Integer rows = baseDao.save(entity);
+        Integer rows = baseMapper.save(entity);
         return null != rows && rows > 0;
     }
 
@@ -32,7 +32,7 @@ public class BaseService<T, PK extends Serializable> {
     * @return Object  返回对象  
     */
     public T findById(PK id) {
-        return baseDao.findById(id);
+        return baseMapper.findById(id);
     }
 
     /**
@@ -42,7 +42,7 @@ public class BaseService<T, PK extends Serializable> {
      * @return
      */
     public T findOne(Map<String, Object> map) {
-        return baseDao.findOne(map);
+        return baseMapper.findOne(map);
     }
 
     /**
@@ -50,7 +50,7 @@ public class BaseService<T, PK extends Serializable> {
     * @return Integer 总条数   
     */
     public Integer count(Map<String, Object> map) {
-        return baseDao.count(map);
+        return baseMapper.count(map);
     }
 
     /**
@@ -58,7 +58,7 @@ public class BaseService<T, PK extends Serializable> {
     * @return List<E> 返回数据集合   
     */
     public List<T> findPage(Map<String, Object> map) {
-        return baseDao.findPage(map);
+        return baseMapper.findPage(map);
     }
 
     /**
@@ -66,7 +66,7 @@ public class BaseService<T, PK extends Serializable> {
     * @return List<E> 返回数据集合   
     */
     public List<T> findAll(Map<String, Object> map) {
-        return baseDao.findAll(map);
+        return baseMapper.findAll(map);
     }
 
     /**
@@ -75,7 +75,7 @@ public class BaseService<T, PK extends Serializable> {
     *     
     */
     public Integer deleteById(PK id) {
-        return baseDao.deleteById(id);
+        return baseMapper.deleteById(id);
     }
 
     /**
@@ -85,7 +85,7 @@ public class BaseService<T, PK extends Serializable> {
      * @return
      */
     public Integer deleteByMap(@Param("pars") Map<String, Object> pars) {
-        return baseDao.deleteByMap(pars);
+        return baseMapper.deleteByMap(pars);
     }
 
     /**
@@ -95,7 +95,7 @@ public class BaseService<T, PK extends Serializable> {
      * @return
      */
     public Integer updateById(T entity) {
-        return baseDao.updateById(entity);
+        return baseMapper.updateById(entity);
     }
 
     /**
@@ -104,6 +104,6 @@ public class BaseService<T, PK extends Serializable> {
     *     
     */
     public Integer update(T entity) {
-        return baseDao.update(entity);
+        return baseMapper.update(entity);
     }
 }

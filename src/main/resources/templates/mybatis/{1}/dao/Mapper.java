@@ -1,8 +1,9 @@
 package ${packageMapper};
 
 import ${packageEntity}.${EntityName};
+#if(${superMapperClass})
 import ${superMapperClass};
-
+#end
 /**
  * <p>
   * $!{table.comment} Mapper 接口
@@ -11,6 +12,6 @@ import ${superMapperClass};
  * @author ${author}
  * @since ${date}
  */
-public interface ${MapperName} extends ${StringUtils.getClassName(${superMapperClass})}<${EntityName}> {
+public interface ${MapperName} #if(${superMapperClass}) extends ${StringUtils.getClassName(${superMapperClass})}<${EntityName}> #end{
 
 }

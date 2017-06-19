@@ -36,13 +36,17 @@ public class GlobalConf extends BaseBean {
     private String outputDir = "/";
 
     /**
+     * 生成文件前是否删除输出目录 
+     */
+    private boolean delOutputDir = false;
+    /**
      * 模板目录
      */
-    private String template = "/templates";
+    private String  template     = "/templates";
     /**
      * 生成文件的编码
      */
-    private String encoding = "UTF-8";
+    private String  encoding     = "UTF-8";
 
     /**
      * 是否覆盖已有文件
@@ -62,23 +66,27 @@ public class GlobalConf extends BaseBean {
     /**
      * 组件配置 
      */
-    private Map<Component, Map<String, String>> components;
-    
+    private Map<String, Map<String, String>> components;
+
     /**
      * 模块信息
      */
-    private List<String> modules;
-    
-	/**
+    private String[] modules;
+
+    /**
      * 工程目录，默认遵循maven目录结构
      */
-    private String                              sourceDirectory     = "src/main/java";
-    private String                              resource            = "src/main/resources";
-    private String                              testSourceDirectory = "src/test/java";
-    private String                              testResource        = "src/test/resources";
+    private String sourceDirectory     = "src/main/java";
+    private String resource            = "src/main/resources";
+    private String testSourceDirectory = "src/test/java";
+    private String testResource        = "src/test/resources";
 
     public String getOutputDir() {
         return outputDir;
+    }
+
+    public void setOutputDir(String outputDir) {
+        this.outputDir = outputDir;
     }
 
     /**
@@ -91,8 +99,12 @@ public class GlobalConf extends BaseBean {
         return file.getName();
     }
 
-    public void setOutputDir(String outputDir) {
-        this.outputDir = outputDir;
+    public boolean isDelOutputDir() {
+        return delOutputDir;
+    }
+
+    public void setDelOutputDir(boolean delOutputDir) {
+        this.delOutputDir = delOutputDir;
     }
 
     public boolean isFileOverride() {
@@ -119,33 +131,34 @@ public class GlobalConf extends BaseBean {
         this.author = author;
     }
 
-    public Map<Component, Map<String, String>> getComponentsMap() {
+    public Map<String, Map<String, String>> getComponentsMap() {
         return components;
     }
 
-    public Set<Component> getComponents() {
-        return components.keySet();
-    }
-
     @SuppressWarnings("unchecked")
-    public void setComponents(Set<Component> components) {
+    public void setComponents(Set<String> components) {
         this.components = new HashMap<>();
-        for (Component c : components) {
+        for (String s : components) {
             try {
-                this.components.put(c, new Yaml().loadAs(getResourceAsStream(String.format("/conf/%s.yaml", c)), HashMap.class));
+                Component c = Component.getComonent(s);
+                if (null == c) {
+                    logger.warn("unknow of component:", s);
+                    continue;
+                }
+                this.components.put(s.toLowerCase(), new Yaml().loadAs(getResourceAsStream(String.format("/conf/%s.yaml", c)), HashMap.class));
             } catch (Throwable e) {
-                logger.error("load {} config {}:{}", c, e.getClass(), e.getLocalizedMessage());
+                logger.error("load {} config {}:{}", s, e.getClass(), e.getLocalizedMessage());
             }
         }
     }
 
-    public List<String> getModules() {
-		return modules;
-	}
+    public String[] getModules() {
+        return modules;
+    }
 
-	public void setModules(List<String> modules) {
-		this.modules = modules;
-	}
+    public void setModules(String[] modules) {
+        this.modules = modules;
+    }
 
     public String getSourceDirectory() {
         return sourceDirectory;

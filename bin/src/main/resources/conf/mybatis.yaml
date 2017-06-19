@@ -8,8 +8,8 @@ baseResultMap: true
 #是否生成sql字段(公共查询用)
 columns: true
 #
-superMapperClass: 
-superEntityClass: 
+superMapperClass: com.tzg.tools.generator.dao.BaseDao
+superEntityClass: com.tzg.tools.generator.dao.entity.BaseEntity
 #是否生成insert配置
 insert: true
 update: true

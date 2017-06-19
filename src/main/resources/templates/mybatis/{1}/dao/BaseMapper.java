@@ -1,4 +1,4 @@
-package com.tzg.tools.generator.dao;
+package ${packageBaseMapper};
 
 import java.io.Serializable;
 import java.util.List;

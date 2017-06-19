@@ -1,4 +1,4 @@
-package ${packageEntity};
+package ${packageBaseEntity};
 
 import java.io.Serializable;
 

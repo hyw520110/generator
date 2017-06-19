@@ -4,21 +4,21 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import com.tzg.tools.generator.conf.db.Table;
-import com.tzg.tools.generator.enums.Component;
 import com.tzg.tools.generator.utils.StringUtils;
 
 /**
@@ -73,15 +72,15 @@ public class Generator extends AbstractGenerator {
         List<Table> tables = getTables();
         VelocityEngine engine = getVelocityEngine();
         //根据组件配置过滤所需模板文件
-        File dir = global.getTemplateFile();
-        if(dir==null||!dir.exists()){
-            System.err.println(dir+"模板目录不存在!");
-            return ;
+        final File dir = global.getTemplateFile();
+        if (dir == null || !dir.exists()) {
+            System.err.println(dir + "模板目录不存在!");
+            return;
         }
-        Map<Component, Map<String, String>> map = global.getComponentsMap();
-        List<File> files = listFiles(dir, new ArrayList<File>(), map.keySet());
+        Map<String, Map<String, String>> map = global.getComponentsMap();
+        Collection<File> files = getFiles(dir, map.keySet());
         if (null == files) {
-            System.err.println(dir+"目录下没有所需的模板文件！");
+            System.err.println(dir + "目录下没有所需的模板文件！");
             return;
         }
         VelocityContext context = getVelocityContext(map.values());
@@ -93,8 +92,8 @@ public class Generator extends AbstractGenerator {
         String encoding = global.getEncoding();
         for (Table table : tables) {
             for (File file : files) {
-            	String t = file.getPath().replace(dir.getParent(), "");
-                Template template = engine.getTemplate(t, encoding);
+                //获取模板对象
+                Template template = engine.getTemplate(file.getPath().replace(dir.getParent(), ""), encoding);
                 context.put("date", getDate());
                 context.put("table", table);
                 //模板文件名 
@@ -102,23 +101,23 @@ public class Generator extends AbstractGenerator {
                 //模板文件名前缀
                 String prefix = StringUtils.substringBeforeLast(name, ".");
                 boolean isJava = name.endsWith(".java");
-                String subDir = StringUtils.substringAfter(file.getParent(), t);
+                String subDir = getSubDir(dir, file);
                 if (isJava) {
+                    //类名
                     context.put(prefix + "Name", table.getBeanName() + prefix);
-                    context.put("package" + prefix, StringUtils.toPackage(strategy.getRootPackage(), global.getProjectName(),StringUtils.toPackage(subDir)));
+                    //类的包名
+                    context.put("package" + prefix, StringUtils.toPackage(strategy.getRootPackage(), global.getProjectName(), StringUtils.toPackage(subDir)));
                 }
-                String fileName = table.getBeanName() + name;
-                int index = StringUtils.indexOf(subDir, File.separatorChar, 1);
-                String moduleName=StringUtils.substring(subDir, 1,index);
-                subDir=StringUtils.substring(subDir, index);
-				File f = new File(StringUtils.toPath(global.getOutputDir(), moduleName,
-						isJava ? global.getSourceDirectory() : global.getResource(), subDir), fileName);
+                boolean isPom = name.equals("pom.xml");
+                String fileName = name.startsWith("Base") || isPom ? name : table.getBeanName() + name;
+                String moduleName = StringUtils.substringBefore(subDir, File.separator);
+                String parent = StringUtils.toPath(global.getOutputDir(), moduleName);
+                if (!isPom) {
+                    parent = StringUtils.toPath(parent, isJava ? global.getSourceDirectory() : global.getResource(), isJava ? strategy.getRootPackage() : "", subDir);
+                }
+                File f = new File(parent, fileName);
                 if (!global.isFileOverride() && f.exists()) {
                     continue;
-                }
-                System.out.println(f);
-                if (!f.getParentFile().exists()) {
-                    f.getParentFile().mkdirs();
                 }
                 writer(context, encoding, template, f);
             }
@@ -126,11 +125,39 @@ public class Generator extends AbstractGenerator {
         openDir();
     }
 
+    private String getSubDir(final File dir, File file) {
+        //子路径（以组件开头）
+        String subPath = file.getParent().replace(dir.getPath(), "").substring(1);
+        //子目录(去除组件路径)
+        return MessageFormat.format(StringUtils.substringAfter(subPath, File.separator), global.getModules());
+    }
+
+    private Collection<File> getFiles(final File dir, final Set<String> components) {
+        Collection<File> files = FileUtils.listFiles(dir, new DirectoryFileFilter() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean accept(File file) {
+                String path = file.getPath().replace(dir.getAbsolutePath(), "").substring(1);
+                int index = StringUtils.indexOf(path, File.separator);
+                if (index != -1) {
+                    path = StringUtils.substring(path, 0, index);
+                }
+                return components.contains(path);
+            }
+        }, FileFilterUtils.trueFileFilter());
+        return files;
+    }
+
     private void writer(VelocityContext context, String encoding, Template t, File f) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         FileOutputStream fos = null;
         OutputStreamWriter osw = null;
         Writer writer = null;
         try {
+            logger.info("generator file:{}", f);
+            if (!f.getParentFile().exists()) {
+                f.getParentFile().mkdirs();
+            }
             fos = new FileOutputStream(f);
             osw = new OutputStreamWriter(fos, encoding);
             writer = new BufferedWriter(osw);
@@ -153,29 +180,6 @@ public class Generator extends AbstractGenerator {
         context.put("author", global.getAuthor());
         context.put("StringUtils", StringUtils.class);
         return context;
-    }
-
-    private List<File> listFiles(File file, final List<File> list, final Set<Component> set) {
-        if (file.isFile()) {
-            list.add(file);
-            return list;
-        }
-        file.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                File f = new File(dir, name);
-                if (f.isFile()) {
-                    list.add(f);
-                    return true;
-                }
-                Component component = Component.getComonent(name);
-                if (component != null && set.contains(component)) {
-                    listFiles(f, list, set);
-                }
-                return false;
-            }
-        });
-        return list;
     }
 
     /**

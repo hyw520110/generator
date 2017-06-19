@@ -3,8 +3,9 @@
 <mapper namespace="${packageMapper}.${table.beanName}">
 
 #if(${enableCache})
-	<!-- 开启二级缓存 -->
+	<!-- 开启二级缓存 cache二選一，區別在於是否記錄日誌-->
 	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+	<!-- <cache type="org.mybatis.caches.ehcache.EhcacheCache"/> -->  
 
 #end
 

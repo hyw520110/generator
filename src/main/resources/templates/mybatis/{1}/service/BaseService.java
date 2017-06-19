@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import ${packageBaseDao}.BaseMapper;
+import ${packageBaseMapper}.BaseMapper;
 
 public class BaseService<T, PK extends Serializable> {
 

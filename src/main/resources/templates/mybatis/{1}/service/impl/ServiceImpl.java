@@ -1,7 +1,7 @@
 package ${packageServiceImpl};
 
-import ${packageEntity};
-import ${packageMapper};
+import ${packageEntity}.${EntityName};
+import ${packageMapper}.${MapperName};
 import ${packageService}.${ServiceName};
 #if(${superServiceImplClassPackage})
 import ${superServiceImplClassPackage};

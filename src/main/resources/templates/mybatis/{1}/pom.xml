@@ -2,6 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<groupId>${rootPackage}</groupId>
 	<artifactId>${projectName}-app</artifactId>
 	<version>1.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -13,8 +14,13 @@
 	<dependencies>
 		<dependency>
 			<groupId>${rootPackage}</groupId>
-			<artifactId>${projectName}-app</artifactId>
+			<artifactId>${projectName}-api</artifactId>
 			<version>1.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.4.4</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

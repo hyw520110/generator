@@ -90,6 +90,7 @@ public class Generator extends AbstractGenerator {
         }
 
         String encoding = global.getEncoding();
+        String projectName = global.getProjectName();
         for (Table table : tables) {
             for (File file : files) {
                 //获取模板对象
@@ -106,14 +107,15 @@ public class Generator extends AbstractGenerator {
                     //类名
                     context.put(prefix + "Name", table.getBeanName() + prefix);
                     //类的包名
-                    context.put("package" + prefix, StringUtils.toPackage(strategy.getRootPackage(), global.getProjectName(), StringUtils.toPackage(subDir)));
+                    context.put("package" + prefix, StringUtils.toPackage(strategy.getRootPackage(), projectName, StringUtils.toPackage(subDir)));
                 }
                 boolean isPom = name.equals("pom.xml");
                 String fileName = name.startsWith("Base") || isPom ? name : table.getBeanName() + name;
                 String moduleName = StringUtils.substringBefore(subDir, File.separator);
+                context.put("moduleName",moduleName);
                 String parent = StringUtils.toPath(global.getOutputDir(), moduleName);
                 if (!isPom) {
-                    parent = StringUtils.toPath(parent, isJava ? global.getSourceDirectory() : global.getResource(), isJava ? strategy.getRootPackage() : "", subDir);
+                    parent = StringUtils.toPath(parent, isJava ? global.getSourceDirectory() : global.getResource(), isJava ? strategy.getRootPackage()+File.separator+projectName : "", subDir);
                 }
                 File f = new File(parent, fileName);
                 if (!global.isFileOverride() && f.exists()) {
@@ -179,6 +181,8 @@ public class Generator extends AbstractGenerator {
         }
         context.put("author", global.getAuthor());
         context.put("StringUtils", StringUtils.class);
+        context.put("projectName", global.getProjectName());
+        context.put("rootPackage", strategy.getRootPackage());
         return context;
     }
 

@@ -6,6 +6,7 @@ import ${pkg};
 #if(${superEntityClass})
 import $superEntityClass
 #end
+import java.io.Serializable;
 /**
  * ${table.name}：$!{table.comment}
  * @author ${author}

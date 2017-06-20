@@ -84,13 +84,11 @@ public class Generator extends AbstractGenerator {
             return;
         }
         VelocityContext context = getVelocityContext(map.values());
-        if (StringUtils.isNotBlank(strategy.getSuperServiceClass())) {
-            context.put("superServiceClass", strategy.getSuperServiceClass());
-            context.put("superServiceClassName", StringUtils.substringAfterLast(strategy.getSuperServiceClass(), "."));
-        }
+       
 
         String encoding = global.getEncoding();
         String projectName = global.getProjectName();
+
         for (Table table : tables) {
             for (File file : files) {
                 //获取模板对象
@@ -110,14 +108,10 @@ public class Generator extends AbstractGenerator {
                     context.put("package" + prefix, StringUtils.toPackage(strategy.getRootPackage(), projectName, StringUtils.toPackage(subDir)));
                 }
                 boolean isPom = name.equals("pom.xml");
-                String fileName = name.startsWith("Base") || isPom ? name : table.getBeanName() + name;
+                String fileName = name.startsWith("Base") || isPom || "ehcache.xml".equals(name) ? name : table.getBeanName() + name;
                 String moduleName = StringUtils.substringBefore(subDir, File.separator);
-                context.put("moduleName",moduleName);
-                String parent = StringUtils.toPath(global.getOutputDir(), moduleName);
-                if (!isPom) {
-                    parent = StringUtils.toPath(parent, isJava ? global.getSourceDirectory() : global.getResource(), isJava ? strategy.getRootPackage()+File.separator+projectName : "", subDir);
-                }
-                File f = new File(parent, fileName);
+                context.put("moduleName", moduleName);
+                File f = new File(getDir(projectName, isJava, subDir, isPom, moduleName), fileName);
                 if (!global.isFileOverride() && f.exists()) {
                     continue;
                 }
@@ -125,6 +119,16 @@ public class Generator extends AbstractGenerator {
             }
         }
         openDir();
+    }
+
+    private String getDir(String projectName, boolean isJava, String subDir, boolean isPom, String moduleName) {
+        if (isPom) {
+            return StringUtils.toPath(global.getOutputDir(), moduleName);
+        }
+        if (isJava) {
+            return StringUtils.toPath(global.getOutputDir(), moduleName, global.getSourceDirectory(), strategy.getRootPackage() + File.separator + projectName, subDir);
+        }
+        return StringUtils.toPath(global.getOutputDir(), moduleName, global.getResource(), StringUtils.substringAfter(subDir, moduleName));
     }
 
     private String getSubDir(final File dir, File file) {
@@ -183,6 +187,9 @@ public class Generator extends AbstractGenerator {
         context.put("StringUtils", StringUtils.class);
         context.put("projectName", global.getProjectName());
         context.put("rootPackage", strategy.getRootPackage());
+        context.put("superServiceClass", strategy.getSuperServiceClass());
+        context.put("superServiceImplClass", strategy.getSuperServiceImplClass());
+        
         return context;
     }
 

@@ -4,9 +4,12 @@ package ${packageEntity};
 import ${pkg};
 #end
 #if(${superEntityClass})
-import $superEntityClass
+import #if($StringUtils.indexOf("$superEntityClass",'.')==-1)${packageEntity}.#end$superEntityClass;
+#else
+import java.io.Serializable;    
 #end
-import java.io.Serializable;
+
+
 /**
  * ${table.name}：$!{table.comment}
  * @author ${author}

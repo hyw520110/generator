@@ -225,6 +225,6 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
     }
 
     public static String getClassName(String className) {
-        return StringUtils.substringAfterLast(className, ".");
+        return StringUtils.indexOf(className, '.')==-1?className:StringUtils.substringAfterLast(className, ".");
     }
 }

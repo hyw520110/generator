@@ -3,8 +3,8 @@ package ${packageServiceImpl};
 import ${packageEntity}.${EntityName};
 import ${packageMapper}.${MapperName};
 import ${packageService}.${ServiceName};
-#if(${superServiceImplClassPackage})
-import ${superServiceImplClassPackage};
+#if(${superServiceImplClass})
+import #if($StringUtils.indexOf("$superServiceImplClass",'.')==-1)${packageServiceImpl}.#end${superServiceImplClass};
 #end
 import org.springframework.stereotype.Service;
 
@@ -14,6 +14,6 @@ import org.springframework.stereotype.Service;
  * @since ${date}
  */
 @Service("${StringUtils.lowercaseFirst($ServiceName)}")
-public class ${ServiceImplName} #if(${superServiceImplClassPackage}) extends ${superServiceImplClass}<${EntityName}, ${entity}> #end implements ${ServiceName} {
+public class ${ServiceImplName} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})} #end implements ${ServiceName} {
 	
 }

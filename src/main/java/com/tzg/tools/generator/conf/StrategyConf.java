@@ -30,11 +30,11 @@ public class StrategyConf extends BaseBean {
     /**
      * 单词分隔符,常见分隔符:下划线(_)和横线(-),转换驼峰命名时用
      */
-    private char[] separators;
+    private char[]  separators;
     /**
      * 是否大写命名
      */
-    private boolean  isCapitalMode = false;
+    private boolean isCapitalMode = false;
 
     /**
      * 表前缀
@@ -50,6 +50,11 @@ public class StrategyConf extends BaseBean {
      * 自定义继承的Service类全称，带包名
      */
     private String superServiceClass;
+
+    /**
+     * 自定义继承的Service类全称，带包名
+     */
+    private String superServiceImplClass;
 
     /**
      * 需要包含的表名（与exclude二选一配置）
@@ -69,7 +74,6 @@ public class StrategyConf extends BaseBean {
      * 父包名,如果为空，将下面子包名必须写全部， 否则就只需写子包名
      */
     private String rootPackage = "com.tzg";
-
 
     public boolean isCapitalMode() {
         return isCapitalMode;
@@ -158,6 +162,14 @@ public class StrategyConf extends BaseBean {
 
     public void setSeparators(char[] separators) {
         this.separators = separators;
+    }
+
+    public String getSuperServiceImplClass() {
+        return superServiceImplClass;
+    }
+
+    public void setSuperServiceImplClass(String superServiceImplClass) {
+        this.superServiceImplClass = superServiceImplClass;
     }
 
 }

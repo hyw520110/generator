@@ -1,8 +1,8 @@
 package ${packageService};
 
 import ${packageEntity}.${EntityName};
-#if(${superServiceClassName})
-import ${superServiceClass};
+#if(${superServiceClass})
+import #if($StringUtils.indexOf("$superServiceClass",'.')==-1)${packageService}.#end${superServiceClass};
 #end
 
 /**
@@ -10,6 +10,6 @@ import ${superServiceClass};
  * @author ${author}
  * @since ${date}
  */
-public interface ${ServiceName} #if(${superServiceClassName}) extends ${superServiceClassName}<${EntityName}> #end{
+public interface ${ServiceName} #if(${superServiceClass}) extends ${StringUtils.getClassName(${superServiceClass})} #end{
 	
 }

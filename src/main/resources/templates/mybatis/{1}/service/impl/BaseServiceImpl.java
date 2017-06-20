@@ -1,4 +1,4 @@
-package ${packageBaseService};
+package ${packageBaseServiceImpl};
 
 import java.io.Serializable;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import ${packageBaseMapper}.BaseMapper;
 
-public class BaseService<T, PK extends Serializable> {
+public class BaseServiceImpl<T, PK extends Serializable> {
 
     private BaseMapper<T, PK> baseMapper;
 

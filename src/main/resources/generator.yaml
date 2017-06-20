@@ -2,7 +2,7 @@
 #数据源配置
 dataSource:
     driverName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/sys?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/quartz?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
     userName: root
     password: sofa2.0
 #全局配置
@@ -22,7 +22,7 @@ global:
     #开发人员
     author: heyw
     #可选组件(枚举类Component)：MYBATIS、JPA、SPRINGMVC
-    components: [mybatis]
+    components: [mybatis,springmvc]
     #模塊配置
     modules: [api,app]
     #java源码目录
@@ -44,7 +44,9 @@ strategy:
     #Entity父类的公共字段
     superEntityColumns: ['id','createDate']
     #service父类
-    superServiceClass: 
+    superServiceClass: BaseService
+    #
+    superServiceImplClass: BaseServiceImpl
     #需要包含的表名（与exclude二选一配置）
     include: 
     #需要排除的表名

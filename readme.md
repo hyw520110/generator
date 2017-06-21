@@ -34,7 +34,9 @@ TODO LIST:
 
 自定义
 ==
-dao、service、controller层的父类自定义，在配置文件中修改即可
+父类自定义：
+
+dao、service、controller层的父类自定义，在配置文件中指定即可
 
 自定义模板:
 
@@ -43,8 +45,9 @@ dao、service、controller层的父类自定义，在配置文件中修改即可
 
 扩展组件:
 
-- 在配置文件中指定模块名数组(modules)
-- 在模板目录(templates)下新建目录，目录名为{数组index}
+- 在配置文件中指定模块名数组(modules),如已有的组件配置为[mybatis,springmvc],新增dubbo配置:[mybatis,springmvc,dubbo]
+- 在模板目录(templates)下新建目录，目录名为{数组index},如{2}
+- 在配置目录(conf)下新增组件配置文件,如dubbo.yaml,配置模板文件所需的配置数据
 
 
 

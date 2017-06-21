@@ -10,13 +10,13 @@ global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
     outputDir: d:/output/test
     #生成文件前是否删除输出目录 
-    delOutputDir: true
+    delOutputDir: false
     #模板文件目录,自定义模板时复制此目录，并修改此目录名
     template: /templates
     #生成文件的编码
     encoding: UTF-8
     #是否覆盖已有文件      
-    fileOverride: true
+    fileOverride: false
     #文件生成后是否打开输出目录
     openDir: true
     #开发人员
@@ -34,7 +34,7 @@ strategy:
     #父包名
     rootPackage: com.tzg
     #生成构建脚本/工程构建工具,可选值MAVEN:生成pom.xml、GRADLE:生成build.gradle、不配置:不生成构建脚本
-    projectBuilder: GRADLE
+    projectBuilder: MAVEN
     #工程默认版本号
     version: 1.0.1-SNAPSHOT 
     #表名、字段名、是否使用下划线命名

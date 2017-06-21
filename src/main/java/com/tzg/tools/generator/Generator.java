@@ -129,7 +129,7 @@ public class Generator extends AbstractGenerator {
         File dir = global.getTemplateFile();
         String encoding = global.getEncoding();
         Collection<File> modules = FileUtils.listFiles(new File(dir, "modules"), FileFilterUtils.nameFileFilter(builder.getFileName()), FileFilterUtils.trueFileFilter());
-        context.put("version",strategy.getVersion());
+        context.put("version", strategy.getVersion());
         for (File file : modules) {
             String tPath = file.getPath().replace(dir.getParent(), "");
             Template t = engine.getTemplate(tPath, encoding);

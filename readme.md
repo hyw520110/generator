@@ -19,12 +19,13 @@ TODO LIST:
 - **修改数据源配置**
 - 修改全局配置
 	- **定义输出目录(outputDir)**,最后一个子目录为项目名
+	- 是否清空输出目录(delOutputDir)默认为false
  	- 定义是否覆盖生成(默认false)
  	- 定义作者(author)
 - 修改生成策略
 	- **定义根包(rootPackage)**
 	- 定义移除的表前缀tablePrefix
-	
+	- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
 2. 执行Generator的main方法	
 	
 配置说明:

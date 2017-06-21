@@ -36,7 +36,15 @@ TODO LIST:
 ==
 dao、service、controller层的父类自定义，在配置文件中修改即可
 
-默认自定义，复制templates目录重命名,在配置文件中修改模板名即可
+自定义模板:
+
+- 复制templates目录重命名,修改模板文件
+- 在配置文件中修改模板目录名
+
+扩展组件:
+
+- 在配置文件中指定模块名数组(modules)
+- 在模板目录(templates)下新建目录，目录名为{数组index}
 
 
 

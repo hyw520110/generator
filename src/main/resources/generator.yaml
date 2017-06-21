@@ -4,7 +4,7 @@ dataSource:
     driverName: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/quartz?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
     userName: root
-    password: sofa2.0
+    password: 123456
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test

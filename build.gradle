@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'eclipse'
 
 group = 'com.tzg.tools'
 version = '1.0.0-SNAPSHOT'

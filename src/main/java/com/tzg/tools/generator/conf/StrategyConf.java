@@ -1,11 +1,10 @@
 package com.tzg.tools.generator.conf;
 
-import java.util.Map;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import com.tzg.tools.generator.enums.Naming;
+import com.tzg.tools.generator.enums.ProjectBuilder;
 import com.tzg.tools.generator.utils.StringUtils;
 
 /**
@@ -74,6 +73,15 @@ public class StrategyConf extends BaseBean {
      * 父包名,如果为空，将下面子包名必须写全部， 否则就只需写子包名
      */
     private String rootPackage = "com.tzg";
+
+    /**
+     * 工程构建工具
+     */
+    private ProjectBuilder projectBuilder;
+    /**
+     * 工程默认版本号
+     */
+    private String         version;
 
     public boolean isCapitalMode() {
         return isCapitalMode;
@@ -170,6 +178,22 @@ public class StrategyConf extends BaseBean {
 
     public void setSuperServiceImplClass(String superServiceImplClass) {
         this.superServiceImplClass = superServiceImplClass;
+    }
+
+    public ProjectBuilder getProjectBuilder() {
+        return projectBuilder;
+    }
+
+    public void setProjectBuilder(ProjectBuilder projectBuilder) {
+        this.projectBuilder = projectBuilder;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
 }

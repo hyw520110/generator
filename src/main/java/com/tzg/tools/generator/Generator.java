@@ -26,7 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
+import com.tzg.tools.generator.conf.StrategyConf;
 import com.tzg.tools.generator.conf.db.Table;
+import com.tzg.tools.generator.enums.ProjectBuilder;
 import com.tzg.tools.generator.utils.StringUtils;
 
 /**
@@ -69,7 +71,6 @@ public class Generator extends AbstractGenerator {
      */
     public void execute() throws Exception {
         mkdirs();
-        List<Table> tables = getTables();
         VelocityEngine engine = getVelocityEngine();
         //根据组件配置过滤所需模板文件
         final File dir = global.getTemplateFile();
@@ -77,18 +78,18 @@ public class Generator extends AbstractGenerator {
             System.err.println(dir + "模板目录不存在!");
             return;
         }
+
         Map<String, Map<String, String>> map = global.getComponentsMap();
+        VelocityContext context = getVelocityContext(map.values());
         Collection<File> files = getFiles(dir, map.keySet());
         if (null == files) {
             System.err.println(dir + "目录下没有所需的模板文件！");
             return;
         }
-        VelocityContext context = getVelocityContext(map.values());
-       
-
+        mkBuildScriptFile(engine, context);
         String encoding = global.getEncoding();
         String projectName = global.getProjectName();
-
+        List<Table> tables = getTables();
         for (Table table : tables) {
             for (File file : files) {
                 //获取模板对象
@@ -107,11 +108,10 @@ public class Generator extends AbstractGenerator {
                     //类的包名
                     context.put("package" + prefix, StringUtils.toPackage(strategy.getRootPackage(), projectName, StringUtils.toPackage(subDir)));
                 }
-                boolean isPom = name.equals("pom.xml");
-                String fileName = name.startsWith("Base") || isPom || "ehcache.xml".equals(name) ? name : table.getBeanName() + name;
+                String fileName = name.startsWith("Base") || "ehcache.xml".equals(name) ? name : table.getBeanName() + name;
                 String moduleName = StringUtils.substringBefore(subDir, File.separator);
                 context.put("moduleName", moduleName);
-                File f = new File(getDir(projectName, isJava, subDir, isPom, moduleName), fileName);
+                File f = new File(getDir(projectName, isJava, subDir, moduleName), fileName);
                 if (!global.isFileOverride() && f.exists()) {
                     continue;
                 }
@@ -121,10 +121,25 @@ public class Generator extends AbstractGenerator {
         openDir();
     }
 
-    private String getDir(String projectName, boolean isJava, String subDir, boolean isPom, String moduleName) {
-        if (isPom) {
-            return StringUtils.toPath(global.getOutputDir(), moduleName);
+    public void mkBuildScriptFile(VelocityEngine engine, VelocityContext context) {
+        ProjectBuilder builder = strategy.getProjectBuilder();
+        if (null == builder) {
+            return;
         }
+        File dir = global.getTemplateFile();
+        String encoding = global.getEncoding();
+        Collection<File> modules = FileUtils.listFiles(new File(dir, "modules"), FileFilterUtils.nameFileFilter(builder.getFileName()), FileFilterUtils.trueFileFilter());
+        context.put("version",strategy.getVersion());
+        for (File file : modules) {
+            String tPath = file.getPath().replace(dir.getParent(), "");
+            Template t = engine.getTemplate(tPath, encoding);
+            String path = MessageFormat.format(StringUtils.substringAfter(tPath, "modules"), global.getModules());
+            context.put("moduleName", StringUtils.substring(path, 1, StringUtils.indexOf(path, File.separator, 1)));
+            writer(context, encoding, t, new File(global.getOutputDir(), path));
+        }
+    }
+
+    private String getDir(String projectName, boolean isJava, String subDir, String moduleName) {
         if (isJava) {
             return StringUtils.toPath(global.getOutputDir(), moduleName, global.getSourceDirectory(), strategy.getRootPackage() + File.separator + projectName, subDir);
         }
@@ -155,7 +170,7 @@ public class Generator extends AbstractGenerator {
         return files;
     }
 
-    private void writer(VelocityContext context, String encoding, Template t, File f) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+    private void writer(VelocityContext context, String encoding, Template t, File f) {
         FileOutputStream fos = null;
         OutputStreamWriter osw = null;
         Writer writer = null;
@@ -189,7 +204,6 @@ public class Generator extends AbstractGenerator {
         context.put("rootPackage", strategy.getRootPackage());
         context.put("superServiceClass", strategy.getSuperServiceClass());
         context.put("superServiceImplClass", strategy.getSuperServiceImplClass());
-        
         return context;
     }
 

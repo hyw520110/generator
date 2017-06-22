@@ -2,11 +2,9 @@ package com.tzg.tools.generator;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -26,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import com.tzg.tools.generator.conf.StrategyConf;
 import com.tzg.tools.generator.conf.db.Table;
 import com.tzg.tools.generator.enums.ProjectBuilder;
 import com.tzg.tools.generator.utils.StringUtils;
@@ -204,6 +201,7 @@ public class Generator extends AbstractGenerator {
         context.put("rootPackage", strategy.getRootPackage());
         context.put("superServiceClass", strategy.getSuperServiceClass());
         context.put("superServiceImplClass", strategy.getSuperServiceImplClass());
+        context.put("dbType", dataSource.getDbType().getValue());
         return context;
     }
 

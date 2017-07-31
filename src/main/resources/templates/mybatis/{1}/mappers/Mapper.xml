@@ -13,6 +13,12 @@
 	<resultMap id="BaseResultMap" type="${packageEntity}.${EntityName}">
 #foreach($field in ${table.fields})
 		<id column="${field.name}" property="${field.propertyName}" jdbcType="${field.type}"/>
+	##	<!-- 集合属性配置  ofType：指的是集合中元素的类型-->
+	##	<collection property="orders" ofType="Order">  
+    ##        <id column="orderId" property="id"/>  
+    ##        <result column="orderNumber" property="number"/>  
+    ##        <result column="orderPrice" property="price"/>  
+    ##    </collection>  
 #end
 	</resultMap>
 #end

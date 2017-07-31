@@ -1,21 +1,17 @@
-package ${packageEntity};
+package ${entityPackage};
 
 #foreach($pkg in ${table.importPackages})
 import ${pkg};
 #end
 #if(${superEntityClass})
-import #if($StringUtils.indexOf("$superEntityClass",'.')==-1)${packageEntity}.#end$superEntityClass;
+import #if($StringUtils.indexOf("$superEntityClass",'.')==-1)${entityPackage}.#end$superEntityClass;
 #else
 import java.io.Serializable;    
 #end
 
 
-/**
- * ${table.name}：$!{table.comment}
- * @author ${author}
- * @since ${date}
- */
-public class ${EntityName} #if(${superEntityClass}) extends ${StringUtils.getClassName($superEntityClass)} #else implements Serializable #end{
+#parse('/templates/commons/comment.vm')
+public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClassName($superEntityClass)} #else implements Serializable #end{
 
     private static final long serialVersionUID = 1L;
 
@@ -26,6 +22,9 @@ public class ${EntityName} #if(${superEntityClass}) extends ${StringUtils.getCla
     */
 #end
     private ${field.fieldType.type} ${field.propertyName};
+## TODO  外键关联配置 引用对象
+## 如 一对一,当前为order订单类，一个订单对应一个人，则此处应引入person
+## 如多对一,当前为person类，一个人对应多个订单，则此处引入List<Order> orders
 #end
 
 #foreach($field in ${table.fields})

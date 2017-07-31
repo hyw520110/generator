@@ -1,4 +1,4 @@
-package ${packageBaseServiceImpl};
+package ${implPackage};
 
 import java.io.Serializable;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import ${packageBaseMapper}.BaseMapper;
+import ${mapperPackage}.BaseMapper;
 
 public class BaseServiceImpl<T, PK extends Serializable> {
 

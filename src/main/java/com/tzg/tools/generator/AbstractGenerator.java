@@ -159,21 +159,29 @@ public abstract class AbstractGenerator extends BaseBean {
         return name;
     }
 
-    public void mkdirs() {
-        File outputDir = new File(global.getOutputDir());
-        if (global.isDelOutputDir() && outputDir.exists()) {
-            try {
-                FileUtils.deleteDirectory(outputDir);
-            } catch (IOException ignore) {
-            }
-        }
+    public void mkDirs() {
         // 生成路径信息
         String[] modules = global.getModules();
+        if(null==modules||modules.length==0){
+        	return;
+        }
         for (String module : modules) {
             File dir = new File(global.getOutputDir(), module);
             mkdirs(dir, global.getSourceDirectory(), global.getResource(), global.getTestSourceDirectory(), global.getTestResource());
         }
     }
+
+	public void delDir() {
+		File outputDir = new File(global.getOutputDir());
+        if (!global.isDelOutputDir() ||outputDir.exists()) {
+        	return ;
+        }
+        try {
+        	logger.info("删除目录:{}",outputDir);
+            FileUtils.deleteDirectory(outputDir);
+        } catch (IOException ignore) {
+        }
+	}
 
     private void mkdirs(File dir, String... dirs) {
         for (String d : dirs) {

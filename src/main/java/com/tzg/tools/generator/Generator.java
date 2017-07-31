@@ -67,7 +67,8 @@ public class Generator extends AbstractGenerator {
      * @throws Exception 
      */
     public void execute() throws Exception {
-        mkdirs();
+    	delDir();
+    	mkDirs();
         VelocityEngine engine = getVelocityEngine();
         //根据组件配置过滤所需模板文件
         final File dir = global.getTemplateFile();
@@ -77,7 +78,7 @@ public class Generator extends AbstractGenerator {
         }
 
         Map<String, Map<String, String>> map = global.getComponentsMap();
-        VelocityContext context = getVelocityContext(map.values());
+        VelocityContext context = createVelocityContext(map.values());
         Collection<File> files = getFiles(dir, map.keySet());
         if (null == files) {
             System.err.println(dir + "目录下没有所需的模板文件！");
@@ -94,21 +95,24 @@ public class Generator extends AbstractGenerator {
                 context.put("date", getDate());
                 context.put("table", table);
                 //模板文件名 
-                String name = file.getName();
+                String name = String.format(file.getName(), table.getBeanName());
                 //模板文件名前缀
                 String prefix = StringUtils.substringBeforeLast(name, ".");
                 boolean isJava = name.endsWith(".java");
                 String subDir = getSubDir(dir, file);
                 if (isJava) {
-                    //类名
-                    context.put(prefix + "Name", table.getBeanName() + prefix);
+                	String pName = file.getParentFile().getName();
+                	if(!StringUtils.startsWith(name, "Base")){
+                		//类名
+                        context.put("className", prefix);
+                        context.put(pName+"Name", prefix);	
+                	}
                     //类的包名
-                    context.put("package" + prefix, StringUtils.toPackage(strategy.getRootPackage(), projectName, StringUtils.toPackage(subDir)));
+                    context.put(pName+"Package" , StringUtils.toPackage(strategy.getRootPackage(), projectName, StringUtils.toPackage(subDir)));
                 }
-                String fileName = name.startsWith("Base") || "ehcache.xml".equals(name) ? name : table.getBeanName() + name;
                 String moduleName = StringUtils.substringBefore(subDir, File.separator);
                 context.put("moduleName", moduleName);
-                File f = new File(getDir(projectName, isJava, subDir, moduleName), fileName);
+                File f = new File(getDir(projectName, isJava, subDir, moduleName), name);
                 if (!global.isFileOverride() && f.exists()) {
                     continue;
                 }
@@ -125,6 +129,7 @@ public class Generator extends AbstractGenerator {
         }
         File dir = global.getTemplateFile();
         String encoding = global.getEncoding();
+        //TODO 单模块/无模块单工程 支持
         Collection<File> modules = FileUtils.listFiles(new File(dir, "modules"), FileFilterUtils.nameFileFilter(builder.getFileName()), FileFilterUtils.trueFileFilter());
         context.put("version", strategy.getVersion());
         for (File file : modules) {
@@ -188,7 +193,7 @@ public class Generator extends AbstractGenerator {
         }
     }
 
-    private VelocityContext getVelocityContext(Collection<Map<String, String>> collection) {
+    private VelocityContext createVelocityContext(Collection<Map<String, String>> collection) {
         VelocityContext context = new VelocityContext();
         for (Map<String, String> pars : collection) {
             for (Entry<String, String> entry : pars.entrySet()) {
@@ -196,6 +201,7 @@ public class Generator extends AbstractGenerator {
             }
         }
         context.put("author", global.getAuthor());
+        context.put("copyright",global.getCopyright());
         context.put("StringUtils", StringUtils.class);
         context.put("projectName", global.getProjectName());
         context.put("rootPackage", strategy.getRootPackage());

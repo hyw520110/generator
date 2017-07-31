@@ -1,4 +1,4 @@
-package ${packageBaseMapper};
+package ${mapperPackage};
 
 import java.io.Serializable;
 import java.util.List;

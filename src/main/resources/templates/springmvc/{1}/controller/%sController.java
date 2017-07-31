@@ -1,4 +1,4 @@
-package ${packageController};
+package ${controllerPackage};
 
 import java.util.List;
 import java.util.Map;
@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 #if(${superControllerClass})
 import ${superControllerClass};
 #end
-import ${packageEntity}.${EntityName};
-import ${packageService}.${ServiceName};
+import ${entityPackage}.${entityName};
+import ${servicePackage}.${serviceName};
 
 /**
  * $!{table.comment} 前端控制器
@@ -22,15 +22,15 @@ import ${packageService}.${ServiceName};
  */
 @Controller
 @RequestMapping("/${table.beanName}")
-public class ${ControllerName} #if(${superControllerClass})extends ${superControllerClass}#end {
-
+public class ${className} #if(${superControllerClass})extends ${superControllerClass}#end {
+#set($sName=${StringUtils.lowercaseFirst($serviceName)})
     
     @Autowired
-    private ${ServiceName} ${StringUtils.lowercaseFirst($ServiceName)};
+    private ${serviceName} ${sName};
     
     @RequestMapping("/list")
     public String list(HttpServletRequest req,HttpServletResponse resq, @RequestParam Map<String, Object> map , Model model){
-        List<${EntityName}> list=${StringUtils.lowercaseFirst($ServiceName)}.findAll(map);
+        List<${className}> list=${sName}.findAll(map);
         model.addAttribute("list",list);
         return "${table.beanName}/list";
     }

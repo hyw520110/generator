@@ -64,6 +64,10 @@ public class GlobalConf extends BaseBean {
     private String author;
 
     /**
+     * 版权信息
+     */
+    private String copyright="";
+    /**
      * 组件配置 
      */
     private Map<String, Map<String, String>> components;
@@ -223,5 +227,13 @@ public class GlobalConf extends BaseBean {
     public void setTemplate(String template) {
         this.template = template;
     }
+
+	public String getCopyright() {
+		return copyright;
+	}
+
+	public void setCopyright(String copyright) {
+		this.copyright = copyright;
+	}
 
 }

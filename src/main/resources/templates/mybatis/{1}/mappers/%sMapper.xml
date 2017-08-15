@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${mapperPackage}.${mapperName}">
+
+#if(${enableCache})
+	<!-- 开启二级缓存 cache二選一，區別在於是否記錄日誌-->
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+	<!-- <cache type="org.mybatis.caches.ehcache.EhcacheCache"/> -->  
+
+#end
+
+#if(${baseResultMap})
+	<resultMap id="BaseResultMap" type="${entityPackage}.${entityName}">
+#foreach($field in ${table.fields})
+		<result column="${field.name}" property="${field.propertyName}" jdbcType="${field.jdbcType}"/>
+	##	<!-- 集合属性配置  ofType：指的是集合中元素的类型-->
+	##	<collection property="orders" ofType="Order">  
+    ##        <id column="orderId" property="id"/>  
+    ##        <result column="orderNumber" property="number"/>  
+    ##        <result column="orderPrice" property="price"/>  
+    ##    </collection>  
+#end
+	</resultMap>
+#end
+
+#if(${columns})
+    <sql id="columns">
+      <![CDATA[
+        ${table.fieldNames}
+      ]]>  
+    </sql>
+#end
+
+#if($findById)
+	<!-- TODO parameterType联合主键处理 -->
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+	    SELECT #if(${columns}) <include refid="columns"/> #else  ${table.fieldNames} #end
+	<![CDATA[
+		FROM ${table.name} 
+		WHERE #foreach($field in ${table.pkFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end 
+	]]>
+	</select>	
+#end
+
+#if($findAll)
+    <select id="findAll" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select	* from ${table.name} where 1=1  
+		<include refid="queryWhere"/> 
+	</select>
+#end	
+#if($insert)
+
+	<!-- TODO id联合主键处理 -->
+	<insert id="save" parameterType="${entityPackage}.${entityName}" useGeneratedKeys="true" keyProperty="id">
+		<![CDATA[
+		INSERT INTO ${table.name} (#foreach($field in ${table.fields})#set($notLast=($foreach.count!=${table.fields.size()}))${field.name} #if($notLast),#end#end
+ 
+		) VALUES ( 
+	#foreach($field in ${table.fields})#set($notLast=($foreach.count!=${table.fields.size()}))#{${field.propertyName},jdbcType=${field.jdbcType}}#if($notLast),#end#end
+		)
+		]]>
+	</insert>
+#end
+
+#if($update)
+
+	<update id="update" parameterType="${entityPackage}.${entityName}">
+		UPDATE ${table.name} 
+		<set>
+		#foreach($field in ${table.fields})
+		
+			<if test="${field.name} != null">
+				${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}),#end
+				
+			</if>
+		#end
+		</set>
+		WHERE #foreach($field in ${table.pkFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end
+		     
+	</update>
+#end
+
+#if($deleteById)
+
+	<!-- TODO parameterType联合主键处理 -->
+	<delete id="deleteById" parameterType="java.lang.Integer">
+		<![CDATA[DELETE FROM ${table.name}  WHERE #foreach($field in ${table.pkFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end]]>
+	</delete>
+#end
+
+	<sql id="queryWhere">
+#foreach($field in ${table.fields})
+	
+		<if test="${field.name} != null">
+			and ${field.name} = #{${field.propertyName}} 
+		</if>
+#end
+	</sql>	
+</mapper>

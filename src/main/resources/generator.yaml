@@ -22,9 +22,9 @@ global:
     #开发人员
     author: heyw
     #版权
-    copyright: org.hyw
+    copyright: hyw Copyright (c) 2017-2020 All Rights Reserved.
     #可选组件(枚举类Component)：MYBATIS、JPA、SPRINGMVC
-    components: [mybatis,springmvc]
+    components: [mybatis,springmvc,springboot]
     #模塊配置
     modules: [api,app]
     #java源码目录
@@ -34,11 +34,13 @@ global:
 #策略配置
 strategy:
     #父包名
-    rootPackage: com.tzg
+    rootPackage: com.hyw
     #生成构建脚本/工程构建工具,可选值MAVEN:生成pom.xml、GRADLE:生成build.gradle、不配置:不生成构建脚本
     projectBuilder: MAVEN
     #工程默认版本号
     version: 1.0.1-SNAPSHOT 
+    #jdk版本
+    javaVersion: 1.8
     #表名、字段名、是否使用下划线命名
     separators: [_,-]
     #是否大写命名
@@ -47,12 +49,6 @@ strategy:
     naming: TOCAMEL
     #表前缀
     tablePrefix: ['tb_','batch_']
-    #Entity父类的公共字段
-    superEntityColumns: ['id','createDate']
-    #service父类,如配置自定义类需写全类名(含包名)
-    superServiceClass: BaseService
-    #service实现类父类,如配置自定义类需写全类名(含包名)
-    superServiceImplClass: BaseServiceImpl
     #需要包含的表名（与exclude二选一配置）
     include: 
     #需要排除的表名

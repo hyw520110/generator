@@ -6,12 +6,14 @@ import ${pkg};
 #if(${superEntityClass})
 import #if($StringUtils.indexOf("$superEntityClass",'.')==-1)${entityPackage}.#end$superEntityClass;
 #else
-import java.io.Serializable;    
+import java.io.Serializable;
+
+import com.mysql.jdbc.StringUtils;    
 #end
 
 
 #parse('/templates/commons/comment.vm')
-public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClassName($superEntityClass)} #else implements Serializable #end{
+public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClassName("$superEntityClass")} #else implements Serializable #end{
 
     private static final long serialVersionUID = 1L;
 
@@ -21,11 +23,14 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
     * ${field.comment}
     */
 #end
+
+#if(!${field.isCommonField} || ${StringUtils.indexOf("$superEntityClass", '.')}!=-1)
     private ${field.fieldType.type} ${field.propertyName};
+#end    
+#end
 ## TODO  外键关联配置 引用对象
 ## 如 一对一,当前为order订单类，一个订单对应一个人，则此处应引入person
 ## 如多对一,当前为person类，一个人对应多个订单，则此处引入List<Order> orders
-#end
 
 #foreach($field in ${table.fields})
     #if(${field.propertyType.equals("Boolean")})

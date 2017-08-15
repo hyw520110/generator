@@ -8,12 +8,8 @@ import #if($StringUtils.indexOf("$superServiceImplClass",'.')==-1)${implPackage}
 #end
 import org.springframework.stereotype.Service;
 
-/**
- * $!{table.comment} 服务实现类
- * @author ${author}
- * @since ${date}
- */
+#parse('/templates/commons/comment.vm')
 @Service("${StringUtils.lowercaseFirst($serviceName)}")
-public class ${className} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})} #end implements ${serviceName} {
+public class ${className} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})}<${StringUtils.capitalFirst("$entityName")},${table.primaryKeyField.fieldType.type}> #end implements ${serviceName} {
 	
 }

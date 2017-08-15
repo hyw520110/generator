@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author ${author}
+ * @since ${date}
+ * @copyright: ${copyright}
+ */
 public interface BaseService<T, PK extends Serializable> {
 
 

@@ -3,13 +3,17 @@ package ${implPackage};
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.ibatis.annotations.Param;
-
 import ${mapperPackage}.BaseMapper;
-
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+/**
+ * @author ${author}
+ * @since ${date}
+ * @copyright: ${copyright}
+ */
 public class BaseServiceImpl<T, PK extends Serializable> {
 
+	@Autowired
     private BaseMapper<T, PK> baseMapper;
 
     /**

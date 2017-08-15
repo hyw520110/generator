@@ -6,6 +6,12 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+/**
+ * @author ${author}
+ * @since ${date}
+ * @copyright: ${copyright}
+ */
+
 public interface BaseMapper<E, PK extends Serializable> {
 
     /**

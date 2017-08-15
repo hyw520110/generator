@@ -15,24 +15,30 @@
 
 快速开始:
 ==
+有兩種方式執行（二選一即可）：一種方式是通過git下載源碼執行，一種是下載zip執行命令腳本.
 
-1. 修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
+1. 源碼方式：
 
-	- **修改数据源配置**
-	- 修改全局配置
-		- **定义输出目录(outputDir)**,最后一个子目录为项目名
-		- **是否清空输出目录(delOutputDir)默认为false**,工程已存在的情况下，此配置项谨慎使用(不要配置为true)
- 		- **定义是否覆盖生成(默认false)**,工程文件已存在的情况下，此配置项谨慎使用(不要配置为true)
- 		- 定义作者(author)
- 		- 定义版权(copyright)
-	- 修改生成策略
-		- **定义根包(rootPackage)**
-		- 定义移除的表前缀tablePrefix
-		- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
-2. 執行方法或命令腳本生成代碼：
+	- 修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
 
-	- 源碼方式：安装配置好maven/gradle导入IDE,执行Generator的main方法.
-	- 或执行bin目錄（解壓）下的命令脚本（先修改配置文件generator.yaml）	
+		- **修改数据源配置**
+		- 修改全局配置
+			- **定义输出目录(outputDir)**,最后一个子目录为项目名
+			- **是否清空输出目录(delOutputDir)默认为false**,工程已存在的情况下，此配置项谨慎使用(不要配置为true)
+ 			- **定义是否覆盖生成(默认false)**,工程文件已存在的情况下，此配置项谨慎使用(不要配置为true)
+ 			- 定义作者(author)
+ 			- 定义版权(copyright)
+		- 修改生成策略
+			- **定义根包(rootPackage)**
+			- 定义移除的表前缀tablePrefix
+			- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
+	- 安装配置好maven/gradle导入IDE,执行Generator的main方法.
+
+
+2. 命令腳本：
+
+	- 解壓zip包，修改配置文件generator.yaml
+	- 执行bin目錄下的命令脚本	
 	
 配置说明:
 ==
@@ -65,7 +71,7 @@ TODO LIST:
 ==
 
 1. 复合主键支持 
-2. 各个数据库适配、验证、配置调整
+2. 各主流關係型数据库适配、验证、配置调整
 3. 各个组件适配(JPA、DUBBO...)、配置文件以及测试用例的生成
 4. springmvc增删改查方法及页面的生成 
 5. 命令脚本执行生成器

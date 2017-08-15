@@ -36,7 +36,8 @@
 
 
 2. 命令腳本：
-
+	
+	- 分支下載zip或通過源碼構建獲取zip包,在工程根目錄下執行構建命令：mvn clean package，在target目錄下獲取zip包 
 	- 解壓zip包，修改配置文件generator.yaml
 	- 执行bin目錄下的命令脚本	
 	

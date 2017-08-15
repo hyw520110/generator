@@ -1,6 +1,6 @@
 说明：
 == 
-代码生成器
+代码生成器,主要功能包括：
 
 - 支持常见主流数据库
 - 支持代码、配置、依赖的生成
@@ -11,31 +11,28 @@
 - 支持组件扩展，组件特性自定义及特性扩展
 - 支持jdk1.8,向下兼容1.5及以上版本(jdk1.8以下导入ide会编译报错，更改jre为1.7或1.5以上版本，编译报错的代码注释掉即可)
 
-TODO LIST:
-==
 
-1. 复合主键支持 
-2. 各个数据库适配、验证、配置调整
-3. 各个组件适配(JPA、DUBBO...)、配置文件以及测试用例的生成
-4. springmvc增删改查方法及页面的生成 
-5. 命令脚本执行生成器
 
 快速开始:
 ==
+
 1. 修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
 
-- **修改数据源配置**
-- 修改全局配置
-	- **定义输出目录(outputDir)**,最后一个子目录为项目名
-	- **是否清空输出目录(delOutputDir)默认为false**,工程已存在的情况下，此配置项谨慎使用(不要配置为true)
- 	- **定义是否覆盖生成(默认false)**,工程文件已存在的情况下，此配置项谨慎使用(不要配置为true)
- 	- 定义作者(author)
- 	- 定义版权(copyright)
-- 修改生成策略
-	- **定义根包(rootPackage)**
-	- 定义移除的表前缀tablePrefix
-	- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
-2. 安装配置好maven/gradle导入IDE,执行Generator的main方法.或执行命令脚本	
+	- **修改数据源配置**
+	- 修改全局配置
+		- **定义输出目录(outputDir)**,最后一个子目录为项目名
+		- **是否清空输出目录(delOutputDir)默认为false**,工程已存在的情况下，此配置项谨慎使用(不要配置为true)
+ 		- **定义是否覆盖生成(默认false)**,工程文件已存在的情况下，此配置项谨慎使用(不要配置为true)
+ 		- 定义作者(author)
+ 		- 定义版权(copyright)
+	- 修改生成策略
+		- **定义根包(rootPackage)**
+		- 定义移除的表前缀tablePrefix
+		- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
+2. 執行方法或命令腳本生成代碼：
+
+	- 源碼方式：安装配置好maven/gradle导入IDE,执行Generator的main方法.
+	- 或执行bin目錄（解壓）下的命令脚本（先修改配置文件generator.yaml）	
 	
 配置说明:
 ==
@@ -60,6 +57,15 @@ TODO LIST:
 
 - 扩展组件:
 
-	- 在配置文件中指定模块名数组(modules),如已有的组件配置为[mybatis,springmvc],新增dubbo配置:[mybatis,springmvc,dubbo]
-	- 在模板目录(templates)下新建目录，目录名为{数组index},如{2}
-	- 在配置目录(conf)下新增组件配置文件,如dubbo.yaml,配置模板文件所需的配置数据
+	- 在配置文件中指定模块名数组(modules),如模塊配置為[api,app],已有的组件配置为[mybatis,springmvc],新增dubbo配置:[mybatis,springmvc,dubbo]
+	- 在模板目录(templates)下新建目录，目录名为{模塊数组index},如dubbo的配置文件在app模塊中，則新建{2}文件夾,在文件夾下新建（文件夾）模板文件
+	- 在配置目录(conf)下新增组件配置文件,如dubbo.yaml配置模板所需的配置数据，如模板不需要配置數據，可不用新建組件配置文件
+
+TODO LIST:
+==
+
+1. 复合主键支持 
+2. 各个数据库适配、验证、配置调整
+3. 各个组件适配(JPA、DUBBO...)、配置文件以及测试用例的生成
+4. springmvc增删改查方法及页面的生成 
+5. 命令脚本执行生成器

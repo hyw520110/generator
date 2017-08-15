@@ -76,3 +76,25 @@ TODO LIST:
 3. 各个组件适配(JPA、DUBBO...)、配置文件以及测试用例的生成
 4. springmvc增删改查方法及页面的生成 
 5. 命令脚本执行生成器
+
+
+FAQ:
+
+eclipse打開pom.xml報錯：
+
+	org.apache.maven.archiver.MavenArchiver.getManifest(org.apache.maven.project.MavenProject, org.apache.maven.archiver.MavenArchiveConfiguration) pom.xml
+解決：
+
+	- 編輯pom.xml更改maven-jar-plugin的版本號為2.6
+	- 或者升級m2e extensions,添加url(安裝后重啟eclipse)：
+		- https://otto.takari.io/content/sites/m2e.extras/m2eclipse-mavenarchiver/0.17.2/N/LATEST/
+		- http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-mavenarchiver/0.17.2/N/LATEST/
+
+
+執行Generator類的main方法報錯 ：
+
+	java.io.IOException:Stream closed 	
+解決：
+
+	- 找不到generator.yaml配置文件，確認是否編譯(target/classes下是否有該文件)	
+	- 有編譯錯誤，導致源碼沒有自動編譯，如src/main/resources目錄下的模板文件有編譯錯誤，直接設置忽略即可

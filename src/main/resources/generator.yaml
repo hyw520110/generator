@@ -32,7 +32,7 @@ global:
     #资源文件目录
     resource: src/main/resources
 #策略配置
-strategy:
+strategy: 
     #父包名
     rootPackage: com.hyw
     #生成构建脚本/工程构建工具,可选值MAVEN:生成pom.xml、GRADLE:生成build.gradle、不配置:不生成构建脚本
@@ -40,7 +40,7 @@ strategy:
     #工程默认版本号
     version: 1.0.1-SNAPSHOT 
     #jdk版本
-    javaVersion: 1.8
+    javaVersion: 1.7
     #表名、字段名、是否使用下划线命名
     separators: [_,-]
     #是否大写命名
@@ -55,3 +55,4 @@ strategy:
     exclude: 
     #是否生成字段常量,默认 false） 
     columnConstant: false
+    

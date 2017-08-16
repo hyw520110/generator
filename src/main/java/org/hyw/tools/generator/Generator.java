@@ -206,7 +206,7 @@ public class Generator extends AbstractGenerator {
         context.put("projectName", global.getProjectName());
         context.put("javaVersion", strategy.getJavaVersion());
         context.put("rootPackage", strategy.getRootPackage());
-        context.put("dbType", dataSource.getDbType().getValue());
+        context.put("dbType", dataSource.getDBType().getValue());
         return context;
     }
 

@@ -56,7 +56,7 @@ public enum MySqlColumnType  {
     DATE("date","DATE",FieldType.DATE),
     TIME("time","TIME",FieldType.DATE),
     YEAR("year","YEAR",FieldType.DATE),
-    DATETIME("datetime","DATETIME",FieldType.TIMESTAMP),
+    DATETIME("datetime","TIMESTAMP",FieldType.TIMESTAMP),
     TIMESTAMP("TIMESTAMP","TIMESTAMP",FieldType.TIMESTAMP),
     BIT("bit","BIT",FieldType.BOOLEAN);
 //DECIMAL("decimal","DECIMAL",FieldType.BIG_DECIMAL), 

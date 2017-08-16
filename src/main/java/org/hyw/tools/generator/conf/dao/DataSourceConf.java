@@ -1,141 +1,124 @@
 package org.hyw.tools.generator.conf.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
-import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.conf.converts.TypeConvertor;
-import org.hyw.tools.generator.conf.converts.impl.MySqlTypeConvert;
-import org.hyw.tools.generator.conf.converts.impl.OracleTypeConvert;
-import org.hyw.tools.generator.conf.converts.impl.PostgreSqlTypeConvert;
-import org.hyw.tools.generator.conf.converts.impl.SqlServerTypeConvert;
 import org.hyw.tools.generator.enums.db.DBType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
+
+import com.alibaba.druid.pool.DruidDataSource;
 
 /**
  * 
- * Filename:    DataSourceConf.java  
- * Description: 数据源配置    
- * Copyright:   Copyright (c) 2015-2018 All Rights Reserved.
- * Company:     org.hyw.cn Inc.
- * @author:     heyiwu 
- * @version:    1.0  
- * Create at:   2017年6月13日 上午10:03:24  
+ * Filename: DataSourceConf.java Description: 数据源配置 Copyright: Copyright (c)
+ * 2015-2018 All Rights Reserved. Company: org.hyw.cn Inc.
+ * 
+ * @author: heyiwu
+ * @version: 1.0 Create at: 2017年6月13日 上午10:03:24
  *
  */
-public class DataSourceConf extends BaseBean{
-     
-    private static final long serialVersionUID = 1L;
-    /**
-     * 驱动名称
-     */
-    private String driverName;
-    /**
-     * 驱动连接的URL
-     */
-    private String url;
+public class DataSourceConf extends DruidDataSource {
 
-    /**
-     * 数据库连接用户名
-     */
-    private String userName;
-    /**
-     * 数据库连接密码
-     */
-    private String password;
+	private static final long serialVersionUID = 1L;
+	private static final Logger logger = LoggerFactory
+			.getLogger(DataSourceConf.class);
+	/**
+	 * 数据库类型
+	 */
+	private DBType dbType;
+	/**
+	 * 密码副本,用于生成的配置文件配置密文密码,因为配置的密文密码，在属性设值时密码已解密，后续会获取不到密文密码
+	 */
+	private  String pwd;
+	/**
+	 * 类型转换
+	 */
+	private TypeConvertor typeConvertor;
 
-    /**
-     * 数据库类型
-     */
-    private DBType        dbType;
-    /**
-     * 类型转换
-     */
-    private TypeConvertor typeConvertor;
+	private QuerySQL querySQL;
 
-    private QuerySQL querySQL;
+	public Connection getCon() throws Exception {
+		try {
+			return getConnection();
+		} catch (SQLException e) {
+			throw e;
+		}
+	}
 
-    public Connection getCon() throws Exception {
-        try {
-            Class.forName(getDriverName());
-            return DriverManager.getConnection(getUrl(), getUserName(), getPassword());
-        } catch (ClassNotFoundException | SQLException e) {
-            throw e;
-        }
-    }
+	@Override
+	public void setUrl(String jdbcUrl) {
+		super.setUrl(jdbcUrl);
 
-    public String getDriverName() {
-        return driverName;
-    }
+	}
 
-    public void setDriverName(String driverName) {
-        this.driverName = driverName;
-        this.setDbType(DBType.getDbType(driverName));
-    }
+	public DBType getDBType() {
+		if (dbType != null) {
+			return dbType;
+		}
+		try {
+			super.init();
+		} catch (SQLException e) {
+			logger.error("数据库连接池初始化异常{}", e.getClass(), e);
+		}
+		dbType = DBType.getDbType(super.getDbType());
+		return dbType;
+	}
 
-    public String getUrl() {
-        return url;
-    }
+	public void setDBType(DBType dbType) {
+		this.dbType = dbType;
+	}
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+	public TypeConvertor getTypeConvertor() {
+		if (null != typeConvertor) {
+			return typeConvertor;
+		}
+		DBType dbType = getDBType();
+		if (null == dbType) {
+			return null;
+		}
+		this.typeConvertor = dbType.getConvertor();
+		return typeConvertor;
+	}
 
-    public String getUserName() {
-        return userName;
-    }
+	public void setTypeConvertor(TypeConvertor typeConvertor) {
+		this.typeConvertor = typeConvertor;
+	}
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
+	public QuerySQL getQuerySQL() {
+		if (null == querySQL) {
+			this.querySQL = new Yaml().loadAs(
+					getClass().getResourceAsStream(
+							String.format("/conf/%s.yaml", dbType.getValue())),
+					QuerySQL.class);
+		}
+		return querySQL;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public void setQuerySQL(QuerySQL querySQL) {
+		this.querySQL = querySQL;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public String getPwd() {
+		return pwd;
+	}
 
-    public DBType getDbType() {
-        return dbType;
-    }
+	public void setPwd(String pwd) {
+		this.pwd = pwd;
+		super.setPassword(pwd);
+	}
 
-    public void setDbType(DBType dbType) {
-        this.dbType = dbType;
-        this.querySQL = new Yaml().loadAs(getClass().getResourceAsStream(String.format("/conf/%s.yaml", dbType.getValue())), QuerySQL.class);
-        TypeConvertor typeConvertor = null;
-        switch (dbType) {
-            case ORACLE:
-                typeConvertor = new OracleTypeConvert();
-                break;
-            case SQL_SERVER:
-                typeConvertor = new SqlServerTypeConvert();
-                break;
-            case POSTGRE_SQL:
-                typeConvertor = new PostgreSqlTypeConvert();
-                break;
-            default:
-                typeConvertor = new MySqlTypeConvert();
-                break;
-        }
-        this.setTypeConvertor(typeConvertor);
-    }
+	public String getProperties() {
+		Properties properties = super.getConnectProperties();
+		StringBuilder builder = new StringBuilder();
+		for (Object key : properties.keySet()) {
+			builder.append(key + "="
+					+ properties.getProperty(key.toString(), "") + ";");
+		}
+		return builder.deleteCharAt(builder.length() - 1).toString();
+	}
 
-    public TypeConvertor getTypeConvertor() {
-        return typeConvertor;
-    }
-
-    public void setTypeConvertor(TypeConvertor typeConvertor) {
-        this.typeConvertor = typeConvertor;
-    }
-
-    public QuerySQL getQuerySQL() {
-        return querySQL;
-    }
-
-    public void setQuerySQL(QuerySQL querySQL) {
-        this.querySQL = querySQL;
-    }
 }

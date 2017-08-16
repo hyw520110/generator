@@ -3,6 +3,7 @@
 代码生成器,主要功能包括：
 
 - 支持常见主流数据库
+- druid连接池支持，密码配置支持加密
 - 支持代码、配置、依赖的生成
 - class类注释支持自定义(更改模板文件comment.vm)
 - 支持构建脚本生成(gradle/maven/不生成)
@@ -22,6 +23,12 @@
 	- 修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
 
 		- **修改数据源配置**
+			- 如配置明文密码，直接配置好驱动类、url、用户名、明文密码即可
+			- 如配置密文密码,执行以下命令(命令执行输出：公钥(publicKey)、私钥(privateKey)、密文密码)：					
+				- java -cp %M2_REPO%\com\alibaba\druid\1.1.2\druid-1.1.2.jar com.alibaba.druid.filter.config.ConfigTools 123456
+				- 密码配置为以上命令产生的密文密码
+				- 配置filters为: config	
+				- 配置连接属性(connectionProperties)为：config.decrypt=true;config.decrypt.key=${publicKey}			
 		- 修改全局配置
 			- **定义输出目录(outputDir)**,最后一个子目录为项目名
 			- **是否清空输出目录(delOutputDir)默认为false**,工程已存在的情况下，此配置项谨慎使用(不要配置为true)

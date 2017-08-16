@@ -115,7 +115,7 @@ public abstract class AbstractGenerator extends BaseBean {
 				// 是否主键 TODO 复合主键处理
 				field.setPrimarykey(StringUtils.equals(key, sql.getFieldKeyValue().getValue()));
 				// 其他数据库的字段是否为空以及自增 处理
-				if (DBType.MYSQL == this.dataSource.getDbType()) {
+				if (DBType.MYSQL == this.dataSource.getDBType()) {
 					field.setNullAble(Boolean.valueOf(results.getString(sql.getFieldNull())));
 					field.setIdentity(StringUtils.equals(results.getString(sql.getExtraKeyValue().getKey()),
 							sql.getExtraKeyValue().getValue()));

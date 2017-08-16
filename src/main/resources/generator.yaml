@@ -1,10 +1,15 @@
 #生成器配置
 #数据源配置
 dataSource:
-    driverName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/test1289?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
-    userName: root
-    password: sofa2.0
+    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://rds6vef326vef32o.mysql.rds.aliyuncs.com:3306/ycd360t?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
+    username: ycd360test
+    #密码支持明文、密文配置
+    pwd: BwWroQe0/L6O0HcEOJ++OPaK3YhZSYIcoJxKHSpNMSX0y5jHGla6rbuYTWDbx9r9yu0LgeNMLwSEW5DaB0oR5w==
+    # 明文密码时值留空;密文密码时配置config
+    filters: config
+    # 明文密码时值留空;密文密码时配置config.decrypt=true;config.decrypt.key=
+    connectionProperties: "config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKGZ1YyvABRlmKHv+TcATyrsviKZLLtnkUb9e2lhgqMqZINXDstl3CdD74NnhjijX9wjXqA+V0ASq7uwBo8jZz8CAwEAAQ=="
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test

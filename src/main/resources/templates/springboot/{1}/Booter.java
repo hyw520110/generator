@@ -1,17 +1,22 @@
 package ${rootPackage}.${projectName}.${moduleName};
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 #if("fastjson"=="${json_type}")
 import org.springframework.context.annotation.Bean;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-
+import org.springframework.http.MediaType;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 #end
+
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.http.MediaType;
 import org.springframework.web.servlet.DispatcherServlet;
 
 @SpringBootApplication
@@ -36,6 +41,10 @@ public class Booter{
 		FastJsonConfig conf=new FastJsonConfig();
 		conf.setSerializerFeatures(SerializerFeature.PrettyFormat #if($!{write_null_value}),SerializerFeature.WriteMapNullValue#end);
 		converter.setFastJsonConfig(conf);
+		//处理中文乱码问题
+        List<MediaType> fastMediaTypes = new ArrayList<>();
+        fastMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
+        converter.setSupportedMediaTypes(fastMediaTypes);
 		return new HttpMessageConverters(converter);
 	}
 #end

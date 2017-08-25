@@ -14,7 +14,7 @@ superServiceImplClass: BaseServiceImpl
 #二级缓存配置,推荐配置false
 enableCache: true
 #緩存磁盤存儲路徑
-cachePath: d:/cache
+cachePath: /cache
 #是否生成resultMap配置
 baseResultMap: true
 #是否生成sql字段(公共查询用)
@@ -25,6 +25,9 @@ insert: true
 update: true
 #mapper.xml是否生成
 findById: true
+findOne: true
+count: true
+findPage: true
 #
 deleteById: true
 findAll: true

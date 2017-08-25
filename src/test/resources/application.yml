@@ -1,0 +1,312 @@
+# 默认的profile为dev，其他环境通过指定启动参数使用不同的profile，比如：
+#   测试环境：java -jar xx.jar --spring.profiles.active: test
+#   生产环境：java -jar xx.jar --spring.profiles.active: prod
+
+spring:
+  profiles:
+    active: dev
+#  cache:
+#    type: CAFFEINE #指定cache类型
+#    cache-names:
+#      - getPersonById
+#      - name2
+#    caffeine:
+#      spec: maximumSize: 500,expireAfterWrite: 5s
+#  include: 
+  thymeleaf:
+    cache: false
+  devtools: 
+    restart:
+      #/META-INF/resources,/resources,/public,/templates,/static
+      exclude: /static/**,/templates/**    
+  datasource:
+    driver-class-name: ${dataSource.driverClassName}
+    url: ${dataSource.url}
+    username: ${dataSource.username}
+    password: ${dataSource.pwd}
+    #druid密文密码配置
+    druid: 
+      connection-properties: config.decrypt=true;config.decrypt.key=${public-key}
+      filter: 
+        config: 
+          enabled: true
+          
+#    continue-on-error: false
+#    data: 
+#    data-username: 
+#    data-password: 
+#    dbcp.*: 
+#    dbcp2.*: 
+#    generate-unique-name: false
+#    initialize:  true
+#    jmx-enabled: false
+#    jndi-name: 
+#    name: testdb
+#    platform: all
+#    schema: 
+#    schema-username: 
+#    schema-password: 
+#    separator: ;
+#    sql-script-encoding: 
+#      *: 
+#    type: 
+
+#  mail:
+#    host: smtp.exmail.qq.com
+#    username: service@mail.cn
+#    password: myPassword
+#    port: 
+#    protocol: smtp
+#    default-encoding: UTF-8
+#    test-connection: false
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+#            required: true
+#    jndi-name: 
+
+mybatis:
+  mapperLocations: classpath:mapper/*.xml
+    
+server:
+  port: ${server_port}
+#  address: 
+#  server-header:
+#  compression: 
+#    enabled: false
+#    excluded-user-agents: 
+#   mime-types: text/html,text/css,application/json
+#   min-response-size: 2048 
+#  connection-timeout: -1 
+#  context-parameters.webAppRootKey: ${projectName} 
+#  context-path: 
+#  display-name: ${projectName}
+#  max-http-header-size: 0
+#  max-http-post-size: 0
+#  error: 
+#    include-stacktrace: never
+#    path: /error
+#    whitelabel
+#      enabled: true
+#  jetty: 
+#    acceptors: 
+#    selectors: 
+#  jsp-servlet
+#    class-name: org.apache.jasper.servlet.JspServlet
+#    init-parameters.*: 
+#     registered: true
+#  servlet-path: /
+#  use-forward-headers: 
+#  session: 
+#    cookie:
+#      comment: 
+#      domain: 
+#      http-only: 
+#      max-age: 
+#      name: 
+#      path: 
+#      secure: 
+#    persistent: false
+#    store-dir: 
+#    timeout: 
+#    tracking-modes: 
+#  ssl: 
+#    ciphers: 
+#    client-auth: 
+#    enabled: 
+#    enabled-protocols: 
+#    key-alias: 
+#    key-password: 
+#    key-store: 
+#    key-store-password: 
+#    key-store-provider: 
+#    key-store-type: 
+#    protocol: TLS
+#    trust-store: 
+#    trust-store-password: 
+#    trust-store-provider: 
+#    trust-store-type: 
+#  tomcat: 
+#    accesslog: 
+#      directory: logs
+#      enabled: false
+#      pattern: common
+#      prefix: access_log
+#      rename-on-rotate: false
+#      request-attributes-enabled: false
+#      suffix: .log
+#    background-processor-delay: 30
+#    basedir: 
+# regular expression matching trusted IP addresses.
+#    internal-proxies: 10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\
+#        192\\.168\\.\\d{1,3}\\.\\d{1,3}|\\
+#        169\\.254\\.\\d{1,3}\\.\\d{1,3}|\\
+#        127\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\
+#        172\\.1[6-9]{1}\\.\\d{1,3}\\.\\d{1,3}|\\
+#        172\\.2[0-9]{1}\\.\\d{1,3}\\.\\d{1,3}|\\
+#        172\\.3[0-1]{1}\\.\\d{1,3}\\.\\d{1,3}
+
+#    max-threads: 0
+#    min-spare-threads: 0
+#    port-header: X-Forwarded-Port
+#    protocol-header: 
+#    protocol-header-https-value: https
+#    redirect-context-root: 
+#    remote-ip-header: X-FORWARDED-FOR
+#    uri-encoding: UTF-8
+#  undertow: 
+#    accesslog: 
+#      dir: 
+#      enabled: false
+  #      pattern: common
+  #      prefix: access_log.
+  #      suffix: log
+#    buffer-size: 
+#    buffers-per-region: 
+#    direct-buffers: 
+#    io-threads: 
+#    worker-threads: 
+  
+#management:
+#  port: 54001
+#  health:
+#    mail:
+#      enabled: false
+# Add the "X-Application-Context" HTTP header in each response.
+#  add-application-context-header: true
+#  address: 
+#  context-path: 
+#  security:
+#    enabled: true
+#    roles: ADMIN
+#    sessions: stateless
+#  ssl:
+#    ciphers: 
+#    client-auth: 
+#    enabled: 
+#    enabled-protocols: 
+#    key-alias: 
+#    key-password: 
+#    key-store: 
+#    key-store-password: 
+#    key-store-provider: 
+#    key-store-type: 
+#    protocol: TLS
+#    trust-store: 
+#    trust-store-password: 
+#    trust-store-provider: 
+#    trust-store-type: 
+
+#  health:
+#    db:
+#      enabled: true
+#    defaults:
+#      enabled: true
+#    diskspace:
+#      enabled: true
+#      path: 
+#      threshold: 0
+#    elasticsearch:
+#      enabled: true
+#      indices: 
+#      response-timeout: 100
+#    jms:
+#      enabled: true
+#    mail:
+#      enabled: true
+#    mongo:
+#      enabled: true
+#    rabbit:
+#      enabled: true
+#    redis:
+#      enabled: true
+#    solr:
+#      enabled: true
+#    status:
+#      order: DOWN, OUT_OF_SERVICE, UNKNOWN, UP
+#  info:
+#    build:
+#      enabled: true
+#    defaults.enabled: true
+#    env:
+#      enabled: true
+#    git:
+#      enabled: true
+#    git:
+#      mode: simple
+#  shell:
+#    auth:
+#      type: simple
+#      jaas:
+#        domain: my-domain
+#      key:
+#        path: 
+#      simple:
+#        user:
+#          name: user
+#          password: 
+#      spring:
+#        roles: ADMIN
+#    command-path-patterns: classpath*:/commands/**,classpath*:/crash/commands/**
+#    command-refresh-interval: -1
+#    config-path-patterns: classpath*:/crash/*
+#    disabled-commands: jpa*,jdbc*,jndi*
+#    disabled-plugins: 
+#    ssh:
+#      auth-timeout : 
+#      enabled: true
+#      idle-timeout : 
+#      key-path: 
+#      port: 2000
+#    telnet:
+#      enabled: false
+#      port: 5000
+#  trace:
+#    include: request-headers,response-headers,cookies,errors
+# 开发环境配置
+#spring:
+#  profiles: dev
+#  redis:
+#    cluster:
+#      nodes:
+#        - 192.168.0.17:6390
+#        - 192.168.0.17:6391
+#        - 192.168.0.17:6392
+#        - 192.168.0.9:6390
+#        - 192.168.0.9:6391
+#        - 192.168.0.9:6392
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/
+#  data:
+#    mongodb:
+#      uri: mongodb://192.168.0.9:27017/test
+#
+#myProps: #自定义的属性和值
+#  simpleProp: simplePropValue
+#  arrayProps: 1,2,3,4,5
+#  listProp1:
+#    - name: abc
+#      value: abcValue
+#    - name: efg
+#      value: efgValue
+#  listProp2:
+#    - config2Value1
+#    - config2Vavlue2
+#  mapProps:
+#    key1: value1
+#    key2: value2
+#  
+## 测试环境配置
+#spring:
+#  profiles: test
+#  datasource:
+#    url: jdbc:mysql://192.168.0.12:3306/
+#  
+## 生产环境配置
+#spring:
+#  profiles: prod
+#  datasource:
+#    url: jdbc:mysql://192.168.0.13:3306/

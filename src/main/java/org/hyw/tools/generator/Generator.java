@@ -1,11 +1,8 @@
 package org.hyw.tools.generator;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
@@ -172,24 +169,21 @@ public class Generator extends AbstractGenerator {
     }
 
     private void writer(VelocityContext context, String encoding, Template t, File f) {
-        FileOutputStream fos = null;
-        OutputStreamWriter osw = null;
-        Writer writer = null;
-        try {
+		try {
             logger.info("generator file:{}", f);
             if (!f.getParentFile().exists()) {
                 f.getParentFile().mkdirs();
             }
-            fos = new FileOutputStream(f);
-            osw = new OutputStreamWriter(fos, encoding);
-            writer = new BufferedWriter(osw);
+            StringWriter writer = new StringWriter();
             t.merge(context, writer);
-            writer.flush();
+            //模板渲染为空则不生成文件,适用场景如:配置了第三方BaseEntity类时,默认BaseEntity类不生成
+            if(StringUtils.isEmpty(writer.toString())){
+            	return ;
+            }
+            FileUtils.write(f, writer.toString(), encoding);
         } catch (Exception e) {
             logger.error("write file:{} {}", f, e.getClass(), e);
-        } finally {
-            close(fos, osw, writer);
-        }
+        }  
     }
 
     private VelocityContext createVelocityContext(Collection<Map<String, String>> collection) {

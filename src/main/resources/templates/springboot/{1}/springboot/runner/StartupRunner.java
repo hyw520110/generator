@@ -20,7 +20,7 @@ public class StartupRunner implements CommandLineRunner {
 	@Async
 	public void openBrowser() {
 		try {
-			String url = "http://localhost:8080/";
+			String url = "http://localhost:${server_port}/";
 			if(Desktop.isDesktopSupported()){
 				Desktop.getDesktop().browse(new URI(url));
 				return ;

@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.hyw.tools.generator.conf.converts.TypeConvertor;
 import org.hyw.tools.generator.enums.db.DBType;
+import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -31,7 +32,7 @@ public class DataSourceConf extends DruidDataSource {
 	 */
 	private DBType dbType;
 	/**
-	 * 密码副本,用于生成的配置文件配置密文密码,因为配置的密文密码，在属性设值时密码已解密，后续会获取不到密文密码
+	 * 密码副本(密文密码),用于生成的配置文件配置密文密码,因为配置的密文密码，在属性设值时密码已解密，后续会获取不到密文密码
 	 */
 	private  String pwd;
 	/**
@@ -103,6 +104,9 @@ public class DataSourceConf extends DruidDataSource {
 	}
 
 	public String getPwd() {
+		if(StringUtils.isEmpty(pwd)){
+			pwd=getPassword();
+		}
 		return pwd;
 	}
 

@@ -41,21 +41,7 @@ public class StrategyConf extends BaseBean {
 	 * 自定义基础的Entity类，公共字段
 	 */
 	private String[] superEntityColumns;
-	
-	/**
-	 * 自定义实体类父类
-	 */
-	private String superEntityClass;
-	/**
-	 * 自定义继承的Service类全称，带包名
-	 */
-	private String superServiceClass;
-
-	/**
-	 * 自定义继承的Service类全称，带包名
-	 */
-	private String superServiceImplClass;
-
+	 	 
 	/**
 	 * 需要包含的表名（与exclude二选一配置）
 	 */
@@ -121,13 +107,7 @@ public class StrategyConf extends BaseBean {
 		this.superEntityColumns = superEntityColumns;
 	}
 
-	public String getSuperServiceClass() {
-		return superServiceClass;
-	}
 
-	public void setSuperServiceClass(String superServiceClass) {
-		this.superServiceClass = superServiceClass;
-	}
 
 	public String[] getInclude() {
 		return include;
@@ -178,13 +158,7 @@ public class StrategyConf extends BaseBean {
 		this.separators = separators;
 	}
 
-	public String getSuperServiceImplClass() {
-		return superServiceImplClass;
-	}
 
-	public void setSuperServiceImplClass(String superServiceImplClass) {
-		this.superServiceImplClass = superServiceImplClass;
-	}
 
 	public ProjectBuilder getProjectBuilder() {
 		return projectBuilder;
@@ -210,12 +184,6 @@ public class StrategyConf extends BaseBean {
 		this.javaVersion = javaVersion;
 	}
 
-	public String getSuperEntityClass() {
-		return superEntityClass;
-	}
 
-	public void setSuperEntityClass(String superEntityClass) {
-		this.superEntityClass = superEntityClass;
-	}
 
 }

@@ -1,3 +1,4 @@
+#if(${StringUtils.indexOf("$superServiceClass", '.')}==-1)
 package ${servicePackage};
 
 import java.io.Serializable;
@@ -10,18 +11,6 @@ import java.util.Map;
  * @copyright: ${copyright}
  */
 public interface BaseService<T, PK extends Serializable> {
-
-
-    /**
-     * <p>
-     * 插入一条记录（选择字段，策略插入）
-     * </p>
-     *
-     * @param entity
-     *            实体对象
-     * @return boolean
-     */
-    boolean save(T entity);
 
     /**
     * 根据id获取对象
@@ -37,6 +26,11 @@ public interface BaseService<T, PK extends Serializable> {
      * @return
      */
     T findOne(Map<String, Object> map);
+    /**
+    * 查询全部
+    * @return List<E> 返回数据集合   
+    */
+    List<T> findAll(Map<String, Object> map);
 
     /**
     * 分页查询--总条数
@@ -49,12 +43,22 @@ public interface BaseService<T, PK extends Serializable> {
     * @return List<E> 返回数据集合   
     */
     List<T> findPage(Map<String, Object> map);
-
     /**
-    * 查询全部
-    * @return List<E> 返回数据集合   
+     * <p>
+     * 插入一条记录（选择字段，策略插入）
+     * </p>
+     *
+     * @param entity
+     *            实体对象
+     * @return boolean
+     */
+    boolean save(T entity);
+    /**
+    * 更新对象信息 
+    * @param entity 实体类
+    *     
     */
-    List<T> findAll(Map<String, Object> map);
+    Integer update(T entity);
 
     /**
     * 根据id删除对象
@@ -62,27 +66,5 @@ public interface BaseService<T, PK extends Serializable> {
     *     
     */
     Integer deleteById(PK id);
-
-    /**
-     * 根据指定条件删除
-     * @author:  heyiwu 
-     * @param pars
-     * @return
-     */
-    Integer deleteByMap(Map<String, Object> pars);
-
-    /**
-     * 根据id更新实体
-     * @author:  heyiwu 
-     * @param entity 实体对象
-     * @return
-     */
-    Integer updateById(T entity);
-
-    /**
-    * 更新对象信息 
-    * @param entity 实体类
-    *     
-    */
-    Integer update(T entity);
 }
+#end

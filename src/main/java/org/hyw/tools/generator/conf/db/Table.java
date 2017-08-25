@@ -42,49 +42,33 @@ public class Table extends BaseBean {
 	 */
 	private String fieldNames;
 
-	public Table(String name, String comment) {
-		this.name = name;
-		this.comment = comment;
+	/**
+	 * 添加表字段
+	 */
+	public void addField(TabField tabField) {
+		if (containField(tabField)) {
+			return;
+		}
+		getFields().add(tabField);
+		if (null == tabField.getFieldType() || tabField.getFieldType().getClaz() == null) {
+			return;
+		}
+		addImportPackages(tabField.getFieldType().getClaz().getName());
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getComment() {
-		return comment;
-	}
-
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-
-	public String getBeanName() {
-		return beanName;
-	}
-
-	public void setBeanName(String beanName) {
-		this.beanName = beanName;
-	}
-
-	public List<TabField> getFields() {
-		return fields;
-	}
-
-	public List<String> getImportPackages() {
-		return importPackages;
-	}
-
-	public void addImportPackages(String pkg) {
-		importPackages.add(pkg);
+	/**
+	 * 判断字段是否存在,用于判断字段名处理后(去除指定前缀),是否存在同名字段。 如：表存在id和batch_id字段，配置移除batch_前缀
+	 * 
+	 * @param tabField
+	 * @return
+	 */
+	public boolean containField(TabField tabField) {
+		return getFields().contains(tabField);
 	}
 
 	/**
 	 * 获取第一个主键
+	 * 
 	 * @return
 	 */
 	public TabField getPrimaryKeyField() {
@@ -110,25 +94,6 @@ public class Table extends BaseBean {
 			}
 		}
 		return list;
-	}
-
-	public void setFields(List<TabField> fields) {
-		this.fields = fields;
-		if (CollectionUtils.isEmpty(fields)) {
-			return;
-		}
-		// 收集导入包信息
-		Set<String> list = new HashSet<>();
-		for (TabField field : fields) {
-			if (null != field.getFieldType() && field.getFieldType().getClaz() != null) {
-				list.add(field.getFieldType().getClaz().getName());
-			}
-		}
-		if (list.isEmpty()) {
-			return;
-		}
-		this.importPackages = new ArrayList<>(Arrays.asList(list.toArray(new String[] {})));
-
 	}
 
 	/**
@@ -165,6 +130,54 @@ public class Table extends BaseBean {
 			return field.isNameChange() ? field.getName() + " AS " + field.getPropertyName() : field.getName();
 		}
 		return StringUtils.EMPTY;
+	}
+
+	public Table(String name, String comment) {
+		this.name = name;
+		this.comment = comment;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public String getBeanName() {
+		return beanName;
+	}
+
+	public void setBeanName(String beanName) {
+		this.beanName = beanName;
+	}
+
+	public List<TabField> getFields() {
+		if (null == fields) {
+			fields = new ArrayList<>();
+		}
+		return fields;
+	}
+
+	public List<String> getImportPackages() {
+		return importPackages;
+	}
+
+	public void addImportPackages(String pkg) {
+		importPackages.add(pkg);
+	}
+
+	public void setFields(List<TabField> fields) {
+		this.fields = fields;
 	}
 
 	@Override

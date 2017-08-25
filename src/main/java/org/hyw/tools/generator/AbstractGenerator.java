@@ -93,7 +93,6 @@ public abstract class AbstractGenerator extends BaseBean {
 	 * @throws SQLException
 	 */
 	private Table setTableFields(Table table, Connection con) throws SQLException {
-		List<TabField> fields = new ArrayList<>();
 		PreparedStatement pst = null;
 		try {
 			QuerySQL sql = dataSource.getQuerySQL();
@@ -102,15 +101,13 @@ public abstract class AbstractGenerator extends BaseBean {
 			while (results.next()) {
 				TabField field = new TabField(results.getString(sql.getFieldName()),
 						results.getString(sql.getFieldType()));
-				// 处理字段名
-				field.setPropertyName(processName(field.getName()));
+				field.setComment(results.getString(sql.getFieldComment()));
 				// 转换字段类型
 				KeyPair<String, FieldType> pair = dataSource.getTypeConvertor().convert(field.getType());
 				field.setJdbcType(pair.getKey());
 				field.setFieldType(pair.getValue());
-
-				field.setComment(results.getString(sql.getFieldComment()));
-
+				// 处理字段名  
+				field.setPropertyName(processName(field.getName()));
 				String key = results.getString(sql.getFieldKeyValue().getKey());
 				// 是否主键 TODO 复合主键处理
 				field.setPrimarykey(StringUtils.equals(key, sql.getFieldKeyValue().getValue()));
@@ -121,14 +118,17 @@ public abstract class AbstractGenerator extends BaseBean {
 							sql.getExtraKeyValue().getValue()));
 				}
 				field.setCommonField(StringUtils.contains(strategy.getSuperEntityColumns(), field.getName(), false));
-				fields.add(field);
+				table.addField(field);
+				//字段名处理后是否重名
+				if (table.containField(field)) {
+					field.setPropertyName(StringUtils.toCamelCase(field.getName()));
+				}
 			}
 		} catch (SQLException e) {
 			logger.error("SQL Exception：{}", e.getMessage());
 		} finally {
 			close(pst);
 		}
-		table.setFields(fields);
 		return table;
 	}
 

@@ -60,4 +60,6 @@ strategy:
     exclude: 
     #是否生成字段常量,默认 false） 
     columnConstant: false
+    #实体类公共字段
+    #superEntityColumns: ['id','createTime','lastModifyTime']
     

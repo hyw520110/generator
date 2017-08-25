@@ -87,8 +87,8 @@
 			<resource>
 				<directory>${project.basedir}/src/main/resources</directory>
 				<includes>
-					<include>*.bat</include>
-					<include>*.sh</include>
+					<include>**\*.bat</include>
+					<include>**\*.sh</include>
 				</includes>
 				<filtering>true</filtering>
 			</resource>

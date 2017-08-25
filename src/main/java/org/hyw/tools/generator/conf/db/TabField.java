@@ -1,12 +1,12 @@
 package org.hyw.tools.generator.conf.db;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.enums.FieldType;
 
 public class TabField extends BaseBean {
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * 字段名
 	 */
@@ -27,9 +27,9 @@ public class TabField extends BaseBean {
 	 * 属性类型
 	 */
 	private FieldType fieldType;
-	
+
 	/**
-	 * TODO 
+	 * TODO
 	 */
 	private String jdbcType;
 
@@ -43,11 +43,12 @@ public class TabField extends BaseBean {
 	 * 主键是否为自增类型
 	 */
 	private boolean isIdentity;
-	
+
 	/**
 	 * 是否公共字段
 	 */
 	private boolean isCommonField;
+
 	public TabField(String name, String type) {
 		this.name = name;
 		this.type = type;
@@ -158,6 +159,18 @@ public class TabField extends BaseBean {
 
 	public void setCommonField(boolean isCommonField) {
 		this.isCommonField = isCommonField;
+	}
+
+	@Override
+	public boolean equals(Object arg) {
+		if (null == arg) {
+			return null == this;
+		}
+		if (!(arg instanceof TabField)) {
+			return false;
+		}
+		//同一张表里不可能存在同名的字段
+		return new EqualsBuilder().append(this.getName(), null == arg ? null : ((TabField) arg).getName()).isEquals();
 	}
 
 }

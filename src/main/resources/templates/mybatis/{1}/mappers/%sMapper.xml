@@ -32,16 +32,35 @@
 #end
 
 #if($findById)
-	<!-- TODO parameterType联合主键处理 -->
 	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.Integer">
 	    SELECT #if(${columns}) <include refid="columns"/> #else  ${table.fieldNames} #end
 	<![CDATA[
 		FROM ${table.name} 
-		WHERE #foreach($field in ${table.pkFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end 
+		WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end 
 	]]>
 	</select>	
 #end
 
+#if($findOne)
+	<select id="findOne" resultMap="BaseResultMap" parameterType="java.util.Map">
+	    SELECT #if(${columns}) <include refid="columns"/> #else  ${table.fieldNames} #end
+		FROM ${table.name} where 1=1 <include refid="queryWhere"/> 
+	</select>	
+#end
+#if($count)	
+	<select id="count" resultType="java.lang.Integer" parameterType="java.util.Map">
+    	select count(1) from ${table.name} where 1=1
+		<include refid="queryWhere"/>
+	</select>
+#end	
+#if($findPage)	
+	<select id="findPage" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select <include refid="columns"/>  from ${table.name} where 1=1
+		<include refid="queryWhere"/> 
+	    <![CDATA[ ORDER BY #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end  DESC ]]>
+        <![CDATA[ LIMIT #{startRecord},#{endRecord} ]]>
+	</select>
+#end	
 #if($findAll)
     <select id="findAll" resultMap="BaseResultMap" parameterType="java.util.Map">
 		select	* from ${table.name} where 1=1  
@@ -50,8 +69,7 @@
 #end	
 #if($insert)
 
-	<!-- TODO id联合主键处理 -->
-	<insert id="save" parameterType="${entityPackage}.${entityName}" useGeneratedKeys="true" keyProperty="id">
+	<insert id="save" parameterType="${entityPackage}.${entityName}" useGeneratedKeys="true" keyProperty="${table.primaryKeyField.propertyName}">
 		<![CDATA[
 		INSERT INTO ${table.name} (#foreach($field in ${table.fields})#set($notLast=($foreach.count!=${table.fields.size()}))${field.name} #if($notLast),#end#end
  
@@ -68,26 +86,25 @@
 		UPDATE ${table.name} 
 		<set>
 		#foreach($field in ${table.fields})
-		
+		#if(!$field.isPrimarykey)	
 			<if test="${field.name} != null">
 				${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}),#end
 				
 			</if>
+		#end	
 		#end
 		</set>
-		WHERE #foreach($field in ${table.pkFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end
+		WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end
 		     
 	</update>
 #end
 
 #if($deleteById)
 
-	<!-- TODO parameterType联合主键处理 -->
 	<delete id="deleteById" parameterType="java.lang.Integer">
-		<![CDATA[DELETE FROM ${table.name}  WHERE #foreach($field in ${table.pkFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end]]>
+		<![CDATA[DELETE FROM ${table.name}  WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($foreach.count!=${table.fields.size()}) and #end #end]]>
 	</delete>
 #end
-
 	<sql id="queryWhere">
 #foreach($field in ${table.fields})
 	

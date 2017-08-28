@@ -121,7 +121,7 @@ public abstract class AbstractGenerator extends BaseBean {
 				table.addField(field);
 				//字段名处理后是否重名
 				if (table.containField(field)) {
-					field.setPropertyName(StringUtils.toCamelCase(field.getName()));
+					field.setPropertyName(StringUtils.toCamelCase(field.getName(),strategy.getSeparators(),false));
 				}
 			}
 		} catch (SQLException e) {

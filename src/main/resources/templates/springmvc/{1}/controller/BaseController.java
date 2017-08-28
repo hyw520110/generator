@@ -23,33 +23,6 @@ import ${servicePackage}.BaseService;
 #parse('/templates/commons/comment.vm')
 public class BaseController<T> {
     
-    @Autowired
-    private BaseService baseService;
-    
-    @RequestMapping(value="/list",method = RequestMethod.GET)
-    public #if($!{resp_data_type_json})List<${entityName}>#else String #end list(HttpServletRequest req,HttpServletResponse resq, @RequestParam Map<String, Object> map , Model model){
-        List<${entityName}> list=baseService.findAll(map);
-#if($!{resp_data_type_json})
-		return list;
-#else	
-		model.addAttribute("list",list);
-		return "${table.beanName}/list";
-#end
-    }
-    
-    @RequestMapping(value="/save", method = RequestMethod.POST)
-    public String save(@RequestBody final T entity){
-    	 JSONObject json = new JSONObject();
-         json.put("flag", baseService.save(entity));
-         return json.toString();
-    }
-    
-    @RequestMapping(value="/update", method = RequestMethod.POST)
-    public String update(@RequestBody final T entity){
-    	 JSONObject json = new JSONObject();
-         json.put("flag", baseService.update(entity)>0);
-         return json.toString();
-    }
     
 }
 #end

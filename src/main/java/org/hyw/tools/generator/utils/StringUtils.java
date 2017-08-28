@@ -85,8 +85,11 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
         return "";
     }
 
-    public static String toCamelCase(String s) {
-        return toCamelCase(s, '_');
+    public static String toCamelCase(String s, char[] separators, boolean firstUp) {
+        for (char c : separators) {
+        	s=toCamelCase(s, c, firstUp);
+		}
+        return s;
     }
 
     /**
@@ -226,4 +229,7 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
     public static String getClassName(String className) {
         return StringUtils.indexOf(className, '.')==-1?className:StringUtils.substringAfterLast(className, ".");
     }
+    public static void main(String[] args) {
+		System.out.println(getClassName(""));
+	}
 }

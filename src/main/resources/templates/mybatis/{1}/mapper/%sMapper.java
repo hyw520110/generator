@@ -1,5 +1,6 @@
 package ${mapperPackage};
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import ${entityPackage}.${entityName};
@@ -11,6 +12,10 @@ import #if($StringUtils.indexOf("$superMapperClass",'.')==-1)${mapperPackage}.#e
 #parse('/templates/commons/comment.vm')
 //TODO 泛型 联合主键处理<${className}>
 @Repository
-public interface ${className} #if(${superMapperClass}) extends ${StringUtils.getClassName(${superMapperClass})}<${StringUtils.capitalFirst("$entityName")},${table.primaryKeyField.fieldType.type}> #end{
+public interface ${className} #if(${superMapperClass}) extends ${StringUtils.getClassName(${superMapperClass})}<${StringUtils.capitalFirst("$entityName")}> #end{
+
+	public ${StringUtils.capitalFirst("$entityName")} findById(#foreach($field in ${table.primarykeyFields})@Param("${field.propertyName}")${field.fieldType.type} ${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
+	
+	public Integer deleteById(#foreach($field in ${table.primarykeyFields})@Param("${field.propertyName}")${field.fieldType.type} ${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
 
 }

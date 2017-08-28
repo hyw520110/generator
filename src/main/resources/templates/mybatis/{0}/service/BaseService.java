@@ -10,14 +10,8 @@ import java.util.Map;
  * @since ${date}
  * @copyright: ${copyright}
  */
-public interface BaseService<T, PK extends Serializable> {
-
-    /**
-    * 根据id获取对象
-    * @param id 对象id
-    * @return Object  返回对象  
-    */
-    T findById(PK id);
+public interface BaseService<T> {
+ 
 
     /**
      * 根据指定条件查询一条记录 
@@ -60,11 +54,5 @@ public interface BaseService<T, PK extends Serializable> {
     */
     Integer update(T entity);
 
-    /**
-    * 根据id删除对象
-    * @param id 对象id
-    *     
-    */
-    Integer deleteById(PK id);
 }
 #end

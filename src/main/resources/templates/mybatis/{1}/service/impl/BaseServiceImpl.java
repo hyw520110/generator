@@ -12,18 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @since ${date}
  * @copyright: ${copyright}
  */
-public class BaseServiceImpl<T, PK extends Serializable> {
+public class BaseServiceImpl<T> {
 
 	@Autowired
-    private BaseMapper<T, PK> baseMapper;
-    /**
-    * 根据id获取对象
-    * @param id 对象id
-    * @return Object  返回对象  
-    */
-    public T findById(PK id) {
-        return baseMapper.findById(id);
-    }
+    private BaseMapper<T> baseMapper;
+     
     /**
      * 根据指定条件查询一条记录 
      * @author:  heyiwu 
@@ -78,14 +71,6 @@ public class BaseServiceImpl<T, PK extends Serializable> {
     public Integer update(T entity) {
         return baseMapper.update(entity);
     }
-
-    /**
-    * 根据id删除对象
-    * @param id 对象id
-    *     
-    */
-    public Integer deleteById(PK id) {
-        return baseMapper.deleteById(id);
-    }
+ 
 }
 #end

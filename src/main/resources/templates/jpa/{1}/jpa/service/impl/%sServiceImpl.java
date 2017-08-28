@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 
 #parse('/templates/commons/comment.vm')
-@Service("${StringUtils.lowercaseFirst($serviceName)}")
+@Service
 public class ${className}  implements ${serviceName} {
 	 //TODO 
 	@Autowired
@@ -38,4 +38,5 @@ public class ${className}  implements ${serviceName} {
 		}
 		  return true;
 	}
+	
 }

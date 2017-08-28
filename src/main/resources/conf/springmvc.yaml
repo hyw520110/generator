@@ -3,4 +3,4 @@ controllerPackage: controller
 resourceDir: spring
 rest: true
 crud: true
-superControllerClass: BaseController
+superControllerClass: 

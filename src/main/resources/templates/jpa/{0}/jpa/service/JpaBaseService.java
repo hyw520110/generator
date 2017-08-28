@@ -9,7 +9,7 @@ import java.util.Map;
  * @since ${date}
  * @copyright: ${copyright}
  */
-public interface JpaBaseService<T, PK extends Serializable> {
+public interface JpaBaseService<T> {
 
 
     /**
@@ -44,13 +44,5 @@ public interface JpaBaseService<T, PK extends Serializable> {
     */
     Iterable<T> findAll();
 
-    /**
-    * 根据id删除对象
-    * @param id 对象id
-    *     
-    */
-    Boolean deleteById(PK id);
-
-     
  
 }

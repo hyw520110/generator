@@ -3,6 +3,7 @@ package org.hyw.tools.generator.conf.db;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.enums.FieldType;
+import org.hyw.tools.generator.utils.StringUtils;
 
 public class TabField extends BaseBean {
 	private static final long serialVersionUID = 1L;
@@ -85,6 +86,7 @@ public class TabField extends BaseBean {
 	public void setType(String type) {
 		this.type = type;
 	}
+
 
 	public String getPropertyName() {
 		return propertyName;
@@ -169,7 +171,7 @@ public class TabField extends BaseBean {
 		if (!(arg instanceof TabField)) {
 			return false;
 		}
-		//同一张表里不可能存在同名的字段
+		// 同一张表里不可能存在同名的字段
 		return new EqualsBuilder().append(this.getName(), null == arg ? null : ((TabField) arg).getName()).isEquals();
 	}
 

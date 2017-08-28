@@ -13,14 +13,9 @@ import org.apache.ibatis.annotations.Param;
  * @copyright: ${copyright}
  */
 
-public interface BaseMapper<E, PK extends Serializable> {
+public interface BaseMapper<E> {
 
-    /**
-    * 根据id获取对象
-    * @param id 对象id
-    * @return Object  返回对象  
-    */
-    E findById(PK id);
+    
     /**
      * 根据指定条件查询一条记录 
      * @author:  heyiwu
@@ -61,12 +56,5 @@ public interface BaseMapper<E, PK extends Serializable> {
     */
     Integer update(E entity);
     
-    /**
-     * 根据id删除对象
-     * @param id 对象id
-     *     
-     */
-     Integer deleteById(PK id);
-
 }
 #end

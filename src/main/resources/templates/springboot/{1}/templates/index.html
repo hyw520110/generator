@@ -11,8 +11,58 @@
 <p th:text="${hello}"></p>
 <a href="${table.name}/list">${table.name}/list</a>
 <span th:each="user:${users}"> </span> 
-<span th:if="${ not #lists.isEmpty(blog.publishTime)}"></span>
-<span id="publishtime" th:text="${#dates.format(blog.publishTime, 'yyyy-MM-dd HH:mm:ss')}"></span> 
-
+<table border="1">  
+          <thead>  
+              <tr>  
+                <th>序号</th>  
+                <th>动物名称</th>    
+                <th>数量</th>   
+                <th>备注</th>  
+              </tr>  
+          </thead> 
+          <!--  th:remove的5个备选值及其含义：
+				all：删除所在的标签以及所在标签的所有子节点
+				body：除所在标签外，删除所有所在标签的子节点
+				tag：删除所在标签，但保留所在标签的子节点
+				all-but-first：删除除所在标签第一个子节点外的所有其他子节点
+				none：不做任何事情，等同于不声明th:remove表达式 --> 
+          <tbody th:remove="all-but-first">  
+          	<!-- 
+          		obj表示list里面的具体实例
+          		objStat是一个状态变量，表示迭代的当前状态，这个状态变量包含以下属性，代码中可直接使用：
+				index：当前迭代的index，从0开始
+				count：当前迭代的index，从1开始
+				size：迭代变量所含元素总数
+				current：表示当前迭代的元素，也就是某个AnimalEntity的实例
+				even/odd：布尔值，表示当前迭代是奇数还是偶数
+				first：布尔值，表示当前迭代是不是第一条记录
+				last：布尔值，表示当前迭代是不是最后一条记录
+          	 -->
+              <tr th:each="obj, objStat: ${animalsList}">  
+                <td th:text="${objStat.count}">1</td>  
+                <td th:text="${obj.name}">大马猴</td>  
+                <td th:text="${obj.count}">10</td>  
+                <td th:text="${obj.memo}">机灵古怪，俏皮活泼</td>  
+              </tr>  
+              <tr>  
+                <td>2</td>  
+                <td>大熊猫</td>  
+                <td>80</td>  
+                <td>体型笨重，喜欢吃竹子</td>  
+              </tr>  
+              <tr>  
+                <td>3</td>  
+                <td>澳洲羊驼</td>  
+                <td>13</td>  
+                <td>长相奇特，大国人俗称其草泥马</td>  
+              </tr>  
+              <tr>  
+                <td>4</td>  
+                <td>峨眉山猴</td>  
+                <td>90</td>  
+                <td>不怕人，有时候发贱抢游客面包吃</td>  
+              </tr>  
+          </tbody>  
+        </table>  
 </body>    
 </html> 

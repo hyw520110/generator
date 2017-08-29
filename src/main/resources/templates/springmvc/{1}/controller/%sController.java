@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.ui.Model;
 import com.alibaba.fastjson.JSONObject;
-import com.hyw.test.api.entity.ScmSequenceTbl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

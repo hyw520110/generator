@@ -3,3 +3,4 @@ resp_data_type_json: true
 json_type: fastjson
 write_null_value: true
 server_port: 8081
+ssl: true

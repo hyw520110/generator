@@ -23,7 +23,7 @@
 	- 修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
 
 		- **修改数据源配置**
-			- 如配置明文密码，直接配置好驱动类、url、用户名、明文密码即可
+			- 如配置明文密码，直接配置好driverClassName、url、username、pwd(明文密码),filters和connectionProperties配置为空或注释即可
 			- 如配置密文密码,执行以下命令(命令执行输出：公钥(publicKey)、私钥(privateKey)、密文密码)：					
 				- java -cp %M2_REPO%\com\alibaba\druid\1.1.2\druid-1.1.2.jar com.alibaba.druid.filter.config.ConfigTools 123456
 				- 密码配置为以上命令产生的密文密码

@@ -117,6 +117,9 @@ public class DataSourceConf extends DruidDataSource {
 
 	public String getProperties() {
 		Properties properties = super.getConnectProperties();
+		if(properties.isEmpty()){
+			return "";
+		}
 		StringBuilder builder = new StringBuilder();
 		for (Object key : properties.keySet()) {
 			builder.append(key + "="

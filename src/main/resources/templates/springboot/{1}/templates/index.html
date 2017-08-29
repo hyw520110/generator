@@ -9,7 +9,7 @@
  [<span th:text="${#httpServletRequest.getRequestURI()}" ></span>] 
 <hr/>
 <p th:text="${hello}"></p>
-<a href="VisitCustomer/list">VisitCustomer/list</a>
+<a href="${table.name}/list">${table.name}/list</a>
 <span th:each="user:${users}"> </span> 
 <span th:if="${ not #lists.isEmpty(blog.publishTime)}"></span>
 <span id="publishtime" th:text="${#dates.format(blog.publishTime, 'yyyy-MM-dd HH:mm:ss')}"></span> 

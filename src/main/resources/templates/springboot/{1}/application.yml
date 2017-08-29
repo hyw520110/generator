@@ -68,7 +68,13 @@ spring:
   output: 
     ansi: 
       enabled: DETECT
-      
+  http: 
+    encoding: 
+      charset: UTF-8
+    multipart: 
+      max-file-size: 10MB
+      max-request-size: 100MB
+               
 mybatis:
   mapperLocations: classpath:mapper/*.xml
     
@@ -78,3 +84,11 @@ server:
   tomcat: 
     access_log_enabled: true
     basedir: target/tomcat      
+#if($ssl)
+  #keytool -genkey -alias ycd -keypass 123456 -keyalg RSA -keysize 1024 -validity 365 -keystore /keys/ycd.keystore -storepass 123456
+  ssl: 
+    key-alias: ycd
+    key-store: ycd.keystore 
+    key-store-password: changeit
+    key-store-type: JKS
+#end    

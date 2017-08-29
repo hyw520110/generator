@@ -65,11 +65,13 @@
 		  <version>1.1.2</version>
 		</dependency>
 #if($!{springboot_version})
+
+		<!-- 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		<!-- <dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>springloaded</artifactId>
 		</dependency> -->
@@ -81,7 +83,18 @@
 		<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
-		</dependency>  
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.springframework.boot</groupId>
+                	<artifactId>spring-boot-starter-tomcat</artifactId>
+            	</exclusion>
+            </exclusions>
+		</dependency>
+		<!-- Undertow是红帽公司的java开源高性能web服务器(Wildfly默认的Web服务器)-->  
+		<dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-undertow</artifactId>
+		</dependency>
 #if($!{resp_data_type_json}&& "fastjson"=="$!{json_type}")
 		<dependency>
 		  <groupId>com.alibaba</groupId>

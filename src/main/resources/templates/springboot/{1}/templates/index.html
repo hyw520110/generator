@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>  
+     <title>index!</title>  
+</head>      
+<body>
+<h1 th:inline="text">index</h1>  
+ [<span th:text="${#httpServletRequest.getRequestURI()}" ></span>] 
+<hr/>
+<p th:text="${hello}"></p>
+<a href="VisitCustomer/list">VisitCustomer/list</a>
+<span th:each="user:${users}"> </span> 
+<span th:if="${ not #lists.isEmpty(blog.publishTime)}"></span>
+<span id="publishtime" th:text="${#dates.format(blog.publishTime, 'yyyy-MM-dd HH:mm:ss')}"></span> 
+
+</body>    
+</html> 

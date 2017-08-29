@@ -50,9 +50,14 @@ public class ${className} #if(${superControllerClass})extends ${superControllerC
     }
     
     @RequestMapping(value="/list",method = RequestMethod.GET)
-    public List<$eName> list(HttpServletRequest req,HttpServletResponse resq, @RequestParam Map<String, Object> map , Model model){
+    public #if($!{resp_data_type_json})List<$eName>#else String #end list(HttpServletRequest req,HttpServletResponse resq, @RequestParam Map<String, Object> map , Model model){
         List<$eName> list=${sName}.findAll(map);
-		return list;
+#if($!{resp_data_type_json})
+    		return list;
+#else
+        model.addAttribute("list",list);
+		return "${table.beanName}/list";
+#end
     }
     
     @RequestMapping(value="/save", method = RequestMethod.POST)

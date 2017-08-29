@@ -1,6 +1,17 @@
+logging: 
+  level: 
+    root: INFO
+  path: /logs/${projectName}/  
+  file: default.log 
 spring:
   thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    #开发阶段关闭缓存
     cache: false
+    mode: HTML5
+    encoding: UTF-8   
+    content-type: text/html  
   devtools: 
     restart:
       #/META-INF/resources,/resources,/public,/templates,/static
@@ -53,9 +64,17 @@ spring:
     poolPreparedStatements: false
     #要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会存在Oracle下PSCache占用内存过多的问题，可以把这个数值配置大一些，比如说100
     maxOpenPreparedStatements: 20  
-
+  #命令行启动日志多彩输出org.springframework.boot.ansi.Enabled    
+  output: 
+    ansi: 
+      enabled: DETECT
+      
 mybatis:
   mapperLocations: classpath:mapper/*.xml
     
 server:
   port: ${server_port}
+  #thymeleaf修改后重新发布到tomcat
+  tomcat: 
+    access_log_enabled: true
+    basedir: target/tomcat      

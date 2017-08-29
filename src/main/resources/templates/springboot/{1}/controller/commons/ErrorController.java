@@ -1,4 +1,4 @@
-package ${controllerPackage};
+package ${controllerPackage}.commons;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,6 +7,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ErrorController implements org.springframework.boot.autoconfigure.web.ErrorController {
 	private static final String ERROR_PATH = "/error";
 
+	@RequestMapping("/")
+	public String index() {
+		return "/index";
+	}
+	
 	@RequestMapping(value = ERROR_PATH)
 	public String handleError() {
 		return "404";

@@ -1,10 +1,9 @@
-说明：
-== 
+#说明：
 代码生成器,主要功能包括：
 
 - 支持常见主流数据库
 - 数据库连接池：密码配置支持加密，支持SQL注入拦截，慢SQL记录，连接池监控等
-- 支持代码、配置、依赖、页面(thymeleaf)的生成,支持复合主键的生成
+- 支持代码、配置、依赖、页面模板(thymeleaf)的生成,支持复合主键的生成
 - class类注释支持自定义(更改模板文件comment.vm)
 - 支持构建脚本生成(gradle/maven/不生成)
 - 支持多模块工程的生成,模块名可自定义配置
@@ -14,11 +13,10 @@
 
 
 
-快速开始:
-==
-有兩種方式執行（二選一即可）：一種方式是通過git下載源碼執行，一種是下載zip執行命令腳本.
+#快速开始:
+有两种方式执行（二选一即可）：一种方式是通过git下载源码执行，一种是下载zip包执行命令脚本.
 
-1. 源碼方式：
+##1. 源码方式：
 
 	- 修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
 
@@ -42,20 +40,24 @@
 	- 安装配置好maven/gradle导入IDE,执行Generator的main方法.
 
 
-2. 命令腳本：
+##2. 命令脚本：
 	
-	- 分支下載zip或通過源碼構建獲取zip包,在工程根目錄下執行構建命令：mvn clean package，在target目錄下獲取zip包 
-	- 解壓zip包，修改配置文件generator.yaml
-	- 执行bin目錄下的命令脚本	
+	- 分支下载zip包或通过源码构建获取zip包:在工程根目录下执行构建命令：mvn clean package，在target目录下获取zip包 
+	- 解压zip包，修改配置文件generator.yaml
+	- 执行bin目录下的命令脚本
+
+##启动服务
 	
-配置说明:
-==
+- 通过源码或命令脚本执行生成后，资源管理器会自动打开生成路径，把生成的源码导入IDE
+- 执行Boot.java启动服务，服务启动完成后自动打开浏览器	
+		
+	
+#配置说明:
 - 配置文件generator.yaml包含数据源配置、全局配置、生成策略配置，具体配置说明见配置文件配置项注释说明
 
 - 组件特性配置文件见各组件配置文件,组件配置目录为:src/main/resources/conf
 
-自定义
-==
+#自定义
 - 自定义工程构建工具：maven(pom.xml)、gradle(build.gradle)、无
 
 - 自定义工程模块，支持生成单工程和多模块工程，多模块工程，工程模块名可自定义
@@ -71,27 +73,25 @@
 
 - 扩展组件:
 
-	- 在配置文件中指定模块名数组(modules),如模塊配置為[api,app],已有的组件配置为[mybatis,springmvc],新增dubbo配置:[mybatis,springmvc,dubbo]
-	- 在模板目录(templates)下新建目录，目录名为{模塊数组index},如dubbo的配置文件在app模塊中，則新建{2}文件夾,在文件夾下新建（文件夾）模板文件
-	- 在配置目录(conf)下新增组件配置文件,如dubbo.yaml配置模板所需的配置数据，如模板不需要配置數據，可不用新建組件配置文件
+	- 在配置文件中指定模块名数组(modules),如模块配置为[api,app],已有的组件配置为[mybatis,springmvc],新增dubbo配置:[mybatis,springmvc,dubbo]
+	- 在模板目录(templates)下新建目录，目录名为{模块数组index},如dubbo的配置文件在app模块中，则新建{2}文件夹,在文件夹下新建（文件夹）模板文件
+	- 在配置目录(conf)下新增组件配置文件(非必须),如dubbo.yaml配置模板所需的配置数据
 
-TODO LIST:
-==
+#TODO LIST:
 
-2. 各主流關係型数据库适配、验证、配置调整
-3. 各个组件适配(JPA、DUBBO...)、配置文件以及测试用例的生成
-4. springmvc增删改查方法及页面的生成 
+1. 各主流关系型数据库适配、验证、配置调整
+2. 各个组件适配(JPA、DUBBO...)、配置文件以及测试用例的生成
+3. springmvc增删改查方法及页面的生成 
 
 
-FAQ:
-==
+#FAQ:
 
-eclipse打開pom.xml報錯：
+eclipse打开pom.xml报错：
 
 	org.apache.maven.archiver.MavenArchiver.getManifest(org.apache.maven.project.MavenProject, org.apache.maven.archiver.MavenArchiveConfiguration) pom.xml
 解決：
 
-	- 編輯pom.xml更改maven-jar-plugin的版本號為2.6
+	- 编辑pom.xml更改maven-jar-plugin的版本号为2.6
 	- 或者升級m2e extensions,添加url(安裝后重啟eclipse)：
 		- https://otto.takari.io/content/sites/m2e.extras/m2eclipse-mavenarchiver/0.17.2/N/LATEST/
 		- http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-mavenarchiver/0.17.2/N/LATEST/
@@ -99,10 +99,10 @@ eclipse打開pom.xml報錯：
 
 
 
-執行Generator類的main方法報錯 ：
+执行Generator类的main方法报错 ：
 
 	java.io.IOException:Stream closed 	
-解決：
+解决：
 
-	- 找不到generator.yaml配置文件，確認是否編譯(target/classes下是否有該文件)	
-	- 有編譯錯誤，導致源碼沒有自動編譯，如src/main/resources目錄下的模板文件有編譯錯誤，直接設置忽略即可
+	- 找不到generator.yaml配置文件，确认是否编译(target/classes下是否有該文件)	
+	- 有编译错误，导致沒有自动编译，如src/main/resources目录下的模板文件有编译错误，直接设置忽略即可

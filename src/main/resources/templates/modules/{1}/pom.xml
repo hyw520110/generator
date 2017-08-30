@@ -95,7 +95,7 @@
 	        <groupId>org.springframework.boot</groupId>
 	        <artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
-#if($!{resp_data_type_json}&& "fastjson"=="$!{json_type}")
+#if("fastjson"=="$!{json_type}")
 		<dependency>
 		  <groupId>com.alibaba</groupId>
 		  <artifactId>fastjson</artifactId>

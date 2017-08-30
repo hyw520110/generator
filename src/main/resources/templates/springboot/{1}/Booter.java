@@ -12,9 +12,11 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.MediaType;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
-import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.alibaba.fastjson.support.spring.FastJsonpHttpMessageConverter4;
 #end
-
+import io.undertow.Undertow.Builder;
+import org.springframework.boot.context.embedded.undertow.UndertowBuilderCustomizer;
+import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -37,8 +39,8 @@ public class Booter{
 	 */
 	@Bean
 	public HttpMessageConverters fastJsonHttpMessageConverter(){
-		FastJsonHttpMessageConverter converter= new FastJsonHttpMessageConverter();
-		FastJsonConfig conf=new FastJsonConfig();
+		FastJsonpHttpMessageConverter4 converter= new FastJsonpHttpMessageConverter4();
+		FastJsonConfig conf=converter.getFastJsonConfig();
 		conf.setSerializerFeatures(SerializerFeature.PrettyFormat #if($!{write_null_value}),SerializerFeature.WriteMapNullValue#end);
 		converter.setFastJsonConfig(conf);
 		//处理中文乱码问题
@@ -89,4 +91,17 @@ public class Booter{
     }
 
 #end
+
+	@Bean
+	public UndertowEmbeddedServletContainerFactory embeddedServletContainerFactory() {
+	    UndertowEmbeddedServletContainerFactory factory = new UndertowEmbeddedServletContainerFactory();
+	    factory.addBuilderCustomizers(new UndertowBuilderCustomizer() {
+	        @Override
+	        public void customize(Builder builder) {
+	        	//多端口支持
+	           // builder.addHttpListener(${server_port}, "0.0.0.0");
+	        }
+	    });
+	    return factory;
+	}
 }

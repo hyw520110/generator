@@ -74,6 +74,9 @@ spring:
     multipart: 
       max-file-size: 10MB
       max-request-size: 100MB
+  messages:
+    # if true use system local and false to use baseName (e.g. 'messages') 
+    fallback-to-system-locale: false      
                
 mybatis:
   mapperLocations: classpath:mapper/*.xml
@@ -91,4 +94,19 @@ server:
     key-store: ycd.keystore 
     key-store-password: changeit
     key-store-type: JKS
-#end    
+#end
+  undertow: 
+    accesslog: 
+      enabled: true
+      dir: /logs/${projectName}/ 
+      prefix: access_log.
+      suffix: log  
+      pattern: common  
+      rotate: true
+    buffer-size: 1024
+    buffers-per-region: 1024
+    direct-buffers: true
+    io-threads: 100
+    max-http-post-size: 80920
+    worker-threads: 512
+    

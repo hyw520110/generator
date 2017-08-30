@@ -84,6 +84,7 @@ public class Generator extends AbstractGenerator {
         String encoding = global.getEncoding();
         String projectName = global.getProjectName();
         List<Table> tables = getTables();
+        context.put("tables", tables);
         for (Table table : tables) {
             for (File file : files) {
                 //获取模板对象
@@ -95,7 +96,7 @@ public class Generator extends AbstractGenerator {
                 //模板文件名前缀
                 String prefix = StringUtils.substringBeforeLast(name, ".");
                 boolean isJava = name.endsWith(".java");
-                String subDir = getSubDir(dir, file);
+                String subDir = getSubDir(dir, file,table);
                 if (isJava) {
                 	String pName = file.getParentFile().getName();
                 	if(!StringUtils.startsWith(name, "Base")){
@@ -144,11 +145,12 @@ public class Generator extends AbstractGenerator {
         return StringUtils.toPath(global.getOutputDir(), moduleName, global.getResource(), StringUtils.substringAfter(subDir, moduleName));
     }
 
-    private String getSubDir(final File dir, File file) {
+    private String getSubDir(final File dir, File file, Table table) {
         //子路径（以组件开头）
         String subPath = file.getParent().replace(dir.getPath(), "").substring(1);
         //子目录(去除组件路径)
-        return MessageFormat.format(StringUtils.substringAfter(subPath, File.separator), global.getModules());
+        String path = MessageFormat.format(StringUtils.substringAfter(subPath, File.separator), global.getModules());
+        return String.format(path, table.getBeanName());
     }
 
     private Collection<File> getFiles(final File dir, final Set<String> components) {

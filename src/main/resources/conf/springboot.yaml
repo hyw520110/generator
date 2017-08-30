@@ -1,6 +1,6 @@
 springboot_version: 1.5.6.RELEASE
-resp_data_type_json: true
+resp_data_type_json: false
 json_type: fastjson
 write_null_value: true
 server_port: 8081
-ssl: true
+ssl: false

@@ -3,10 +3,9 @@ package ${controllerPackage};
 import java.util.List;
 import java.util.Map;
 import org.springframework.ui.Model;
-import com.alibaba.fastjson.JSONObject;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.ModelAndView;
 #if($!{springboot_version})
 import org.springframework.web.bind.annotation.RestController;
 #else
@@ -44,37 +43,34 @@ public class ${className} #if(${superControllerClass})extends ${superControllerC
     private ${serviceName} ${sName};
     
     @RequestMapping(value="/view/#foreach($field in ${table.primarykeyFields}){${field.propertyName}}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end", method = RequestMethod.GET)
-    public ${StringUtils.capitalFirst("$entityName")} view(#foreach($field in ${table.primarykeyFields})@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} #if($foreach.count!=${table.primarykeyFields.size()}),#end #end){
-         return ${sName}.findById(#foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
+    public #if($!{resp_data_type_json})${StringUtils.capitalFirst("$entityName")}#else ModelAndView #end view(#foreach($field in ${table.primarykeyFields})@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} #if($foreach.count!=${table.primarykeyFields.size()}),#end #end){
+        ${StringUtils.capitalFirst("$entityName")} bean= ${sName}.findById(#foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
+        return #if($!{resp_data_type_json})bean#else new ModelAndView("${table.beanName}/view","bean",bean)#end ;
     }
     
     @RequestMapping(value="/list",method = RequestMethod.GET)
-    public #if($!{resp_data_type_json})List<$eName>#else String #end list(HttpServletRequest req,HttpServletResponse resq, @RequestParam Map<String, Object> map , Model model){
+    public #if($!{resp_data_type_json})List<$eName>#else ModelAndView #end list(HttpServletRequest req,HttpServletResponse resq, @RequestParam Map<String, Object> map , Model model){
         List<$eName> list=${sName}.findAll(map);
 #if($!{resp_data_type_json})
-    		return list;
+		return list;
 #else
         model.addAttribute("list",list);
-		return "${table.beanName}/list";
+        return new ModelAndView("${table.beanName}/list","list",list);
 #end
     }
     
-    @RequestMapping(value="/save", method = RequestMethod.POST)
-    public String save(@RequestBody $eName entity){
-    	 JSONObject json = new JSONObject();
-         json.put("flag", ${sName}.save(entity));
-         return json.toString();
+    @RequestMapping(value="/add", method = RequestMethod.POST)
+    public ModelAndView save(@RequestBody $eName entity){
+        return new ModelAndView("redirect:${table.beanName}/list","flag",${sName}.save(entity));
     }
     
     @RequestMapping(value="/update", method = RequestMethod.POST)
-    public String update(@RequestBody $eName entity){
-    	 JSONObject json = new JSONObject();
-         json.put("flag", ${sName}.update(entity)>0);
-         return json.toString();
+    public ModelAndView update(@RequestBody $eName entity){
+        return new ModelAndView("redirect:${table.beanName}/list","flag",${sName}.update(entity)>0);
     }
     
     @RequestMapping(value="/del/#foreach($field in ${table.primarykeyFields}){${field.propertyName}}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end", method = RequestMethod.POST)
-    public Integer delete(#foreach($field in ${table.primarykeyFields})@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} #if($foreach.count!=${table.primarykeyFields.size()}),#end#end){
-    	 return ${sName}.deleteById(#foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
+    public ModelAndView delete(#foreach($field in ${table.primarykeyFields})@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} #if($foreach.count!=${table.primarykeyFields.size()}),#end#end){
+        return new ModelAndView("redirect:${table.beanName}/list","flag",${sName}.deleteById(#foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end)>0);
     }
 }

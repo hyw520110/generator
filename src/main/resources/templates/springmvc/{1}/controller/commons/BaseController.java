@@ -1,5 +1,5 @@
 #if(${StringUtils.indexOf("$superControllerClass", '.')}==-1)
-package ${controllerPackage};
+package ${controllerPackage}.commons;
 
 import java.util.List;
 import java.util.Map;

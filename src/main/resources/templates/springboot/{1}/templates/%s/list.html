@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>$!{table.comment}列表</title>
+</head>
+<body>
+$!{table.name}:$!{table.comment}
+	<table border="1">
+		<thead>
+			<tr>
+				<th>序号</th>
+#foreach($field in ${table.fields})
+				<th>#if($!{field.comment})$!{field.comment}#else$!{field.name}#end</th>
+#end			
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="item,stats: ${list}">
+				<td th:text="${stats.count}">1</td>
+#foreach($field in ${table.fields})
+				<td th:text="*{item.${field.propertyName}}">字段名</td>
+#end	
+			</tr>
+		</tbody>
+	</table>
+</body>
+</html>

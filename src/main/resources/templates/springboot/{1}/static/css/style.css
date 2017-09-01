@@ -1,0 +1,11 @@
+fieldset {
+	padding:5px;
+	margin:10px;
+	border:black dashed 1px;
+} 
+legend {
+	width:100px;
+	margin-bottom:1px;
+	font-weight:800; 
+	padding:3px 6px;
+} 

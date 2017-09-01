@@ -6,6 +6,9 @@ import org.springframework.ui.Model;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 #if($!{springboot_version})
 import org.springframework.web.bind.annotation.RestController;
 #else
@@ -48,14 +51,15 @@ public class ${className} #if(${superControllerClass})extends ${superControllerC
         return #if($!{resp_data_type_json})bean#else new ModelAndView("${table.beanName}/view","bean",bean)#end ;
     }
     
-    @RequestMapping(value="/list",method = RequestMethod.GET)
-    public #if($!{resp_data_type_json})List<$eName>#else ModelAndView #end list(HttpServletRequest req,HttpServletResponse resq, @RequestParam Map<String, Object> map , Model model){
+    @RequestMapping(value="/list")
+    public #if($!{resp_data_type_json})List<$eName>#else ModelAndView #end list(HttpServletRequest req,@RequestParam Map<String, Object> map ,@RequestParam(required = false, defaultValue = "1") int pageNo,@RequestParam(required = false, defaultValue = "10") int pageRows, Model model){
+        PageHelper.startPage(pageNo, pageRows);
         List<$eName> list=${sName}.findAll(map);
 #if($!{resp_data_type_json})
 		return list;
 #else
         model.addAttribute("list",list);
-        return new ModelAndView("${table.beanName}/list","list",list);
+        return new ModelAndView("${table.beanName}/list","page",new PageInfo<$eName>(list));
 #end
     }
     

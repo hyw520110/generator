@@ -45,7 +45,7 @@ public class Generator extends AbstractGenerator {
      * 生成器默认配置文件
      */
     private static String conf = "/generator.yaml";
-
+    private VelocityEngine engine ;
     private Generator() {
     }
 
@@ -65,7 +65,7 @@ public class Generator extends AbstractGenerator {
     public void execute() throws Exception {
     	delDir();
     	mkDirs();
-        VelocityEngine engine = getVelocityEngine();
+        engine = getVelocityEngine();
         //根据组件配置过滤所需模板文件
         final File dir = global.getTemplateFile();
         if (dir == null || !dir.exists()) {
@@ -87,8 +87,6 @@ public class Generator extends AbstractGenerator {
         context.put("tables", tables);
         for (Table table : tables) {
             for (File file : files) {
-                //获取模板对象
-                Template template = engine.getTemplate(file.getPath().replace(dir.getParent(), ""), encoding);
                 context.put("date", getDate());
                 context.put("table", table);
                 //模板文件名 
@@ -113,7 +111,7 @@ public class Generator extends AbstractGenerator {
                 if (!global.isFileOverride() && f.exists()) {
                     continue;
                 }
-                writer(context, encoding, template, f);
+                writer(context, encoding,  f,file);
             }
         }
         openDir();
@@ -131,10 +129,9 @@ public class Generator extends AbstractGenerator {
         context.put("version", strategy.getVersion());
         for (File file : modules) {
             String tPath = file.getPath().replace(dir.getParent(), "");
-            Template t = engine.getTemplate(tPath, encoding);
             String path = MessageFormat.format(StringUtils.substringAfter(tPath, "modules"), global.getModules());
             context.put("moduleName", StringUtils.substring(path, 1, StringUtils.indexOf(path, File.separator, 1)));
-            writer(context, encoding, t, new File(global.getOutputDir(), path));
+            writer(context, encoding,  new File(global.getOutputDir(), path),file);
         }
     }
 
@@ -156,7 +153,6 @@ public class Generator extends AbstractGenerator {
     private Collection<File> getFiles(final File dir, final Set<String> components) {
         Collection<File> files = FileUtils.listFiles(dir, new DirectoryFileFilter() {
             private static final long serialVersionUID = 1L;
-
             @Override
             public boolean accept(File file) {
                 String path = file.getPath().replace(dir.getAbsolutePath(), "").substring(1);
@@ -170,12 +166,20 @@ public class Generator extends AbstractGenerator {
         return files;
     }
 
-    private void writer(VelocityContext context, String encoding, Template t, File f) {
+    private void writer(VelocityContext context, String encoding, File f,File src) {
 		try {
             logger.info("generator file:{}", f);
             if (!f.getParentFile().exists()) {
                 f.getParentFile().mkdirs();
             }
+            String name = f.getName();
+            if(name.endsWith("js")||name.endsWith("css")){
+                FileUtils.copyFile(src, f);
+                return ;
+            }
+            File dir = global.getTemplateFile();
+            //获取模板对象
+            Template t = engine.getTemplate(src.getPath().replace(dir.getParent(), ""), encoding);
             StringWriter writer = new StringWriter();
             t.merge(context, writer);
             //模板渲染为空则不生成文件,适用场景如:配置了第三方BaseEntity类时,默认BaseEntity类不生成

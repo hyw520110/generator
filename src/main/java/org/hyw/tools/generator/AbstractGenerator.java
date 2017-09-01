@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.hyw.tools.generator.conf.BaseBean;
@@ -113,7 +114,7 @@ public abstract class AbstractGenerator extends BaseBean {
 				field.setPrimarykey(StringUtils.equals(key, sql.getFieldKeyValue().getValue()));
 				// 其他数据库的字段是否为空以及自增 处理
 				if (DBType.MYSQL == this.dataSource.getDBType()) {
-					field.setNullAble(Boolean.valueOf(results.getString(sql.getFieldNull())));
+					field.setNullAble(BooleanUtils.toBoolean(results.getString(sql.getFieldNull())));
 					field.setIdentity(StringUtils.equals(results.getString(sql.getExtraKeyValue().getKey()),
 							sql.getExtraKeyValue().getValue()));
 				}

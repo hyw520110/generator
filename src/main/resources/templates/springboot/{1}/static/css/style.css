@@ -9,3 +9,8 @@ legend {
 	font-weight:800; 
 	padding:3px 6px;
 } 
+
+
+#pageInfo > div{
+	display: inline;
+}

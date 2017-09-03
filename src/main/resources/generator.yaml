@@ -3,17 +3,17 @@
 dataSource:
     driverClassName: com.mysql.jdbc.Driver
     #明文密码
-    #url: jdbc:mysql://localhost:3306/test1289?useUnicode=true&autoReconnect=true&autoReconnectForPools=true&failOverReadOnly=false&characterEncoding=UTF-8
-    #username: root
-    #pwd: 123456
+    url: jdbc:mysql://localhost:3306/test1289?useUnicode=true&autoReconnect=true&autoReconnectForPools=true&failOverReadOnly=false&characterEncoding=UTF-8
+    username: root
+    pwd: sofa2.0
     #密文密码
-    url: jdbc:mysql://rds6vef326vef32o.mysql.rds.aliyuncs.com:3306/ycd360t?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
-    username: ycd360test
-    pwd: BwWroQe0/L6O0HcEOJ++OPaK3YhZSYIcoJxKHSpNMSX0y5jHGla6rbuYTWDbx9r9yu0LgeNMLwSEW5DaB0oR5w==
+    #url: jdbc:mysql://rds6vef326vef32o.mysql.rds.aliyuncs.com:3306/ycd360t?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
+    #username: ycd360test
+    #pwd: BwWroQe0/L6O0HcEOJ++OPaK3YhZSYIcoJxKHSpNMSX0y5jHGla6rbuYTWDbx9r9yu0LgeNMLwSEW5DaB0oR5w==
     # 明文密码时值留空或注释;密文密码时配置config
-    filters: config
+    #filters: config
     # 明文密码时值留空或注释;
-    connectionProperties: "config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKGZ1YyvABRlmKHv+TcATyrsviKZLLtnkUb9e2lhgqMqZINXDstl3CdD74NnhjijX9wjXqA+V0ASq7uwBo8jZz8CAwEAAQ=="
+    #connectionProperties: "config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKGZ1YyvABRlmKHv+TcATyrsviKZLLtnkUb9e2lhgqMqZINXDstl3CdD74NnhjijX9wjXqA+V0ASq7uwBo8jZz8CAwEAAQ=="
 
 
 #全局配置

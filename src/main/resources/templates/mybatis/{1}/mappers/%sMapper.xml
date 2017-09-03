@@ -10,13 +10,7 @@
 #if(${baseResultMap})
 	<resultMap id="BaseResultMap" type="${entityPackage}.${entityName}">
 #foreach($field in ${table.fields})
-		<result column="${field.name}" property="${field.propertyName}" jdbcType="${field.jdbcType}"/>
-	##	<!-- 集合属性配置  ofType：指的是集合中元素的类型-->
-	##	<collection property="orders" ofType="Order">  
-    ##        <id column="orderId" property="id"/>  
-    ##        <result column="orderNumber" property="number"/>  
-    ##        <result column="orderPrice" property="price"/>  
-    ##    </collection>  
+	<result column="${field.name}" property="${field.propertyName}" jdbcType="${field.jdbcType}"/>
 #end
 	</resultMap>
 	
@@ -34,7 +28,7 @@
 	<select id="findById" resultMap="BaseResultMap" >
 	    SELECT #if(${columns}) <include refid="columns"/> #else  ${table.fieldNames} #end
 	 	from ${table.name}
-		WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount !=${table.primarykeyFields.size()}) and #end #end 
+		WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount <${table.primarykeyFields.size()}) and #end #end 
 	</select>	
 #end
 
@@ -54,7 +48,7 @@
 	<select id="findPage" resultMap="BaseResultMap" parameterType="java.util.Map">
 		select <include refid="columns"/>  from ${table.name} where 1=1
 		<include refid="queryWhere"/> 
-	    <![CDATA[ ORDER BY #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount !=${table.primarykeyFields.size()}) and #end #end  DESC ]]>
+	    <![CDATA[ ORDER BY #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount <${table.primarykeyFields.size()}) and #end #end  DESC ]]>
         <![CDATA[ LIMIT #{startRecord},#{endRecord} ]]>
 	</select>
 #end	
@@ -68,10 +62,10 @@
 
 	<insert id="save" parameterType="${entityPackage}.${entityName}" useGeneratedKeys="true" keyProperty="${table.primaryKeyField.propertyName}">
 		<![CDATA[
-		INSERT INTO ${table.name} (#foreach($field in ${table.fields})#set($notLast=($velocityCount !=${table.primarykeyFields.size()}))${field.name} #if($notLast),#end#end
+		INSERT INTO ${table.name} (#foreach($field in ${table.fields})${field.name} #if($velocityCount <${table.fields.size()}),#end#end
  
 		) VALUES ( 
-	#foreach($field in ${table.fields})#set($notLast=($velocityCount !=${table.primarykeyFields.size()}))#{${field.propertyName},jdbcType=${field.jdbcType}}#if($notLast),#end#end
+	#foreach($field in ${table.fields})#{${field.propertyName},jdbcType=${field.jdbcType}}#if($velocityCount <${table.fields.size()}),#end#end
 		)
 		]]>
 	</insert>
@@ -85,13 +79,13 @@
 		#foreach($field in ${table.fields})
 		#if(!$field.isPrimarykey)	
 			<if test="${field.name} != null">
-				${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount !=${table.primarykeyFields.size()}),#end
+				${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount < ${table.fields.size()}),#end
 				
 			</if>
 		#end	
 		#end
 		</set>
-		WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount !=${table.primarykeyFields.size()}) and #end #end
+		WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount <${table.primarykeyFields.size()}) and #end #end
 		     
 	</update>
 #end
@@ -99,7 +93,7 @@
 #if($deleteById)
 
 	<delete id="deleteById"  >
-		<![CDATA[DELETE FROM ${table.name}  WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount !=${table.primarykeyFields.size()}) and #end #end]]>
+		<![CDATA[DELETE FROM ${table.name}  WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount <${table.primarykeyFields.size()}) and #end #end]]>
 	</delete>
 #end
 	<sql id="queryWhere">

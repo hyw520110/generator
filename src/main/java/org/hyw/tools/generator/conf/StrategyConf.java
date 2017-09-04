@@ -112,10 +112,15 @@ public class StrategyConf extends BaseBean {
 	public String[] getInclude() {
 		return include;
 	}
-
-	public void setInclude(String[] include) {
+	
+    public void setInclude(String include) {
+        this.include = new String[]{include};
+    }
+	
+    public void setInclude(String[] include) {
 		this.include = include;
 	}
+	
 
 	public String[] getExclude() {
 		return exclude;

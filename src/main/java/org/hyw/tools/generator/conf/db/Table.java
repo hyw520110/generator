@@ -97,8 +97,6 @@ public class Table extends BaseBean {
 	}
 
 	/**
-	 * 转换filed实体为xmlmapper中的basecolumn字符串信息
-	 *
 	 * @return
 	 */
 	public String getFieldNames() {
@@ -106,32 +104,14 @@ public class Table extends BaseBean {
 			return fieldNames;
 		}
 		StringBuilder names = new StringBuilder();
-		for (int i = 0; i < fields.size(); i++) {
-			TabField f = fields.get(i);
-			if (i == fields.size() - 1) {
-				names.append(getColumnName(f));
-			} else {
-				names.append(getColumnName(f)).append(", ");
-			}
+		for (TabField f:fields) {
+		    names.append(f.getName()).append(",");
 		}
-		fieldNames = names.toString();
+		fieldNames = names.deleteCharAt(names.length()-1).toString();
 		return fieldNames;
 	}
 
-	/**
-	 * mapper xml中的字字段添加as
-	 * 
-	 * @param field
-	 *            字段实体
-	 * @return 转换后的信息
-	 */
-	private String getColumnName(TabField field) {
-		if (null != field) {
-			return field.isNameChange() ? field.getName() + " AS " + field.getPropertyName() : field.getName();
-		}
-		return StringUtils.EMPTY;
-	}
-
+	 
 	public Table(String name, String comment) {
 		this.name = name;
 		this.comment = comment;

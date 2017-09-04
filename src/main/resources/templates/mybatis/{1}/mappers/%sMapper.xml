@@ -77,8 +77,8 @@
 		UPDATE ${table.name} 
 		<set>
 		#foreach($field in ${table.fields})
-		#if(!$field.isPrimarykey)	
-			<if test="${field.name} != null">
+		#if(!$field.isPrimarykey())	
+			<if test="${field.propertyName} != null">
 				${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount < ${table.fields.size()}),#end
 				
 			</if>
@@ -99,7 +99,7 @@
 	<sql id="queryWhere">
 #foreach($field in ${table.fields})
 	
-		<if test="${field.name} != null">
+		<if test="${field.name} != null and ${field.name} != ''">
 			and ${field.name} = #{${field.propertyName}} 
 		</if>
 #end

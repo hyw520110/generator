@@ -58,8 +58,9 @@ public enum MySqlColumnType  {
     YEAR("year","YEAR",FieldType.DATE),
     DATETIME("datetime","TIMESTAMP",FieldType.TIMESTAMP),
     TIMESTAMP("TIMESTAMP","TIMESTAMP",FieldType.TIMESTAMP),
+    DECIMAL("decimal","DECIMAL",FieldType.BIG_DECIMAL),
     BIT("bit","BIT",FieldType.BOOLEAN);
-//DECIMAL("decimal","DECIMAL",FieldType.BIG_DECIMAL), 
+ 
     
 
     private final String columnType;

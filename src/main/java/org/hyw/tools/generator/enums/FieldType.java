@@ -17,9 +17,10 @@ public enum FieldType {
     TIME("Time", java.sql.Time.class),
     BLOB("Blob", java.sql.Blob.class),
     CLOB("Clob",java.sql.Clob.class),
+    BIG_DECIMAL("BigDecimal",java.math.BigDecimal.class),
     TIMESTAMP("Timestamp",java.sql.Timestamp.class);
 /*  ,BIG_INTEGER("BigInteger",java.math.BigInteger.class),
-    BIG_DECIMAL("BigDecimal",java.math.BigDecimal.class),
+   
     LOCAL_DATE("LocalDate",java.time.LocalDate.class),
     LOCAL_TIME("LocalTime",java.time.LocalTime.class),
     LOCAL_DATE_TIME("LocalDateTime",java.time.LocalDateTime.class);

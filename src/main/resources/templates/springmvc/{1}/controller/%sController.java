@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.alibaba.druid.util.StringUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 #if($!{springboot_version})
@@ -45,10 +46,10 @@ public class ${className} #if(${superControllerClass})extends ${superControllerC
     @Autowired
     private ${serviceName} ${sName};
     
-    @RequestMapping(value="/view/#foreach($field in ${table.primarykeyFields}){${field.propertyName}}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end", method = RequestMethod.GET)
-    public #if($!{resp_data_type_json})${StringUtils.capitalFirst("$entityName")}#else ModelAndView #end view(#foreach($field in ${table.primarykeyFields})@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} #if($foreach.count!=${table.primarykeyFields.size()}),#end #end){
+    @RequestMapping(value="/view/#foreach($field in ${table.primarykeyFields}){${field.propertyName}}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end/{method}", method = RequestMethod.GET)
+    public #if($!{resp_data_type_json})${StringUtils.capitalFirst("$entityName")}#else ModelAndView #end view(#foreach($field in ${table.primarykeyFields})@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} #if($foreach.count!=${table.primarykeyFields.size()}),#end #end,@PathVariable(value = "method")String method){
         ${StringUtils.capitalFirst("$entityName")} bean= ${sName}.findById(#foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
-        return #if($!{resp_data_type_json})bean#else new ModelAndView("${table.beanName}/view","bean",bean)#end ;
+        return #if($!{resp_data_type_json})bean#else new ModelAndView("${table.beanName}/"+method,"bean",bean)#end ;
     }
     
     @RequestMapping(value="/list")
@@ -58,23 +59,24 @@ public class ${className} #if(${superControllerClass})extends ${superControllerC
 #if($!{resp_data_type_json})
 		return list;
 #else
-        model.addAttribute("list",list);
+        model.addAttribute("map",map);
         return new ModelAndView("${table.beanName}/list","page",new PageInfo<$eName>(list));
 #end
     }
     
     @RequestMapping(value="/add", method = RequestMethod.POST)
-    public ModelAndView save(@RequestBody $eName entity){
-        return new ModelAndView("redirect:${table.beanName}/list","flag",${sName}.save(entity));
+    public ModelAndView save($eName entity){
+        return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.save(entity));
     }
     
     @RequestMapping(value="/update", method = RequestMethod.POST)
-    public ModelAndView update(@RequestBody $eName entity){
-        return new ModelAndView("redirect:${table.beanName}/list","flag",${sName}.update(entity)>0);
+    public ModelAndView update($eName entity){
+        return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.update(entity)>0);
     }
     
-    @RequestMapping(value="/del/#foreach($field in ${table.primarykeyFields}){${field.propertyName}}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end", method = RequestMethod.POST)
+    //注意:数据更新操作一般必须是post请求, method = RequestMethod.POST
+    @RequestMapping(value="/del/#foreach($field in ${table.primarykeyFields}){${field.propertyName}}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end")
     public ModelAndView delete(#foreach($field in ${table.primarykeyFields})@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} #if($foreach.count!=${table.primarykeyFields.size()}),#end#end){
-        return new ModelAndView("redirect:${table.beanName}/list","flag",${sName}.deleteById(#foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end)>0);
+        return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.deleteById(#foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end)>0);
     }
 }

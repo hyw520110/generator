@@ -56,17 +56,27 @@
     <select id="findAll" resultMap="BaseResultMap" parameterType="java.util.Map">
 		select	* from ${table.name} where 1=1  
 		<include refid="queryWhere"/> 
+		order by #foreach($field in ${table.primarykeyFields}) ${field.name} #if($velocityCount <${table.primarykeyFields.size()}) , #end#end desc
 	</select>
 #end	
 #if($insert)
-
+	<!-- TODO 	1. 返回复合主键 	2. 主键处理 -->
+	<!-- 返回主键：
+	1. insert节点中添加useGeneratedKey和keyProperty属性
+	2. insert节点下添加selectKey子节点的方式
+	 -->
 	<insert id="save" parameterType="${entityPackage}.${entityName}" useGeneratedKeys="true" keyProperty="${table.primaryKeyField.propertyName}">
+		<!-- 
+		<selectKey resultType="#if(${table.primaryKeyField.fieldType.claz})${table.primaryKeyField.fieldType.claz}#else java.lang.${table.primaryKeyField.fieldType.type}#end" order="AFTER" keyProperty="${table.primaryKeyField.propertyName}">
+			SELECT LAST_INSERT_ID()  
+		</selectKey>
+		 <selectKey type="pre" resultClass="#if(${table.primaryKeyField.fieldType.claz})${table.primaryKeyField.fieldType.claz}#else java.lang.${table.primaryKeyField.fieldType.type}#end" order="AFTER" keyProperty="${table.primaryKeyField.propertyName}">
+		   SELECT @@IDENTITY AS id
+		   </selectKey>
+		 -->
 		<![CDATA[
-		INSERT INTO ${table.name} (#foreach($field in ${table.fields})${field.name} #if($velocityCount <${table.fields.size()}),#end#end
- 
-		) VALUES ( 
-	#foreach($field in ${table.fields})#{${field.propertyName},jdbcType=${field.jdbcType}}#if($velocityCount <${table.fields.size()}),#end#end
-		)
+		INSERT INTO ${table.name} (#foreach($field in ${table.fields})#if(!${field.isIdentity()})${field.name} #if($velocityCount <${table.fields.size()}),#end#end#end
+		) VALUES (#foreach($field in ${table.fields})#if(!${field.isIdentity()})#{${field.propertyName},jdbcType=${field.jdbcType}}#if($velocityCount <${table.fields.size()}),#end#end#end)
 		]]>
 	</insert>
 #end

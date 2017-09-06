@@ -10,7 +10,6 @@ import #if($StringUtils.indexOf("$superMapperClass",'.')==-1)${mapperPackage}.#e
 
 
 #parse('/templates/commons/comment.vm')
-//TODO 泛型 联合主键处理<${className}>
 @Repository
 public interface ${className} #if(${superMapperClass}) extends ${StringUtils.getClassName(${superMapperClass})}<${StringUtils.capitalFirst("$entityName")}> #end{
 

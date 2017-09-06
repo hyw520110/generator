@@ -4,6 +4,9 @@ logging:
   path: /logs/${projectName}/  
   file: default.log 
 spring:
+  profiles:
+    #开发阶段支持页面修改实时查看
+    active: dev
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
@@ -12,11 +15,11 @@ spring:
     mode: HTML5
     encoding: UTF-8   
     content-type: text/html  
-  devtools:
-    restart: 
-      trigger-file: .trigger
+#  devtools:
+#    restart: 
+#      trigger-file: .trigger
       #重启默认排除静态资源文件：/META-INF/resources,/resources,/public,/templates,/static
-      #一般静态资源修改不需重启(修改后刷新页面即可,浏览器安装LiveReload插件支持不刷新),如需重启或自定义静态资源目录修改需重启,配置排除即可
+      #一般静态资源修改不需重启(修改后刷新页面即可,浏览器安装LiveReload插件支持免刷新),如需重启或自定义静态资源目录修改需重启,配置排除即可
       #exclude: /static/**,/templates/**
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource

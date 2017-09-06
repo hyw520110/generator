@@ -1,4 +1,4 @@
-package ${rootPackage}.${projectName}.${moduleName}.controller.commons;
+package ${commonsPackage};
 
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;

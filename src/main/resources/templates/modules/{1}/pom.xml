@@ -19,6 +19,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.version>4.3.9.RELEASE</spring.version>
 		<java.version>${javaVersion}</java.version>
+		<mainClass>${rootPackage}.${projectName}.${moduleName}.Booter</mainClass>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -141,14 +142,13 @@
 		</dependency>
 	</dependencies>
 	<build>
+		<finalName>${project.artifactId}</finalName>
 		<plugins>
 			<!-- 编译插件：设置编译版本、编码 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-#if(!$!{springboot_version})	
 				<version>3.3</version>
-#end				
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
@@ -182,7 +182,53 @@
 					<fork>true</fork>
 				</configuration>
 			</plugin>
-#end			
+#end
+
+		<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<archive>
+						<addMavenDescriptor>false</addMavenDescriptor>
+						<manifestEntries>
+							<Class-Path>. ../conf ../templates ../static ../</Class-Path>
+						</manifestEntries>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>../lib/</classpathPrefix>
+							<mainClass>${mainClass}</mainClass>
+						</manifest>
+					</archive>
+					<excludes>
+						<exclude>**/bin/**</exclude>
+						<exclude>/conf/**</exclude>
+						<exclude>/templates/**</exclude>
+						<exclude>/static/**</exclude>
+						<exclude>*.yaml</exclude>
+						<exclude>*.xml</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2.1</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/resources/maven/assembly.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>			
 		</plugins>
 	</build>
 </project>

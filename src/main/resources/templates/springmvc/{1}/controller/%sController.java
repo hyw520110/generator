@@ -64,9 +64,12 @@ public class ${className} #if(${superControllerClass})extends ${superControllerC
 #end
     }
     
-    @RequestMapping(value="/add", method = RequestMethod.POST)
-    public ModelAndView save($eName entity){
-        return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.save(entity));
+    @RequestMapping(value="/add")
+    public ModelAndView save(HttpServletRequest req,$eName entity){
+        if("POST".equals(req.getMethod())){
+            return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.save(entity));
+        }
+        return new ModelAndView("/${table.beanName}/create");
     }
     
     @RequestMapping(value="/update", method = RequestMethod.POST)

@@ -1,4 +1,4 @@
-package ${rootPackage}.${projectName}.${moduleName}.controller.commons;
+package ${commonsPackage};
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

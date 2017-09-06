@@ -1,10 +1,11 @@
 apply plugin: 'java'
+apply plugin: 'eclipse'
 apply plugin: 'maven'
 
 group = 'com.hyw.tools'
 version = '1.0.0-SNAPSHOT'
 
-description = """generator"""
+description = """"""
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -31,6 +32,7 @@ exclude(module: 'slf4j-api')
     compile group: 'org.yaml', name: 'snakeyaml', version:'1.18'
     compile group: 'org.mybatis', name: 'mybatis', version:'3.4.4'
     compile group: 'mysql', name: 'mysql-connector-java', version:'5.1.40'
+    compile group: 'com.alibaba', name: 'druid', version:'1.1.2'
     compile group: 'commons-io', name: 'commons-io', version:'2.4'
     testCompile group: 'junit', name: 'junit', version:'4.12'
 }

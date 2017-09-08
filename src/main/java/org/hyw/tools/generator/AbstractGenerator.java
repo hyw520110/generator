@@ -47,11 +47,7 @@ public abstract class AbstractGenerator extends BaseBean {
 	 */
 	protected StrategyConf strategy;
 
-	/**
-	 * 包配置详情
-	 */
-	protected Map<String, File> paths;
-
+	 
 	public List<Table> getTables() throws Exception {
 		Connection con = null;
 		PreparedStatement pst = null;

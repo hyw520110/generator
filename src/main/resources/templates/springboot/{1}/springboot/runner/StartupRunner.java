@@ -6,9 +6,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-
+//启动完成后打开浏览器.实现ApplicationRunner也可 
+@Profile("dev")
 @Component
 public class StartupRunner implements CommandLineRunner {
 

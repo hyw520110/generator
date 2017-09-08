@@ -75,10 +75,6 @@
 
 		<!-- 
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>springloaded</artifactId>
 		</dependency> -->
@@ -97,10 +93,19 @@
             	</exclusion>
             </exclusions>
 		</dependency>
+		<dependency>  
+		    <groupId>org.springframework.boot</groupId>  
+		    <artifactId>spring-boot-starter-data-redis</artifactId>  
+		</dependency>  
 		<!-- Undertow是红帽公司的java开源高性能web服务器(Wildfly默认的Web服务器)-->  
 		<dependency>
 	        <groupId>org.springframework.boot</groupId>
 	        <artifactId>spring-boot-starter-undertow</artifactId>
+		</dependency>
+		<!-- 审计、健康、数据采集、监控 -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 #if("fastjson"=="$!{json_type}")
 		<dependency>
@@ -133,6 +138,11 @@
 		</dependency>
 #end
 		<dependency>
+		   <groupId>org.springframework.boot</groupId>
+		   <artifactId>spring-boot-starter-test</artifactId>
+		   <scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 #if(!$!{springboot_version})
@@ -143,7 +153,34 @@
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>
+		<resources>
+			 <resource>
+			    <directory>src/main/resources</directory>
+			    <includes>
+			    	<include>*.yml</include>
+			    </includes>
+			    <filtering>true</filtering>
+			 </resource>
+		 	 <resource>
+			    <directory>src/main/resources</directory>
+			    <excludes>
+			    	<exclude>*.yml</exclude>
+			    </excludes>
+			    <filtering>false</filtering>
+			 </resource>
+		</resources>	
 		<plugins>
+			<plugin>
+			 <groupId>org.apache.maven.plugins</groupId>
+			 <artifactId>maven-resources-plugin</artifactId>
+			 <version>2.6</version>
+			 <configuration>
+			    <delimiters>
+			       <delimiter>@</delimiter>
+			    </delimiters>
+			    <useDefaultDelimiters>false</useDefaultDelimiters>
+			 </configuration>
+			</plugin>
 			<!-- 编译插件：设置编译版本、编码 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

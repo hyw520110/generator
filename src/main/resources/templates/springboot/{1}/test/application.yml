@@ -1,17 +1,17 @@
 logging: 
   level: 
     root: INFO
-  path: /logs/${projectName}/  
+  path: /logs/test/  
   file: default.log 
 spring:
   profiles:
     #开发阶段支持页面修改实时查看
-    active: dev
+    active: test
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
     #开发阶段关闭缓存
-    cache: false
+    cache: true
     mode: HTML5
     encoding: UTF-8   
     content-type: text/html  
@@ -32,12 +32,13 @@ spring:
         - 192.168.40.95:8002
         - 192.168.40.95:8003
       maxRedirects: 6
+        
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: ${dataSource.driverClassName}
-    url: ${dataSource.url}
-    username: ${dataSource.username}
-    password: ${dataSource.pwd}
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://rds6vef326vef32o.mysql.rds.aliyuncs.com:3306/ycd360t?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
+    username: ycd360test
+    password: BwWroQe0/L6O0HcEOJ++OPaK3YhZSYIcoJxKHSpNMSX0y5jHGla6rbuYTWDbx9r9yu0LgeNMLwSEW5DaB0oR5w==
     #SQL注入拦截、密码加密
     filters: wall,config
     #druid密文密码配置
@@ -93,29 +94,20 @@ spring:
   messages:
     # if true use system local and false to use baseName (e.g. 'messages') 
     fallback-to-system-locale: false      
-  cache: 
-    type: redis               
+               
 mybatis:
   mapperLocations: classpath:mapper/*.xml
     
 server:
-  port: ${server_port}
+  port: 8081
   #thymeleaf修改后重新发布到tomcat
   tomcat: 
     access_log_enabled: true
     basedir: target/tomcat      
-#if($ssl)
-  #keytool -genkey -alias ycd -keypass 123456 -keyalg RSA -keysize 1024 -validity 365 -keystore /keys/ycd.keystore -storepass 123456
-  ssl: 
-    key-alias: ycd
-    key-store: ycd.keystore 
-    key-store-password: changeit
-    key-store-type: JKS
-#end
   undertow: 
     accesslog: 
       enabled: true
-      dir: /logs/${projectName}/ 
+      dir: /logs/test/ 
       prefix: access_log.
       suffix: log  
       pattern: common  
@@ -126,38 +118,4 @@ server:
     io-threads: 100
     max-http-post-size: 80920
     worker-threads: 512
-management:  
-  port: 9901
-  context-path: /manage
-  security: 
-    enabled: false    
-info: 
-  app: 
-    name: "@project.name@"
-    version: "@project.version@"
-#druid监控配置    
-druid:
-  web-stat:
-    initParameters:
-      exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,*.jsp,/druid/*,/download/*"
-      #session统计
-      sessionStatEnable: "true"  
-      sessionStatMaxCount: "2000"
-      #用户的sessionName
-      #principalSessionName:
-      #监控单个url调用的sql列表 
-      profileEnable: "true"
-  stat:
-    initParameters: 
-      resetEnable: "false"
-      #web监控页面的用户名
-      loginUsername: admin
-      #web监控页面的密码 
-      loginPassword: "123456"
-      #允许查看监控页面的ip
-      #allow: 
-      #拒绝查看监控页面的ip
-      #deny: 
-    #web监控页面的地址  
-    urlMappings: /druid/*  
     

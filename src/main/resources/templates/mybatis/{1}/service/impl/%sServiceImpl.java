@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 #parse('/templates/commons/comment.vm')
-@Service("${StringUtils.lowercaseFirst($serviceName)}")
+@Service
 public class ${className} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})}<${StringUtils.capitalFirst("$entityName")}> #end implements ${serviceName} {
 #set($sName=${StringUtils.lowercaseFirst($mapperName)})
 

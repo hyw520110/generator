@@ -137,10 +137,12 @@ public class Generator extends AbstractGenerator {
     }
 
     private String getDir(String projectName, boolean isJava, String subDir, String moduleName) {
+        boolean isTest=StringUtils.startsWith(subDir, moduleName+(System.getProperty("os.name").startsWith("Win")?"\\":"/")+"test");
         if (isJava) {
-            return StringUtils.toPath(global.getOutputDir(), moduleName, global.getSourceDirectory(), strategy.getRootPackage() + File.separator + projectName, subDir);
+            return StringUtils.toPath(global.getOutputDir(), moduleName, isTest?global.getTestSourceDirectory():global.getSourceDirectory(), strategy.getRootPackage() + File.separator + projectName, subDir);
         }
-        return StringUtils.toPath(global.getOutputDir(), moduleName, global.getResource(), StringUtils.substringAfter(subDir, moduleName));
+        String s = StringUtils.substringAfter(subDir, moduleName);
+        return StringUtils.toPath(global.getOutputDir(), moduleName, isTest?global.getTestResource():global.getResource(),isTest?StringUtils.substringAfter(s, "test"):s);
     }
 
     private String getSubDir(final File dir, File file, Table table) {

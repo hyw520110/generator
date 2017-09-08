@@ -26,9 +26,9 @@
 
 #if($findById)
 	<select id="findById" resultMap="BaseResultMap" >
-	    SELECT #if(${columns}) <include refid="columns"/> #else  ${table.fieldNames} #end
-	 	from ${table.name}
+	    SELECT #if(${columns}) <include refid="columns"/> #else  ${table.fieldNames} #end from ${table.name}
 		WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount <${table.primarykeyFields.size()}) and #end #end 
+	
 	</select>	
 #end
 
@@ -86,14 +86,14 @@
 	<update id="update" parameterType="${entityPackage}.${entityName}">
 		UPDATE ${table.name} 
 		<set>
-		#foreach($field in ${table.fields})
-		#if(!$field.isPrimarykey())	
+#foreach($field in ${table.fields})
+#if(!$field.isPrimarykey())	
 			<if test="${field.propertyName} != null">
 				${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount < ${table.fields.size()}),#end
 				
 			</if>
-		#end	
-		#end
+#end	
+#end
 		</set>
 		WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount <${table.primarykeyFields.size()}) and #end #end
 		     
@@ -108,7 +108,6 @@
 #end
 	<sql id="queryWhere">
 #foreach($field in ${table.fields})
-	
 		<if test="${field.name} != null and ${field.name} != ''">
 			and ${field.name} = #{${field.propertyName}} 
 		</if>

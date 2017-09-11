@@ -3,18 +3,23 @@ package ${controllerPackage};
 import java.util.List;
 import java.util.Map;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
 import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.druid.util.StringUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-#if($!{springboot_version})
+import com.hyw.test.api.entity.Account;
+
 import org.springframework.web.bind.annotation.RestController;
 #else
 import org.springframework.stereotype.Controller;
-#end
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,16 +69,21 @@ public class ${className} #if(${superControllerClass})extends ${superControllerC
 #end
     }
     
-    @RequestMapping(value="/add")
-    public ModelAndView save(HttpServletRequest req,$eName entity){
-        if("POST".equals(req.getMethod())){
-            return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.save(entity));
-        }
+    @RequestMapping(value="/add",method=RequestMethod.GET)
+    public ModelAndView toAdd(HttpServletRequest req,@ModelAttribute("bean")$eName bean){
         return new ModelAndView("/${table.beanName}/create");
     }
     
+    @RequestMapping(value="/add",method=RequestMethod.POST)
+    public ModelAndView save(HttpServletRequest req,$eName entity,BindingResult result){
+        if(result.hasErrors()){
+            return new ModelAndView("/${table.beanName}/create");
+        }
+        return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.save(entity));
+    }
+    
     @RequestMapping(value="/update", method = RequestMethod.POST)
-    public ModelAndView update($eName entity){
+    public ModelAndView update(@Valid $eName entity){
         return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.update(entity)>0);
     }
     

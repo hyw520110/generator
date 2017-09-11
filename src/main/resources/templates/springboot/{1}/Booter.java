@@ -15,13 +15,16 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import com.alibaba.druid.support.http.StatViewServlet;
 import com.alibaba.druid.support.http.WebStatFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonpHttpMessageConverter4;
-#end
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import io.undertow.Undertow.Builder;
 import org.springframework.boot.context.embedded.undertow.UndertowBuilderCustomizer;
 import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory;
@@ -38,7 +41,9 @@ import org.springframework.web.servlet.DispatcherServlet;
 public class Booter{
     @Value("${druid.stat.urlMappings}")
     private String druidStatUrlMappings;
-
+    @Value("${spring.messages.basenames}")
+    private String basenames;
+    
 	public static void main(String[] args ){
 		//springloaded
 		//	1. mvn spring-boot:run   
@@ -62,10 +67,40 @@ public class Booter{
         List<MediaType> fastMediaTypes = new ArrayList<>();
         fastMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
         converter.setSupportedMediaTypes(fastMediaTypes);
-		return new HttpMessageConverters(converter);
+		return new HttpMessageConverters(converter,mappingJackson2HttpMessageConverter());
 	}
 #end
-
+     
+    /**
+     * 设置jackson可读格式化
+     * actuator输出硬编码采用jackson
+     * @author:  heyiwu 
+     * @return
+     */
+    @Bean
+    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
+        MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
+        mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper());
+        return mappingJackson2HttpMessageConverter;
+    }
+    /**
+     * 设置jackson可读格式化
+     * @author:  heyiwu 
+     * @return
+     */
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper objMapper = new ObjectMapper();
+        objMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return objMapper;
+    }
+    
+    /**
+     * springmvc注册/初始化
+     * @author:  heyiwu 
+     * @param dispatcherServlet
+     * @return
+     */
 	@Bean  
 	public ServletRegistrationBean dispatcherRegistration(DispatcherServlet dispatcherServlet) {  
 	    ServletRegistrationBean registration = new ServletRegistrationBean(dispatcherServlet);  
@@ -73,9 +108,28 @@ public class Booter{
 	    registration.setLoadOnStartup(2);
 	    return registration;  
 	}
+	
+	/*  @Bean
+    public ResourceBundleMessageSource getMessageSource() throws Exception {  
+        ResourceBundleMessageSource rbms = new ResourceBundleMessageSource();  
+        rbms.setDefaultEncoding("UTF-8");  
+        rbms.setBasenames(basenames);  
+        return rbms;  
+    }  
+  
+    @Bean  
+    public Validator getValidator() throws Exception {  
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();  
+        validator.setValidationMessageSource(getMessageSource());  
+        return validator;  
+    } */
 
 #if($ssl)
-	//tomcat ssl /http2https	
+	/**
+	 * tomcat ssl /http2https  
+	 * @author:  heyiwu 
+	 * @return
+	 */
 	@Bean
     public EmbeddedServletContainerFactory servletContainer() {
         TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory() {
@@ -119,7 +173,12 @@ public class Booter{
 	    });
 	    return factory;
 	}*/
-
+    
+    /**
+     * druid页面监控filter
+     * @author:  heyiwu 
+     * @return
+     */
     @Bean
     public FilterRegistrationBean druidWebStatFilter() {
         FilterRegistrationBean frb = new FilterRegistrationBean(new WebStatFilter());
@@ -129,7 +188,11 @@ public class Booter{
         frb.setInitParameters(druidWebStatInitParameters());
         return frb;
     }
-    
+    /**
+     * druid页面监控servlet
+     * @author:  heyiwu 
+     * @return
+     */    
     @Bean
     public ServletRegistrationBean druidStatViewServlet() {
         ServletRegistrationBean srb = new ServletRegistrationBean(new StatViewServlet(), druidStatUrlMappings);

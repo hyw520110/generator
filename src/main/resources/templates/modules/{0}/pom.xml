@@ -24,6 +24,10 @@
 		  	<artifactId>commons-lang</artifactId>
 		  	<version>2.4</version>
 		</dependency>
+		<dependency>
+		    <groupId>org.hibernate</groupId>
+		    <artifactId>hibernate-validator</artifactId>
+		</dependency>
 #if($!{springboot_version})		
 		<dependency>
 		  <groupId>org.springframework.boot</groupId>

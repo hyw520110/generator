@@ -91,8 +91,9 @@ spring:
       max-file-size: 10MB
       max-request-size: 100MB
   messages:
-    # if true use system local and false to use baseName (e.g. 'messages') 
-    fallback-to-system-locale: false      
+    basename: i18n/messages
+    #资源文件缓存失效时间,默认-1永不失效
+    cache-seconds: 60      
   cache: 
     type: redis               
 mybatis:
@@ -126,8 +127,15 @@ server:
     io-threads: 100
     max-http-post-size: 80920
     worker-threads: 512
+#  jackson: 
+#    serialization: 
+#      INDENT_OUTPUT: true
+#http: 
+#  mappers: 
+#    json-pretty-print: true   
+    
 management:  
-  port: 9901
+  port: ${random.int[9901,9990]}
   context-path: /manage
   security: 
     enabled: false    

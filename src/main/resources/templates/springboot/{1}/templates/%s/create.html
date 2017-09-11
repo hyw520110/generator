@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
-	<form th:action="@{/${table.beanName}/add}" method="POST">
+	<form th:action="@{/${table.beanName}/add}" method="POST" th:object="${bean}">
 	<table class="table  table-bordered table-hover">
 		#foreach($field in ${table.fields})
 		#if(!$field.isPrimarykey())
@@ -15,6 +15,7 @@
 			<td class="jqgrow ui-row-ltr ui-widget-content"  >#if("${field.comment}"=="")${field.propertyName}#else${field.comment}#end</td>
 			<td>
 				<input type="text" name="${field.propertyName}" />
+				<li th:if="${#fields.hasErrors('${field.propertyName}')}" th:errors="*{${field.propertyName}}">错误消息</li>
 			</td>
 		</tr>
 		#end

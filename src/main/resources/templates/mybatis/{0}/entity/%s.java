@@ -8,8 +8,11 @@ import #if($StringUtils.indexOf("$superEntityClass",'.')==-1)${entityPackage}.#e
 #else
 import java.io.Serializable;
 
+import javax.validation.constraints.NotNull;
+
 import com.mysql.jdbc.StringUtils;    
 #end
+import javax.validation.constraints.NotNull;
 
 
 #parse('/templates/commons/comment.vm')
@@ -23,8 +26,9 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
     * ${field.comment}
     */
 #end
-
 #if(!${field.isCommonField} || ${StringUtils.indexOf("$superEntityClass", '.')}!=-1)
+#if(!$field.isNullAble())   @NotNull
+#end 
     private ${field.fieldType.type} ${field.propertyName};
 #end    
 #end

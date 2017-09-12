@@ -4,6 +4,12 @@ setlocal enabledelayedexpansion
 %~d0
 cd %~dp0
 set path=%~dp0\wget;%~dp0\7z;%path%
+if "%1"=="" (
+set debug=""
+) else (
+set debug=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%1
+)
+
 
 java -version 
 
@@ -31,4 +37,4 @@ set path=%~dp0\jre1.8.0_144\bin;%path%
  
 :start
 echo start ${projectName}-${moduleName} service...
-java -jar ../lib/${projectName}-${moduleName}.jar
+java %debug% -jar ../lib/${projectName}-${moduleName}.jar

@@ -14,11 +14,11 @@ import org.springframework.web.servlet.ModelAndView;
 import com.alibaba.druid.util.StringUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.hyw.test.api.entity.Account;
-
+#if($!{springboot_version})
 import org.springframework.web.bind.annotation.RestController;
 #else
 import org.springframework.stereotype.Controller;
+#end
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -70,21 +70,21 @@ public class ${className} #if(${superControllerClass})extends ${superControllerC
     }
     
     @RequestMapping(value="/add",method=RequestMethod.GET)
-    public ModelAndView toAdd(HttpServletRequest req,@ModelAttribute("bean")$eName bean){
+    public ModelAndView toAdd(HttpServletRequest req,@ModelAttribute("bean") $eName bean){
         return new ModelAndView("/${table.beanName}/create");
     }
     
     @RequestMapping(value="/add",method=RequestMethod.POST)
-    public ModelAndView save(HttpServletRequest req,$eName entity,BindingResult result){
+    public ModelAndView save(HttpServletRequest req,@Valid @ModelAttribute("bean") $eName bean,BindingResult result){
         if(result.hasErrors()){
             return new ModelAndView("/${table.beanName}/create");
         }
-        return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.save(entity));
+        return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.save(bean));
     }
     
     @RequestMapping(value="/update", method = RequestMethod.POST)
-    public ModelAndView update(@Valid $eName entity){
-        return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.update(entity)>0);
+    public ModelAndView update(@Valid $eName bean){
+        return new ModelAndView("redirect:/${table.beanName}/list","flag",${sName}.update(bean)>0);
     }
     
     //注意:数据更新操作一般必须是post请求, method = RequestMethod.POST

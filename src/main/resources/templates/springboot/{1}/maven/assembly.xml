@@ -23,7 +23,8 @@
 			<directory>src/main/resources</directory>
 			<outputDirectory>/</outputDirectory>
 			<includes>
-				<include>*.yaml</include>
+				<include>*.yml</include>
+				<include>*.xml</include>
 			</includes>
 		</fileSet>
 		<fileSet>

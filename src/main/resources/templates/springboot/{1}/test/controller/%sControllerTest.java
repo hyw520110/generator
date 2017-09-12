@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ${rootPackage}.${projectName}.${moduleName}.controller.${table.beanName}Controller;
-import com.hyw.test.app.Booter;
+import ${rootPackage}.${projectName}.${moduleName}.Booter;
 
 @RunWith(SpringRunner.class)
 //@ContextConfiguration or @SpringBootTest(classes=Booter.class)

@@ -17,15 +17,15 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
-import com.alibaba.druid.support.http.StatViewServlet;
-import com.alibaba.druid.support.http.WebStatFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonpHttpMessageConverter4;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
+#end
 import io.undertow.Undertow.Builder;
+import com.alibaba.druid.support.http.StatViewServlet;
+import com.alibaba.druid.support.http.WebStatFilter;
 import org.springframework.boot.context.embedded.undertow.UndertowBuilderCustomizer;
 import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -33,6 +33,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.DispatcherServlet;
+import javax.validation.Validator;
+import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 @SpringBootApplication
 @ImportResource(locations={"classpath:/spring/*.xml"})
@@ -41,7 +44,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 public class Booter{
     @Value("${druid.stat.urlMappings}")
     private String druidStatUrlMappings;
-    @Value("${spring.messages.basenames}")
+    @Value("${spring.messages.basename}")
     private String basenames;
     
 	public static void main(String[] args ){
@@ -49,6 +52,7 @@ public class Booter{
 		//	1. mvn spring-boot:run   
 		//	2. vm args: -javaagent:%m2_repo%\org\springframework\springloaded\1.2.7.RELEASE\springloaded-1.2.7.RELEASE.jar -noverify
 		//springboot devtools
+	    //System.setProperty("spring.devtools.restart.enabled", "false");
 		SpringApplication.run(Booter.class,args);
 	}
 	
@@ -109,7 +113,7 @@ public class Booter{
 	    return registration;  
 	}
 	
-	/*  @Bean
+	@Bean
     public ResourceBundleMessageSource getMessageSource() throws Exception {  
         ResourceBundleMessageSource rbms = new ResourceBundleMessageSource();  
         rbms.setDefaultEncoding("UTF-8");  
@@ -122,7 +126,7 @@ public class Booter{
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();  
         validator.setValidationMessageSource(getMessageSource());  
         return validator;  
-    } */
+    } 
 
 #if($ssl)
 	/**

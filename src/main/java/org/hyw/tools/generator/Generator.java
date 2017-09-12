@@ -125,7 +125,7 @@ public class Generator extends AbstractGenerator {
         File dir = global.getTemplateFile();
         String encoding = global.getEncoding();
         //TODO 单模块/无模块单工程 支持
-        Collection<File> modules = FileUtils.listFiles(new File(dir, "modules"), FileFilterUtils.nameFileFilter(builder.getFileName()), FileFilterUtils.trueFileFilter());
+        Collection<File> modules = FileUtils.listFiles(new File(dir, "modules"),FileFilterUtils.fileFileFilter(), FileFilterUtils.trueFileFilter());
         context.put("version", strategy.getVersion());
         context.put("modules", global.getModules());
         for (File file : modules) {
@@ -176,7 +176,7 @@ public class Generator extends AbstractGenerator {
                 f.getParentFile().mkdirs();
             }
             String name = f.getName();
-            if(name.endsWith("js")||name.endsWith("css")||name.endsWith("dll")||name.endsWith("exe")||name.startsWith("logback")){
+            if(name.endsWith("js")||name.endsWith("css")||name.endsWith("dll")||name.endsWith("exe")){
                 FileUtils.copyFile(src, f);
                 return ;
             }

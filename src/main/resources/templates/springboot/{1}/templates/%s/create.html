@@ -14,7 +14,8 @@
 		<tr>
 			<td class="jqgrow ui-row-ltr ui-widget-content"  >#if("${field.comment}"=="")${field.propertyName}#else${field.comment}#end</td>
 			<td>
-				<input type="text" name="${field.propertyName}" />
+				<input type="text" name="${field.propertyName}"  />
+				<span th:if="*{${field.isNullAble()}}"  th:title="必输项" style="color: red">(*)</span>
 				<li th:if="${#fields.hasErrors('${field.propertyName}')}" th:errors="*{${field.propertyName}}">错误消息</li>
 			</td>
 		</tr>

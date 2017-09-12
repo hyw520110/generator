@@ -2,11 +2,15 @@ package ${factoryPackage};
 
 import java.net.URL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
+
+import com.ycd360.backstage.app.springboot.beans.factory.MyBeanPostProcessor;
  
 /**
  * 
@@ -27,6 +31,8 @@ import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
 @Component
 public class MyBeanPostProcessor implements BeanPostProcessor {
 
+    private static final Logger logger = LoggerFactory.getLogger(MyBeanPostProcessor.class.getName());
+
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         return setSpringResourceTemplateResolverPrefix(bean);
@@ -38,10 +44,17 @@ public class MyBeanPostProcessor implements BeanPostProcessor {
     }
     
     private Object setSpringResourceTemplateResolverPrefix(Object bean) {
-        if (bean instanceof SpringResourceTemplateResolver) {
+        if (!(bean instanceof SpringResourceTemplateResolver)) {
+            return bean;
+        }
+        try {
             URL resource = this.getClass().getClassLoader().getResource("templates/");
             String devResource = resource.getFile().toString().replaceAll("target/classes", "src/main/resources");
-            ((SpringResourceTemplateResolver) bean).setPrefix("file:"+devResource);
+            SpringResourceTemplateResolver resolver = ((SpringResourceTemplateResolver) bean);
+            logger.info("replace template prefix to:{}",devResource);
+            resolver.setPrefix("file:"+devResource);
+        } catch (Exception e) {
+            logger.warn("设置模板前缀异常:{}",e.getLocalizedMessage());
         }
         return bean;
     }

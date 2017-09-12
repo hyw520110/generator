@@ -217,6 +217,9 @@
 				<!-- spring-boot-devtools -->
 				<configuration>
 					<fork>true</fork>
+					<!-- <jvmArguments>
+                        -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
+                    </jvmArguments> -->
 				</configuration>
 			</plugin>
 #end
@@ -229,7 +232,7 @@
 					<archive>
 						<addMavenDescriptor>false</addMavenDescriptor>
 						<manifestEntries>
-							<Class-Path>. ../conf ../templates ../static ../</Class-Path>
+							<Class-Path>. ../ ../conf ../templates ../static </Class-Path>
 						</manifestEntries>
 						<manifest>
 							<addClasspath>true</addClasspath>
@@ -242,7 +245,8 @@
 						<exclude>/conf/**</exclude>
 						<exclude>/templates/**</exclude>
 						<exclude>/static/**</exclude>
-						<exclude>*.yaml</exclude>
+						<exclude>**/maven/**</exclude>
+						<exclude>*.yml</exclude>
 						<exclude>*.xml</exclude>
 					</excludes>
 				</configuration>

@@ -22,7 +22,7 @@ spring:
       #一般静态资源修改不需重启(修改后刷新页面即可,浏览器安装LiveReload插件支持免刷新),如需重启或自定义静态资源目录修改需重启,配置排除即可
       #exclude: /static/**,/templates/**
   redis: 
-    password: 123456
+    password: asdf1234
     cluster: 
       nodes: 
         - 192.168.40.95:7001
@@ -90,8 +90,10 @@ spring:
     multipart: 
       max-file-size: 10MB
       max-request-size: 100MB
+    converters: 
+      preferred-json-mapper: fastjson  
   messages:
-    basename: i18n/messages
+    basename: conf/messages
     #资源文件缓存失效时间,默认-1永不失效
     cache-seconds: 60      
   cache: 
@@ -121,12 +123,18 @@ server:
       suffix: log  
       pattern: common  
       rotate: true
+    #每块buffer的空间大小,越小的空间被利用越充分  
     buffer-size: 1024
+    # 每个区分配的buffer数量 , 所以pool的大小是buffer-size * buffers-per-region
     buffers-per-region: 1024
+    #是否分配的直接内存
     direct-buffers: true
-    io-threads: 100
+    #设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接, 默认设置每个CPU核心一个线程
+    io-threads: 4
     max-http-post-size: 80920
-    worker-threads: 512
+    #阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程,它的值设置取决于系统的负载
+    worker-threads: 20
+    
 #  jackson: 
 #    serialization: 
 #      INDENT_OUTPUT: true
@@ -135,7 +143,7 @@ server:
 #    json-pretty-print: true   
     
 management:  
-  port: ${random.int[9901,9990]}
+  port: #[[${random.int[9901,9990]}]]#
   context-path: /manage
   security: 
     enabled: false    
@@ -143,6 +151,7 @@ info:
   app: 
     name: "@project.name@"
     version: "@project.version@"
+    
 #druid监控配置    
 druid:
   web-stat:
@@ -152,7 +161,7 @@ druid:
       sessionStatEnable: "true"  
       sessionStatMaxCount: "2000"
       #用户的sessionName
-      #principalSessionName:
+      #principalSessionName: user_name
       #监控单个url调用的sql列表 
       profileEnable: "true"
   stat:
@@ -168,4 +177,6 @@ druid:
       #deny: 
     #web监控页面的地址  
     urlMappings: /druid/*  
-    
+context:  
+  slow-time: 800
+  userName: user_name    

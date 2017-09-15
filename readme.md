@@ -23,11 +23,11 @@
 修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
 - **修改数据源配置**
 	- 如配置明文密码，直接配置好driverClassName、url、username、pwd(明文密码),filters和connectionProperties配置为空或注释即可
-		- 如配置密文密码,执行以下命令(命令执行输出：公钥(publicKey)、私钥(privateKey)、密文密码)：					
-			- java -cp %M2_REPO%\com\alibaba\druid\1.1.2\druid-1.1.2.jar com.alibaba.druid.filter.config.ConfigTools 123456
-			- 密码配置为以上命令产生的密文密码
-			- 配置filters为: config	
-			- 配置连接属性(connectionProperties)为：config.decrypt=true;config.decrypt.key=${publicKey}			
+	- 如配置密文密码,执行以下命令：					
+		- java -cp %M2_REPO%\com\alibaba\druid\1.1.2\druid-1.1.2.jar com.alibaba.druid.filter.config.ConfigTools 123456
+		- 命令执行输出：公钥(publicKey)、私钥(privateKey)、密文密码,密码配置为以上命令产生的密文密码
+		- 配置filters为: config	
+		- 配置连接属性(connectionProperties)为：config.decrypt=true;config.decrypt.key=${publicKey}			
 - 修改全局配置
 	- **定义输出目录(outputDir)**,最后一个子目录为项目名
 	- **是否清空输出目录(delOutputDir)默认为false**,工程已存在的情况下，此配置项谨慎使用(不要配置为true)
@@ -103,19 +103,6 @@
 5. 数据验证及国际化(存放错误消息,便于更新维护)支持
 
 # FAQ:
-
-eclipse打开pom.xml报错：
-
-	org.apache.maven.archiver.MavenArchiver.getManifest(org.apache.maven.project.MavenProject, org.apache.maven.archiver.MavenArchiveConfiguration) pom.xml
-解決：
-
-- 编辑pom.xml更改maven-jar-plugin的版本号为2.6
-- 或者升級m2e extensions,添加url(安裝后重啟eclipse)：
-		- https://otto.takari.io/content/sites/m2e.extras/m2eclipse-mavenarchiver/0.17.2/N/LATEST/
-		- http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-mavenarchiver/0.17.2/N/LATEST/
-
-
-
 
 执行Generator类的main方法报错 ：
 

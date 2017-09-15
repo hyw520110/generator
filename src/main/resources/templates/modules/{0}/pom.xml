@@ -70,4 +70,43 @@
 			</plugin>
 		</plugins>
 	</build>
+	<!-- 发布节点 -->
+	<distributionManagement>
+		<!-- mvn deploy -Pprod 发布正式版本到nexus私服 -->
+		<repository>
+			<id>prod</id>
+			<name>dev-nexus-release</name>
+			<url>http://dev.maven.com:8081/nexus/content/repositories/releases/</url>
+		</repository>
+		<!-- mvn deploy 发布默认快照版本到nexus私服 -->
+		<snapshotRepository>
+			<id>dev</id>
+			<name>dev-nexus-snapshot</name>
+			<url>http://dev.maven.com:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+	<profiles>
+		<!-- 生产环境,调用开发环境配置,默认激活 -->
+		<profile>
+			<id>prod</id>
+			<properties>
+				<env.profile>main</env.profile>
+			</properties>
+		</profile>
+		<!-- 开发环境,默认激活(在settings.xml里配置的) mvn deploy或mvn deploy -Pdev -->
+		<profile>
+			<id>dev</id>
+			<properties>
+				<env.profile>main</env.profile>
+			</properties>
+		</profile>
+		<!-- 测试环境,mvn install -Ptest或mvn deploy -Ptest -->
+		<profile>
+			<id>test</id>
+			<properties>
+				<env.profile>test</env.profile>
+				<project.release.version>1.1.0-SNAPSHOT</project.release.version>
+			</properties>
+		</profile>
+	</profiles>
 </project>

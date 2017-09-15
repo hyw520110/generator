@@ -28,12 +28,12 @@ public class ContextInterceptor extends HandlerInterceptorAdapter {
     /**
      * 慢请求的时长
      */
-    @Value("context.slow-time")
+    @Value("${context.slow-time}")
     public long                      reqSlowTime = 800;
     /**
      * 用户
      */
-    @Value("context.userName")
+    @Value("${context.userName}")
     private String                   userNameKey;
 
     private static ThreadLocal<Long> processTime = new ThreadLocal<Long>();

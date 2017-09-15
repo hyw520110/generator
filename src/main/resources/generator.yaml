@@ -52,7 +52,7 @@ strategy:
     #工程默认版本号
     version: 1.0.1-SNAPSHOT 
     #jdk版本
-    javaVersion: 1.7
+    javaVersion: 1.8
     #表名、字段名、是否使用下划线命名
     separators: [_,-]
     #是否大写命名
@@ -62,7 +62,7 @@ strategy:
     #表前缀
     tablePrefix: ['tb_','batch_']
     #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
-    include:  [ 'account']
+    include:  
     #需要排除的表名
     exclude: 
     #是否生成字段常量,默认 false） 

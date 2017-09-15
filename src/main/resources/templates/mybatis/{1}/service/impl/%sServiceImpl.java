@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 #parse('/templates/commons/comment.vm')
 @Service
+#if($!{spring_boot_dubbo_version})@com.alibaba.dubbo.config.annotation.Service#end
 public class ${className} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})}<${StringUtils.capitalFirst("$entityName")}> #end implements ${serviceName} {
 #set($sName=${StringUtils.lowercaseFirst($mapperName)})
 

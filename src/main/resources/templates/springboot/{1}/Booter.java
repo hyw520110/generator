@@ -24,6 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 #end
 import io.undertow.Undertow.Builder;
+
+#if($!{spring_boot_dubbo_version})
+import com.alibaba.boot.dubbo.annotation.EnableDubboConfiguration;
+#end
+
 import com.alibaba.druid.support.http.StatViewServlet;
 import com.alibaba.druid.support.http.WebStatFilter;
 import org.springframework.boot.context.embedded.undertow.UndertowBuilderCustomizer;
@@ -41,6 +46,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 @ImportResource(locations={"classpath:/spring/*.xml"})
 @EnableConfigurationProperties
 @EnableCaching
+#if($!{spring_boot_dubbo_version})@EnableDubboConfiguration#end
 public class Booter{
     @Value("${druid.stat.urlMappings}")
     private String druidStatUrlMappings;
@@ -53,7 +59,13 @@ public class Booter{
 		//	2. vm args: -javaagent:%m2_repo%\org\springframework\springloaded\1.2.7.RELEASE\springloaded-1.2.7.RELEASE.jar -noverify
 		//springboot devtools
 	    //System.setProperty("spring.devtools.restart.enabled", "false");
-		SpringApplication.run(Booter.class,args);
+#if($!{spring_boot_dubbo_version})
+	    //设置dubbo日志适配
+        System.setProperty("dubbo.application.logger", "slf4j");
+        //关闭dubbo实时数据追踪
+        //System.setProperty("dubbo.trace.enabled", "false");
+#end
+        SpringApplication.run(Booter.class,args);
 	}
 	
 #if("fastjson"=="${json_type}")	

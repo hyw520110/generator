@@ -111,6 +111,9 @@ public class TabField extends BaseBean {
 		this.comment = comment;
 	}
 
+	public boolean isNotNullAble(){
+	    return !isNullAble();
+	}
 	public boolean isNullAble() {
 		return nullAble;
 	}

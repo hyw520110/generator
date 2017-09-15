@@ -20,33 +20,32 @@
 
 ## 1. 源码方式：
 
-	- 修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
-
-		- **修改数据源配置**
-			- 如配置明文密码，直接配置好driverClassName、url、username、pwd(明文密码),filters和connectionProperties配置为空或注释即可
-			- 如配置密文密码,执行以下命令(命令执行输出：公钥(publicKey)、私钥(privateKey)、密文密码)：					
-				- java -cp %M2_REPO%\com\alibaba\druid\1.1.2\druid-1.1.2.jar com.alibaba.druid.filter.config.ConfigTools 123456
-				- 密码配置为以上命令产生的密文密码
-				- 配置filters为: config	
-				- 配置连接属性(connectionProperties)为：config.decrypt=true;config.decrypt.key=${publicKey}			
-		- 修改全局配置
-			- **定义输出目录(outputDir)**,最后一个子目录为项目名
-			- **是否清空输出目录(delOutputDir)默认为false**,工程已存在的情况下，此配置项谨慎使用(不要配置为true)
- 			- **定义是否覆盖生成(默认false)**,工程文件已存在的情况下，此配置项谨慎使用(不要配置为true)
- 			- 定义作者(author)
- 			- 定义版权(copyright)
-		- 修改生成策略
-			- **定义根包(rootPackage)**
-			- 定义移除的表前缀tablePrefix
-			- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
+修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
+- **修改数据源配置**
+	- 如配置明文密码，直接配置好driverClassName、url、username、pwd(明文密码),filters和connectionProperties配置为空或注释即可
+		- 如配置密文密码,执行以下命令(命令执行输出：公钥(publicKey)、私钥(privateKey)、密文密码)：					
+			- java -cp %M2_REPO%\com\alibaba\druid\1.1.2\druid-1.1.2.jar com.alibaba.druid.filter.config.ConfigTools 123456
+			- 密码配置为以上命令产生的密文密码
+			- 配置filters为: config	
+			- 配置连接属性(connectionProperties)为：config.decrypt=true;config.decrypt.key=${publicKey}			
+- 修改全局配置
+	- **定义输出目录(outputDir)**,最后一个子目录为项目名
+	- **是否清空输出目录(delOutputDir)默认为false**,工程已存在的情况下，此配置项谨慎使用(不要配置为true)
+ 	- **定义是否覆盖生成(默认false)**,工程文件已存在的情况下，此配置项谨慎使用(不要配置为true)
+ 	- 定义作者(author)
+	- 定义版权(copyright)
+- 修改生成策略
+	- **定义根包(rootPackage)**
+	- 定义移除的表前缀tablePrefix
+	- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
 	- 安装配置好maven/gradle导入IDE,执行Generator的main方法.
 
 
 ## 2. 命令脚本：
 	
-	- 分支下载zip包或通过源码构建获取zip包:在工程根目录下执行构建命令：mvn clean package，在target目录下获取zip包 
-	- 解压zip包，修改配置文件generator.yaml
-	- 执行bin目录下的命令脚本
+- 分支下载zip包或通过源码构建获取zip包:在工程根目录下执行构建命令：mvn clean package，在target目录下获取zip包 
+- 解压zip包，修改配置文件generator.yaml
+- 执行bin目录下的命令脚本
 
 ## 启动服务
 	
@@ -54,7 +53,7 @@
 
 ### 源码执行
 
-- 把生成的源码导入IDE
+- 把生成的源码导入IDE(maven/gradle工程)
 - 执行Boot.java启动服务，服务启动完成后自动打开浏览器	
 		
 ### 脚本执行
@@ -110,8 +109,8 @@ eclipse打开pom.xml报错：
 	org.apache.maven.archiver.MavenArchiver.getManifest(org.apache.maven.project.MavenProject, org.apache.maven.archiver.MavenArchiveConfiguration) pom.xml
 解決：
 
-	- 编辑pom.xml更改maven-jar-plugin的版本号为2.6
-	- 或者升級m2e extensions,添加url(安裝后重啟eclipse)：
+- 编辑pom.xml更改maven-jar-plugin的版本号为2.6
+- 或者升級m2e extensions,添加url(安裝后重啟eclipse)：
 		- https://otto.takari.io/content/sites/m2e.extras/m2eclipse-mavenarchiver/0.17.2/N/LATEST/
 		- http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-mavenarchiver/0.17.2/N/LATEST/
 
@@ -123,5 +122,5 @@ eclipse打开pom.xml报错：
 	java.io.IOException:Stream closed 	
 解决：
 
-	- 找不到generator.yaml配置文件，确认是否编译(target/classes下是否有該文件)	
-	- 有编译错误，导致沒有自动编译，如src/main/resources目录下的模板文件有编译错误，直接设置忽略即可
+- 找不到generator.yaml配置文件，确认是否编译(target/classes下是否有該文件)	
+- 有编译错误，导致沒有自动编译，如src/main/resources目录下的模板文件有编译错误，直接设置忽略即可

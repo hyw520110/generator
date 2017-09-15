@@ -35,8 +35,8 @@ global:
     author: heyw
     #版权
     copyright: hyw Copyright (c) 2017-2020 All Rights Reserved.
-    #可选组件(枚举类Component)：MYBATIS、JPA、SPRINGMVC
-    components: [mybatis,springmvc,springboot]
+    #可选组件(枚举类Component)：MYBATIS、JPA、SPRINGMVC、dubbo
+    components: [mybatis,springmvc,springboot,dubbo]
     #模塊配置
     modules: [api,app]
     #java源码目录

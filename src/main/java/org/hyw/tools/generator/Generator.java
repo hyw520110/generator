@@ -69,21 +69,24 @@ public class Generator extends AbstractGenerator {
         //根据组件配置过滤所需模板文件
         final File dir = global.getTemplateFile();
         if (dir == null || !dir.exists()) {
-            System.err.println(dir + "模板目录不存在!");
+            logger.error("模板目录：{}不存在!",dir);
             return;
         }
 
         Map<String, Map<String, String>> map = global.getComponentsMap();
         VelocityContext context = createVelocityContext(map.values());
         Collection<File> files = getFiles(dir, map.keySet());
-        if (null == files) {
-            System.err.println(dir + "目录下没有所需的模板文件！");
+        if (null == files||files.isEmpty()) {
+            logger.error("{}目录下没有所需的模板文件！",dir);
             return;
         }
         createScriptFile(engine, context);
         String encoding = global.getEncoding();
         String projectName = global.getProjectName();
         List<Table> tables = getTables();
+        if(tables.isEmpty()){
+            logger.warn("查询表为空！");
+        }
         context.put("tables", tables);
         for (Table table : tables) {
             for (File file : files) {

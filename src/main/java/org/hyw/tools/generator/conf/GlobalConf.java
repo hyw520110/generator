@@ -146,12 +146,12 @@ public class GlobalConf extends BaseBean {
             try {
                 Component c = Component.getComonent(s);
                 if (null == c) {
-                    logger.warn("unknow of component:", s);
+                    logger.warn("unknow of component:{}", s);
                     continue;
                 }
                 pars=new Yaml().loadAs(getResourceAsStream(String.format("/conf/%s.yml", c)), HashMap.class);
             } catch (Throwable e) {
-                logger.error("load {} config {}:{}", s, e.getClass(), e.getLocalizedMessage());
+                logger.error("load config: {} {}:{}", s, e.getClass(), e.getLocalizedMessage());
                 pars=new HashMap<String,String>();
             }
             this.components.put(s.toLowerCase(),pars);

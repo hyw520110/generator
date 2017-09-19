@@ -93,7 +93,7 @@ public class DataSourceConf extends DruidDataSource {
 		if (null == querySQL) {
 			this.querySQL = new Yaml().loadAs(
 					getClass().getResourceAsStream(
-							String.format("/conf/%s.yaml", dbType.getValue())),
+							String.format("/conf/%s.yml", dbType.getValue())),
 					QuerySQL.class);
 		}
 		return querySQL;

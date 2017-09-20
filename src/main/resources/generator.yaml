@@ -16,7 +16,6 @@ dataSource:
     # 明文密码时值留空或注释;
     connectionProperties: "config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKGZ1YyvABRlmKHv+TcATyrsviKZLLtnkUb9e2lhgqMqZINXDstl3CdD74NnhjijX9wjXqA+V0ASq7uwBo8jZz8CAwEAAQ=="
 
-
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
@@ -43,6 +42,8 @@ global:
     sourceDirectory: src/main/java
     #资源文件目录
     resource: src/main/resources
+    #非模板文件排除渲染 
+    excludes: [ 'js','css','dll','exe','eot','png','jpg','swf' ]
 #策略配置
 strategy: 
     #父包名
@@ -62,7 +63,7 @@ strategy:
     #表前缀
     tablePrefix: ['tb_','batch_']
     #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
-    include:  
+    include: [ 'account'] 
     #需要排除的表名
     exclude: 
     #是否生成字段常量,默认 false） 

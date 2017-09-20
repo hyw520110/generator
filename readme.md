@@ -2,7 +2,7 @@
 
 代码生成器,主要功能：
 
-- 支持主流关系型数据库
+- 支持主流关系型数据库,支持整库生成、部分表生成、反选生成
 - 数据库连接池支持：密码加密，SQL注入拦截，慢SQL记录，连接池监控等
 - 支持代码、配置、依赖、页面模板(thymeleaf)以及单元测试用例(mock)的生成,支持复合主键的生成
 - 支持redis集群及切片缓存
@@ -60,11 +60,11 @@
 		
 ### 脚本执行
 
-模块配置以api、app为例 
+傻瓜化启动服务,支持无jre/jdk环境(自动下载jre配置临时环境变量)运行，以模块配置api、app为例： 
 
 - 进入parent目录，执行package.bat
 - 进入app目录下的target目录，解压zip包
-- 进入解压目录,如需修改配置,则修改application.yml,否则直接进入bin目录,执行start.bat启动服务(执行debug.bat调试启动)
+- 进入解压目录,如需修改配置,则修改application.yml,否则直接进入bin目录,执行start.bat启动服务(执行debug.bat调试启动),服务启动完成后自动打开浏览器(profile为dev配置)
 	
 # 生成器配置说明:
 - 配置文件generator.yaml包含数据源配置、全局配置、生成策略配置，具体配置说明见配置文件配置项注释说明
@@ -104,13 +104,21 @@
 - 重复提交
 5. 数据验证及国际化(存放错误消息,便于更新维护)支持
 6. 增加分布式配置
+7. 增加分布式消息中间件
+8. 交互式脚本
 
 # FAQ:
 
 执行Generator类的main方法报错 ：
 
 	java.io.IOException:Stream closed 	
-解决：
+- 解决：
+	- 找不到generator.yaml配置文件，确认是否编译(target/classes下是否有該文件)	
+	- 有编译错误，导致沒有自动编译，如src/main/resources目录下的模板文件有编译错误，直接设置忽略即可
 
-- 找不到generator.yaml配置文件，确认是否编译(target/classes下是否有該文件)	
-- 有编译错误，导致沒有自动编译，如src/main/resources目录下的模板文件有编译错误，直接设置忽略即可
+启动服务报错：
+
+	ClassCastException: java.lang.UnsupportedClassVersionError cannot be cast to [Ljava.lang.Object;
+- 解决：
+	- 在pom中指定jdk为1.7，并去掉zipkin数据追踪依赖
+	- 安装jdk1.8/jre1.8,并设置环境变量

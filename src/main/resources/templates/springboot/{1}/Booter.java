@@ -46,7 +46,8 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 @ImportResource(locations={"classpath:/spring/*.xml"})
 @EnableConfigurationProperties
 @EnableCaching
-#if($!{spring_boot_dubbo_version})@EnableDubboConfiguration#end
+#if($!{spring_boot_dubbo_version})@EnableDubboConfiguration
+#end
 public class Booter{
     @Value("${druid.stat.urlMappings}")
     private String druidStatUrlMappings;
@@ -128,7 +129,7 @@ public class Booter{
 	@Bean
     public ResourceBundleMessageSource getMessageSource() throws Exception {  
         ResourceBundleMessageSource rbms = new ResourceBundleMessageSource();  
-        rbms.setDefaultEncoding("UTF-8");  
+        rbms.setDefaultEncoding("${encoding}");  
         rbms.setBasenames(basenames);  
         return rbms;  
     }  

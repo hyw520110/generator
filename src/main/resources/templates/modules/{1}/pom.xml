@@ -126,13 +126,17 @@
         <dependency>
 	        <groupId>org.apache.curator</groupId>
 	        <artifactId>curator-framework</artifactId>
-	        <version>2.12.0</version>
 	    </dependency>
 	    <dependency>
         	<groupId>com.101tec</groupId>
         	<artifactId>zkclient</artifactId>
         	<version>0.10</version>
     	</dependency>
+    	<dependency>
+	        <groupId>org.springframework.cloud</groupId>
+	        <artifactId>spring-cloud-starter-zookeeper-config</artifactId>
+		</dependency>
+		
 #if("$!{javaVersion}"=="1.8")    	
 		<!-- 实时数据追踪 -->
     	<dependency>
@@ -141,6 +145,13 @@
    			<version>1.0.2</version>
         </dependency>
 #end
+		<!-- rocketmq -->
+		<dependency>
+		    <groupId>com.maihaoche</groupId>
+		    <artifactId>spring-boot-starter-rocketmq</artifactId>
+		    <version>0.0.2</version>
+		</dependency>
+		
 #end
 		<dependency>
 		   <groupId>org.springframework.boot</groupId>
@@ -180,6 +191,19 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+#if($!{springboot_version})
+	<dependencyManagement>
+	    <dependencies>
+	        <dependency>
+	            <groupId>org.springframework.cloud</groupId>
+	            <artifactId>spring-cloud-dependencies</artifactId>
+	            <version>Camden.SR7</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+	    </dependencies>
+	</dependencyManagement>
+#end
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<resources>
@@ -202,7 +226,7 @@
 			<plugin>
 			 <groupId>org.apache.maven.plugins</groupId>
 			 <artifactId>maven-resources-plugin</artifactId>
-			 <version>2.6</version>
+#if(!$!{springboot_version})			 <version>2.6</version>#end
 			 <configuration>
 			    <delimiters>
 			       <delimiter>@</delimiter>
@@ -214,7 +238,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
+#if(!$!{springboot_version})<version>3.3</version>#end
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
@@ -256,7 +280,7 @@
 		<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
+#if(!$!{springboot_version})<version>2.6</version>#end
 				<configuration>
 					<archive>
 						<addMavenDescriptor>false</addMavenDescriptor>
@@ -283,7 +307,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2.1</version>
+#if(!$!{springboot_version})<version>2.2.1</version>#end
 				<configuration>
 					<descriptors>
 						<descriptor>src/main/resources/maven/assembly.xml</descriptor>

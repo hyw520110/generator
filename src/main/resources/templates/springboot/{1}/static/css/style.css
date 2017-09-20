@@ -3,6 +3,10 @@ fieldset {
 	margin:10px;
 	border:black dashed 1px;
 } 
+fieldset label{
+    line-height: 34px;
+    text-align: right;
+}
 legend {
 	width:100px;
 	margin-bottom:1px;
@@ -13,4 +17,61 @@ legend {
 
 #pageInfo > div{
 	display: inline;
+}
+.fa-logo{
+    background: url(../images/logo.png) no-repeat center;
+    display: inline-block;
+    width: 22px;
+    height: 45px;
+    position: relative; 
+    top: 15px;
+}
+body{
+    background-color: #fff;
+}
+.main-content{
+    position: absolute;
+    left: 0;
+    top:0;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 47px 0 0;
+    overflow: auto;
+}
+#pageInfo{
+   margin: 20px auto;
+   text-align: center; 
+}
+.columnVisibility{
+    text-decoration: line-through;
+}
+#sortList span{
+    margin: 0 3px;
+}
+#searchList .dropdown-menu,#hideList .dropdown-menu,#sortList .dropdown-menu{
+    margin-top: 1px;
+}
+.yg-checkbox{
+    vertical-align: top;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    font-size: 12px;
+    text-align: center;
+    color: #32a3ce;
+    -moz-box-sizing: border-box;
+    border:1px solid #c8c8c8;
+    -moz-user-select:none;
+}
+.yg-checkbox.checked:before{
+    content:'\f00c';
+    display: block;
+    font-family: fontAwesome;
+    font-weight: 400;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
 }

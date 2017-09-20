@@ -83,6 +83,11 @@ public class GlobalConf extends BaseBean {
     private String resource            = "src/main/resources";
     private String testSourceDirectory = "src/test/java";
     private String testResource        = "src/test/resources";
+    /**
+     * 非模板文件排除渲染 
+     */
+    private String[] excludes;
+
 
     public String getOutputDir() {
         return outputDir;
@@ -236,5 +241,13 @@ public class GlobalConf extends BaseBean {
 	public void setCopyright(String copyright) {
 		this.copyright = copyright;
 	}
+
+    public String[] getExcludes() {
+        return excludes;
+    }
+
+    public void setExcludes(String[] excludes) {
+        this.excludes = excludes;
+    }
 
 }

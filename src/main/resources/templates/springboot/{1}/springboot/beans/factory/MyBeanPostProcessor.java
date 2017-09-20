@@ -9,8 +9,6 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
-
-import com.ycd360.backstage.app.springboot.beans.factory.MyBeanPostProcessor;
  
 /**
  * 

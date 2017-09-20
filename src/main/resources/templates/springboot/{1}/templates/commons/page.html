@@ -1,23 +1,38 @@
-<div id="pageInfo" th:fragment="pageInfo (action)">
-	<div th:unless="${page.isFirstPage}">
-		<a
-			th:href="@{${action}(pageNo=1,pageRows=${page.pageSize})}">首页</a>
-	</div>
-	<div th:unless="${page.isFirstPage}">
-		<a
-			th:href="@{${action}(pageNo=${page.prePage},pageRows=${page.pageSize})}">上一页</a>
-	</div>
-	<div th:each="nav:${page.navigatepageNums}">
-		<a
-			th:href="@{${action}(pageNo=${nav},pageRows=${page.pageSize})}"
-			th:text="${nav}">2</a>
-	</div>
-	<div th:unless="${page.isLastPage}">
-		<a
-			th:href="@{${action}(pageNo=${page.nextPage},pageRows=${page.pageSize})}">下一页</a>
-	</div>
-	<div th:unless="${page.isLastPage}">
-		<a
-			th:href="@{${action}(pageNo=${page.pages},pageRows=${page.pageSize})}">尾页</a>
-	</div>
+<div id="pageInfo">
+	<ul class="pagination" th:fragment="pageInfo (action)">
+		<li th:unless="${page.isFirstPage}">
+			<a th:href="@{${action}(pageNo=1,pageRows=${page.pageSize})}" aria-label="Previous">首页</a>
+		</li>
+		<li th:unless="${page.isFirstPage}">
+			<a th:href="@{${action}(pageNo=1,pageRows=${page.pageSize})}">上一页</a>
+		</li>
+		<li th:each="nav:${page.navigatepageNums}" th:class="${page.pageNum} == ${nav} ? 'active' : ''">
+			<a th:href="@{${action}(pageNo=${nav},pageRows=${page.pageSize})}" th:text="${nav}">2</a>
+		</li>
+		<li th:unless="${page.isLastPage}">
+			<a th:href="@{${action}(pageNo=${page.nextPage},pageRows=${page.pageSize})}">下一页</a>
+		</li>
+		<li th:unless="${page.isLastPage}">
+			<a th:href="@{${action}(pageNo=${page.pages},pageRows=${page.pageSize})}">尾页</a>
+		</li>
+		<li>
+			<span th:text="'共' + ${page.total} + '条'" style=""></span>
+		</li>
+		<li id="pageRowsList">
+			<span class="ui-selectmenu-button ui-widget ui-state-default ui-corner-top" style="height:32px;">
+				<span class="ui-selectmenu-text" th:text="${page.size}"></span>
+				<span class="ui-icon ui-icon-triangle-1-s"></span>
+			</span>
+			<div class="ui-selectmenu-menu ui-front ui-selectmenu-open" style="position:relative;display:none;" th:data-href="@{${action}(pageNo=1)}">
+				<a th:href="@{${action}(pageNo=1)}" style="display:none;"></a>
+				<ul class="ui-menu ui-widget ui-widget-content ui-corner-bottom" style="position:absolute;width: 46px;top: 33px; right: 0px;">
+					<li th:class="${page.size} == 5 ? 'ui-menu-item ui-state-focus' : 'ui-menu-item'">5</li>
+					<li th:class="${page.size} == 10 ? 'ui-menu-item ui-state-focus' : 'ui-menu-item'">10</li>
+					<li th:class="${page.size} == 20 ? 'ui-menu-item ui-state-focus' : 'ui-menu-item'">20</li>
+					<li th:class="${page.size} == 50 ? 'ui-menu-item ui-state-focus' : 'ui-menu-item'">50</li>
+					<li th:class="${page.size} == 100 ? 'ui-menu-item ui-state-focus' : 'ui-menu-item'">100</li>
+				</ul>
+			</div>
+		</li>
+	</ul>
 </div>

@@ -14,6 +14,7 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -178,8 +179,8 @@ public class Generator extends AbstractGenerator {
             if (!f.getParentFile().exists()) {
                 f.getParentFile().mkdirs();
             }
-            String name = f.getName();
-            if(name.endsWith("js")||name.endsWith("css")||name.endsWith("dll")||name.endsWith("exe")){
+            String ext = StringUtils.substringAfterLast(f.getName(), ".");
+            if(ArrayUtils.contains(global.getExcludes() ,ext)){
                 FileUtils.copyFile(src, f);
                 return ;
             }
@@ -207,6 +208,7 @@ public class Generator extends AbstractGenerator {
         }
         context.put("dataSource", dataSource);
         context.put("author", global.getAuthor());
+        context.put("encoding", global.getEncoding());
         context.put("copyright",global.getCopyright());
         context.put("StringUtils", StringUtils.class);
         context.put("projectName", global.getProjectName());

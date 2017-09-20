@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 #parse('/templates/commons/comment.vm')
 @Service
+#if($!{spring_boot_dubbo_version})@com.alibaba.dubbo.config.annotation.Service
+#end
 public class ${className}  implements ${serviceName} {
 	 //TODO 
 	@Autowired

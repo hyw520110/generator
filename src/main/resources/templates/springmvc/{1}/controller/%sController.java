@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -75,7 +76,7 @@ public class ${className} #if(${superControllerClass})extends ${superControllerC
     }
     
     @RequestMapping(value="/add",method=RequestMethod.POST)
-    public ModelAndView save(HttpServletRequest req,@Valid @ModelAttribute("bean") $eName bean,BindingResult result){
+    public ModelAndView save(HttpServletRequest req,@Validated @ModelAttribute("bean") $eName bean,BindingResult result){
         if(result.hasErrors()){
             return new ModelAndView("/${table.beanName}/create");
         }

@@ -5,8 +5,9 @@
 - 支持主流关系型数据库,支持整库生成、部分表生成、反选生成
 - 数据库连接池支持：密码加密，SQL注入拦截，慢SQL记录，连接池监控等
 - 支持代码、配置、依赖、页面模板(thymeleaf)以及单元测试用例(mock)的生成,支持复合主键的生成
+- 支持zookeeper分布式集中配置
 - 支持redis集群及切片缓存
-- 支持dubbo生成(零配置)
+- 支持生成dubbo配置(注解,零xml配置)
 - 支持zipkin实时数据追踪(需在生成器配置文件中指定jdk为1.8)
 - java类注释支持自定义(更改模板文件comment.vm)
 - 支持构建脚本生成(gradle/maven/不生成)
@@ -106,19 +107,22 @@
 6. 增加分布式配置
 7. 增加分布式消息中间件
 8. 交互式脚本
+9. 启动脚本优化，增加运行环境判断，如配置指定jdk版本为1.8，而运行环境jdk版本低于1.8，自动下载jre1.8并配置环境变量
 
 # FAQ:
 
-执行Generator类的main方法报错 ：
+1. 执行Generator类的main方法报错 ：
 
 	java.io.IOException:Stream closed 	
 - 解决：
 	- 找不到generator.yaml配置文件，确认是否编译(target/classes下是否有該文件)	
 	- 有编译错误，导致沒有自动编译，如src/main/resources目录下的模板文件有编译错误，直接设置忽略即可
 
-启动服务报错：
+2. 启动服务(生成的应用服务)报错：
 
 	ClassCastException: java.lang.UnsupportedClassVersionError cannot be cast to [Ljava.lang.Object;
+- 原因：
+	- 指定生成jdk1.8配置，而运行环境的jdk版本低于1.8
 - 解决：
-	- 在pom中指定jdk为1.7，并去掉zipkin数据追踪依赖
 	- 安装jdk1.8/jre1.8,并设置环境变量
+	- 或者在pom中指定jdk为1.7，并去掉zipkin数据追踪依赖、mq消息中间件依赖

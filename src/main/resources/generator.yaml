@@ -53,7 +53,7 @@ strategy:
     #工程默认版本号
     version: 1.0.1-SNAPSHOT 
     #jdk版本
-    javaVersion: 1.8
+    javaVersion: 1.7
     #表名、字段名、是否使用下划线命名
     separators: [_,-]
     #是否大写命名

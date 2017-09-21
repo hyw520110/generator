@@ -7,7 +7,7 @@
 	<dependencySets>
 		<dependencySet>
 			<useProjectArtifact>false</useProjectArtifact>
-			<outputDirectory>/lib</outputDirectory>
+			<outputDirectory>./lib</outputDirectory>
 			<unpack>false</unpack>
 		</dependencySet>
 	</dependencySets>
@@ -21,7 +21,7 @@
 		</fileSet>
 		<fileSet>
 			<directory>src/main/resources</directory>
-			<outputDirectory>/</outputDirectory>
+			<outputDirectory>./</outputDirectory>
 			<includes>
 				<include>*.yml</include>
 				<include>*.xml</include>
@@ -29,35 +29,35 @@
 		</fileSet>
 		<fileSet>
 			<directory>src/main/resources/conf</directory>
-			<outputDirectory>/conf</outputDirectory>
+			<outputDirectory>./conf</outputDirectory>
 			<includes>
 				<include>*.*</include>
 			</includes>
 		</fileSet>
 		<fileSet>
 			<directory>src/main/resources/templates</directory>
-			<outputDirectory>/templates</outputDirectory>
+			<outputDirectory>./templates</outputDirectory>
 			<includes>
 				<include>**/*.*</include>
 			</includes>
 		</fileSet>
 		<fileSet>
 			<directory>src/main/resources/static</directory>
-			<outputDirectory>/static</outputDirectory>
+			<outputDirectory>./static</outputDirectory>
 			<includes>
 				<include>**/*.*</include>
 			</includes>
 		</fileSet>
 		<fileSet>
 			<directory>${project.build.outputDirectory}/bin</directory>
-			<outputDirectory>/bin</outputDirectory>
+			<outputDirectory>./bin</outputDirectory>
 			<includes>
 				<include>**/*.*</include>
 			</includes>
 		</fileSet>
 		<fileSet>
 			<directory>${project.build.directory}</directory>
-			<outputDirectory>/lib</outputDirectory>
+			<outputDirectory>./lib</outputDirectory>
 			<includes>
 				<include>*.jar</include>
 			</includes>

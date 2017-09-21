@@ -6,9 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.alibaba.boot.dubbo.annotation.DubboConsumer;
-import com.sun.tools.internal.ws.wsdl.document.Service;
-import com.ycd360.backstage.api.service.AccountService;
-import com.ycd360.backstage.app.Booter;
+import ${rootPackage}.${projectName}.${moduleName}.Booter;
+import ${servicePackage}.${table.beanName}Service;
 
 @RunWith(SpringRunner.class)
 //@ContextConfiguration or @SpringBootTest(classes=Booter.class)

@@ -205,3 +205,8 @@ druid:
 context:  
   slow-time: 800
   userName: user_name    
+  
+
+rocketmq:
+  name-server-address: 192.168.40.95:9876
+  producer-group: backstage_producer  

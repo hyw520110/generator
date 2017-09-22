@@ -41,7 +41,7 @@ public class DataSourceConf extends DruidDataSource {
 	private TypeConvertor typeConvertor;
 
 	private QuerySQL querySQL;
-
+	
 	public Connection getCon() throws Exception {
 		try {
 			return getConnection();
@@ -49,7 +49,15 @@ public class DataSourceConf extends DruidDataSource {
 			throw e;
 		}
 	}
-
+	
+	public String getPropertiesStr(){
+	    Properties props = super.getConnectProperties();
+	    StringBuilder builder=new StringBuilder();
+	    for(Object key:props.keySet()){
+	        builder.append(key.toString()+"="+ props.get(key));
+	    }
+	    return builder.toString();
+	}
 	@Override
 	public void setUrl(String jdbcUrl) {
 		super.setUrl(jdbcUrl);

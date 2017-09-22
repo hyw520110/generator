@@ -131,14 +131,14 @@ info:
     
 #druid监控配置    
 druid:
-  driver-class-name: ${dataSource.driverClassName}
+  driverClassName: ${dataSource.driverClassName}
   url: ${dataSource.url}
   username: ${dataSource.username}
   password: ${dataSource.pwd}
   #SQL注入拦截、密码加密
   filters: wall,config
   #druid密文密码配置
-  connection-properties: config.decrypt=true;config.decrypt.key=${public-key}
+  connectionProperties: ${dataSource.propertiesStr}
   #连接池初始、最小、最大
   initialSize: 1
   maxActive: 20

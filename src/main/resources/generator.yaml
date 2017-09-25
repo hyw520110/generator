@@ -19,7 +19,7 @@ dataSource:
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
-    outputDir: d:/output/test2
+    outputDir: d:/output/test
     #生成文件前是否删除输出目录,建议配置为false 
     delOutputDir: false
     #模板文件目录,自定义模板时复制此目录，并修改此目录名
@@ -63,7 +63,7 @@ strategy:
     #表前缀
     tablePrefix: ['tb_','batch_']
     #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
-    include: [ 'account'] 
+    include:  
     #需要排除的表名
     exclude: 
     #是否生成字段常量,默认 false） 

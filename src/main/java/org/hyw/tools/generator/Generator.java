@@ -75,7 +75,7 @@ public class Generator extends AbstractGenerator {
         }
 
         Map<String, Map<String, String>> map = global.getComponentsMap();
-        VelocityContext context = createVelocityContext(map.values());
+        VelocityContext context = createVelocityContext(map);
         Collection<File> files = getFiles(dir, map.keySet());
         if (null == files||files.isEmpty()) {
             logger.error("{}目录下没有所需的模板文件！",dir);
@@ -199,9 +199,11 @@ public class Generator extends AbstractGenerator {
         }  
     }
 
-    private VelocityContext createVelocityContext(Collection<Map<String, String>> collection) {
+    private VelocityContext createVelocityContext(Map<String, Map<String, String>> map) {
         VelocityContext context = new VelocityContext();
-        for (Map<String, String> pars : collection) {
+        for (String key: map.keySet()) {
+            context.put(key, true);
+            Map<String, String> pars = map.get(key);
             for (Entry<String, String> entry : pars.entrySet()) {
                 context.put(entry.getKey(), entry.getValue());
             }

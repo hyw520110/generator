@@ -15,4 +15,4 @@ spring:
       config:
         enabled: true
         watcher:
-          enabled: false
+          enabled: true

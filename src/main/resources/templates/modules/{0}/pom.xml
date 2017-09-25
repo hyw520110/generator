@@ -28,7 +28,7 @@
 		    <groupId>org.hibernate</groupId>
 		    <artifactId>hibernate-validator</artifactId>
 		</dependency>
-#if($!{springboot_version})		
+#if($!{springboot}&&$!{jpa})		
 		<dependency>
 		  <groupId>org.springframework.boot</groupId>
 		  <artifactId>spring-boot-starter-data-jpa</artifactId>

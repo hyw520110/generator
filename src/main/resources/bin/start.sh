@@ -24,7 +24,9 @@ function downloadJdk()
 function startService()
 {
 	echo start ${project.build.finalName} service...
-	java -jar ../lib/${project.build.finalName}.jar  
+	rm -f ${project.build.finalName}.pid
+	nohup java -jar ../lib/${project.build.finalName}.jar  > /dev/null 2>&1 &
+	echo $! > ${project.build.finalName}.pid
 }
 
 #执行java命令看执行是否成功，执行失败：下载jre设置环境变量，启动服务;执行成功:直接开启服务

@@ -5,17 +5,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 #if("fastjson"=="${json_type}")
 import org.springframework.context.annotation.Bean;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
@@ -29,8 +30,6 @@ import io.undertow.Undertow.Builder;
 import com.alibaba.boot.dubbo.annotation.EnableDubboConfiguration;
 #end
 
-import com.alibaba.druid.support.http.StatViewServlet;
-import com.alibaba.druid.support.http.WebStatFilter;
 import org.springframework.boot.context.embedded.undertow.UndertowBuilderCustomizer;
 import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -43,14 +42,11 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 @SpringBootApplication
-@ImportResource(locations={"classpath:/spring/*.xml"})
-@EnableConfigurationProperties
 @EnableCaching
 #if($!{spring_boot_dubbo_version})@EnableDubboConfiguration
 #end
+@EnableAsync
 public class Booter{
-    @Value("${druid.stat.urlMappings}")
-    private String druidStatUrlMappings;
     @Value("${spring.messages.basename}")
     private String basenames;
     
@@ -127,7 +123,7 @@ public class Booter{
 	}
 	
 	@Bean
-    public ResourceBundleMessageSource getMessageSource() throws Exception {  
+    public ResourceBundleMessageSource messageSource() throws Exception {  
         ResourceBundleMessageSource rbms = new ResourceBundleMessageSource();  
         rbms.setDefaultEncoding("${encoding}");  
         rbms.setBasenames(basenames);  
@@ -135,9 +131,9 @@ public class Booter{
     }  
   
     @Bean  
-    public Validator getValidator() throws Exception {  
+    public Validator validator() throws Exception {  
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();  
-        validator.setValidationMessageSource(getMessageSource());  
+        validator.setValidationMessageSource(messageSource());  
         return validator;  
     } 
 
@@ -191,42 +187,5 @@ public class Booter{
 	    return factory;
 	}*/
     
-    /**
-     * druid页面监控filter
-     * @author:  heyiwu 
-     * @return
-     */
-    @Bean
-    public FilterRegistrationBean druidWebStatFilter() {
-        FilterRegistrationBean frb = new FilterRegistrationBean(new WebStatFilter());
-        List<String> url = new ArrayList<>();
-        url.add("/*");
-        frb.setUrlPatterns(url);
-        frb.setInitParameters(druidWebStatInitParameters());
-        return frb;
-    }
-    /**
-     * druid页面监控servlet
-     * @author:  heyiwu 
-     * @return
-     */    
-    @Bean
-    public ServletRegistrationBean druidStatViewServlet() {
-        ServletRegistrationBean srb = new ServletRegistrationBean(new StatViewServlet(), druidStatUrlMappings);
-        srb.setInitParameters(druidStatInitParameters());
-        srb.setLoadOnStartup(1);
-        return srb;
-    }
-    
-    @Bean
-    @ConfigurationProperties(prefix = "druid.stat.initParameters")
-    public Map<String, String> druidStatInitParameters() {
-        return new HashMap<String, String>();
-    }
-    
-    @Bean
-    @ConfigurationProperties(prefix = "druid.web-stat.initParameters")
-    public Map<String, String> druidWebStatInitParameters() {
-        return new HashMap<String, String>();
-    }
+      
 }

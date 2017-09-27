@@ -63,10 +63,10 @@
 <table class="table  table-bordered table-hover dataTable" id="table">
 		<thead>
 			<tr class="ui-jqgrid-labels">
-						<th id="grid-table_checkbox" class="ui-th-column ui-th-ltr ui-state-default" style="text-align:center;">
+						<th id="grid-table_checkbox" class="ui-th-column ui-th-ltr ui-state-default" style="text-align:center;" width="2%">
 							<span class="yg-checkbox" onselectstart="return false"></span>
 						</th>	
-						<th id="grid-table_cb" class="ui-th-column ui-th-ltr ui-state-default">操作</th>
+						<th id="grid-table_cb" class="ui-th-column ui-th-ltr ui-state-default" width="5%">操作</th>
 				#foreach($field in ${table.fields})
 				<th id="grid-table_${field.propertyName}" class="ui-th-column ui-th-ltr ui-state-default sorting" data-name="id" data-type="0">#if("$!{field.comment}"!="")$!{field.comment}
 					#else $!{field.name} #end</th> #end

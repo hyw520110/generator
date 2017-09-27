@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -19,6 +18,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.hyw.tools.generator.conf.db.Table;
+import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.ProjectBuilder;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
@@ -73,10 +73,8 @@ public class Generator extends AbstractGenerator {
             logger.error("模板目录：{}不存在!",dir);
             return;
         }
-
-        Map<String, Map<String, String>> map = global.getComponentsMap();
-        VelocityContext context = createVelocityContext(map);
-        Collection<File> files = getFiles(dir, map.keySet());
+        VelocityContext context = createVelocityContext(getComponents());
+        Collection<File> files = getFiles(dir, global.getComponents());
         if (null == files||files.isEmpty()) {
             logger.error("{}目录下没有所需的模板文件！",dir);
             return;
@@ -157,7 +155,7 @@ public class Generator extends AbstractGenerator {
         return String.format(path, table.getBeanName());
     }
 
-    private Collection<File> getFiles(final File dir, final Set<String> components) {
+    private Collection<File> getFiles(final File dir, final Component[] components) {
         Collection<File> files = FileUtils.listFiles(dir, new DirectoryFileFilter() {
             private static final long serialVersionUID = 1L;
             @Override
@@ -167,7 +165,7 @@ public class Generator extends AbstractGenerator {
                 if (index != -1) {
                     path = StringUtils.substring(path, 0, index);
                 }
-                return components.contains(path);
+                return ArrayUtils.contains(components, Component.getComonent(path));
             }
         }, FileFilterUtils.trueFileFilter());
         return files;
@@ -199,10 +197,15 @@ public class Generator extends AbstractGenerator {
         }  
     }
 
-    private VelocityContext createVelocityContext(Map<String, Map<String, String>> map) {
+    private VelocityContext createVelocityContext(Map<Component, Map<String, String>> map) {
         VelocityContext context = new VelocityContext();
-        for (String key: map.keySet()) {
-            context.put(key, true);
+        Component[] components = global.getComponents();
+        for (Component key: map.keySet()) {
+            Boolean flag=ArrayUtils.contains(components, key);
+            context.put(key.toString(), flag);
+            if(!flag){
+                continue;
+            }
             Map<String, String> pars = map.get(key);
             for (Entry<String, String> entry : pars.entrySet()) {
                 context.put(entry.getKey(), entry.getValue());
@@ -212,6 +215,7 @@ public class Generator extends AbstractGenerator {
         context.put("author", global.getAuthor());
         context.put("encoding", global.getEncoding());
         context.put("copyright",global.getCopyright());
+        context.put("description", global.getDescription());
         context.put("StringUtils", StringUtils.class);
         context.put("projectName", global.getProjectName());
         context.put("javaVersion", strategy.getJavaVersion());

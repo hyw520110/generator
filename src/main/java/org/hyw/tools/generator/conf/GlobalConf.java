@@ -69,7 +69,7 @@ public class GlobalConf extends BaseBean {
     /**
      * 组件配置 
      */
-    private Map<String, Map<String, String>> components;
+    private Component[] components;
 
     /**
      * 模块信息
@@ -87,7 +87,10 @@ public class GlobalConf extends BaseBean {
      * 非模板文件排除渲染 
      */
     private String[] excludes;
-
+    /**
+     * 项目描述
+     */
+    private String description;
 
     public String getOutputDir() {
         return outputDir;
@@ -139,28 +142,12 @@ public class GlobalConf extends BaseBean {
         this.author = author;
     }
 
-    public Map<String, Map<String, String>> getComponentsMap() {
+    public Component[] getComponents() {
         return components;
     }
 
-    @SuppressWarnings("unchecked")
-    public void setComponents(Set<String> components) {
-        this.components = new HashMap<>();
-        for (String s : components) {
-        	Map<String,String> pars=null;
-            try {
-                Component c = Component.getComonent(s);
-                if (null == c) {
-                    logger.warn("unknow of component:{}", s);
-                    continue;
-                }
-                pars=new Yaml().loadAs(getResourceAsStream(String.format("/conf/%s.yml", c)), HashMap.class);
-            } catch (Throwable e) {
-                logger.error("load config: {} {}:{}", s, e.getClass(), e.getLocalizedMessage());
-                pars=new HashMap<String,String>();
-            }
-            this.components.put(s.toLowerCase(),pars);
-        }
+    public void setComponents(Component[] components) {
+        this.components=components;
     }
     public String[] getModules() {
         return modules;
@@ -248,6 +235,14 @@ public class GlobalConf extends BaseBean {
 
     public void setExcludes(String[] excludes) {
         this.excludes = excludes;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 }

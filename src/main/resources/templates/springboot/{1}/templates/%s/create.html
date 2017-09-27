@@ -12,11 +12,14 @@
 		#foreach($field in ${table.fields})
 		#if(!$field.isPrimarykey())
 		<tr>
-			<td class="jqgrow ui-row-ltr ui-widget-content"  >#if("${field.comment}"=="")${field.propertyName}#else${field.comment}#end</td>
+			
+			<td class="jqgrow ui-row-ltr ui-widget-content" >
+			<span >#if("${field.comment}"=="")${field.propertyName}#else${field.comment}#end</span>
+			</td>
 			<td>
 				<input type="text" name="${field.propertyName}"  />
-				<span th:if="*{${field.isNotNullAble()}}"  th:title="必输项" style="color: red">(*)</span>
-				<li th:if="${#fields.hasErrors('${field.propertyName}')}" th:errors="*{${field.propertyName}}">错误消息</li>
+				<span th:if="*{${field.isNotNullAble()}}"  th:title="必输项" style="color: red">*</span>
+				<span th:if="${#fields.hasErrors('${field.propertyName}')}" th:errors="*{${field.propertyName}}">错误消息</span>
 			</td>
 		</tr>
 		#end

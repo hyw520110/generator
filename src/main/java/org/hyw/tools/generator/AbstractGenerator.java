@@ -22,6 +22,7 @@ import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.conf.dao.QuerySQL;
 import org.hyw.tools.generator.conf.db.TabField;
 import org.hyw.tools.generator.conf.db.Table;
+import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.FieldType;
 import org.hyw.tools.generator.enums.Naming;
 import org.hyw.tools.generator.enums.db.DBType;
@@ -47,7 +48,11 @@ public abstract class AbstractGenerator extends BaseBean {
 	 */
 	protected StrategyConf strategy;
 
-	 
+	/**
+     * 组件配置 
+     */
+    protected Map<Component, Map<String, String>> components;
+    
 	public List<Table> getTables() throws Exception {
 		Connection con = null;
 		PreparedStatement pst = null;
@@ -233,4 +238,12 @@ public abstract class AbstractGenerator extends BaseBean {
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
+
+    public Map<Component, Map<String, String>> getComponents() {
+        return components;
+    }
+
+    public void setComponents(Map<Component, Map<String, String>> components) {
+        this.components = components;
+    }
 }

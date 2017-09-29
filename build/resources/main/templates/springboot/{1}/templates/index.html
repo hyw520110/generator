@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>库表列表</title>
+<link rel="stylesheet" href="/css/assets/css/bootstrap.min.css" />
+<link rel="stylesheet" href="/css/assets/font-awesome/4.5.0/css/font-awesome.min.css" />
+<link rel="stylesheet" href="/css/assets/css/ace.min.css" class="ace-main-stylesheet" id="main-ace-style" />
+<!-- text fonts -->
+<link rel="stylesheet" href="/css/assets/css/fonts.googleapis.com.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/assets/css/ace-skins.min.css" />
+<link rel="stylesheet" href="/css/assets/css/ace-rtl.min.css" />
+<script src="/scripts/jquery-2.1.4.min.js"></script>
+<script src="/css/assets/js/ace-extra.min.js"></script>
+<script src="/scripts/index.js"></script>
+ 
+</head>
+<body class="no-skin">
+<div th:include="header" id="navbar" class="navbar navbar-default  ace-save-state navbar-fixed-top"></div>
+	<div class="main-container ace-save-state" id="main-container">
+		<script type="text/javascript">
+			try{ace.settings.loadState('main-container')}catch(e){}
+		</script>
+		<div id="sidebar" class="sidebar responsive  ace-save-state"  th:include="slideBar">
+			<script type="text/javascript">
+				try{ace.settings.loadState('sidebar')}catch(e){}
+			</script>
+		</div>
+		<div class="main-content">
+			<fieldset>
+			    <legend>${tables.size()}张表</legend>
+			    <input id="search" placeholder="搜索" class="col-xs-5 col-sm-3" type="text" style="margin-left: 10px;"/>
+			</fieldset>
+	<table border="1" class="table  table-bordered table-hover" id="tables">
+		<thead >
+			<tr id="header">
+				<th class="center" width="5%">序号</th>
+				<th class="detail-col" width="3%">详情</th>		
+				<th>表名</th>
+				<th>备注</th>
+			</tr>
+		</thead>
+		<tbody>
+#foreach($tab in ${tables})		
+			<tr>
+				<td>$velocityCount</td>
+				<td class="detail ace-icon  fa-angle-double-down green" style="cursor: pointer; font: normal normal normal 14px/1 FontAwesome;"></td>
+				<td><a href="${tab.beanName}/list">${tab.name}</a></td>
+				<td>$!{tab.comment}</td>
+			</tr>
+			<tr class="detail-row">
+				<td colspan="2">&nbsp;</td>
+				<td colspan="2">
+					 <table border="1" class="table  table-bordered table-hover">
+			 			<thead>
+							<tr>
+								<th class="center">列名</th>
+								<th class="detail-col">数据类型</th>	
+								<th>主键</th>
+								<th>是否允许为空</th>
+								<th>注释</th>
+							</tr>
+						</thead>
+						<tbody>
+#foreach($field in ${tab.fields})
+							<tr>
+								<td>${field.name}</td>
+								<td>${field.type}</td>
+								<td>${field.isPrimarykey()}</td>
+								<td>${field.isNullAble()}</td>
+								<td>$!{field.comment}</td>
+							</tr>
+#end	
+						</tbody>
+					 </table>
+				</td>
+			</tr>
+#end			 
+		</tbody>
+	</table>
+		</div>
+	</div>
+	<script src="/css/assets/js/bootstrap.min.js"></script>
+
+	<!-- page specific plugin scripts -->
+
+	<!--[if lte IE 8]>
+	  <script src="assets/scripts/excanvas.min.js"></script>
+	<![endif]-->
+	<script src="/css/assets/js/jquery-ui.custom.min.js"></script>
+	<script src="/css/assets/js/jquery.ui.touch-punch.min.js"></script>
+	<script src="/css/assets/js/jquery.easypiechart.min.js"></script>
+	<script src="/css/assets/js/jquery.sparkline.index.min.js"></script>
+	<script src="/css/assets/js/jquery.flot.min.js"></script>
+	<script src="/css/assets/js/jquery.flot.pie.min.js"></script>
+	<script src="/css/assets/js/jquery.flot.resize.min.js"></script>
+	<!-- ace scripts -->
+	<script src="/css/assets/js/ace-elements.min.js"></script>
+	<script src="/css/assets/js/ace.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<table class="ui-pg-table ui-common-table ui-pager-table ">
+		<tbody>
+			<tr>
+				<td id="grid-pager_left" align="left">
+					<table class="ui-pg-table navtable ui-common-table">
+						<tbody>
+							<tr>
+								<td class="ui-pg-button ui-corner-all" title=""
+									id="add_grid-table">
+									<div class="ui-pg-div">
+										<span class="ui-icon ace-icon fa fa-plus-circle purple"></span>
+									</div>
+								</td>
+								<td class="ui-pg-button ui-corner-all" title=""
+									id="edit_grid-table">
+									<div class="ui-pg-div">
+										<span class="ui-icon ace-icon fa fa-pencil blue"></span>
+									</div>
+								</td>
+								<td class="ui-pg-button ui-corner-all" title=""
+									id="view_grid-table">
+									<div class="ui-pg-div">
+										<span class="ui-icon ace-icon fa fa-search-plus grey"></span>
+									</div>
+								</td>
+								<td class="ui-pg-button ui-corner-all" title=""
+									id="del_grid-table">
+									<div class="ui-pg-div">
+										<span class="ui-icon ace-icon fa fa-trash-o red"></span>
+									</div>
+								</td>
+								<td class="ui-pg-button ui-state-disabled" title=""><span
+									class="ui-separator"></span></td>
+								<td class="ui-pg-button ui-corner-all" title=""
+									id="search_grid-table">
+									<div class="ui-pg-div">
+										<span class="ui-icon ace-icon fa fa-search orange"></span>
+									</div>
+								</td>
+								<td class="ui-pg-button ui-corner-all" title=""
+									id="refresh_grid-table">
+									<div class="ui-pg-div">
+										<span class="ui-icon ace-icon fa fa-refresh green"></span>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+				<td id="grid-pager_center" style="white-space: pre;" align="center">
+					<table class="ui-pg-table ui-common-table ui-paging-pager">
+						<tbody>
+							<tr>
+								<td id="first_grid-pager" th:unless="${page.isFirstPage}"
+									class="ui-pg-button ui-corner-all ui-state-disabled" title="首頁"
+									style="cursor: default;"><span
+									class="ui-icon ace-icon fa fa-angle-double-left bigger-140"><a
+										th:href="@{/$!{table.beanName}/list(pageNo=1,pageRows=${page.pageSize})}">首页</a></span>
+								</td>
+								<td id="prev_grid-pager"
+									class="ui-pg-button ui-corner-all ui-state-disabled"
+									title="Previous Page" style="cursor: default;"><span
+									class="ui-icon ace-icon fa fa-angle-left bigger-140"></span></td>
+								<td class="ui-pg-button ui-state-disabled"
+									style="cursor: default;"><span class="ui-separator"></span></td>
+								<td id="input_grid-pager" dir="ltr">Page <input
+									class="ui-pg-input ui-corner-all" size="2" maxlength="7"
+									value="0" role="textbox" type="text" /> of <span
+									id="sp_1_grid-pager">3</span></td>
+								<td class="ui-pg-button ui-state-disabled"
+									style="cursor: default;"><span class="ui-separator"></span></td>
+								<td id="next_grid-pager" class="ui-pg-button ui-corner-all"
+									title="Next Page" style="cursor: default;"><span
+									class="ui-icon ace-icon fa fa-angle-right bigger-140"></span></td>
+								<td id="last_grid-pager" class="ui-pg-button ui-corner-all"
+									title="Last Page" style="cursor: default;"><span
+									class="ui-icon ace-icon fa fa-angle-double-right bigger-140"></span></td>
+								<td dir="ltr"><select
+									class="ui-pg-selbox ui-widget-content ui-corner-all"
+									role="listbox" title="Records per Page"><option
+											role="option" value="10" selected="selected">10</option>
+										<option role="option" value="20">20</option>
+										<option role="option" value="30">30</option></select></td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+				<td id="grid-pager_right" align="right">
+					<div dir="ltr" style="text-align: right" class="ui-paging-info">View
+						1 - 10 of 23</div>
+				</td>
+			</tr>
+		</tbody>
+	</table>

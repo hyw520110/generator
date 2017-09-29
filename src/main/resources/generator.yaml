@@ -45,7 +45,7 @@ global:
     #资源文件目录
     resource: src/main/resources
     #非模板文件排除渲染 
-    excludes: [ 'js','css','dll','exe','eot','png','jpg','swf' ]
+    excludes: [ 'js','css','dll','exe','eot','png','jpg','swf','svg','ttf','woff','woff2','eot']
 #策略配置
 strategy: 
     #父包名
@@ -55,7 +55,7 @@ strategy:
     #工程默认版本号
     version: 1.0.1-SNAPSHOT 
     #jdk版本
-    javaVersion: 1.7
+    javaVersion: 1.8
     #表名、字段名、是否使用下划线命名
     separators: [_,-]
     #是否大写命名
@@ -65,7 +65,7 @@ strategy:
     #表前缀
     tablePrefix: ['tb_','batch_']
     #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
-    include: ['account'] 
+    include:  
     #需要排除的表名
     exclude: 
     #是否生成字段常量,默认 false） 
@@ -75,6 +75,8 @@ strategy:
     
 components: 
   MYBATIS: 
+    #SQL语句配置类型，可选值xml:xml mapper文件;annotation：sql注解
+    sqlType: xml
     #mapper的父类,自定义父类必须写全类名（包含类的包名）
     superMapperClass: BaseMapper
     #Entity父类的公共字段
@@ -124,7 +126,7 @@ components:
     dubbo_port: 20800
     dubbo_protocol: dubbo 
   ZOOKEEPER: 
-    zkclient_version: 0.10
+    zkclient_version: '0.10'
   ROCKETMQ: 
     spring_boot_starter_rocketmq_version: 0.0.4      
   SPRINGBOOT: 

@@ -202,11 +202,18 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
             return "";
         }
         StringBuilder builder = new StringBuilder();
-        for (String s : args) {
-            if (StringUtils.isBlank(s)) {
+        boolean isWin = System.getProperty("os.name").startsWith("Win");
+        String s = isWin?"/":"\\";
+        String str = isWin?"\\":"/";
+        for (String arg : args) {
+            if (StringUtils.isBlank(arg)) {
                 continue;
             }
-            builder.append(s.replaceAll("\\.", File.separator + File.separator) + File.separator);
+            arg = arg.replace(s, str);
+            builder.append(arg);
+            if(!arg.endsWith(str)){
+                builder.append(str);
+            }
         }
         return builder.deleteCharAt(builder.length() - 1).toString();
     }

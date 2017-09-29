@@ -25,7 +25,7 @@ import org.apache.ibatis.annotations.Select;
 @CacheConfig(cacheNames = "${StringUtils.lowercaseFirst($className)}")
 #end
 public interface ${className} #if(${superMapperClass}) extends ${StringUtils.getClassName(${superMapperClass})}<${StringUtils.capitalFirst("$entityName")}> #end{
-    #if("${sqlType}"=="SQL")
+    #if("${sqlType}"=="annotation")
         //TODO 
     @Select("SELECT * FROM ${table.beanName} WHERE #foreach($field in ${table.primarykeyFields})${field.name} = #{${field.propertyName}}#if($foreach.count!=${table.primarykeyFields.size()}) and #end#end")
     #end

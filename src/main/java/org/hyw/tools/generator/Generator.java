@@ -187,8 +187,8 @@ public class Generator extends AbstractGenerator {
             Template t = engine.getTemplate(src.getPath().replace(dir.getParent(), ""), encoding);
             StringWriter writer = new StringWriter();
             t.merge(context, writer);
-            //模板渲染为空则不生成文件,适用场景如:配置了第三方BaseEntity类时,默认BaseEntity类不生成
-            if(StringUtils.isEmpty(writer.toString())){
+            //模板渲染为空则不生成文件
+            if(StringUtils.isBlank(writer.toString())){
             	return ;
             }
             FileUtils.write(f, writer.toString(), encoding);
@@ -224,27 +224,7 @@ public class Generator extends AbstractGenerator {
         return context;
     }
 
-    /**
-     * 加载配置、初始化
-     * @author:  heyiwu 
-     * @param yamlConf
-     * @return
-     */
-    public static Generator getInstance(String yamlConf) {
-        return new Yaml().loadAs(getResourceAsStream(yamlConf), Generator.class);
-    }
 
-    /**
-     * 设置模版引擎，主要指向获取模版路径
-     */
-    private VelocityEngine getVelocityEngine() {
-        Properties p = new Properties();
-        String conf = "/conf/velocity.properties";
-        try {
-            p.load(Generator.class.getResourceAsStream(conf));
-        } catch (IOException e) {
-            logger.error("load {} {}", conf, e.getClass(), e);
-        }
-        return new VelocityEngine(p);
-    }
+
+  
 }

@@ -12,8 +12,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 
 public class BaseBean implements Serializable {
     private static final long  serialVersionUID = 1L;
-    protected SimpleDateFormat format           = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+    protected String pattern="yyyy-MM-dd HH:mm:ss";
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
@@ -24,7 +23,7 @@ public class BaseBean implements Serializable {
     }
 
     public String getDate() {
-        return format.format(new Date());
+        return new SimpleDateFormat(pattern).format(new Date());
     }
 
     protected void close(Closeable... args) {

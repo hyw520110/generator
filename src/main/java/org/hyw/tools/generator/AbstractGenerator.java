@@ -9,11 +9,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.velocity.app.VelocityEngine;
 import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.conf.KeyPair;
@@ -29,6 +31,7 @@ import org.hyw.tools.generator.enums.db.DBType;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
 public abstract class AbstractGenerator extends BaseBean {
 
@@ -52,6 +55,16 @@ public abstract class AbstractGenerator extends BaseBean {
      * 组件配置 
      */
     protected Map<Component, Map<String, String>> components;
+    
+    /**
+     * 加载配置、初始化
+     * @author:  heyiwu 
+     * @param yamlConf
+     * @return
+     */
+    public static Generator getInstance(String yamlConf) {
+        return new Yaml().loadAs(getResourceAsStream(yamlConf), Generator.class);
+    }
     
 	public List<Table> getTables() throws Exception {
 		Connection con = null;
@@ -111,7 +124,7 @@ public abstract class AbstractGenerator extends BaseBean {
 				// 处理字段名  
 				field.setPropertyName(processName(field.getName()));
 				String key = results.getString(sql.getFieldKeyValue().getKey());
-				// 是否主键 TODO 复合主键处理
+				// 是否主键 
 				field.setPrimarykey(StringUtils.equals(key, sql.getFieldKeyValue().getValue()));
 				// 其他数据库的字段是否为空以及自增 处理
 				if (DBType.MYSQL == this.dataSource.getDBType()) {
@@ -209,7 +222,19 @@ public abstract class AbstractGenerator extends BaseBean {
 			logger.error("打开目录:{},发生异常:{}", dir, e.getLocalizedMessage());
 		}
 	}
-
+	  /**
+     * 设置模版引擎，主要指向获取模版路径
+     */
+    protected VelocityEngine getVelocityEngine() {
+        Properties p = new Properties();
+        String conf = "/conf/velocity.properties";
+        try {
+            p.load(Generator.class.getResourceAsStream(conf));
+        } catch (IOException e) {
+            logger.error("load {} {}", conf, e.getClass(), e);
+        }
+        return new VelocityEngine(p);
+    }
 	public DataSourceConf getDataSource() {
 		return dataSource;
 	}

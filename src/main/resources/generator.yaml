@@ -65,7 +65,7 @@ strategy:
     #表前缀
     tablePrefix: ['tb_','batch_']
     #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
-    include:  
+    include: ['account']
     #需要排除的表名
     exclude: 
     #是否生成字段常量,默认 false） 

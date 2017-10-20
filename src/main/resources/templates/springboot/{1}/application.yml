@@ -1,0 +1,214 @@
+#if(!$!ZOOKEEPER)
+logging: 
+  level: 
+    root: INFO
+  path: /logs/${projectName}/  
+  file: default.log 
+spring:
+  profiles:
+    #开发阶段支持页面修改实时查看
+    active: dev
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    #开发阶段关闭缓存
+    cache: false
+    mode: HTML5
+    encoding: UTF-8   
+    content-type: text/html  
+  devtools:
+    livereload: 
+      #浏览器安装LiveReload插件支持页面免刷新即时加载变更。非web应用建议设置为false关闭livereload服务
+      enabled: true
+#    restart: 
+#      trigger-file: .trigger
+      #重启默认排除静态资源文件：/META-INF/resources,/resources,/public,/templates,/static
+      #一般静态资源修改不需重启(修改后刷新页面即可),如需重启或自定义静态资源目录修改需重启,配置排除即可
+      #exclude: /static/**,/templates/**
+  redis: 
+    password: asdf1234
+    cluster: 
+      nodes: 
+        - 192.168.40.95:7001
+        - 192.168.40.95:7002
+        - 192.168.40.95:7003
+        - 192.168.40.95:8001
+        - 192.168.40.95:8002
+        - 192.168.40.95:8003
+      maxRedirects: 6
+    # 连接超时时间（毫秒）
+    #timeout: 6000
+    #pool: 
+      #连接池最大连接数（负值表示没有限制）
+      #max-active: 50
+      # 连接池最大阻塞等待时间（负值表示没有限制）
+      #max-wait: 3600
+      # 连接池中的最大空闲连接
+      #max-idle: 10
+      # 连接池中的最小空闲连接
+      #min-idle: 1
+  #命令行启动日志多彩输出org.springframework.boot.ansi.Enabled    
+  output: 
+    ansi: 
+      enabled: DETECT
+  http: 
+    encoding: 
+      charset: UTF-8
+    multipart: 
+      max-file-size: 10MB
+      max-request-size: 100MB
+    converters: 
+      preferred-json-mapper: fastjson  
+  messages:
+    basename: conf/messages
+    #资源文件缓存失效时间,默认-1永不失效
+    cache-seconds: 60      
+  cache: 
+    type: redis
+  dubbo: 
+    #应用名称
+    appname: ${projectName}
+    #注册中心,多个zk注册中心：zookeeper://ip:port,ip:port...
+    registry: ${dubbo_registry}
+    #默认端口20800
+    port: ${dubbo_port}
+    #服务默认版本号
+    version: 1.0.0
+    #协议
+    protocol: ${dubbo_protocol}               
+mybatis:
+  mapperLocations: classpath:mapper/*.xml
+    
+server:
+  port: ${server_port}
+  #thymeleaf修改后重新发布到tomcat
+  tomcat: 
+    access_log_enabled: true
+    basedir: target/tomcat      
+#if($ssl)
+  #keytool -genkey -alias ycd -keypass 123456 -keyalg RSA -keysize 1024 -validity 365 -keystore /keys/ycd.keystore -storepass 123456
+  ssl: 
+    key-alias: ycd
+    key-store: ycd.keystore 
+    key-store-password: changeit
+    key-store-type: JKS
+#end
+  undertow: 
+    accesslog: 
+      enabled: true
+      dir: /logs/${projectName}/ 
+      prefix: access_log.
+      suffix: log  
+      pattern: common  
+      rotate: true
+    #每块buffer的空间大小,越小的空间被利用越充分  
+    buffer-size: 1024
+    # 每个区分配的buffer数量 , 所以pool的大小是buffer-size * buffers-per-region
+    buffers-per-region: 1024
+    #是否分配的直接内存
+    direct-buffers: true
+    #设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接, 默认设置每个CPU核心一个线程
+    io-threads: 4
+    max-http-post-size: 80920
+    #阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程,它的值设置取决于系统的负载
+    worker-threads: 20
+    
+#  jackson: 
+#    serialization: 
+#      INDENT_OUTPUT: true
+#http: 
+#  mappers: 
+#    json-pretty-print: true   
+    
+management:  
+  port: #[[${random.int[9901,9990]}]]#
+  context-path: /manage
+  security: 
+    enabled: false    
+info: 
+  app: 
+    name: "@project.name@"
+    version: "@project.version@"
+    
+#druid监控配置    
+druid:
+  driverClassName: ${dataSource.driverClassName}
+  url: ${dataSource.url}
+  username: ${dataSource.username}
+  password: ${dataSource.pwd}
+  #SQL注入拦截、密码加密
+  filters: wall,config
+  #druid密文密码配置
+  connectionProperties: ${dataSource.propertiesStr}
+  #连接池初始、最小、最大
+  initialSize: 1
+  maxActive: 20
+  minIdle: 1
+  #配置获取连接等待超时的时间
+  maxWait: 60000
+  #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 
+  timeBetweenEvictionRunsMillis: 60000
+  #配置一个连接在池中最小生存的时间，单位是毫秒 
+  minEvictableIdleTimeMillis: 300000
+  #检测连接是否可用的SQL语句
+  validationQuery: select 'x'
+  #保证连接池内部定时检测连接的可用性，不可用的连接会被抛弃或者重建
+  testWhileIdle: true
+  #在获取Connection对象时检测其可用性,会影响性能
+  testOnBorrow: false
+  #在连接放回连接池时检测可用性
+  testOnReturn: false
+  #打开removeAbandoned功能,对性能会有一些影响，建议怀疑存在泄漏之后再打开
+  removeAbandoned: false
+  #连接超过30分钟未关闭，就会被强行回收
+  removeAbandonedTimeout: 1800
+  #关闭abanded连接时输出错误日志
+  logAbandoned: true
+  #输出可执行sql
+  statementExecutableSqlLogEnable: true
+  #是否记录慢SQL
+  logSlowSql: true
+  #慢SQL的执行时间
+  slowSqlMillis: 2000
+  #sql合并
+  mergeSql: true
+  #合并多个数据源的监控数据
+  useGlobalDataSourceStat: true
+  #是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql下建议关闭。
+  poolPreparedStatements: false
+  #要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会存在Oracle下PSCache占用内存过多的问题，可以把这个数值配置大一些，比如说100
+  maxOpenPreparedStatements: 20 
+  web-stat:  
+    initParameters: 
+      exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,*.jsp,/druid/*,/download/*"
+      #session统计
+      sessionStatEnable: "true"  
+      sessionStatMaxCount: "2000"
+      #用户的sessionName
+      #principalSessionName: user_name
+      #监控单个url调用的sql列表 
+      profileEnable: "true"
+  stat:
+    initParameters: 
+      resetEnable: "false"
+      #web监控页面的用户名
+      loginUsername: admin
+      #web监控页面的密码 
+      loginPassword: "123456"
+      #允许查看监控页面的ip
+      #allow: 
+      #拒绝查看监控页面的ip
+      #deny: 
+    #web监控页面的地址  
+    urlMappings: /druid/*  
+    
+    
+context:  
+  slow-time: 800
+  userName: user_name    
+  
+
+rocketmq:
+  name-server-address: 192.168.40.95:9876
+  producer-group: backstage_producer  
+#end  

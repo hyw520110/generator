@@ -15,10 +15,19 @@
 - 支持模板自定义,排版风格支持自定义
 - 支持组件扩展，组件特性自定义及特性扩展
 - 支持jdk版本配置,默认1.7,向下兼容1.5及以上版本
+	
+# 生成器配置说明:
 
+配置文件generator.yaml包含
 
+- **数据源配置**,必须指定/主要配置：数据库驱动类、URL、用户名、密码
+- **全局配置**,必须指定/主要配置：输出目录、是否清空输出目录、是否覆盖生成
+- **生成策略配置**,必须指定/主要配置：根包
+- 组件配置:一般保持默认即可,可自定义定制扩展
+具体配置项说明见配置文件注释说明
 
 # 快速开始:
+
 有两种方式执行（二选一即可）：一种方式是通过git下载源码执行，一种是下载zip包执行命令脚本.
 
 ## 1. 源码方式：
@@ -41,36 +50,35 @@
 	- **定义根包(rootPackage)**
 	- 定义移除的表前缀tablePrefix
 	- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
-	- 安装配置好maven/gradle导入IDE,执行Generator的main方法.
+
+导入生成的源码到IDE(安装配置好maven/gradle),执行Generator的main方法.
 
 
 ## 2. 命令脚本：
 	
-- 分支下载zip包或通过源码构建获取zip包:在工程根目录下执行构建命令：mvn clean package，在target目录下获取zip包 
+- 分支下载zip包或通过源码构建获取zip包:在工程根目录下执行：mvn clean package，在target目录下获取zip包 
 - 解压zip包，修改配置文件generator.yaml
-- 执行bin目录下的命令脚本
+- 执行bin目录下的命令脚本start.bat,执行代码生成
 
 ## 启动服务
 	
-通过源码或命令脚本执行生成后，资源管理器会自动打开生成路径
+通过源码或命令脚本生成代码后，资源管理器会自动打开生成路径,启动服务可通过源码执行或脚本执行
 
 ### 源码执行
 
 - 把生成的源码导入IDE(maven/gradle工程)
-- 执行Boot.java启动服务，服务启动完成后自动打开浏览器	
+- 执行Boot.java启动服务，服务启动完成后自动打开浏览器(profile为dev时)	
 		
 ### 脚本执行
 
-傻瓜化启动服务,支持无jre/jdk环境(自动下载jre配置临时环境变量)运行，以模块配置api、app为例： 
+傻瓜化启动服务,支持无jre/jdk环境(自动下载jre并配置临时环境变量)启动运行服务
+
+以模块配置api、app为例： 
 
 - 进入parent目录，执行package.bat
 - 进入app目录下的target目录，解压zip包
-- 进入解压目录,如需修改配置,则修改application.yml,否则直接进入bin目录,执行start.bat启动服务(执行debug.bat调试启动),服务启动完成后自动打开浏览器(profile为dev配置)
-	
-# 生成器配置说明:
-- 配置文件generator.yaml包含数据源配置、全局配置、生成策略配置，具体配置说明见配置文件配置项注释说明
+- 进入解压目录,如需修改配置,则先修改配置,否则直接进入bin目录,执行start.bat启动服务(执行debug.bat调试启动),服务启动完成后自动打开浏览器(profile为dev时)
 
-- 组件特性配置文件见各组件配置文件,组件配置目录为:src/main/resources/conf
 
 # 自定义
 - 自定义工程构建工具：maven(pom.xml)、gradle(build.gradle)、无
@@ -90,7 +98,7 @@
 
 	- 在配置文件中指定模块名数组(modules),如模块配置为[api,app],已有的组件配置为[mybatis,springmvc],新增dubbo配置:[mybatis,springmvc,dubbo]
 	- 在模板目录(templates)下新建目录，目录名为{模块数组index},如dubbo的配置文件在app模块中，则新建{2}文件夹,在文件夹下新建（文件夹）模板文件
-	- 在配置目录(conf)下新增组件配置文件(非必须),如dubbo.yaml配置模板所需的配置数据
+	- 在配置文件中新增组件配置(非必须),配置模板所需的配置信息
 
 # TODO LIST:
 

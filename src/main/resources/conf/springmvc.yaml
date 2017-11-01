@@ -1,6 +1,0 @@
-controllerName: '%sController'
-controllerPackage: controller
-resourceDir: spring
-rest: true
-crud: true
-superControllerClass: 

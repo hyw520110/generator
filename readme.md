@@ -63,7 +63,25 @@
 
 ## 启动服务
 	
-通过源码或命令脚本生成代码后，资源管理器会自动打开生成路径,启动服务可通过源码执行或脚本执行
+通过源码或命令脚本生成代码后，资源管理器会自动打开生成路径,初始化数据或配置之后就可以启动服务，启动服务可通过源码执行或脚本执行
+
+### 初始化
+
+如配置的组件中不包含zookeeper，则默认是配置文件yml，注意查看配置文件(默认目录src/main/resources目录下)，根据需要修改配置或完全保持默认配置
+
+如配置的组件中包含zookeeper，则
+
+- 需要安装zookeeper
+	- 下载解压
+	- 进入conf目录复制zoo_sample.cfg改名zoo.cfg
+	- 进入bin目录执行zkServer.cmd启动服务即可
+- 然后初始化配置数据
+	- 进入生成的源码根目录下的app目录
+	- 打开src/test/resources/zookeeper.data全选复制
+	- cmd进入zookeeper的bin目录下执行
+			
+			zkCli -server localhost:2181
+			粘贴 回车
 
 ### 源码执行
 

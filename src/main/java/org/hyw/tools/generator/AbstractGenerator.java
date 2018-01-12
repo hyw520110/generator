@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -52,20 +53,21 @@ public abstract class AbstractGenerator extends BaseBean {
 	protected StrategyConf strategy;
 
 	/**
-     * 组件配置 
-     */
-    protected Map<Component, Map<String, String>> components;
-    
-    /**
-     * 加载配置、初始化
-     * @author:  heyiwu 
-     * @param yamlConf
-     * @return
-     */
-    public static Generator getInstance(String yamlConf) {
-        return new Yaml().loadAs(getResourceAsStream(yamlConf), Generator.class);
-    }
-    
+	 * 组件配置
+	 */
+	protected Map<Component, Map<String, String>> components;
+
+	/**
+	 * 加载配置、初始化
+	 * 
+	 * @author: heyiwu
+	 * @param yamlConf
+	 * @return
+	 */
+	public static Generator getInstance(String yamlConf) {
+		return new Yaml().loadAs(getResourceAsStream(yamlConf), Generator.class);
+	}
+
 	public List<Table> getTables() throws Exception {
 		Connection con = null;
 		PreparedStatement pst = null;
@@ -78,7 +80,7 @@ public abstract class AbstractGenerator extends BaseBean {
 			while (results.next()) {
 				String tabName = results.getString(sql.getTbName());
 				if (StringUtils.isEmpty(tabName)) {
-					System.err.println("当前数据库为空！！！");
+					System.err.println(Arrays.toString(strategy.getInclude()) + "数据库为空！！！");
 					break;
 				}
 				if (!StringUtils.contains(strategy.getInclude(), tabName, true)
@@ -121,10 +123,10 @@ public abstract class AbstractGenerator extends BaseBean {
 				KeyPair<String, FieldType> pair = dataSource.getTypeConvertor().convert(field.getType());
 				field.setJdbcType(pair.getKey());
 				field.setFieldType(pair.getValue());
-				// 处理字段名  
+				// 处理字段名
 				field.setPropertyName(processName(field.getName()));
 				String key = results.getString(sql.getFieldKeyValue().getKey());
-				// 是否主键 
+				// 是否主键
 				field.setPrimarykey(StringUtils.equals(key, sql.getFieldKeyValue().getValue()));
 				// 其他数据库的字段是否为空以及自增 处理
 				if (DBType.MYSQL == this.dataSource.getDBType()) {
@@ -132,11 +134,10 @@ public abstract class AbstractGenerator extends BaseBean {
 					field.setIdentity(StringUtils.equals(results.getString(sql.getExtraKeyValue().getKey()),
 							sql.getExtraKeyValue().getValue()));
 				}
-				field.setCommonField(StringUtils.contains(strategy.getSuperEntityColumns(), field.getName(), false));
 				table.addField(field);
-				//字段名处理后是否重名
+				// 字段名处理后是否重名
 				if (table.containField(field)) {
-					field.setPropertyName(StringUtils.toCamelCase(field.getName(),strategy.getSeparators(),false));
+					field.setPropertyName(StringUtils.toCamelCase(field.getName(), strategy.getSeparators(), false));
 				}
 			}
 		} catch (SQLException e) {
@@ -187,7 +188,7 @@ public abstract class AbstractGenerator extends BaseBean {
 
 	public void delDir() {
 		File outputDir = new File(global.getOutputDir());
-		if (!global.isDelOutputDir() || outputDir.exists()) {
+		if (!global.isDelOutputDir()||!outputDir.exists()) {
 			return;
 		}
 		try {
@@ -222,19 +223,21 @@ public abstract class AbstractGenerator extends BaseBean {
 			logger.error("打开目录:{},发生异常:{}", dir, e.getLocalizedMessage());
 		}
 	}
-	  /**
-     * 设置模版引擎，主要指向获取模版路径
-     */
-    protected VelocityEngine getVelocityEngine() {
-        Properties p = new Properties();
-        String conf = "/conf/velocity.properties";
-        try {
-            p.load(Generator.class.getResourceAsStream(conf));
-        } catch (IOException e) {
-            logger.error("load {} {}", conf, e.getClass(), e);
-        }
-        return new VelocityEngine(p);
-    }
+
+	/**
+	 * 设置模版引擎，主要指向获取模版路径
+	 */
+	protected VelocityEngine getVelocityEngine() {
+		Properties p = new Properties();
+		String conf = "/conf/velocity.properties";
+		try {
+			p.load(Generator.class.getResourceAsStream(conf));
+		} catch (IOException e) {
+			logger.error("load {} {}", conf, e.getClass(), e);
+		}
+		return new VelocityEngine(p);
+	}
+
 	public DataSourceConf getDataSource() {
 		return dataSource;
 	}
@@ -264,11 +267,11 @@ public abstract class AbstractGenerator extends BaseBean {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
 
-    public Map<Component, Map<String, String>> getComponents() {
-        return components;
-    }
+	public Map<Component, Map<String, String>> getComponents() {
+		return components;
+	}
 
-    public void setComponents(Map<Component, Map<String, String>> components) {
-        this.components = components;
-    }
+	public void setComponents(Map<Component, Map<String, String>> components) {
+		this.components = components;
+	}
 }

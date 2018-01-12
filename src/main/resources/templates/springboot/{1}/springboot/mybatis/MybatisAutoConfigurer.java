@@ -20,13 +20,13 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.TransactionManagementConfigurer;
 
 import com.github.pagehelper.PageInterceptor;
-import ${druidPackage}.DruidDataSource;
 
 @Configuration("mybatis")
-@AutoConfigureAfter(DruidDataSource.class)
+@EnableTransactionManagement
 public class MybatisAutoConfigurer implements TransactionManagementConfigurer {
     @Autowired
     private DataSource dataSource;
@@ -34,8 +34,7 @@ public class MybatisAutoConfigurer implements TransactionManagementConfigurer {
     private String     mapperLocations;
     @Value("${mybatis.typeAliasesPackage}")
     private String     typeAliasesPackage;
-    @Value("${mybatis.basePackage}")
-    private String basePackage;
+ 
 
     @Bean(name="sqlSessionFactory")
     public SqlSessionFactory sqlSessionFactory() {

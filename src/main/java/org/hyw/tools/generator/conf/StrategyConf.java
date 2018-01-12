@@ -38,11 +38,6 @@ public class StrategyConf extends BaseBean {
 	private String[] tablePrefix;
 
 	/**
-	 * 自定义基础的Entity类，公共字段
-	 */
-	private String[] superEntityColumns;
-	 	 
-	/**
 	 * 需要包含的表名（与exclude二选一配置）
 	 */
 	private String[] include = null;
@@ -98,16 +93,6 @@ public class StrategyConf extends BaseBean {
 	public void setTablePrefix(String[] tablePrefix) {
 		this.tablePrefix = tablePrefix;
 	}
-
-	public String[] getSuperEntityColumns() {
-		return superEntityColumns;
-	}
-
-	public void setSuperEntityColumns(String[] superEntityColumns) {
-		this.superEntityColumns = superEntityColumns;
-	}
-
-
 
 	public String[] getInclude() {
 		return include;

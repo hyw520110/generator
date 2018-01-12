@@ -11,8 +11,8 @@ create /config/application,dev/spring.thymeleaf.mode HTML5
 create /config/application,dev/spring.thymeleaf.encoding UTF-8
 create /config/application,dev/spring.thymeleaf.content-type text/html
 create /config/application,dev/spring.devtools.livereload.enabled true
-create /config/application,dev/spring.redis.password asdf1234
-create /config/application,dev/spring.redis.cluster.nodes '192.168.40.95:7001, 192.168.40.95:7002, 192.168.40.95:7003, 192.168.40.95:8001, 192.168.40.95:8002, 192.168.40.95:8003'
+create /config/application,dev/spring.redis.password ${spring_redis_password}
+create /config/application,dev/spring.redis.cluster.nodes '${spring_redis_cluster_nodes}'
 create /config/application,dev/spring.redis.cluster.maxRedirects 6
 create /config/application,dev/spring.output.ansi.enabled DETECT
 create /config/application,dev/spring.http.encoding.charcreate UTF-8
@@ -22,10 +22,10 @@ create /config/application,dev/spring.http.converters.preferred-json-mapper fast
 create /config/application,dev/spring.messages.basename conf/messages
 create /config/application,dev/spring.messages.cache-seconds 60
 create /config/application,dev/spring.cache.type redis
-create /config/application,dev/spring.dubbo.registry zookeeper://192.168.40.113:2181?backup=192.168.40.95:2181,192.168.40.113:2182
+create /config/application,dev/spring.dubbo.registry ${dubbo_registry}
 create /config/application,dev/spring.dubbo.version 1.0.0
 create /config/application,dev/spring.dubbo.protocol dubbo
-create /config/application,dev/mybatis.mapperLocations classpath:mapper/*.xml
+create /config/application,dev/mybatis.mapperLocations classpath:mappers/*.xml
 create /config/application,dev/server.undertow.accesslog.enabled true
 create /config/application,dev/server.undertow.accesslog.prefix access_log.
 create /config/application,dev/server.undertow.accesslog.suffix log
@@ -43,11 +43,11 @@ create /config/application,dev/management.security.enabled false
 create /config/application,dev/info.app.name @project.name@
 create /config/application,dev/info.app.version @project.version@
 create /config/application,dev/druid.driverClassName com.mysql.jdbc.Driver
-create /config/application,dev/druid.url jdbc:mysql://rds6vef326vef32o.mysql.rds.aliyuncs.com:3306/ycd360t?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
-create /config/application,dev/druid.username ycd360test
-create /config/application,dev/druid.password BwWroQe0/L6O0HcEOJ++OPaK3YhZSYIcoJxKHSpNMSX0y5jHGla6rbuYTWDbx9r9yu0LgeNMLwSEW5DaB0oR5w==
-create /config/application,dev/druid.filters wall,config
-create /config/application,dev/druid.connectionProperties config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKGZ1YyvABRlmKHv+TcATyrsviKZLLtnkUb9e2lhgqMqZINXDstl3CdD74NnhjijX9wjXqA+V0ASq7uwBo8jZz8CAwEAAQ==config.decrypt=true
+create /config/application,dev/druid.url ${dataSource.url}
+create /config/application,dev/druid.username ${dataSource.username}
+create /config/application,dev/druid.password ${dataSource.password}
+create /config/application,dev/druid.filters $!{dataSource.filter}
+create /config/application,dev/druid.connectionProperties $!{dataSource.property} 
 create /config/application,dev/druid.initialSize 1
 create /config/application,dev/druid.maxActive 20
 create /config/application,dev/druid.minIdle 1
@@ -78,11 +78,12 @@ create /config/application,dev/druid.stat.initParameters.loginPassword 123456
 create /config/application,dev/druid.stat.urlMappings /druid/*
 create /config/application,dev/context.slow-time 1500
 create /config/application,dev/context.userName user_name
-create /config/application,dev/rocketmq.name-server-address 192.168.40.95:9876
+create /config/application,dev/rocketmq.name-server-address ${name-server-address}
 
 create /config/${projectName} ''
 create /config/${projectName}/logging.path /logs/${projectName}/
 create /config/${projectName}/server.port 8081
+create /config/${projectName}/mybatis.typeAliasesPackage $!{entityPackage}
 create /config/${projectName}/rocketmq.producer-group ${projectName}_producer
 create /config/${projectName}/spring.dubbo.port 20800
 create /config/${projectName}/spring.dubbo.appname ${projectName}

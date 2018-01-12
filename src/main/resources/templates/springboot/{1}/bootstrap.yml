@@ -11,8 +11,9 @@ spring:
       root: config
       defaultContext: application
       profileSeparator: ","  
-      connect-string: 192.168.40.113:2181
+      connect-string: ${connect-string}
       config:
         enabled: true
         watcher:
+          #监控配置变更后是否自动更新，需依賴spring-boot-starter-actuator
           enabled: true

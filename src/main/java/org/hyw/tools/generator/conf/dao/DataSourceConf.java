@@ -25,8 +25,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 public class DataSourceConf extends DruidDataSource {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = LoggerFactory
-			.getLogger(DataSourceConf.class);
+	private static final Logger logger = LoggerFactory.getLogger(DataSourceConf.class);
 	/**
 	 * 数据库类型
 	 */
@@ -34,14 +33,15 @@ public class DataSourceConf extends DruidDataSource {
 	/**
 	 * 密码副本(密文密码),用于生成的配置文件配置密文密码,因为配置的密文密码，在属性设值时密码已解密，后续会获取不到密文密码
 	 */
-	private  String pwd;
+	private String pwd;
+	private String filter;
 	/**
 	 * 类型转换
 	 */
 	private TypeConvertor typeConvertor;
 
 	private QuerySQL querySQL;
-	
+
 	public Connection getCon() throws Exception {
 		try {
 			return getConnection();
@@ -49,15 +49,16 @@ public class DataSourceConf extends DruidDataSource {
 			throw e;
 		}
 	}
-	
-	public String getPropertiesStr(){
-	    Properties props = super.getConnectProperties();
-	    StringBuilder builder=new StringBuilder();
-	    for(Object key:props.keySet()){
-	        builder.append(key.toString()+"="+ props.get(key));
-	    }
-	    return builder.toString();
+
+	public String getPropertiesStr() {
+		Properties props = super.getConnectProperties();
+		StringBuilder builder = new StringBuilder();
+		for (Object key : props.keySet()) {
+			builder.append(key.toString() + "=" + props.get(key));
+		}
+		return builder.toString();
 	}
+
 	@Override
 	public void setUrl(String jdbcUrl) {
 		super.setUrl(jdbcUrl);
@@ -100,9 +101,7 @@ public class DataSourceConf extends DruidDataSource {
 	public QuerySQL getQuerySQL() {
 		if (null == querySQL) {
 			this.querySQL = new Yaml().loadAs(
-					getClass().getResourceAsStream(
-							String.format("/conf/%s.yml", dbType.getValue())),
-					QuerySQL.class);
+					getClass().getResourceAsStream(String.format("/conf/%s.yml", dbType.getValue())), QuerySQL.class);
 		}
 		return querySQL;
 	}
@@ -112,8 +111,8 @@ public class DataSourceConf extends DruidDataSource {
 	}
 
 	public String getPwd() {
-		if(StringUtils.isEmpty(pwd)){
-			pwd=getPassword();
+		if (StringUtils.isEmpty(pwd)) {
+			pwd = getPassword();
 		}
 		return pwd;
 	}
@@ -123,17 +122,27 @@ public class DataSourceConf extends DruidDataSource {
 		super.setPassword(pwd);
 	}
 
-	public String getProperties() {
+	public String getProperty() {
 		Properties properties = super.getConnectProperties();
-		if(properties.isEmpty()){
+		if (properties.isEmpty()) {
 			return "";
 		}
 		StringBuilder builder = new StringBuilder();
 		for (Object key : properties.keySet()) {
-			builder.append(key + "="
-					+ properties.getProperty(key.toString(), "") + ";");
+			if (key.toString().contains("password")) {
+				continue;
+			}
+			builder.append(key + "=" + properties.getProperty(key.toString(), "") + ";");
 		}
 		return builder.deleteCharAt(builder.length() - 1).toString();
 	}
 
+	public String getFilter() {
+		return this.filter;
+	}
+
+	public void setFilters(String filters) throws SQLException {
+		super.setFilters(filters);
+		this.filter = filters;
+	}
 }

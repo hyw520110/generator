@@ -46,7 +46,7 @@
 		 <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache</artifactId>
-#if(!$!{springboot_version})            
+#if(!$!{SPRINGBOOT})            
             <version>2.10.4</version>
 #end            
         </dependency>
@@ -60,7 +60,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-#if(!$!{springboot_version})  
+#if(!$!{SPRINGBOOT})  
 			<version>5.1.43</version>
 #end			
 		</dependency>
@@ -76,7 +76,7 @@
 		  <artifactId>pagehelper</artifactId>
 		  <version>5.0.4</version>
 		</dependency>
-#if($!{springboot_version})
+#if($!{SPRINGBOOT})
 
 		<!-- 
 		<dependency>
@@ -120,7 +120,7 @@
 		</dependency>
 #end
 
-#if($!{spring_boot_dubbo_version})
+#if($!{SPRINGBOOT})
 		<!-- dubbo -->
 	    <dependency>
 	        <groupId>com.alibaba</groupId>
@@ -141,13 +141,24 @@
 	        <groupId>org.springframework.cloud</groupId>
 	        <artifactId>spring-cloud-starter-zookeeper-config</artifactId>
 		</dependency>
-		
-#if("$!{javaVersion}"=="1.8")    	
+#if($!{SWAGGER2})
+		<dependency>
+		    <groupId>io.springfox</groupId>
+		    <artifactId>springfox-swagger2</artifactId>
+		    <version>2.7.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>io.springfox</groupId>
+		    <artifactId>springfox-swagger-ui</artifactId>
+		    <version>2.7.0</version>
+		</dependency>
+#end
+#if("$!{javaVersion}"=="1.8" && $!{SPRINGBOOT} && $!{DUBBO} && $!{ZIPKIN})    	
 		<!-- 实时数据追踪 -->
     	<dependency>
             <groupId>com.github.jessyZu</groupId>
    			<artifactId>dubbo-zipkin-spring-starter</artifactId>
-   			<version>1.0.2</version>
+   			<version>${zipkin_version}</version>
         </dependency>
 #if(${ROCKETMQ})        
 		<!-- rocketmq -->
@@ -201,13 +212,13 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-#if(!$!{springboot_version})
+#if(!$!{SPRINGBOOT})
 			<version>4.12</version>
 #end			
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-#if($!{springboot_version})
+#if($!{SPRINGBOOT})
 	<dependencyManagement>
 	    <dependencies>
 	        <dependency>
@@ -242,7 +253,7 @@
 			<plugin>
 			 <groupId>org.apache.maven.plugins</groupId>
 			 <artifactId>maven-resources-plugin</artifactId>
-#if(!$!{springboot_version})			 <version>2.6</version>#end
+#if(!$!{SPRINGBOOT})			 <version>2.6</version>#end
 			 <configuration>
 			    <delimiters>
 			       <delimiter>@</delimiter>
@@ -254,14 +265,14 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-#if(!$!{springboot_version})<version>3.3</version>#end
+#if(!$!{SPRINGBOOT})<version>3.3</version>#end
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
 					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
 			</plugin>
-#if($!{springboot_version})
+#if($!{SPRINGBOOT})
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -296,7 +307,7 @@
 		<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-#if(!$!{springboot_version})<version>2.6</version>#end
+#if(!$!{SPRINGBOOT})<version>2.6</version>#end
 				<configuration>
 					<archive>
 						<addMavenDescriptor>false</addMavenDescriptor>
@@ -323,7 +334,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-#if(!$!{springboot_version})<version>2.2.1</version>#end
+#if(!$!{SPRINGBOOT})<version>2.2.1</version>#end
 				<configuration>
 					<descriptors>
 						<descriptor>src/main/resources/maven/assembly.xml</descriptor>

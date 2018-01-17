@@ -67,15 +67,15 @@ public class Generator extends AbstractGenerator {
     	delDir();
     	mkDirs();
         engine = getVelocityEngine();
-        //根据组件配置过滤所需模板文件
         final File dir = global.getTemplateFile();
         if (dir == null || !dir.exists()) {
             logger.error("模板目录：{}不存在!",dir);
             return;
         }
-        VelocityContext context = createVelocityContext(getComponents());
-        Collection<File> files = getFiles(dir, global.getComponents());
-        if (null == files||files.isEmpty()) {
+        VelocityContext context = createVelocityContext();
+        //根据组件配置过滤所需的模板文件
+        Collection<File> templates = getTemplateFiles();
+        if (null == templates||templates.isEmpty()) {
             logger.error("{}目录下没有所需的模板文件！",dir);
             return;
         }
@@ -88,7 +88,7 @@ public class Generator extends AbstractGenerator {
         }
         context.put("tables", tables);
         for (Table table : tables) {
-            for (File file : files) {
+            for (File file : templates) {
                 context.put("date", getDate());
                 context.put("table", table);
                 //模板文件名 
@@ -155,7 +155,9 @@ public class Generator extends AbstractGenerator {
         return String.format(path, table.getBeanName());
     }
 
-    private Collection<File> getFiles(final File dir, final Component[] components) {
+    private Collection<File> getTemplateFiles() {
+        final File dir = global.getTemplateFile();
+        final Component[] components=global.getComponents();
         Collection<File> files = FileUtils.listFiles(dir, new DirectoryFileFilter() {
             private static final long serialVersionUID = 1L;
             @Override
@@ -197,7 +199,8 @@ public class Generator extends AbstractGenerator {
         }  
     }
 
-    private VelocityContext createVelocityContext(Map<Component, Map<String, String>> map) {
+    private VelocityContext createVelocityContext() {
+        Map<Component, Map<String, String>> map=getComponents();
         VelocityContext context = new VelocityContext();
         Component[] components = global.getComponents();
         for (Component key: map.keySet()) {

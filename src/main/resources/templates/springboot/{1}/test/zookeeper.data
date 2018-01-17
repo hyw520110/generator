@@ -10,7 +10,7 @@ create /config/application,dev/spring.thymeleaf.cache false
 create /config/application,dev/spring.thymeleaf.mode HTML5
 create /config/application,dev/spring.thymeleaf.encoding UTF-8
 create /config/application,dev/spring.thymeleaf.content-type text/html
-create /config/application,dev/spring.devtools.livereload.enabled true
+create /config/application,dev/spring.devtools.livereload.enabled false
 create /config/application,dev/spring.redis.password ${spring_redis_password}
 create /config/application,dev/spring.redis.cluster.nodes '${spring_redis_cluster_nodes}'
 create /config/application,dev/spring.redis.cluster.maxRedirects 6
@@ -25,6 +25,11 @@ create /config/application,dev/spring.cache.type redis
 create /config/application,dev/spring.dubbo.registry ${dubbo_registry}
 create /config/application,dev/spring.dubbo.version 1.0.0
 create /config/application,dev/spring.dubbo.protocol dubbo
+#if($!{ZIPKIN})
+create /config/application,dev/dubbo.trace.enabled true
+create /config/application,dev/spring.zipkin.baseUrl http://192.168.199.102:9411
+
+#end
 create /config/application,dev/mybatis.mapperLocations classpath:mappers/*.xml
 create /config/application,dev/server.undertow.accesslog.enabled true
 create /config/application,dev/server.undertow.accesslog.prefix access_log.

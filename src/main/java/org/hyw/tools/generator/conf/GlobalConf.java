@@ -41,7 +41,7 @@ public class GlobalConf extends BaseBean {
     /**
      * 模板目录
      */
-    private String  template     = "/templates";
+    private String  templateDir     = "/templates";
     /**
      * 生成文件的编码
      */
@@ -204,21 +204,19 @@ public class GlobalConf extends BaseBean {
     public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
-
-    public String getTemplate() {
-        return template;
+    public void setTemplateDir(String templateDir) {
+        this.templateDir = templateDir;
+    }
+    public String getTemplateDir() {
+        return templateDir;
     }
 
     public File getTemplateFile() {
-        URL url = getClass().getResource(getTemplate());
+        URL url = getClass().getResource(templateDir);
         if (null == url) {
             return null;
         }
         return new File(url.getFile());
-    }
-
-    public void setTemplate(String template) {
-        this.template = template;
     }
 
 	public String getCopyright() {

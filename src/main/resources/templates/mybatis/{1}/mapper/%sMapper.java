@@ -22,6 +22,8 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 #else
 @Repository
+#end
+#if($!{REDIS})
 @CacheConfig(cacheNames = "${StringUtils.lowercaseFirst($className)}")
 #end
 public interface ${className} #if(${superMapperClass}) extends ${StringUtils.getClassName(${superMapperClass})}<${StringUtils.capitalFirst("$entityName")}> #end{
@@ -29,10 +31,14 @@ public interface ${className} #if(${superMapperClass}) extends ${StringUtils.get
         //TODO 
     @Select("SELECT * FROM ${table.beanName} WHERE #foreach($field in ${table.primarykeyFields})${field.name} = #{${field.propertyName}}#if($foreach.count!=${table.primarykeyFields.size()}) and #end#end")
     #end
+#if($!{REDIS})
     @Cacheable(key = "#p0")
+#end
 	public ${StringUtils.capitalFirst("$entityName")} findById(#foreach($field in ${table.primarykeyFields})@Param("${field.propertyName}")${field.fieldType.type} ${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
 	
-	@CacheEvict(key = "#p0")
+#if($!{REDIS})
+    @CacheEvict(key = "#p0")
+#end
 	public Integer deleteById(#foreach($field in ${table.primarykeyFields})@Param("${field.propertyName}")${field.fieldType.type} ${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
 
 }

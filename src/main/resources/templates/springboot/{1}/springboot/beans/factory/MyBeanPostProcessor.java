@@ -47,10 +47,12 @@ public class MyBeanPostProcessor implements BeanPostProcessor {
         }
         try {
             URL resource = this.getClass().getClassLoader().getResource("templates/");
+            if(null==resource){
+                return bean;
+            }
             String devResource = resource.getFile().toString().replaceAll("target/classes", "src/main/resources");
-            SpringResourceTemplateResolver resolver = ((SpringResourceTemplateResolver) bean);
             logger.info("replace template prefix to:{}",devResource);
-            resolver.setPrefix("file:"+devResource);
+            ((SpringResourceTemplateResolver) bean).setPrefix("file:"+devResource);
         } catch (Exception e) {
             logger.warn("设置模板前缀异常:{}",e.getLocalizedMessage());
         }

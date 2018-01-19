@@ -88,6 +88,7 @@
 		  <artifactId>spring-boot-devtools</artifactId>
 		  <optional>true</optional>
 		</dependency>
+#if($!{THYMELEAF})
 		<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -98,6 +99,7 @@
             	</exclusion>
             </exclusions>
 		</dependency>
+#end
 		<dependency>  
 		    <groupId>org.springframework.boot</groupId>  
 		    <artifactId>spring-boot-starter-data-redis</artifactId>  

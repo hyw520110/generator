@@ -1,4 +1,0 @@
-spring_boot_dubbo_version: 1.0.0-SNAPSHOT
-dubbo_registry: zookeeper://192.168.40.95:2181
-dubbo_port: 20800
-dubbo_protocol: dubbo

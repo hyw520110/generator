@@ -28,8 +28,8 @@ global:
     fileOverride: true
     #文件生成后是否打开输出目录
     openDir: true
-    #可选组件(枚举类Component)：MYBATIS,JPA, DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,SPRINGBOOT, SPRINGMVC,REDIS,SWAGGER2
-    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2]
+    #可选组件(枚举类Component)：MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF
+    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF]
     #模塊配置
     modules: [api,app]
     #开发人员
@@ -85,8 +85,6 @@ components:
     name-server-address: 192.168.199.11:9876    
   SPRINGBOOT: 
     springboot_version: 1.5.6.RELEASE
-    resp_data_type_json: false
-    json_type: fastjson
     write_null_value: true
     server_port: 8081
     ssl: false
@@ -143,6 +141,10 @@ components:
     rest: true
     crud: true
     superControllerClass: 
+    resp_data_type_json: false
+    json_type: fastjson
+  THYMELEAF: 
+    suffix: .html
     
   
     

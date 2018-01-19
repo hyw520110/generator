@@ -5,7 +5,7 @@ create /config/application,dev/logging.level.root INFO
 create /config/application,dev/logging.file default.log
 create /config/application,dev/spring.profiles.active dev
 create /config/application,dev/spring.thymeleaf.prefix classpath:/templates/
-create /config/application,dev/spring.thymeleaf.suffix .html
+create /config/application,dev/spring.thymeleaf.suffix ${suffix}
 create /config/application,dev/spring.thymeleaf.cache false
 create /config/application,dev/spring.thymeleaf.mode HTML5
 create /config/application,dev/spring.thymeleaf.encoding UTF-8

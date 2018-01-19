@@ -37,10 +37,11 @@ import org.yaml.snakeyaml.Yaml;
  *
  */
 public class Generator extends AbstractGenerator {
-
-    private static final long serialVersionUID = 345083252519120430L;
+ 
 
     private static final Logger logger = LoggerFactory.getLogger(Generator.class.getName());
+    private static final long serialVersionUID = 345083252519120430L;
+
 
     /**
      * 生成器默认配置文件
@@ -49,6 +50,7 @@ public class Generator extends AbstractGenerator {
     private VelocityEngine engine ;
     private Generator() {
     }
+    
 
     public static void main(String[] args) throws Exception {
         Generator generator = getInstance();
@@ -175,12 +177,9 @@ public class Generator extends AbstractGenerator {
 
     private void writer(VelocityContext context, String encoding, File f,File src) {
 		try {
-            logger.info("generator file:{}", f);
-            if (!f.getParentFile().exists()) {
-                f.getParentFile().mkdirs();
-            }
             String ext = StringUtils.substringAfterLast(f.getName(), ".");
             if(ArrayUtils.contains(global.getExcludes() ,ext)){
+                logger.info("copy file:{}", f);
                 FileUtils.copyFile(src, f);
                 return ;
             }
@@ -193,10 +192,19 @@ public class Generator extends AbstractGenerator {
             if(StringUtils.isBlank(writer.toString())){
             	return ;
             }
+            logger.info("generator file:{}", f);
+            mkdir(f);
             FileUtils.write(f, writer.toString(), encoding);
         } catch (Exception e) {
             logger.error("write file:{} {}", f, e.getClass(), e);
         }  
+    }
+
+
+    private void mkdir(File f) {
+        if (!f.getParentFile().exists()) {
+            f.getParentFile().mkdirs();
+        }
     }
 
     private VelocityContext createVelocityContext() {

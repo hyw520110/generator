@@ -1,3 +1,4 @@
+#if(!$!{SPRINGBOOT})
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:util="http://www.springframework.org/schema/util"
@@ -112,3 +113,4 @@
 		<property name="sqlSessionFactory" ref="sqlSessionFactory"/>
 	</bean>	
 </beans>
+#end

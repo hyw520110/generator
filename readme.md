@@ -2,8 +2,8 @@
 
 代码生成器,主要功能：
 
-- 支持主流关系型数据库,支持整库生成、部分表生成、反选生成
-- 数据库连接池支持：密码加密，SQL注入拦截，慢SQL记录，连接池监控等
+- 支持主流关系型数据库(mysql、oracle、postgresql、sqlserver),支持整库生成、指定部分表、反选表生成
+- druid数据库连接池：密码加密，SQL注入拦截，慢SQL记录，连接池监控等
 - 支持代码、配置、依赖、页面模板(thymeleaf)以及单元测试用例(mock)的生成,支持复合主键的生成
 - 支持zookeeper分布式集中配置
 - 支持redis集群及切片缓存
@@ -17,22 +17,19 @@
 	
 # 生成器配置说明:
 
-配置文件generator.yaml包含
+配置文件generator.yaml,主要配置包括(粗体必须配置):
 
-- **数据源配置**,必须指定/主要配置：数据库驱动类、URL、用户名、密码
-- **全局配置**,必须指定/主要配置：输出目录、是否清空输出目录、是否覆盖生成
-- **生成策略配置**,必须指定/主要配置：根包
-- 组件配置:一般保持默认即可,可自定义定制扩展
+- **数据源配置**：driverClassName、URL、username、pwd
+- **全局配置**：生成目录outputDir、是否清空输出目录delOutputDir、是否覆盖生成fileOverride、技术组件components
+- **生成策略配置**：根包rootPackage
+- 组件配置:如组件选配了dubbo、zipkin、zookeeper、rocketmq、redis等,需指定组件所需的地址,否则一般保持默认即可
 
 具体配置项说明见配置文件注释说明
 
 # 快速开始:
 
-有两种方式执行（二选一即可）：一种方式是通过git下载源码执行，一种是下载zip包执行命令脚本.
-
-## 1. 源码方式：
-
 修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
+
 - **修改数据源配置**
 	- 如配置明文密码，直接配置好driverClassName、url、username、pwd(明文密码),filters和connectionProperties配置为空或注释即可
 	- 如配置密文密码,执行以下命令：					
@@ -51,6 +48,11 @@
 	- 定义移除的表前缀tablePrefix
 	- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
 
+有两种方式执行（二选一即可）：一种方式是通过git下载源码执行，一种是下载zip包执行命令脚本.
+
+## 1. 源码方式：
+
+
 导入生成的源码到IDE(安装配置好maven/gradle),执行Generator的main方法.
 
 
@@ -68,19 +70,9 @@
 
 如配置的组件中不包含zookeeper，则默认是配置文件yml，注意查看配置文件(默认目录src/main/resources目录下)，根据需要修改配置或完全保持默认配置
 
-如配置的组件中包含zookeeper，则
-
-- 需要安装zookeeper
-	- 下载解压
-	- 进入conf目录复制zoo_sample.cfg改名zoo.cfg
-	- 进入bin目录执行zkServer.cmd启动服务即可
-- 然后初始化配置数据
-	- 进入生成的源码根目录下的app目录
-	- 打开src/test/resources/zookeeper.data全选复制
-	- cmd进入zookeeper的bin目录下执行
-			
-			zkCli -server localhost:2181
-			粘贴 回车
+如配置的组件中包含zookeeper，则初始化配置数据
+	- 进入生成的源码根目录下的app目录,打开src/test/resources/zookeeper.data全选复制
+	- cmd进入zookeeper的bin目录下执行 zkCli -server localhost:2181 粘贴 回车
 
 ### 源码执行
 
@@ -122,21 +114,11 @@
 
 1. 各主流关系型数据库适配验证、配置调整
 2. 各个组件适配(JPA、DUBBO...)、配置文件以及测试用例的生成
-3. springmvc增删改查方法、页面的生成以及mock测试用例
-4. 页面显示自定义:
-
-	- 搜索项自定义(根据哪些字段查询)
-	- 搜索条件自定义(怎样查询=/like/>/<...)
-	- 排序自定义(根据哪些字段升序/降序排序)
-	- 列表字段自定义(是否显示、排序)
-	- 重复提交
-5. 数据验证及国际化(存放错误消息,便于更新维护)支持
-6. 增加分布式配置
-7. 增加分布式消息中间件
-8. 生成器交互式脚本
-9. 启动脚本优化:增加linux启动脚本
-10. zookeeper数据初始化导入
-11. redis切片緩存key优化：演示功能，设置过于简单 ,需考虑唯一性以及序列化与反序列化
+3. 数据验证及国际化(存放错误消息,便于更新维护)支持
+4. 增加分布式消息中间件
+5. 生成器交互式脚本
+6. zookeeper数据初始化导入
+7. redis切片緩存key优化：演示功能，设置过于简单 ,需考虑唯一性以及序列化与反序列化
 
 # FAQ:
 

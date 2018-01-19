@@ -23,10 +23,11 @@ public class StartupRunner implements CommandLineRunner {
     private int port;
 	@Override
 	public void run(String... arg0) throws Exception {
-	    logger.info("服务启动完成!");
-		openBrowser();
+	    logger.info("服务启动完成! 服务端口:{}",port);
+#if($!{THYMELEAF})
+	    openBrowser();
+#end
 	}
-	
  
 	@Async
 	public void openBrowser() {
@@ -41,5 +42,4 @@ public class StartupRunner implements CommandLineRunner {
 			logger.warn("open url:{} ,{}",url,e.getLocalizedMessage());
 		}
 	}
-
 }

@@ -8,7 +8,7 @@ dataSource:
     #pwd: 123456
     
     #密文密码
-    url: jdbc:mysql://dev.c5game.com:3306/product?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
+    url: jdbc:mysql://dev.c5game.com:3306/users?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
     username: root
     pwd: c5game.com
     # 明文密码时值留空或注释;密文密码时配置config
@@ -19,17 +19,17 @@ dataSource:
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
-    outputDir: d:/output/product
+    outputDir: d:\output\users
     #项目描述
     description: 用户后台管理系统
     #生成文件前是否删除输出目录,建议配置为false 
-    delOutputDir: true
+    delOutputDir: false
     #是否覆盖已有文件      
-    fileOverride: true
+    fileOverride: false
     #文件生成后是否打开输出目录
     openDir: true
     #可选组件(枚举类Component)：MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF
-    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF]
+    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,SWAGGER2]
     #模塊配置
     modules: [api,app]
     #开发人员
@@ -51,7 +51,7 @@ strategy:
     #父包名
     rootPackage: com.c5game
     #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
-    include:  
+    include: ['imba_user'] 
     #需要排除的表名
     exclude: 
     #表前缀
@@ -141,7 +141,7 @@ components:
     rest: true
     crud: true
     superControllerClass: 
-    resp_data_type_json: false
+    resp_data_type_json: true
     json_type: fastjson
   THYMELEAF: 
     suffix: .html

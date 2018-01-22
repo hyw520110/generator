@@ -1,3 +1,4 @@
+#if($!{THYMELEAF})
 package ${factoryPackage};
 
 import java.net.URL;
@@ -59,3 +60,4 @@ public class MyBeanPostProcessor implements BeanPostProcessor {
         return bean;
     }
 }
+#end

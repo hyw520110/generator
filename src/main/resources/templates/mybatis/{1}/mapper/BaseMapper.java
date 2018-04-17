@@ -15,7 +15,12 @@ import org.apache.ibatis.annotations.Param;
 
 public interface BaseMapper<E> {
 
-    
+	E queryById(Long id);
+	
+	E query(E rdObject);
+	
+	Long queryExist(E rdObject);
+	
     /**
      * 根据指定条件查询一条记录 
      * @author:  heyiwu
@@ -29,18 +34,19 @@ public interface BaseMapper<E> {
      */
     List<E> findAll(Map<String, Object> map);
 
-    /**
-    * 分页查询--总条数
-    * @return Integer 总条数   
-    */
-    Integer count(Map<String, Object> map);
 
     /**
     * 分页查询列表，使用此方法的dto需要继承pageList
     * @return List<E> 返回数据集合   
     */
     List<E> findPage(Map<String, Object> map);
-
+    
+    /**
+     * 分页查询--总条数
+     * @return Integer 总条数   
+     */
+     Integer count(Map<String, Object> map);
+     
     /**
     * 保存对象信息
     * @param entity 对象实体类
@@ -48,6 +54,14 @@ public interface BaseMapper<E> {
     *     
     */
     Integer save(E entity);
+    
+    /**
+     * 保存对象信息
+     * @param entity 对象实体类
+      * @return 
+     *     
+     */
+    Long insert(E entity);
 
     /**
     * 更新对象信息 
@@ -55,6 +69,8 @@ public interface BaseMapper<E> {
     *     
     */
     Integer update(E entity);
+    
+    void remove(Long id);
     
 }
 #end

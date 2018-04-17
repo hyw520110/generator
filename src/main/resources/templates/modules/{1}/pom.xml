@@ -123,6 +123,7 @@
 #end
 
 #if($!{SPRINGBOOT})
+#if($!{DUBBO})
 		<!-- dubbo -->
 	    <dependency>
 	        <groupId>com.alibaba</groupId>
@@ -143,6 +144,7 @@
 	        <groupId>org.springframework.cloud</groupId>
 	        <artifactId>spring-cloud-starter-zookeeper-config</artifactId>
 		</dependency>
+#end		
 #if($!{SWAGGER2})
 		<dependency>
 		    <groupId>io.springfox</groupId>

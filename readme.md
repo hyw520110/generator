@@ -28,25 +28,18 @@
 
 # 快速开始:
 
-修改配置文件generator.yaml(黑体为必须修改项 ,其他均为可选修改项)：
+修改配置文件generator.yaml(必须修改项 ,其他均为可选修改项)：
 
-- **修改数据源配置**
-	- 如配置明文密码，直接配置好driverClassName、url、username、pwd(明文密码),filters和connectionProperties配置为空或注释即可
-	- 如配置密文密码,执行以下命令：					
-		- java -cp %M2_REPO%\com\alibaba\druid\1.1.2\druid-1.1.2.jar com.alibaba.druid.filter.config.ConfigTools 123456
-		- 命令执行输出：公钥(publicKey)、私钥(privateKey)、密文密码,密码配置为以上命令产生的密文密码
-		- 配置filters为: config	
-		- 配置连接属性(connectionProperties)为：config.decrypt=true;config.decrypt.key=${publicKey}			
-- 修改全局配置
-	- **定义输出目录(outputDir)**,最后一个子目录为项目名
-	- **是否清空输出目录(delOutputDir)默认为false**,工程已存在的情况下，此配置项谨慎使用(不要配置为true)
- 	- **定义是否覆盖生成(默认false)**,工程文件已存在的情况下，此配置项谨慎使用(不要配置为true)
- 	- 定义作者(author)
-	- 定义版权(copyright)
-- 修改生成策略
-	- **定义根包(rootPackage)**
-	- 定义移除的表前缀tablePrefix
-	- 是否生成构建脚本:pom.xml(配置MAVEN)、build.gradle(配置GRADLE)、不生成(不配置)
+			  
+	url: jdbc:mysql://localhost:3306/test?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8
+	username: root
+	pwd: 123456
+    
+	outputDir: /output/test
+	components: [MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,SWAGGER2]
+	
+	rootPackage: com.test
+其中components组件配置根据实际需要选取，选取后配置相应组件地址信息(redis、dubbo、zookeeper、rocketmq地址)
 
 有两种方式执行（二选一即可）：一种方式是通过git下载源码执行，一种是下载zip包执行命令脚本.
 

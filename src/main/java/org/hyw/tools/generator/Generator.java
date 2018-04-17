@@ -1,14 +1,15 @@
 package org.hyw.tools.generator;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -23,219 +24,238 @@ import org.hyw.tools.generator.enums.ProjectBuilder;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * 
- * Filename:    Generator.java  
- * Description: 生成器  
- * Copyright:   Copyright (c) 2015-2018 All Rights Reserved.
- * Company:     org.hyw.cn Inc.
- * @author:     heyiwu 
- * @version:    1.0  
- * Create at:   2017年6月12日 上午10:53:49  
+ * Filename: Generator.java Description: 生成器 Copyright: Copyright (c) 2015-2018
+ * All Rights Reserved. Company: org.hyw.cn Inc.
+ * 
+ * @author: heyiwu
+ * @version: 1.0 Create at: 2017年6月12日 上午10:53:49
  *
  */
 public class Generator extends AbstractGenerator {
- 
 
-    private static final Logger logger = LoggerFactory.getLogger(Generator.class.getName());
-    private static final long serialVersionUID = 345083252519120430L;
+	private static final Logger logger = LoggerFactory.getLogger(Generator.class.getName());
+	private static final long serialVersionUID = 345083252519120430L;
 
+	/**
+	 * 生成器默认配置文件
+	 */
+	private static String conf = "/generator.yaml";
+	private VelocityEngine engine;
 
-    /**
-     * 生成器默认配置文件
-     */
-    private static String conf = "/generator.yaml";
-    private VelocityEngine engine ;
-    private Generator() {
-    }
-    
+	private Generator() {
+	}
 
-    public static void main(String[] args) throws Exception {
-        Generator generator = getInstance();
-        generator.execute();
-    }
+	public static void main(String[] args) throws Exception {
+		Generator generator = getInstance();
+		generator.execute();
+	}
 
-    public static Generator getInstance() {
-        return getInstance(conf);
-    }
+	public static Generator getInstance() {
+		return getInstance(conf);
+	}
 
-    /**
-     * 生成代码
-     * @throws Exception 
-     */
-    public void execute() throws Exception {
-    	delDir();
-    	mkDirs();
-        engine = getVelocityEngine();
-        final File dir = global.getTemplateFile();
-        if (dir == null || !dir.exists()) {
-            logger.error("模板目录：{}不存在!",dir);
-            return;
-        }
-        VelocityContext context = createVelocityContext();
-        //根据组件配置过滤所需的模板文件
-        Collection<File> templates = getTemplateFiles();
-        if (null == templates||templates.isEmpty()) {
-            logger.error("{}目录下没有所需的模板文件！",dir);
-            return;
-        }
-        createScriptFile(engine, context);
-        String encoding = global.getEncoding();
-        String projectName = global.getProjectName();
-        List<Table> tables = getTables();
-        if(tables.isEmpty()){
-            logger.warn("查询表为空！");
-        }
-        context.put("tables", tables);
-        for (Table table : tables) {
-            for (File file : templates) {
-                context.put("date", getDate());
-                context.put("table", table);
-                //模板文件名 
-                String name = String.format(file.getName(), table.getBeanName());
-                //模板文件名前缀
-                String prefix = StringUtils.substringBeforeLast(name, ".");
-                boolean isJava = name.endsWith(".java");
-                String subDir = getSubDir(dir, file,table);
-                if (isJava) {
-                	String pName = file.getParentFile().getName();
-                	if(!StringUtils.startsWith(name, "Base")){
-                		//类名
-                        context.put("className", prefix);
-                        context.put(pName+"Name", prefix);	
-                	}
-                    //类的包名
-                    context.put(pName+"Package" , StringUtils.toPackage(strategy.getRootPackage(), projectName, StringUtils.toPackage(subDir)));
-                }
-                String moduleName = StringUtils.substringBefore(subDir, File.separator);
-                context.put("moduleName", moduleName);
-                File f = new File(getDir(projectName, isJava, subDir, moduleName), name);
-                if (!global.isFileOverride() && f.exists()) {
-                    continue;
-                }
-                writer(context, encoding,  f,file);
-            }
-        }
-        openDir();
-    }
+	/**
+	 * 生成代码
+	 * 
+	 * @throws Exception
+	 */
+	public void execute() throws Exception {
+		delDir();
+		mkDirs();
+		engine = getVelocityEngine();
+		final File dir = global.getTemplateFile();
+		if (dir == null || !dir.exists()) {
+			logger.error("模板目录：{}不存在!", dir);
+			return;
+		}
+		VelocityContext context = createVelocityContext();
+		// 根据组件配置过滤所需的模板文件
+		File[] templates = getTemplateFiles();
+		if (null == templates || templates.length==0) {
+			logger.error("{}目录下没有所需的模板文件！", dir);
+			return;
+		}
+		createScriptFile(engine, context);
+		String encoding = global.getEncoding();
+		String projectName = global.getProjectName();
+		List<Table> tables = getTables();
+		if (tables.isEmpty()) {
+			logger.warn("查询表为空！");
+		}
+		context.put("tables", tables);
+		for (Table table : tables) {
+			for (File file : templates) {
+				context.put("date", getDate());
+				context.put("table", table);
+				// 模板文件名
+				String name = String.format(file.getName(), table.getBeanName());
+				// 模板文件名前缀
+				String prefix = StringUtils.substringBeforeLast(name, ".");
+				boolean isJava = name.endsWith(".java");
+				String subDir = getSubDir(dir, file, table);
+				if (isJava) {
+					String pName = file.getParentFile().getName();
+					if (!StringUtils.startsWith(name, "Base")) {
+						// 类名
+						context.put("className", prefix);
+						context.put(pName + "Name", prefix);
+					}
+					// 类的包名
+					context.put(pName + "Package", StringUtils.toPackage(strategy.getRootPackage(), projectName,
+							StringUtils.toPackage(subDir)));
+				}
+				String moduleName = null == global.getModules() ? ""
+						: StringUtils.substringBefore(subDir, File.separator);
 
-    public void createScriptFile(VelocityEngine engine, VelocityContext context) {
-        ProjectBuilder builder = strategy.getProjectBuilder();
-        if (null == builder) {
-            return;
-        }
-        File dir = global.getTemplateFile();
-        String encoding = global.getEncoding();
-        //TODO 单模块/无模块单工程 支持
-        Collection<File> modules = FileUtils.listFiles(new File(dir, "modules"),FileFilterUtils.fileFileFilter(), FileFilterUtils.trueFileFilter());
-        context.put("version", strategy.getVersion());
-        context.put("modules", global.getModules());
-        for (File file : modules) {
-            String tPath = file.getPath().replace(dir.getParent(), "");
-            String path = MessageFormat.format(StringUtils.substringAfter(tPath, "modules"), global.getModules());
-            context.put("moduleName", StringUtils.substring(path, 1, StringUtils.indexOf(path, File.separator, 1)));
-            writer(context, encoding,  new File(global.getOutputDir(), path),file);
-        }
-    }
+				context.put("moduleName", moduleName);
+				File f = new File(getDir(projectName, isJava, subDir, moduleName), name);
+				if (!global.isFileOverride() && f.exists()) {
+					continue;
+				}
+				writer(context, encoding, f, file);
+			}
+		}
+		openDir();
+	}
 
-    private String getDir(String projectName, boolean isJava, String subDir, String moduleName) {
-        boolean isTest=StringUtils.startsWith(subDir, moduleName+(System.getProperty("os.name").startsWith("Win")?"\\":"/")+"test");
-        if (isJava) {
-            return StringUtils.toPath(global.getOutputDir(), moduleName, isTest?global.getTestSourceDirectory():global.getSourceDirectory(), strategy.getRootPackage().replace(".", File.separator) + File.separator + projectName, subDir);
-        }
-        String s = StringUtils.substringAfter(subDir, moduleName);
-        return StringUtils.toPath(global.getOutputDir(), moduleName, isTest?global.getTestResource():global.getResource(),isTest?StringUtils.substringAfter(s, "test"):s);
-    }
+	public void createScriptFile(VelocityEngine engine, VelocityContext context) {
+		ProjectBuilder builder = strategy.getProjectBuilder();
+		if (null == builder) {
+			return;
+		}
+		File dir = global.getTemplateFile();
+		String encoding = global.getEncoding();
+		context.put("version", strategy.getVersion());
+		if (null == global.getModules()) {
+			return;
+		}
+		Collection<File> modules = FileUtils.listFiles(new File(dir, "modules"), FileFilterUtils.fileFileFilter(),
+				FileFilterUtils.trueFileFilter());
+		context.put("modules", global.getModules());
+		for (File file : modules) {
+			String tPath = file.getPath().replace(dir.getParent(), "");
+			String path = MessageFormat.format(StringUtils.substringAfter(tPath, "modules"), global.getModules());
+			context.put("moduleName", StringUtils.substring(path, 1, StringUtils.indexOf(path, File.separator, 1)));
+			writer(context, encoding, new File(global.getOutputDir(), path), file);
+		}
+	}
 
-    private String getSubDir(final File dir, File file, Table table) {
-        //子路径（以组件开头）
-        String subPath = file.getParent().replace(dir.getPath(), "").substring(1);
-        //子目录(去除组件路径)
-        String path = MessageFormat.format(StringUtils.substringAfter(subPath, File.separator), global.getModules());
-        return String.format(path, table.getBeanName());
-    }
+	private String getDir(String projectName, boolean isJava, String subDir, String moduleName) {
+		boolean isTest = StringUtils.startsWith(subDir, "".equals(moduleName) ? "test"
+				: moduleName + (System.getProperty("os.name").startsWith("Win") ? "\\" : "/") + "test");
+		if (isJava) {
+			return StringUtils.toPath(global.getOutputDir(), moduleName,
+					isTest ? global.getTestSourceDirectory() : global.getSourceDirectory(),
+					strategy.getRootPackage().replace(".", File.separator) + File.separator + projectName, subDir);
+		}
+		String s = StringUtils.substringAfter(subDir, moduleName);
+		return StringUtils.toPath(global.getOutputDir(), moduleName,
+				isTest ? global.getTestResource() : global.getResource(),
+				isTest ? StringUtils.substringAfter(s, "test") : s);
+	}
 
-    private Collection<File> getTemplateFiles() {
-        final File dir = global.getTemplateFile();
-        final Component[] components=global.getComponents();
-        Collection<File> files = FileUtils.listFiles(dir, new DirectoryFileFilter() {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public boolean accept(File file) {
-                String path = file.getPath().replace(dir.getAbsolutePath(), "").substring(1);
-                int index = StringUtils.indexOf(path, File.separator);
-                if (index != -1) {
-                    path = StringUtils.substring(path, 0, index);
-                }
-                return ArrayUtils.contains(components, Component.getComonent(path));
-            }
-        }, FileFilterUtils.trueFileFilter());
-        return files;
-    }
+	private String getSubDir(final File dir, File file, Table table) {
+		// 子路径（以组件开头）
+		String subPath = file.getParent().replace(dir.getPath(), "").substring(1);
+		// 子目录(去除组件路径)
+		subPath = StringUtils.substringAfter(subPath, File.separator);
+		if (null != global.getModules()) {
+			subPath = MessageFormat.format(subPath, global.getModules());
+		} else {
+			subPath = StringUtils.substringAfter(subPath, File.separator);
+		}
+		return String.format(subPath, table.getBeanName());
+	}
 
-    private void writer(VelocityContext context, String encoding, File f,File src) {
+	private File[] getTemplateFiles() {
+		final File dir = global.getTemplateFile();
+		final Component[] components = global.getComponents();
+		File[] files = FileUtils.listFiles(dir, new DirectoryFileFilter() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public boolean accept(File file) {
+				String path = file.getPath().replace(dir.getAbsolutePath(), "").substring(1);
+				int index = StringUtils.indexOf(path, File.separator);
+				if (index != -1) {
+					path = StringUtils.substring(path, 0, index);
+				}
+				return ArrayUtils.contains(components, Component.getComonent(path));
+			}
+		}, FileFilterUtils.trueFileFilter()).toArray(new File[] {});
+		Arrays.sort(files, new Comparator<File>() {
+			@Override
+			public int compare(File o1, File o2) {
+				if (o1.isDirectory() && o2.isFile())
+					return o1.getPath().compareTo(o2.getParentFile().getPath());
+				if (o1.isFile() && o2.isDirectory())
+					return o1.getParentFile().getPath().compareTo(o2.getPath());
+				return o1.getPath().compareTo(o2.getPath());
+			}
+		});
+		return files;
+	}
+
+	private void writer(VelocityContext context, String encoding, File f, File src) {
 		try {
-            String ext = StringUtils.substringAfterLast(f.getName(), ".");
-            if(ArrayUtils.contains(global.getExcludes() ,ext)){
-                logger.info("copy file:{}", f);
-                FileUtils.copyFile(src, f);
-                return ;
-            }
-            File dir = global.getTemplateFile();
-            //获取模板对象
-            Template t = engine.getTemplate(src.getPath().replace(dir.getParent(), ""), encoding);
-            StringWriter writer = new StringWriter();
-            t.merge(context, writer);
-            //模板渲染为空则不生成文件
-            if(StringUtils.isBlank(writer.toString())){
-            	return ;
-            }
-            logger.info("generator file:{}", f);
-            mkdir(f);
-            FileUtils.write(f, writer.toString(), encoding);
-        } catch (Exception e) {
-            logger.error("write file:{} {}", f, e.getClass(), e);
-        }  
-    }
+			String ext = StringUtils.substringAfterLast(f.getName(), ".");
+			if (ArrayUtils.contains(global.getExcludes(), ext)) {
+				logger.info("copy file:{}", f);
+				FileUtils.copyFile(src, f);
+				return;
+			}
+			File dir = global.getTemplateFile();
+			// 获取模板对象
+			Template t = engine.getTemplate(src.getPath().replace(dir.getParent(), ""), encoding);
+			StringWriter writer = new StringWriter();
+			t.merge(context, writer);
+			// 模板渲染为空则不生成文件
+			if (StringUtils.isBlank(writer.toString())) {
+				return;
+			}
+			logger.info("generator file:{}", f);
+			mkdir(f);
+			FileUtils.write(f, writer.toString(), encoding);
+		} catch (Exception e) {
+			logger.error("write file:{} {}", f, e.getClass(), e);
+		}
+	}
 
+	private void mkdir(File f) {
+		if (!f.getParentFile().exists()) {
+			f.getParentFile().mkdirs();
+		}
+	}
 
-    private void mkdir(File f) {
-        if (!f.getParentFile().exists()) {
-            f.getParentFile().mkdirs();
-        }
-    }
+	private VelocityContext createVelocityContext() {
+		Map<Component, Map<String, String>> map = getComponents();
+		VelocityContext context = new VelocityContext();
+		Component[] components = global.getComponents();
+		for (Component key : map.keySet()) {
+			Boolean flag = ArrayUtils.contains(components, key);
+			context.put(key.toString(), flag);
+			if (!flag) {
+				continue;
+			}
+			Map<String, String> pars = map.get(key);
+			for (Entry<String, String> entry : pars.entrySet()) {
+				context.put(entry.getKey(), entry.getValue());
+			}
+		}
+		context.put("dataSource", dataSource);
+		context.put("author", global.getAuthor());
+		context.put("encoding", global.getEncoding());
+		context.put("copyright", global.getCopyright());
+		context.put("description", global.getDescription());
+		context.put("StringUtils", StringUtils.class);
+		context.put("projectName", global.getProjectName());
+		context.put("javaVersion", strategy.getJavaVersion());
+		context.put("rootPackage", strategy.getRootPackage());
+		context.put("dbType", dataSource.getDBType().getValue());
+		return context;
+	}
 
-    private VelocityContext createVelocityContext() {
-        Map<Component, Map<String, String>> map=getComponents();
-        VelocityContext context = new VelocityContext();
-        Component[] components = global.getComponents();
-        for (Component key: map.keySet()) {
-            Boolean flag=ArrayUtils.contains(components, key);
-            context.put(key.toString(), flag);
-            if(!flag){
-                continue;
-            }
-            Map<String, String> pars = map.get(key);
-            for (Entry<String, String> entry : pars.entrySet()) {
-                context.put(entry.getKey(), entry.getValue());
-            }
-        }
-        context.put("dataSource", dataSource);
-        context.put("author", global.getAuthor());
-        context.put("encoding", global.getEncoding());
-        context.put("copyright",global.getCopyright());
-        context.put("description", global.getDescription());
-        context.put("StringUtils", StringUtils.class);
-        context.put("projectName", global.getProjectName());
-        context.put("javaVersion", strategy.getJavaVersion());
-        context.put("rootPackage", strategy.getRootPackage());
-        context.put("dbType", dataSource.getDBType().getValue());
-        return context;
-    }
-
-
-
-  
 }

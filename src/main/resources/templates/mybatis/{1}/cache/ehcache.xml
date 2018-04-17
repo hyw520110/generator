@@ -1,3 +1,4 @@
+#if($!{enableCache})
 <?xml version="1.0" encoding="UTF-8"?>  
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
     xsi:noNamespaceSchemaLocation="../bin/ehcache.xsd">  
@@ -19,3 +20,4 @@
 	  maxElementsOnDisk="10" diskPersistent="true" diskExpiryThreadIntervalSeconds="300" diskSpoolBufferSizeMB="100" maxElementsInMemory="1000" timeToLiveSeconds="300" maxEntriesLocalHeap="1000" maxEntriesLocalDisk="10000000" memoryStoreEvictionPolicy="LRU"/>  
     <diskStore path="${cachePath}" />  
 </ehcache>  
+#end

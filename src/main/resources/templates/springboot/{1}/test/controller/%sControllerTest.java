@@ -1,7 +1,6 @@
 package ${controllerPackage};
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +14,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ${rootPackage}.${projectName}.${moduleName}.controller.${table.beanName}Controller;
-import ${rootPackage}.${projectName}.${moduleName}.Booter;
+import ${rootPackage}.${projectName}#if(!${moduleName}).${moduleName}#end.controller.${table.beanName}Controller;
+import ${rootPackage}.${projectName}#if(!${moduleName}).${moduleName}#end.Booter;
 
 @RunWith(SpringRunner.class)
 //@ContextConfiguration or @SpringBootTest(classes=Booter.class)

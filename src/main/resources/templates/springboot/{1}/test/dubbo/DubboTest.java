@@ -1,3 +1,4 @@
+#if($!{DUBBO})
 package ${dubboPackage};
 
 import org.junit.Test;
@@ -22,3 +23,4 @@ public class DubboTest {
         System.out.println(service.getClass());
     }
 }
+#end

@@ -1,3 +1,4 @@
+#if($!{REDIS}) 
 package ${redisPackage};
 
 import org.junit.Assert;
@@ -120,3 +121,4 @@ public class RedisTemplateTest {
         System.out.println(operater.range("zSet", 0, -1));
     }
 }
+#end

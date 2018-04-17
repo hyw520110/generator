@@ -39,7 +39,11 @@
 	components: [MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,SWAGGER2]
 	
 	rootPackage: com.test
-其中components组件配置根据实际需要选取，选取后配置相应组件地址信息(redis、dubbo、zookeeper、rocketmq地址)
+其中components组件配置根据实际需要选取（如需要生成页面，配置THYMELEAF即可），选取后配置相应组件地址信息(redis、dubbo、zookeeper、rocketmq地址)
+
+默认生成单模块工程，也可生成多模块工程，配置modules即可，如生成api和app工程配置：
+
+	modules: [ 'api','app']
 
 有两种方式执行（二选一即可）：一种方式是通过git下载源码执行，一种是下载zip包执行命令脚本.
 

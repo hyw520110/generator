@@ -8,7 +8,7 @@ import java.util.Map;
  * @since ${date}
  * @copyright: ${copyright}
  */
-public interface JpaBaseService<T,PK> {
+public interface BaseJpaService<T,PK> {
 
 
     /**

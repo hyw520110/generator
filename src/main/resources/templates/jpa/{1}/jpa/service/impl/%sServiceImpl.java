@@ -16,14 +16,14 @@ import org.springframework.stereotype.Service;
 @Service
 #if($!{spring_boot_dubbo_version})@com.alibaba.dubbo.config.annotation.Service
 #end
-public class ${className}  implements ${serviceName}<${entityName},${table.primaryKeyField.fieldType.type}> {
+public class ${className}  implements ${serviceName} {
 	@Autowired
 	private ${repositoryName} repository;
-	@Override
+	
 	public boolean save(${entityName} entity) {
 		return null!=repository.save(entity);
 	}
-	@Override
+
 	public ${entityName} findById(${table.primaryKeyField.fieldType.type} id) {
 		return repository.findOne(id);
 	}

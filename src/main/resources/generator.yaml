@@ -29,7 +29,7 @@ global:
     #文件生成后是否打开输出目录
     openDir: true
     #可选组件(枚举类Component)：MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF
-    components: [MYBATIS,JPA,SPRINGMVC,SPRINGBOOT,ZOOKEEPER,SWAGGER2]
+    components: [JPA]
     #模塊配置
     modules: 
     #开发人员

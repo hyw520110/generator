@@ -47,8 +47,6 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 #end
 @EnableAsync
 public class Booter{
-    @Value("${spring.messages.basename}")
-    private String basenames;
     
 	public static void main(String[] args ){
 		//springloaded
@@ -126,7 +124,7 @@ public class Booter{
     public ResourceBundleMessageSource messageSource() throws Exception {  
         ResourceBundleMessageSource rbms = new ResourceBundleMessageSource();  
         rbms.setDefaultEncoding("${encoding}");  
-        rbms.setBasenames(basenames);  
+        rbms.setBasenames("conf/messages");  
         return rbms;  
     }  
   

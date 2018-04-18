@@ -1,3 +1,4 @@
+#if("MAVEN"=="${strategy.projectBuilder}")
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -100,10 +101,12 @@
             </exclusions>
 		</dependency>
 #end
+#if(${REDIS})
 		<dependency>  
 		    <groupId>org.springframework.boot</groupId>  
 		    <artifactId>spring-boot-starter-data-redis</artifactId>  
 		</dependency>  
+#end		
 		<!-- Undertow是红帽公司的java开源高性能web服务器(Wildfly默认的Web服务器)-->  
 		<dependency>
 	        <groupId>org.springframework.boot</groupId>
@@ -140,7 +143,9 @@
         	<artifactId>zkclient</artifactId>
         	<version>${zkclient_version}</version>
     	</dependency>
-    	<dependency>
+#end	
+#if(${ZOOKEEPER})	
+		<dependency>
 	        <groupId>org.springframework.cloud</groupId>
 	        <artifactId>spring-cloud-starter-zookeeper-config</artifactId>
 		</dependency>
@@ -357,3 +362,4 @@
 		</plugins>
 	</build>
 </project>
+#end

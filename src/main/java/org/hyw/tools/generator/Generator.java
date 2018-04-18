@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -255,6 +254,7 @@ public class Generator extends AbstractGenerator {
 		context.put("javaVersion", strategy.getJavaVersion());
 		context.put("rootPackage", strategy.getRootPackage());
 		context.put("dbType", dataSource.getDBType().getValue());
+		context.put("strategy", strategy);
 		return context;
 	}
 

@@ -19,19 +19,19 @@ dataSource:
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
-    outputDir: /Users/a123/work/backstage
+    outputDir: /Users/a123/work/test
     #项目描述
     description: 大盒子后台管理系统
     #生成文件前是否删除输出目录,建议配置为false 
     delOutputDir: false
     #是否覆盖已有文件      
-    fileOverride: false
+    fileOverride: true
     #文件生成后是否打开输出目录
     openDir: true
     #可选组件(枚举类Component)：MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF
-    components: [MYBATIS,JPA,SPRINGMVC,SPRINGBOOT,ZOOKEEPER,SWAGGER2]
+    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,ZOOKEEPER,SWAGGER2,THYMELEAF]
     #模塊配置
-    modules: 
+    modules: ['api','app']
     #开发人员
     author: heyw
     #版权
@@ -78,7 +78,7 @@ components:
     dubbo_port: 20800
     dubbo_protocol: dubbo 
   ZOOKEEPER: 
-    connect-string: 192.168.199.102:2181,192.168.199.102:2182,192.168.199.102:2183
+    connect-string: localhost:2181
     zkclient_version: '0.10'
   ROCKETMQ: 
     spring_boot_starter_rocketmq_version: 0.0.4  
@@ -96,6 +96,7 @@ components:
     desc: "Swagger2构建RESTful API" 
   ZIPKIN: 
     zipkin_version: '1.0.2'
+    zipkin_baseUrl: http://localhost:9411
   MYBATIS: 
     #SQL语句配置类型，可选值xml:xml mapper文件;annotation：sql注解
     sqlType: xml

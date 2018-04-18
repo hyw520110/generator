@@ -1,7 +1,7 @@
 spring:
   application:
     name: ${projectName}
-  #会去/config/application,dev和/config/backstage,dev(等同application-dev.yml)节点下读取配置  
+  #会去/config/application,dev和/config/${projectName},dev(等同application-dev.yml)节点下读取配置  
   profiles:
       active: dev
   cloud:

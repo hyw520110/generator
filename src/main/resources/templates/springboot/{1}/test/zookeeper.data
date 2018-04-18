@@ -1,94 +1,101 @@
 
 create /config ''
+
+create /config/application ''
 create /config/application,dev ''
+create /config/${projectName} ''
+create /config/${projectName},dev ''
+
 create /config/application,dev/logging.level.root INFO
-create /config/application,dev/logging.file default.log
-create /config/application,dev/spring.profiles.active dev
-create /config/application,dev/spring.thymeleaf.prefix classpath:/templates/
-create /config/application,dev/spring.thymeleaf.suffix ${suffix}
-create /config/application,dev/spring.thymeleaf.cache false
-create /config/application,dev/spring.thymeleaf.mode HTML5
-create /config/application,dev/spring.thymeleaf.encoding UTF-8
-create /config/application,dev/spring.thymeleaf.content-type text/html
-create /config/application,dev/spring.devtools.livereload.enabled false
-create /config/application,dev/spring.redis.password ${spring_redis_password}
-create /config/application,dev/spring.redis.cluster.nodes '${spring_redis_cluster_nodes}'
-create /config/application,dev/spring.redis.cluster.maxRedirects 6
-create /config/application,dev/spring.output.ansi.enabled DETECT
-create /config/application,dev/spring.http.encoding.charcreate UTF-8
-create /config/application,dev/spring.http.multipart.max-file-size 10MB
-create /config/application,dev/spring.http.multipart.max-request-size 100MB
-create /config/application,dev/spring.http.converters.preferred-json-mapper fastjson
-create /config/application,dev/spring.messages.basename conf/messages
-create /config/application,dev/spring.messages.cache-seconds 60
-create /config/application,dev/spring.cache.type redis
-create /config/application,dev/spring.dubbo.registry ${dubbo_registry}
-create /config/application,dev/spring.dubbo.version 1.0.0
-create /config/application,dev/spring.dubbo.protocol dubbo
+
+
+
+create /config/${projectName},dev/logging.file default.log
+create /config/${projectName},dev/spring.thymeleaf.prefix classpath:/templates/
+create /config/${projectName},dev/spring.thymeleaf.suffix ${suffix}
+create /config/${projectName},dev/spring.thymeleaf.cache false
+create /config/${projectName},dev/spring.thymeleaf.mode HTML5
+create /config/${projectName},dev/spring.thymeleaf.encoding UTF-8
+create /config/${projectName},dev/spring.thymeleaf.content-type text/html
+create /config/${projectName},dev/spring.devtools.livereload.enabled false
+#if(${REDIS})
+create /config/${projectName},dev/spring.cache.type redis
+create /config/${projectName},dev/spring.redis.password ${spring_redis_password}
+create /config/${projectName},dev/spring.redis.cluster.nodes '${spring_redis_cluster_nodes}'
+#end
+create /config/${projectName},dev/spring.output.ansi.enabled DETECT
+create /config/${projectName},dev/spring.http.encoding.charcreate UTF-8
+create /config/${projectName},dev/spring.http.multipart.max-file-size 10MB
+create /config/${projectName},dev/spring.http.multipart.max-request-size 100MB
+create /config/${projectName},dev/spring.http.converters.preferred-json-mapper fastjson
+create /config/${projectName},dev/spring.messages.cache-seconds 60
+
+create /config/${projectName},dev/spring.dubbo.registry ${dubbo_registry}
+create /config/${projectName},dev/spring.dubbo.version 1.0.0
+create /config/${projectName},dev/spring.dubbo.protocol dubbo
 #if($!{ZIPKIN})
-create /config/application,dev/dubbo.trace.enabled true
-create /config/application,dev/spring.zipkin.baseUrl http://192.168.199.102:9411
+create /config/${projectName},dev/dubbo.trace.enabled true
+create /config/${projectName},dev/spring.zipkin.baseUrl ${zipkin_baseUrl}
 
 #end
-create /config/application,dev/mybatis.mapperLocations classpath:mappers/*.xml
-create /config/application,dev/server.undertow.accesslog.enabled true
-create /config/application,dev/server.undertow.accesslog.prefix access_log.
-create /config/application,dev/server.undertow.accesslog.suffix log
-create /config/application,dev/server.undertow.accesslog.pattern common
-create /config/application,dev/server.undertow.accesslog.rotate true
-create /config/application,dev/server.undertow.buffer-size 1024
-create /config/application,dev/server.undertow.buffers-per-region 1024
-create /config/application,dev/server.undertow.direct-buffers true
-create /config/application,dev/server.undertow.io-threads 4
-create /config/application,dev/server.undertow.max-http-post-size 80920
-create /config/application,dev/server.undertow.worker-threads 20
-create /config/application,dev/management.port #[[${random.int[9901,9990]}]]#
-create /config/application,dev/management.context-path /manage
-create /config/application,dev/management.security.enabled false
-create /config/application,dev/info.app.name @project.name@
-create /config/application,dev/info.app.version @project.version@
-create /config/application,dev/druid.driverClassName com.mysql.jdbc.Driver
-create /config/application,dev/druid.url ${dataSource.url}
-create /config/application,dev/druid.username ${dataSource.username}
-create /config/application,dev/druid.password ${dataSource.password}
-create /config/application,dev/druid.filters $!{dataSource.filter}
-create /config/application,dev/druid.connectionProperties $!{dataSource.property} 
-create /config/application,dev/druid.initialSize 1
-create /config/application,dev/druid.maxActive 20
-create /config/application,dev/druid.minIdle 1
-create /config/application,dev/druid.maxWait 60000
-create /config/application,dev/druid.timeBetweenEvictionRunsMillis 60000
-create /config/application,dev/druid.minEvictableIdleTimeMillis 300000
-create /config/application,dev/druid.validationQuery select 'x'
-create /config/application,dev/druid.testWhileIdle true
-create /config/application,dev/druid.testOnBorrow false
-create /config/application,dev/druid.testOnReturn false
-create /config/application,dev/druid.removeAbandoned false
-create /config/application,dev/druid.removeAbandonedTimeout 1800
-create /config/application,dev/druid.logAbandoned true
-create /config/application,dev/druid.statementExecutableSqlLogEnable true
-create /config/application,dev/druid.logSlowSql true
-create /config/application,dev/druid.slowSqlMillis 2000
-create /config/application,dev/druid.mergeSql true
-create /config/application,dev/druid.useGlobalDataSourceStat true
-create /config/application,dev/druid.poolPreparedStatements false
-create /config/application,dev/druid.maxOpenPreparedStatements 20
-create /config/application,dev/druid.web-stat.initParameters.exclusions *.js,*.gif,*.jpg,*.png,*.css,*.ico,*.jsp,/druid/*,/download/*
-create /config/application,dev/druid.web-stat.initParameters.sessionStatEnable true
-create /config/application,dev/druid.web-stat.initParameters.sessionStatMaxCount 2000
-create /config/application,dev/druid.web-stat.initParameters.profileEnable true
-create /config/application,dev/druid.stat.initParameters.resetEnable false
-create /config/application,dev/druid.stat.initParameters.loginUsername admin
-create /config/application,dev/druid.stat.initParameters.loginPassword 123456
-create /config/application,dev/druid.stat.urlMappings /druid/*
-create /config/application,dev/context.slow-time 1500
-create /config/application,dev/context.userName user_name
-create /config/application,dev/rocketmq.name-server-address ${name-server-address}
+create /config/${projectName},dev/server.undertow.accesslog.enabled true
+create /config/${projectName},dev/server.undertow.accesslog.prefix access_log.
+create /config/${projectName},dev/server.undertow.accesslog.suffix log
+create /config/${projectName},dev/server.undertow.accesslog.pattern common
+create /config/${projectName},dev/server.undertow.accesslog.rotate true
+create /config/${projectName},dev/server.undertow.buffer-size 1024
+create /config/${projectName},dev/server.undertow.buffers-per-region 1024
+create /config/${projectName},dev/server.undertow.direct-buffers true
+create /config/${projectName},dev/server.undertow.io-threads 4
+create /config/${projectName},dev/server.undertow.max-http-post-size 80920
+create /config/${projectName},dev/server.undertow.worker-threads 20
+create /config/${projectName},dev/management.port #[[${random.int[9901,9990]}]]#
+create /config/${projectName},dev/management.context-path /manage
+create /config/${projectName},dev/management.security.enabled false
+create /config/${projectName},dev/info.app.name @project.name@
+create /config/${projectName},dev/info.app.version @project.version@
+create /config/${projectName},dev/druid.driverClassName com.mysql.jdbc.Driver
+create /config/${projectName},dev/druid.url ${dataSource.url}
+create /config/${projectName},dev/druid.username ${dataSource.username}
+create /config/${projectName},dev/druid.password ${dataSource.password}
+create /config/${projectName},dev/druid.filters $!{dataSource.filter}
+create /config/${projectName},dev/druid.connectionProperties $!{dataSource.property} 
+create /config/${projectName},dev/druid.initialSize 1
+create /config/${projectName},dev/druid.maxActive 20
+create /config/${projectName},dev/druid.minIdle 1
+create /config/${projectName},dev/druid.maxWait 60000
+create /config/${projectName},dev/druid.timeBetweenEvictionRunsMillis 60000
+create /config/${projectName},dev/druid.minEvictableIdleTimeMillis 300000
+create /config/${projectName},dev/druid.validationQuery select 'x'
+create /config/${projectName},dev/druid.testWhileIdle true
+create /config/${projectName},dev/druid.testOnBorrow false
+create /config/${projectName},dev/druid.testOnReturn false
+create /config/${projectName},dev/druid.removeAbandoned false
+create /config/${projectName},dev/druid.removeAbandonedTimeout 1800
+create /config/${projectName},dev/druid.logAbandoned true
+create /config/${projectName},dev/druid.statementExecutableSqlLogEnable true
+create /config/${projectName},dev/druid.logSlowSql true
+create /config/${projectName},dev/druid.slowSqlMillis 2000
+create /config/${projectName},dev/druid.mergeSql true
+create /config/${projectName},dev/druid.useGlobalDataSourceStat true
+create /config/${projectName},dev/druid.poolPreparedStatements false
+create /config/${projectName},dev/druid.maxOpenPreparedStatements 20
+create /config/${projectName},dev/druid.web-stat.initParameters.exclusions *.js,*.gif,*.jpg,*.png,*.css,*.ico,*.jsp,/druid/*,/download/*
+create /config/${projectName},dev/druid.web-stat.initParameters.sessionStatEnable true
+create /config/${projectName},dev/druid.web-stat.initParameters.sessionStatMaxCount 2000
+create /config/${projectName},dev/druid.web-stat.initParameters.profileEnable true
+create /config/${projectName},dev/druid.stat.initParameters.resetEnable false
+create /config/${projectName},dev/druid.stat.initParameters.loginUsername admin
+create /config/${projectName},dev/druid.stat.initParameters.loginPassword 123456
+create /config/${projectName},dev/druid.stat.urlMappings /druid/*
+create /config/${projectName},dev/context.slow-time 1500
+create /config/${projectName},dev/context.userName user_name
+#if(${ROCKETMQ})
+create /config/${projectName},dev/rocketmq.name-server-address ${name-server-address}
+#end
 
-create /config/${projectName} ''
 create /config/${projectName}/logging.path /logs/${projectName}/
 create /config/${projectName}/server.port 8081
-create /config/${projectName}/mybatis.typeAliasesPackage $!{entityPackage}
 create /config/${projectName}/rocketmq.producer-group ${projectName}_producer
 create /config/${projectName}/spring.dubbo.port 20800
 create /config/${projectName}/spring.dubbo.appname ${projectName}

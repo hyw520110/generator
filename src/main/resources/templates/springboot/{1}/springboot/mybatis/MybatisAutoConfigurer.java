@@ -30,10 +30,8 @@ import com.github.pagehelper.PageInterceptor;
 public class MybatisAutoConfigurer implements TransactionManagementConfigurer {
     @Autowired
     private DataSource dataSource;
-    @Value("${mybatis.mapperLocations}")
-    private String     mapperLocations;
-    @Value("${mybatis.typeAliasesPackage}")
-    private String     typeAliasesPackage;
+    private String     mapperLocations="classpath:mappers/*.xml";
+    private String     typeAliasesPackage="$!{entityPackage}";
  
 
     @Bean(name="sqlSessionFactory")

@@ -2,11 +2,10 @@
 
 setlocal enabledelayedexpansion
 rem jre公网/内网下载地址
-set url=ftp://192.168.40.113/dev-tools/JDK/jre-8u144-windows-x64.tar.gz
-set url2=http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jre-8u144-windows-x64.tar.gz?AuthParam=1504671349_880553e661c425ff6681836f22ae90df
+set url=http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jre-8u144-windows-x64.tar.gz?AuthParam=1504671349_880553e661c425ff6681836f22ae90df
 rem 压缩包内的文件夹名
 set dirName=jre1.8.0_144
-set javaVersion=${java.version}
+set javaVersion=${javaVersion}
 
 %~d0
 cd %~dp0
@@ -33,7 +32,6 @@ if not exist %dirName% (
 	echo begin download %dirName%...
 	if not exist jre8.tar.gz (
 		wget %url% -O jre8.tar.gz
-		if !errorlevel! GTR  0 wget %url2% -O jre8.tar.gz			
 	)
 	7z x  jre8.tar.gz
 	7z x jre8.tar -y

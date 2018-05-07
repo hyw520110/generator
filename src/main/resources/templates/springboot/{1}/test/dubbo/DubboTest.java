@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.alibaba.boot.dubbo.annotation.DubboConsumer;
-import ${rootPackage}.${projectName}.${moduleName}.Booter;
+import ${rootPackage}.${projectName}#if(!${moduleName}).${moduleName}#end.Booter;
 import ${servicePackage}.${table.beanName}Service;
 
 @RunWith(SpringRunner.class)

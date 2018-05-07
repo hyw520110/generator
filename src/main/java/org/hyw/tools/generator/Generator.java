@@ -26,8 +26,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 
- * Filename: Generator.java Description: 生成器 Copyright: Copyright (c) 2015-2018
- * All Rights Reserved. Company: org.hyw.cn Inc.
+ * Filename: Generator.java 
+ * Description: 生成器 
+ * Copyright: Copyright (c) 2015-2018 All Rights Reserved. Company: org.hyw.cn Inc.
  * 
  * @author: heyiwu
  * @version: 1.0 Create at: 2017年6月12日 上午10:53:49
@@ -73,7 +74,7 @@ public class Generator extends AbstractGenerator {
 		VelocityContext context = createVelocityContext();
 		// 根据组件配置过滤所需的模板文件
 		File[] templates = getTemplateFiles();
-		if (null == templates || templates.length==0) {
+		if (null == templates || templates.length == 0) {
 			logger.error("{}目录下没有所需的模板文件！", dir);
 			return;
 		}

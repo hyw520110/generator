@@ -16,7 +16,7 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StopWatch;
 
-import ${rootPackage}.${projectName}.${moduleName}.Booter;
+import ${rootPackage}.${projectName}#if(!${moduleName}).${moduleName}#end.Booter;
 
 @RunWith(SpringRunner.class)
 //@ContextConfiguration or @SpringBootTest(classes=Booter.class)

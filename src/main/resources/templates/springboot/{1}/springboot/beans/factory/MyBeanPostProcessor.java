@@ -48,7 +48,7 @@ public class MyBeanPostProcessor implements BeanPostProcessor {
         }
         try {
             URL resource = this.getClass().getClassLoader().getResource("templates/");
-            if(null==resource){
+            if(null==resource||"jar".equals(resource.getProtocol())){
                 return bean;
             }
             String devResource = resource.getFile().toString().replaceAll("target/classes", "src/main/resources");

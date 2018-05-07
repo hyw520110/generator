@@ -1,4 +1,4 @@
-package ${rootPackage}.${projectName}.${moduleName};
+package ${rootPackage}.${projectName}#if(!${moduleName}).${moduleName}#end;
 
 import java.util.ArrayList;
 import java.util.HashMap;

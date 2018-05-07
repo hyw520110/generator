@@ -19,7 +19,7 @@ dataSource:
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
-    outputDir: /Users/a123/work/test
+    outputDir: /Users/a123/work/backstage
     #项目描述
     description: 大盒子后台管理系统
     #生成文件前是否删除输出目录,建议配置为false 
@@ -29,9 +29,9 @@ global:
     #文件生成后是否打开输出目录
     openDir: true
     #可选组件(枚举类Component)：MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF
-    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,ZOOKEEPER,SWAGGER2,THYMELEAF]
+    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,ZOOKEEPER,SWAGGER2,THYMELEAF,REDIS]
     #模塊配置
-    modules: ['api','app']
+    modules: 
     #开发人员
     author: heyw
     #版权
@@ -74,7 +74,7 @@ strategy:
 components: 
   DUBBO: 
     spring_boot_dubbo_version: 1.0.0-SNAPSHOT
-    dubbo_registry: zookeeper://192.168.199.102:2181?backup=192.168.199.102:2182,192.168.199.102:2183
+    dubbo_registry: zookeeper://localhost:2181?backup=localhost:2182,localhost:2183
     dubbo_port: 20800
     dubbo_protocol: dubbo 
   ZOOKEEPER: 
@@ -82,7 +82,7 @@ components:
     zkclient_version: '0.10'
   ROCKETMQ: 
     spring_boot_starter_rocketmq_version: 0.0.4  
-    name-server-address: 192.168.199.11:9876    
+    name-server-address: localhost:9876    
   SPRINGBOOT: 
     springboot_version: 1.5.6.RELEASE
     write_null_value: true
@@ -90,7 +90,7 @@ components:
     ssl: false
   REDIS: 
     spring_redis_password: 123456
-    spring_redis_cluster_nodes: 192.168.199.11:7001, 192.168.199.11:7002, 192.168.199.11:7003, 192.168.199.11:8001, 192.168.199.11:8002, 192.168.199.11:8003
+    spring_redis_cluster_nodes: localhost:7001, localhost:7002, localhost:7003, localhost:8001, localhost:8002, localhost:8003
   SWAGGER2: 
     title: "RESTful API"   
     desc: "Swagger2构建RESTful API" 
@@ -142,7 +142,7 @@ components:
     rest: true
     crud: true
     superControllerClass: 
-    resp_data_type_json: true
+    resp_data_type_json: false
     json_type: fastjson
   THYMELEAF: 
     suffix: .html

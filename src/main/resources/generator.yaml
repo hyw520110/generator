@@ -48,7 +48,7 @@ strategy:
     #父包名
     rootPackage: com.demo.test
     #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
-    include:  ['dhz_sms_log']
+    include:   
     #需要排除的表名
     exclude: 
     #表前缀

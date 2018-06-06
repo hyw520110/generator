@@ -26,9 +26,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 
- * Filename: Generator.java 
- * Description: 生成器 
- * Copyright: Copyright (c) 2015-2018 All Rights Reserved. Company: org.hyw.cn Inc.
+ * Filename: Generator.java Description: 生成器 Copyright: Copyright (c) 2015-2018
+ * All Rights Reserved. Company: org.hyw.cn Inc.
  * 
  * @author: heyiwu
  * @version: 1.0 Create at: 2017年6月12日 上午10:53:49
@@ -80,7 +79,10 @@ public class Generator extends AbstractGenerator {
 		}
 		createScriptFile(engine, context);
 		String encoding = global.getEncoding();
+
 		String projectName = global.getProjectName();
+		projectName = StringUtils.contains(projectName, "-") ? StringUtils.substringAfter(projectName, "-")
+				: projectName;
 		List<Table> tables = getTables();
 		if (tables.isEmpty()) {
 			logger.warn("查询表为空！");
@@ -107,7 +109,7 @@ public class Generator extends AbstractGenerator {
 					context.put(pName + "Package", StringUtils.toPackage(strategy.getRootPackage(), projectName,
 							StringUtils.toPackage(subDir)));
 				}
-				String moduleName = null == global.getModules() ? ""
+				String moduleName = (null == global.getModules()) ? ""
 						: StringUtils.substringBefore(subDir, File.separator);
 
 				context.put("moduleName", moduleName);

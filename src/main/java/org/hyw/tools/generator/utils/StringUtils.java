@@ -224,6 +224,9 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
         }
         StringBuilder builder = new StringBuilder();
         for (String s : args) {
+        		if(StringUtils.isBlank(s)) {
+        			continue;
+        		}
             builder.append(s + ".");
         }
         return builder.deleteCharAt(builder.length() - 1).toString();

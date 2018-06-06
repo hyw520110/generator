@@ -42,8 +42,10 @@ public class MybatisAutoConfigurer implements TransactionManagementConfigurer {
         PageInterceptor page = new PageInterceptor();
         Properties properties = new Properties();
         //TODO 
+        properties.setProperty("helperDialect", "$dbType");
         properties.setProperty("reasonable", "true");
-        properties.setProperty("supportMethodsArguments", "true");
+    		properties.setProperty("params", "count=countSql");
+    		properties.setProperty("supportMethodsArguments", "true");
         page.setProperties(properties);
         sqlSessionFactoryBean.setPlugins(new Interceptor[] { page });
         try {

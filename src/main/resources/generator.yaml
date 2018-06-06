@@ -22,7 +22,7 @@ global:
     #生成文件前是否删除输出目录,建议配置为false 
     delOutputDir: false
     #是否覆盖已有文件      
-    fileOverride: false
+    fileOverride: true
     #文件生成后是否打开输出目录
     openDir: true
     #可选组件(枚举类Component)：MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF
@@ -48,7 +48,7 @@ strategy:
     #父包名
     rootPackage: com.demo.test
     #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
-    include:  
+    include:  ['dhz_sms_log']
     #需要排除的表名
     exclude: 
     #表前缀

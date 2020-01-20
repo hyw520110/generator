@@ -7,12 +7,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-/**
- * @author ${author}
- * @since ${date}
- * @copyright: ${copyright}
- */
-
+#parse('/templates/commons/comment.vm')
 public interface BaseMapper<E> {
 
 	E queryById(Long id);

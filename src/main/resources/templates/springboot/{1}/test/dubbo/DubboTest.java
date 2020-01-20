@@ -1,13 +1,13 @@
 #if($!{DUBBO})
 package ${dubboPackage};
 
+import org.apache.dubbo.config.annotation.Reference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.alibaba.boot.dubbo.annotation.DubboConsumer;
-import ${rootPackage}.${projectName}#if(!${moduleName}).${moduleName}#end.Booter;
+import ${rootPackage}.${projectName}#if($!{moduleName}).${moduleName}#end.Booter;
 import ${servicePackage}.${table.beanName}Service;
 
 @RunWith(SpringRunner.class)
@@ -15,7 +15,7 @@ import ${servicePackage}.${table.beanName}Service;
 @SpringBootTest(classes=Booter.class)
 public class DubboTest {
 
-    @DubboConsumer
+	@Reference
     private ${table.beanName}Service service;
     
     @Test

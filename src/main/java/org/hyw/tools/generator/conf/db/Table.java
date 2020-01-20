@@ -1,12 +1,9 @@
 package org.hyw.tools.generator.conf.db;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.hyw.tools.generator.conf.BaseBean;
@@ -80,13 +77,22 @@ public class Table extends BaseBean {
 	}
 
 	/**
+	 * 是否有主键
+	 * 
+	 * @return
+	 */
+	public boolean hasPrimarykeys() {
+		return !getPrimarykeyFields().isEmpty();
+	}
+
+	/**
 	 * 获取主键字段
 	 * 
 	 * @author: heyiwu
 	 * @return
 	 */
 	public List<TabField> getPrimarykeyFields() {
-		ArrayList<TabField> list = new ArrayList<>();
+		List<TabField> list = new LinkedList<>();
 		List<TabField> fields = getFields();
 		for (TabField tabField : fields) {
 			if (tabField.isPrimarykey()) {
@@ -94,6 +100,18 @@ public class Table extends BaseBean {
 			}
 		}
 		return list;
+	}
+
+	public String getPrimarykeyFieldsNames() {
+		if (!hasPrimarykeys()) {
+			return "";
+		}
+		StringBuilder builder=new StringBuilder();
+		List<TabField> list = getPrimarykeyFields();
+		for (TabField tabField : list) {
+			builder.append(tabField.getName()+",");
+		}
+		return builder.deleteCharAt(builder.length()-1).toString();
 	}
 
 	/**
@@ -104,14 +122,13 @@ public class Table extends BaseBean {
 			return fieldNames;
 		}
 		StringBuilder names = new StringBuilder();
-		for (TabField f:fields) {
-		    names.append(f.getName()).append(",");
+		for (TabField f : fields) {
+			names.append(f.getName()).append(",");
 		}
-		fieldNames = names.deleteCharAt(names.length()-1).toString();
+		fieldNames = names.deleteCharAt(names.length() - 1).toString();
 		return fieldNames;
 	}
 
-	 
 	public Table(String name, String comment) {
 		this.name = name;
 		this.comment = comment;
@@ -143,9 +160,13 @@ public class Table extends BaseBean {
 
 	public List<TabField> getFields() {
 		if (null == fields) {
-			fields = new ArrayList<>();
+			fields = new LinkedList<>();
 		}
 		return fields;
+	}
+
+	public int getFieldsSize() {
+		return getFields().size();
 	}
 
 	public List<String> getImportPackages() {

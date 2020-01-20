@@ -11,7 +11,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 #if("fastjson"=="${json_type}")
 import org.springframework.context.annotation.Bean;
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.MediaType;
@@ -26,12 +26,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 #end
 import io.undertow.Undertow.Builder;
 
-#if($!{spring_boot_dubbo_version})
-import com.alibaba.boot.dubbo.annotation.EnableDubboConfiguration;
-#end
-
-import org.springframework.boot.context.embedded.undertow.UndertowBuilderCustomizer;
-import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ImportResource;
@@ -43,9 +37,8 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 @SpringBootApplication
 @EnableCaching
-#if($!{spring_boot_dubbo_version})@EnableDubboConfiguration
-#end
 @EnableAsync
+#if("plus"!="$mapperType")@MapperScan("${mapperPackage}")#end
 public class Booter{
     
 	public static void main(String[] args ){
@@ -59,52 +52,10 @@ public class Booter{
         System.setProperty("dubbo.application.logger", "slf4j");
         //关闭dubbo实时数据追踪
         //System.setProperty("dubbo.trace.enabled", "false");
+		System.setProperty("spring.main.allow-bean-definition-overriding", "true");
 #end
         SpringApplication.run(Booter.class,args);
 	}
-	
-#if("fastjson"=="${json_type}")	
-	/**
-	 * 1、extends WebMvcConfigurerAdapter覆写configureMessageConverters方法
-	 * 2、注入FastJsonHttpMessageConverter
-	 */
-	@Bean
-	public HttpMessageConverters fastJsonHttpMessageConverter(){
-		FastJsonpHttpMessageConverter4 converter= new FastJsonpHttpMessageConverter4();
-		FastJsonConfig conf=converter.getFastJsonConfig();
-		conf.setSerializerFeatures(SerializerFeature.PrettyFormat #if($!{write_null_value}),SerializerFeature.WriteMapNullValue#end);
-		converter.setFastJsonConfig(conf);
-		//处理中文乱码问题
-        List<MediaType> fastMediaTypes = new ArrayList<>();
-        fastMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
-        converter.setSupportedMediaTypes(fastMediaTypes);
-		return new HttpMessageConverters(converter,mappingJackson2HttpMessageConverter());
-	}
-#end
-     
-    /**
-     * 设置jackson可读格式化
-     * actuator输出硬编码采用jackson
-     * @author:  heyiwu 
-     * @return
-     */
-    @Bean
-    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
-        MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
-        mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper());
-        return mappingJackson2HttpMessageConverter;
-    }
-    /**
-     * 设置jackson可读格式化
-     * @author:  heyiwu 
-     * @return
-     */
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objMapper = new ObjectMapper();
-        objMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        return objMapper;
-    }
     
     /**
      * springmvc注册/初始化

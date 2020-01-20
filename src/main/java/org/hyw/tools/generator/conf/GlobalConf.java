@@ -7,217 +7,279 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.Naming;
+import org.hyw.tools.generator.enums.ProjectBuilder;
+import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 /**
  * 
- * Filename:    GlobalConf.java  
- * Description: 全局配置  
- * Copyright:   Copyright (c) 2015-2018 All Rights Reserved.
- * Company:     org.hyw.cn Inc.
- * @author:     heyiwu 
- * @version:    1.0  
- * Create at:   2017年6月13日 上午10:03:10  
+ * Filename: GlobalConf.java Description: 全局配置 Copyright: Copyright (c)
+ * 2015-2018 All Rights Reserved. Company: org.hyw.cn Inc.
+ * 
+ * @author: heyiwu
+ * @version: 1.0 Create at: 2017年6月13日 上午10:03:10
  *
  */
 public class GlobalConf extends BaseBean {
 
-    private static final long serialVersionUID = -2678498334219769129L;
+	private static final long serialVersionUID = -2678498334219769129L;
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalConf.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(GlobalConf.class.getName());
 
-    /**
-     * 生成文件的输出目录,默认根目录
-     */
-    private String outputDir = "/";
+	/**
+	 * 生成文件的输出目录,默认根目录
+	 */
+	private String outputDir = "/";
 
-    /**
-     * 生成文件前是否删除输出目录 
-     */
-    private boolean delOutputDir = false;
-    /**
-     * 模板目录
-     */
-    private String  templateDir     = "/templates";
-    /**
-     * 生成文件的编码
-     */
-    private String  encoding     = "UTF-8";
+	/**
+	 * 生成文件前是否删除输出目录
+	 */
+	private boolean delOutputDir = false;
 
-    /**
-     * 是否覆盖已有文件
-     */
-    private boolean fileOverride = false;
+	/**
+	 * 是否覆盖已有文件
+	 */
+	private boolean fileOverride = false;
 
-    /**
-     * 是否打开输出目录
-     */
-    private boolean openDir = true;
+	/**
+	 * 是否打开输出目录
+	 */
+	private boolean openDir = true;
 
-    /**
-     * 开发人员
-     */
-    private String author;
+	/**
+	 * 父包名,如果为空，将下面子包名必须写全部， 否则就只需写子包名
+	 */
+	private String rootPackage = "com.hyw";
+	/**
+	 * 模块信息
+	 */
+	private String[] modules;
 
-    /**
-     * 版权信息
-     */
-    private String copyright="";
-    /**
-     * 组件配置 
-     */
-    private Component[] components;
+	/**
+	 * 开发人员
+	 */
+	private String author;
 
-    /**
-     * 模块信息
-     */
-    private String[] modules;
+	/**
+	 * 版权信息
+	 */
+	private String copyright = "";
+	/**
+	 * 项目描述
+	 */
+	private String description;
+	/**
+	 * 组件配置
+	 */
+	private Component[] components;
 
-    /**
-     * 工程目录，默认遵循maven目录结构
-     */
-    private String sourceDirectory     = "src/main/java";
-    private String resource            = "src/main/resources";
-    private String testSourceDirectory = "src/test/java";
-    private String testResource        = "src/test/resources";
-    /**
-     * 非模板文件排除渲染 
-     */
-    private String[] excludes;
-    /**
-     * 项目描述
-     */
-    private String description;
+	/**
+	 * 需要包含的表名（与exclude二选一配置）
+	 */
+	private String[] include = null;
 
-    public String getOutputDir() {
-        return outputDir;
-    }
+	
 
-    public void setOutputDir(String outputDir) {
-        this.outputDir = outputDir;
-    }
+	/**
+	 * 需要排除的表名
+	 */
+	private String[] exclude = null;
+	/**
+	 * 表前缀
+	 */
+	private String[] tablePrefix;
 
-    /**
-     * 获取项目名获取输出路径的子目录名
-     * @author:  heyiwu 
-     * @return
-     */
-    public String getProjectName() {
-        File file = new File(outputDir);
-        return file.getName();
-    }
+	/**
+	 * 数据库表映射到实体的命名策略
+	 */
+	private Naming naming = Naming.TOCAMEL;
 
-    public boolean isDelOutputDir() {
-        return delOutputDir;
-    }
+	/**
+	 * 单词分隔符,常见分隔符:下划线(_)和横线(-),转换驼峰命名时用
+	 */
+	private char[] separators;
+	/**
+	 * 是否大写命名
+	 */
+	private boolean isCapitalMode = false;
 
-    public void setDelOutputDir(boolean delOutputDir) {
-        this.delOutputDir = delOutputDir;
-    }
+	/**
+	 * 是否生成实体字段常量（默认 false）
+	 */
+	private boolean columnConstant = false;
 
-    public boolean isFileOverride() {
-        return fileOverride;
-    }
+	/**
+	 * 工程构建工具
+	 */
+	private ProjectBuilder projectBuilder;
+	/**
+	 * 工程默认版本号
+	 */
+	private String version="1.0.0";
 
-    public void setFileOverride(boolean fileOverride) {
-        this.fileOverride = fileOverride;
-    }
+	/**
+	 * jdk版本
+	 */
+	private String javaVersion;
 
-    public boolean isOpenDir() {
-        return openDir;
-    }
+	/**
+	 * 生成文件的编码
+	 */
+	private String encoding = "UTF-8";
 
-    public void setOpenDir(boolean openDir) {
-        this.openDir = openDir;
-    }
+	/**
+	 * 模板目录
+	 */
+	private String templateDir = "/templates";
 
-    public String getAuthor() {
-        return author;
-    }
+	/**
+	 * 工程目录，默认遵循maven目录结构
+	 */
+	private String sourceDirectory = "src/main/java";
+	private String resource = "src/main/resources";
+	private String testSourceDirectory = "src/test/java";
+	private String testResource = "src/test/resources";
+	/**
+	 * 非模板文件排除渲染
+	 */
+	private String[] resources;
+	
+	public String getOutputDir() {
+		return outputDir;
+	}
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
+	public void setOutputDir(String outputDir) {
+		this.outputDir = outputDir;
+	}
 
-    public Component[] getComponents() {
-        return components;
-    }
+	/**
+	 * 获取项目名获取输出路径的子目录名
+	 * 
+	 * @author: heyiwu
+	 * @return
+	 */
+	public String getProjectName() {
+		File file = new File(outputDir);
+		return file.getName();
+	}
 
-    public void setComponents(Component[] components) {
-        this.components=components;
-    }
-    public String[] getModules() {
-        return modules;
-    }
+	public boolean isDelOutputDir() {
+		return delOutputDir;
+	}
 
-    public void setModules(String[] modules) {
-        this.modules = modules;
-    }
+	public void setDelOutputDir(boolean delOutputDir) {
+		this.delOutputDir = delOutputDir;
+	}
 
-    public String getSourceDirectory() {
-        return sourceDirectory;
-    }
+	public boolean isFileOverride() {
+		return fileOverride;
+	}
 
-    public void setSourceDirectory(String sourceDirectory) {
-        this.sourceDirectory = sourceDirectory;
-    }
+	public void setFileOverride(boolean fileOverride) {
+		this.fileOverride = fileOverride;
+	}
 
-    public String getTestSourceDirectory() {
-        return testSourceDirectory;
-    }
+	public boolean isOpenDir() {
+		return openDir;
+	}
 
-    public void setTestSourceDirectory(String testSourceDirectory) {
-        this.testSourceDirectory = testSourceDirectory;
-    }
+	public void setOpenDir(boolean openDir) {
+		this.openDir = openDir;
+	}
 
-    public String getResource() {
-        return resource;
-    }
+	public String getAuthor() {
+		return author;
+	}
 
-    public void setResource(String resource) {
-        this.resource = resource;
-    }
+	public void setAuthor(String author) {
+		this.author = author;
+	}
 
-    public String getTestResource() {
-        return testResource;
-    }
+	public Component[] getComponents() {
+		return components;
+	}
 
-    public void setTestResource(String testResource) {
-        this.testResource = testResource;
-    }
+	public void setComponents(Component[] components) {
+		this.components = components;
+	}
 
-    public static long getSerialversionuid() {
-        return serialVersionUID;
-    }
+	public String[] getModules() {
+		return modules;
+	}
 
-    public static Logger getLogger() {
-        return logger;
-    }
+	public void setModules(String[] modules) {
+		this.modules = modules;
+	}
 
-    public String getEncoding() {
-        return encoding;
-    }
+	public String getSourceDirectory() {
+		return sourceDirectory;
+	}
 
-    public void setEncoding(String encoding) {
-        this.encoding = encoding;
-    }
-    public void setTemplateDir(String templateDir) {
-        this.templateDir = templateDir;
-    }
-    public String getTemplateDir() {
-        return templateDir;
-    }
+	public void setSourceDirectory(String sourceDirectory) {
+		this.sourceDirectory = sourceDirectory;
+	}
 
-    public File getTemplateFile() {
-        URL url = getClass().getResource(templateDir);
-        if (null == url) {
-            return null;
-        }
-        return new File(url.getFile());
-    }
+	public String getTestSourceDirectory() {
+		return testSourceDirectory;
+	}
+
+	public void setTestSourceDirectory(String testSourceDirectory) {
+		this.testSourceDirectory = testSourceDirectory;
+	}
+
+	public String getResource() {
+		return resource;
+	}
+
+	public void setResource(String resource) {
+		this.resource = resource;
+	}
+
+	public String getTestResource() {
+		return testResource;
+	}
+
+	public void setTestResource(String testResource) {
+		this.testResource = testResource;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public static Logger getLogger() {
+		return logger;
+	}
+
+	public String getEncoding() {
+		return encoding;
+	}
+
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
+	}
+
+	public void setTemplateDir(String templateDir) {
+		this.templateDir = templateDir;
+	}
+
+	public String getTemplateDir() {
+		return templateDir;
+	}
+
+	public File getTemplateFile() {
+		URL url = getClass().getResource(templateDir);
+		if (null == url) {
+			return null;
+		}
+		return new File(url.getFile());
+	}
 
 	public String getCopyright() {
 		return copyright;
@@ -227,20 +289,120 @@ public class GlobalConf extends BaseBean {
 		this.copyright = copyright;
 	}
 
-    public String[] getExcludes() {
-        return excludes;
-    }
+	public String getDescription() {
+		return description;
+	}
 
-    public void setExcludes(String[] excludes) {
-        this.excludes = excludes;
-    }
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
-    public String getDescription() {
-        return description;
-    }
+	public boolean isCapitalMode() {
+		return isCapitalMode;
+	}
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+	public void setCapitalMode(boolean isCapitalMode) {
+		this.isCapitalMode = isCapitalMode;
+	}
 
+	public Naming getNaming() {
+		return naming;
+	}
+
+	public void setNaming(Naming naming) {
+		this.naming = naming;
+	}
+
+	public String[] getTablePrefix() {
+		return tablePrefix;
+	}
+
+	public void setTablePrefix(String[] tablePrefix) {
+		this.tablePrefix = tablePrefix;
+	}
+
+	public String[] getInclude() {
+		return include;
+	}
+
+	public void setInclude(String include) {
+		this.include = new String[] { include };
+	}
+
+	public void setInclude(String[] include) {
+		this.include = include;
+	}
+
+	public String[] getExclude() {
+		return exclude;
+	}
+
+	public void setExclude(String[] exclude) {
+		this.exclude = exclude;
+	}
+
+	public boolean isColumnConstant() {
+		return columnConstant;
+	}
+
+	public void setColumnConstant(boolean columnConstant) {
+		this.columnConstant = columnConstant;
+	}
+
+	public String getRootPackage() {
+		return rootPackage;
+	}
+
+	public void setRootPackage(String rootPackage) {
+		this.rootPackage = rootPackage;
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+	}
+
+	public boolean isCapitalModeNaming(String name) {
+		return isCapitalMode && StringUtils.isCapitalMode(name);
+	}
+
+	public char[] getSeparators() {
+		return separators;
+	}
+
+	public void setSeparators(char[] separators) {
+		this.separators = separators;
+	}
+
+	public ProjectBuilder getProjectBuilder() {
+		return projectBuilder;
+	}
+
+	public void setProjectBuilder(ProjectBuilder projectBuilder) {
+		this.projectBuilder = projectBuilder;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getJavaVersion() {
+		return javaVersion;
+	}
+
+	public void setJavaVersion(String javaVersion) {
+		this.javaVersion = javaVersion;
+	}
+
+	public String[] getResources() {
+		return resources;
+	}
+
+	public void setResources(String[] resources) {
+		this.resources = resources;
+	}
 }

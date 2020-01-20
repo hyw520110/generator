@@ -14,8 +14,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ${rootPackage}.${projectName}#if(!${moduleName}).${moduleName}#end.controller.${table.beanName}Controller;
-import ${rootPackage}.${projectName}#if(!${moduleName}).${moduleName}#end.Booter;
+import ${rootPackage}.${projectName}#if($!{moduleName}).${moduleName}#end.controller.${table.beanName}Controller;
+import ${rootPackage}.${projectName}#if($!{moduleName}).${moduleName}#end.Booter;
 
 @RunWith(SpringRunner.class)
 //@ContextConfiguration or @SpringBootTest(classes=Booter.class)

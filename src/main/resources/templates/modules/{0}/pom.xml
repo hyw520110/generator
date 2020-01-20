@@ -1,15 +1,14 @@
-#if("MAVEN"=="${strategy.projectBuilder}")
+#if("MAVEN"=="${global.projectBuilder}")
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-#if($!{springboot_version})
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>${springboot_version}</version>
+		<groupId>${rootPackage}</groupId>
+		<artifactId>${projectName}-parent</artifactId>
+		<version>${version}</version>
+		<relativePath>../parent</relativePath>
 	</parent>
-#end
 	<groupId>${rootPackage}</groupId>
 	<artifactId>${projectName}-${moduleName}</artifactId>
 	<version>${version}</version>
@@ -28,13 +27,29 @@
 		<dependency>
 		    <groupId>org.hibernate</groupId>
 		    <artifactId>hibernate-validator</artifactId>
+		    <version>6.0.17.Final</version>
 		</dependency>
 #if($!{springboot}&&$!{jpa})		
 		<dependency>
 		  <groupId>org.springframework.boot</groupId>
 		  <artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-#end		
+#end
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>2.7.0</version>
+		</dependency>
+#if("plus"=="$mapperType")
+		<dependency>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-extension</artifactId>
+		</dependency>
+#end				
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

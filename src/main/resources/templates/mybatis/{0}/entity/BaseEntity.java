@@ -4,15 +4,16 @@ package ${entityPackage};
 import java.io.Serializable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+#if("plus"=="$mapperType")
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+#end
+
 import java.util.Date;  
 
 
-/**
- * @author ${author}
- * @since ${date}
- * @copyright: ${copyright}
- */
-public class BaseEntity implements Serializable {
+#parse('/templates/commons/comment.vm')
+public abstract class BaseEntity#if("plus"=="$mapperType")<T extends BaseEntity> extends Model<T>#else<T>#end implements Serializable  {
 
     private static final long serialVersionUID = 1L;
 	 
@@ -20,5 +21,11 @@ public class BaseEntity implements Serializable {
     public String toString() {
         return ToStringBuilder.reflectionToString(this,ToStringStyle.MULTI_LINE_STYLE);
     }
+#if("plus"=="$mapperType")
+	@Override
+	protected Serializable pkVal() {
+		return super.pkVal();
+	}
+#end    	
 }
 #end

@@ -1,3 +1,4 @@
+#if($jsonp)
 package ${commonsPackage};
 
 import org.springframework.http.MediaType;
@@ -19,3 +20,4 @@ public class FastJsonpAdvice extends FastJsonpResponseBodyAdvice{
 		return new MediaType("application", "javascript",contentType.getCharset());
 	}  
 }  
+#end

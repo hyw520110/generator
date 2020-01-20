@@ -35,6 +35,8 @@ public class DataSourceConf extends DruidDataSource {
 	 */
 	private String pwd;
 	private String filter;
+
+	private String conProperties;
 	/**
 	 * 类型转换
 	 */
@@ -100,8 +102,9 @@ public class DataSourceConf extends DruidDataSource {
 
 	public QuerySQL getQuerySQL() {
 		if (null == querySQL) {
-			this.querySQL = new Yaml().loadAs(
-					getClass().getResourceAsStream(String.format("/conf/%s.yml", dbType.getValue())), QuerySQL.class);
+			String conf = String.format("/conf/%s.yml", getDBType().getValue());
+			System.out.println("load conf:" + conf);
+			this.querySQL = new Yaml().loadAs(DataSourceConf.class.getResourceAsStream(conf), QuerySQL.class);
 		}
 		return querySQL;
 	}
@@ -144,5 +147,18 @@ public class DataSourceConf extends DruidDataSource {
 	public void setFilters(String filters) throws SQLException {
 		super.setFilters(filters);
 		this.filter = filters;
+	}
+	
+	public boolean isEncrypt() {
+		return StringUtils.contains(getPropertiesStr(), "config.decrypt.key");
+	}
+	
+	public String getConProperties() {
+		return conProperties;
+	}
+	
+	public void setConProperties(String connectionProperties) {
+		this.conProperties = connectionProperties;
+		super.setConnectionProperties(connectionProperties);
 	}
 }

@@ -9,7 +9,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
  
 /**
  * 

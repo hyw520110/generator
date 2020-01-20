@@ -1,18 +1,25 @@
 #if(${StringUtils.indexOf("$superServiceImplClass", '.')}==-1)
 package ${implPackage};
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
+import ${servicePackage}.BaseService;
+
+#if("plus"=="$mapperType")
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+#else
 import ${mapperPackage}.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.binding.MapperMethod;
+import org.apache.ibatis.session.SqlSession;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-/**
- * @author ${author}
- * @since ${date}
- * @copyright: ${copyright}
- */
-public class BaseServiceImpl<T> {
+import org.springframework.transaction.annotation.Transactional;
+#end
+#parse('/templates/commons/comment.vm')
+#if("plus"=="$mapperType")
+public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<BaseMapper<T>, T> implements BaseService<T> {
+#else	
+public class BaseServiceImpl<T> implements BaseService{
 
 	@Autowired
     private BaseMapper<T> baseMapper;
@@ -71,6 +78,6 @@ public class BaseServiceImpl<T> {
     public Integer update(T entity) {
         return baseMapper.update(entity);
     }
- 
+#end 
 }
 #end

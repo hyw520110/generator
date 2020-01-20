@@ -1,47 +1,99 @@
-#if("MAVEN"=="${strategy.projectBuilder}")
+#if("MAVEN"=="${global.projectBuilder}")
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-#if($!{springboot_version})
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>${springboot_version}</version>
+		<groupId>${rootPackage}</groupId>
+		<artifactId>${projectName}-parent</artifactId>
+		<version>${version}</version>
+		<relativePath>../parent</relativePath>
 	</parent>
-#end
-	<groupId>${rootPackage}</groupId>
 	<artifactId>${projectName}-${moduleName}</artifactId>
-	<version>${version}</version>
 	<packaging>jar</packaging>
 	<properties>
-		<maven.compiler.source>${javaVersion}</maven.compiler.source>
-		<maven.compiler.target>${javaVersion}</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.version>4.3.9.RELEASE</spring.version>
-		<java.version>${javaVersion}</java.version>
 		<mainClass>${rootPackage}.${projectName}.${moduleName}.Booter</mainClass>
 	</properties>
 	<dependencies>
+
+
+#if($!{SPRINGBOOT})
 		<dependency>
-			<groupId>${rootPackage}</groupId>
-			<artifactId>${projectName}-api</artifactId>
-			<version>1.0.1-SNAPSHOT</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-<!-- 		<dependency>
-		    <groupId>org.mybatis.spring.boot</groupId>
-		    <artifactId>mybatis-spring-boot-starter</artifactId>
-		    <version>1.3.0</version>
+#if(${ZOOKEEPER})		
+	<!-- zk config service -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-zookeeper-config</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- zk service discovery -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.zookeeper</groupId>
+					<artifactId>zookeeper</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-framework</artifactId>
+		</dependency>
+#end		
+#if($!{DUBBO})		
+		<!-- Dubbo Spring Cloud Starter -->
+		<dependency>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-starter-dubbo</artifactId>
+		</dependency>
+		<!-- <dependency> <groupId>org.apache.dubbo</groupId> <artifactId>dubbo-spring-boot-starter</artifactId> 
+			</dependency> 
+		<dependency>
+			<groupId>org.apache.dubbo</groupId>
+			<artifactId>dubbo</artifactId>
 		</dependency> -->
+#end
+#if("plus"=="$mapperType")
+		<!-- mybatis-plus -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+        </dependency>
+#else
+		<!--mybatis -->
 		<dependency>
-			<groupId>org.mybatis</groupId>
-			<artifactId>mybatis</artifactId>
-			<version>3.4.4</version>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
 		</dependency>
+#end		
+		<!--pagehelper -->
 		<dependency>
-		  <groupId>org.mybatis</groupId>
-		  <artifactId>mybatis-spring</artifactId>
-		  <version>1.3.1</version>
+			<groupId>com.github.pagehelper</groupId>
+			<artifactId>pagehelper-spring-boot-starter</artifactId>
 		</dependency>
 #if($!{enableCache})
 		 <dependency>
@@ -56,8 +108,22 @@
 			<artifactId>mybatis-ehcache</artifactId>
 			<version>1.1.0</version>
 		</dependency>
+#if($!{SPRINGBOOT})
+#if(!${REDIS})
+		<!-- https://www.jianshu.com/p/15d0a9ce37dd -->
+		 <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+#end
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+#end
 #end
 #if("mysql"=="${dbType}")
+		<!-- mysql -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -67,27 +133,30 @@
 		</dependency>
 #end
 		<dependency>
-		  <groupId>com.alibaba</groupId>
-		  <artifactId>druid</artifactId>
-		  <version>1.1.2</version>
-		</dependency>
-		<!-- 分页插件 -->
-		<dependency>
-		  <groupId>com.github.pagehelper</groupId>
-		  <artifactId>pagehelper</artifactId>
-		  <version>5.0.4</version>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid-spring-boot-starter</artifactId>
 		</dependency>
 #if($!{SPRINGBOOT})
-
 		<!-- 
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>springloaded</artifactId>
-		</dependency> -->
+		</dependency> 
 		<dependency>
 		  <groupId>org.springframework.boot</groupId>
 		  <artifactId>spring-boot-devtools</artifactId>
 		  <optional>true</optional>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 #if($!{THYMELEAF})
 		<dependency>
@@ -112,11 +181,6 @@
 	        <groupId>org.springframework.boot</groupId>
 	        <artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
-		<!-- 审计、健康、数据采集、监控 -->
-		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
 #if("fastjson"=="$!{json_type}")
 		<dependency>
 		  <groupId>com.alibaba</groupId>
@@ -125,31 +189,7 @@
 		</dependency>
 #end
 
-#if($!{SPRINGBOOT})
-#if($!{DUBBO})
-		<!-- dubbo -->
-	    <dependency>
-	        <groupId>com.alibaba</groupId>
-	        <artifactId>spring-boot-starter-dubbo</artifactId>
-	        <version>${spring_boot_dubbo_version}</version>
-	    </dependency>
-	    <!-- zookeeper -->
-        <dependency>
-	        <groupId>org.apache.curator</groupId>
-	        <artifactId>curator-framework</artifactId>
-	    </dependency>
-	    <dependency>
-        	<groupId>com.101tec</groupId>
-        	<artifactId>zkclient</artifactId>
-        	<version>${zkclient_version}</version>
-    	</dependency>
-#end	
-#if(${ZOOKEEPER})	
-		<dependency>
-	        <groupId>org.springframework.cloud</groupId>
-	        <artifactId>spring-cloud-starter-zookeeper-config</artifactId>
-		</dependency>
-#end		
+
 #if($!{SWAGGER2})
 		<dependency>
 		    <groupId>io.springfox</groupId>
@@ -217,6 +257,11 @@
 		  <scope>provided</scope>
 		</dependency>
 #end
+		<dependency>
+			<groupId>${rootPackage}</groupId>
+			<artifactId>${projectName}-api</artifactId>
+			<version>1.0.1-SNAPSHOT</version>
+		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -227,19 +272,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-#if($!{SPRINGBOOT})
-	<dependencyManagement>
-	    <dependencies>
-	        <dependency>
-	            <groupId>org.springframework.cloud</groupId>
-	            <artifactId>spring-cloud-dependencies</artifactId>
-	            <version>Camden.SR7</version>
-	            <type>pom</type>
-	            <scope>import</scope>
-	        </dependency>
-	    </dependencies>
-	</dependencyManagement>
-#end
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<resources>

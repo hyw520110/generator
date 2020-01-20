@@ -21,7 +21,6 @@ import org.apache.velocity.app.VelocityEngine;
 import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.conf.KeyPair;
-import org.hyw.tools.generator.conf.StrategyConf;
 import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.conf.dao.QuerySQL;
 import org.hyw.tools.generator.conf.db.TabField;
@@ -48,11 +47,6 @@ public abstract class AbstractGenerator extends BaseBean {
 	 * 全局配置
 	 */
 	protected GlobalConf global;
-	/**
-	 * 策略配置
-	 */
-	protected StrategyConf strategy;
-
 	/**
 	 * 组件配置
 	 */
@@ -84,11 +78,11 @@ public abstract class AbstractGenerator extends BaseBean {
 			while (results.next()) {
 				String tabName = results.getString(sql.getTbName());
 				if (StringUtils.isEmpty(tabName)) {
-					System.err.println(Arrays.toString(strategy.getInclude()) + "数据库为空！！！");
+					System.err.println(Arrays.toString(global.getInclude()) + "数据库为空！！！");
 					break;
 				}
-				if (!StringUtils.contains(strategy.getInclude(), tabName, true)
-						|| StringUtils.contains(strategy.getExclude(), tabName, false)) {
+				if (!StringUtils.contains(global.getInclude(), tabName, true)
+						|| StringUtils.contains(global.getExclude(), tabName, false)) {
 					continue;
 				}
 				Table table = new Table(tabName, results.getString(sql.getTbComment()));
@@ -109,10 +103,8 @@ public abstract class AbstractGenerator extends BaseBean {
 	/**
 	 * 设置表字段信息
 	 * 
-	 * @param table
-	 *            表信息
-	 * @param con
-	 *            数据库连接对象
+	 * @param table 表信息
+	 * @param con   数据库连接对象
 	 * @return
 	 * @throws SQLException
 	 */
@@ -143,7 +135,7 @@ public abstract class AbstractGenerator extends BaseBean {
 				table.addField(field);
 				// 字段名处理后是否重名
 				if (table.containField(field)) {
-					field.setPropertyName(StringUtils.toCamelCase(field.getName(), strategy.getSeparators(), false));
+					field.setPropertyName(StringUtils.toCamelCase(field.getName(), global.getSeparators(), false));
 				}
 			}
 		} catch (SQLException e) {
@@ -161,20 +153,20 @@ public abstract class AbstractGenerator extends BaseBean {
 	 * @return 根据策略返回处理后的名称
 	 */
 	private String processName(String name) {
-		if (!strategy.isCapitalMode() && StringUtils.isCapitalMode(name)) {
+		if (!global.isCapitalMode() && StringUtils.isCapitalMode(name)) {
 			name = name.toLowerCase();
 		}
-		String[] tablePrefix = strategy.getTablePrefix();
+		String[] tablePrefix = global.getTablePrefix();
 		if (tablePrefix != null && tablePrefix.length >= 1) {
 			// 删除前缀
 			name = StringUtils.removePrefix(name, tablePrefix);
 		}
-		if (strategy.getNaming() == Naming.NOCHANGE) {
+		if (global.getNaming() == Naming.NOCHANGE) {
 			return name;
 		}
-		if (strategy.getNaming() == Naming.TOCAMEL) {
+		if (global.getNaming() == Naming.TOCAMEL) {
 			// 删除前缀、下划线转驼峰
-			return StringUtils.removePrefixAndCamel(name, tablePrefix, strategy.getSeparators());
+			return StringUtils.removePrefixAndCamel(name, tablePrefix, global.getSeparators());
 		}
 		return name;
 	}
@@ -260,14 +252,6 @@ public abstract class AbstractGenerator extends BaseBean {
 
 	public void setGlobal(GlobalConf global) {
 		this.global = global;
-	}
-
-	public StrategyConf getStrategy() {
-		return strategy;
-	}
-
-	public void setStrategy(StrategyConf strategy) {
-		this.strategy = strategy;
 	}
 
 	@Override

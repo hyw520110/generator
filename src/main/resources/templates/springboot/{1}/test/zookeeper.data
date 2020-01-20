@@ -30,7 +30,6 @@ create /config/${projectName},dev/spring.http.multipart.max-request-size 100MB
 create /config/${projectName},dev/spring.http.converters.preferred-json-mapper fastjson
 create /config/${projectName},dev/spring.messages.cache-seconds 60
 
-create /config/${projectName},dev/spring.dubbo.registry ${dubbo_registry}
 create /config/${projectName},dev/spring.dubbo.version 1.0.0
 create /config/${projectName},dev/spring.dubbo.protocol dubbo
 #if($!{ZIPKIN})
@@ -54,48 +53,78 @@ create /config/${projectName},dev/management.context-path /manage
 create /config/${projectName},dev/management.security.enabled false
 create /config/${projectName},dev/info.app.name @project.name@
 create /config/${projectName},dev/info.app.version @project.version@
-create /config/${projectName},dev/druid.driverClassName com.mysql.jdbc.Driver
-create /config/${projectName},dev/druid.url ${dataSource.url}
-create /config/${projectName},dev/druid.username ${dataSource.username}
-create /config/${projectName},dev/druid.password ${dataSource.password}
-create /config/${projectName},dev/druid.filters $!{dataSource.filter}
-create /config/${projectName},dev/druid.connectionProperties $!{dataSource.property} 
-create /config/${projectName},dev/druid.initialSize 1
-create /config/${projectName},dev/druid.maxActive 20
-create /config/${projectName},dev/druid.minIdle 1
-create /config/${projectName},dev/druid.maxWait 60000
-create /config/${projectName},dev/druid.timeBetweenEvictionRunsMillis 60000
-create /config/${projectName},dev/druid.minEvictableIdleTimeMillis 300000
-create /config/${projectName},dev/druid.validationQuery select 'x'
-create /config/${projectName},dev/druid.testWhileIdle true
-create /config/${projectName},dev/druid.testOnBorrow false
-create /config/${projectName},dev/druid.testOnReturn false
-create /config/${projectName},dev/druid.removeAbandoned false
-create /config/${projectName},dev/druid.removeAbandonedTimeout 1800
-create /config/${projectName},dev/druid.logAbandoned true
-create /config/${projectName},dev/druid.statementExecutableSqlLogEnable true
-create /config/${projectName},dev/druid.logSlowSql true
-create /config/${projectName},dev/druid.slowSqlMillis 2000
-create /config/${projectName},dev/druid.mergeSql true
-create /config/${projectName},dev/druid.useGlobalDataSourceStat true
-create /config/${projectName},dev/druid.poolPreparedStatements false
-create /config/${projectName},dev/druid.maxOpenPreparedStatements 20
-create /config/${projectName},dev/druid.web-stat.initParameters.exclusions *.js,*.gif,*.jpg,*.png,*.css,*.ico,*.jsp,/druid/*,/download/*
-create /config/${projectName},dev/druid.web-stat.initParameters.sessionStatEnable true
-create /config/${projectName},dev/druid.web-stat.initParameters.sessionStatMaxCount 2000
-create /config/${projectName},dev/druid.web-stat.initParameters.profileEnable true
-create /config/${projectName},dev/druid.stat.initParameters.resetEnable false
-create /config/${projectName},dev/druid.stat.initParameters.loginUsername admin
-create /config/${projectName},dev/druid.stat.initParameters.loginPassword 123456
-create /config/${projectName},dev/druid.stat.urlMappings /druid/*
-create /config/${projectName},dev/context.slow-time 1500
-create /config/${projectName},dev/context.userName user_name
+
+
+create /config/${projectName}/spring.datasource.driver-class-name com.mysql.jdbc.Driver
+create /config/${projectName}/spring.datasource.druid.max-wait 60000
+create /config/${projectName}/spring.datasource.druid.pool-prepared-statements true
+create /config/${projectName}/spring.datasource.druid.max-pool-prepared-statement-per-connection-size 20
+create /config/${projectName}/spring.datasource.druid.validation-query SELECT 1 
+create /config/${projectName}/spring.datasource.druid.validation-query-timeout 60000
+create /config/${projectName}/spring.datasource.druid.test-on-borrow false
+create /config/${projectName}/spring.datasource.druid.test-on-return false
+create /config/${projectName}/spring.datasource.druid.test-while-idle true
+create /config/${projectName}/spring.datasource.druid.time-between-eviction-runs-millis 60000
+create /config/${projectName}/spring.datasource.druid.min-evictable-idle-time-millis 100000
+create /config/${projectName}/spring.datasource.druid.remove-abandoned false
+create /config/${projectName}/spring.datasource.druid.removeAbandonedTimeout 1800
+create /config/${projectName}/spring.datasource.druid.log-abandoned true
+create /config/${projectName}/spring.datasource.druid.merge-sql true
+create /config/${projectName}/spring.datasource.druid.use-global-data-source-stat true
+create /config/${projectName}/spring.datasource.druid.poolPreparedStatements false
+create /config/${projectName}/spring.datasource.druid.maxOpenPreparedStatements 20
+
+create /config/${projectName}/spring.datasource.druid.filter.stat.enabled true
+create /config/${projectName}/spring.datasource.druid.filter.stat.db-type mysql
+create /config/${projectName}/spring.datasource.druid.filter.stat.log-slow-sql true
+create /config/${projectName}/spring.datasource.druid.filter.stat.slow-sql-millis 1500
+create /config/${projectName}/spring.datasource.druid.filter.wall.enabled true
+create /config/${projectName}/spring.datasource.druid.filter.wall.db-type mysql
+create /config/${projectName}/spring.datasource.druid.filter.wall.config.delete-allow false
+create /config/${projectName}/spring.datasource.druid.filter.wall.config.drop-table-allow false
+create /config/${projectName}/spring.datasource.druid.filter.slf4j.enabled true
+create /config/${projectName}/spring.datasource.druid.filter.slf4j.statement-create-after-log-enabled false
+create /config/${projectName}/spring.datasource.druid.filter.slf4j.statement-close-after-log-enabled false
+create /config/${projectName}/spring.datasource.druid.filter.slf4j.result-set-open-after-log-enabled false
+create /config/${projectName}/spring.datasource.druid.filter.slf4j.result-set-close-after-log-enabled false
+create /config/${projectName}/spring.datasource.druid.filter.slf4j.statement-executable-sqlLog-enable false
+
+create /config/${projectName},dev/spring.datasource.url ${dataSource.url}
+create /config/${projectName},dev/spring.datasource.username ${dataSource.username}
+create /config/${projectName},dev/spring.datasource.password ${dataSource.password}
+#if(!${dataSource.propertiesStr})
+create /config/${projectName},dev/spring.datasource.druid.connection-properties  ${dataSource.propertiesStr}
+#end
+create /config/${projectName},dev/spring.datasource.druid.filter.config.enabled  ${dataSource.isEncrypt()}
+create /config/${projectName},dev/spring.datasource.druid.initial-size 1
+create /config/${projectName},dev/spring.datasource.druid.max-active 10
+create /config/${projectName},dev/spring.datasource.druid.min-idle 1
+
+create /config/${projectName},dev/spring.datasource.druid.filter.slf4j.statement-executable-sqlLog-enable true 
+
 #if(${ROCKETMQ})
 create /config/${projectName},dev/rocketmq.name-server-address ${name-server-address}
 #end
 
+create /config/${projectName},dev/context.slow-time 1000
+create /config/${projectName},dev/context.userName user_name
+#if("plus"=="$mapperType")
+create /config/${projectName}/mybatis-plus.mapper-locations classpath:mappers/*.xml
+create /config/${projectName}/mybatis-plus.type-aliases-package ${entityPackage}
+create /config/${projectName}/mybatis-plus.configuration.log-impl org.apache.ibatis.logging.log4j2.Log4j2Impl
+create /config/${projectName}/mybatis-plus.configuration.call-setters-on-nulls true
+create /config/${projectName}/mybatis-plus.configuration.cache-enabled true
+create /config/${projectName}/mybatis-plus.configuration.map-underscore-to-camel-case true
+create /config/${projectName}/mybatis-plus.global-config.db-column-underline true
+#else
+create /config/${projectName}/mybatis.type-aliases-package ${mapperPackage}
+create /config/${projectName}/mybatis.mapperLocations classpath:mappers/*.xml
+create /config/${projectName}/mybatis.configuration.map-underscore-to-camel-case true
+create /config/${projectName}/mybatis.configuration.default-fetch-size 100
+create /config/${projectName}/mybatis.configuration.default-statement-timeout 30
+#end
+
 create /config/${projectName}/logging.path /logs/${projectName}/
-create /config/${projectName}/server.port 8081
 create /config/${projectName}/rocketmq.producer-group ${projectName}_producer
 create /config/${projectName}/spring.dubbo.port 20800
 create /config/${projectName}/spring.dubbo.appname ${projectName}

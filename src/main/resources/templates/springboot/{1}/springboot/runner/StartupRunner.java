@@ -37,7 +37,10 @@ public class StartupRunner implements CommandLineRunner {
 				Desktop.getDesktop().browse(new URI(url));
 				return ;
 			}
-			Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler "+url); 
+			String shell = (System.getProperty("os.name").startsWith("Mac") ? "open /Applications/Safari.app "
+					: "rundll32 url.dll,FileProtocolHandler ") + url;
+			logger.info("exec shell:{}", shell);
+			Runtime.getRuntime().exec(shell);
 		} catch (IOException | URISyntaxException e) {
 			logger.warn("open url:{} ,{}",url,e.getLocalizedMessage());
 		}

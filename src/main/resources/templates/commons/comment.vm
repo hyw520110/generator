@@ -1,5 +1,6 @@
 /**
- * ${table.name}：$!{table.comment}
+ *#if("$!{comment}"=="") $!{table.comment} #else $!{comment} #end 
+  
  * @author ${author}
  * @since ${date}
  * @copyright: ${copyright}

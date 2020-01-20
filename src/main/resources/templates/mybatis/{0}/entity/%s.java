@@ -1,5 +1,6 @@
 package ${entityPackage};
 
+
 #foreach($pkg in ${table.importPackages})
 import ${pkg};
 #end
@@ -7,16 +8,26 @@ import ${pkg};
 import #if($StringUtils.indexOf("$superEntityClass",'.')==-1)${entityPackage}.#end$superEntityClass;
 #else
 import java.io.Serializable;
-
 import javax.validation.constraints.NotNull;
-
 import com.mysql.jdbc.StringUtils;    
 #end
+#if("plus"=="$mapperType")
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+#end
 import javax.validation.constraints.NotNull;
-
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 #parse('/templates/commons/comment.vm')
-public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClassName("$superEntityClass")} #else implements Serializable #end{
+#if(${table.comment})
+@ApiModel(value="${table.name}", description="${table.comment}")
+#end
+#if("plus"=="$mapperType")
+@TableName("${table.name}")
+#end
+public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClassName("$superEntityClass")}#if("plus"=="$mapperType")<${className}>#end #else implements Serializable #end{
 
     private static final long serialVersionUID = 1L;
 
@@ -26,10 +37,15 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
     * ${field.comment}
     */
 #end
+#if("plus"=="$mapperType"&&$field.isPrimarykey)
+	@TableId(value = "${field.name}", type = IdType.AUTO)
+#end
+	@ApiModelProperty(value = #if("$!{field.comment}"!="")"$!{field.comment}"#else"${field.name}"#end,required = #if(${field.isNullAble()})false #else true #end)
 #if(!${field.isCommonField} || ${StringUtils.indexOf("$superEntityClass", '.')}!=-1)
-#if(!$field.isNullAble())   @NotNull
+#if(!$field.isNullAble())    @NotNull
 #end 
     private ${field.fieldType.type} ${field.propertyName};
+    
 #end    
 #end
 ## TODO  外键关联配置 引用对象

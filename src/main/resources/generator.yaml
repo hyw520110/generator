@@ -3,36 +3,58 @@
 dataSource:
     driverClassName: com.mysql.jdbc.Driver
     #明文密码
-    url: jdbc:mysql://192.168.0.202:3306/dhz_carwash?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://192.168.1.202:3306/cw_test?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
-    pwd: 123456
+    pwd: bigbox!QAZ
     
-    #密文密码
+    #数据源密码密文配置
     # 明文密码时值留空或注释;密文密码时配置config
     #filters: config
     # 明文密码时值留空或注释;
-    #connectionProperties: "config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKhGGPbGy0vrW8PD/Ej5fnpUypfGxDyNpZv3HVk+tqt5pdJPJOPnpfDNru6VeikjeDSnaxS1xC7rKiD0AefJLqkCAwEAAQ=="
+    #conProperties: "config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKhGGPbGy0vrW8PD/Ej5fnpUypfGxDyNpZv3HVk+tqt5pdJPJOPnpfDNru6VeikjeDSnaxS1xC7rKiD0AefJLqkCAwEAAQ=="
 
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
-    outputDir: /Users/a123/work/test
+    outputDir: /Users/a123/work/demo
     #项目描述
-    description: 大盒子后台管理系统
-    #生成文件前是否删除输出目录,建议配置为false 
+    description: 大盒子数据库元数据管理工具
+    #是否删除输出目录,默认为false，谨慎修改！ 
     delOutputDir: false
     #是否覆盖已有文件      
     fileOverride: true
     #文件生成后是否打开输出目录
     openDir: true
+    #父包名
+    rootPackage: com.big.box
+    #工程模块配置:单工程配置空；多模块工程配置模块名数组，如：['api','app'] 
+    modules: ['api','app'] 
+    #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
+    include: ['cw_device']  
+    #需要排除的表名
+    exclude: 
+    #表前缀
+    tablePrefix: ['cw_','batch_','dhz_']
     #可选组件(枚举类Component)：MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF
-    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,ZOOKEEPER,SWAGGER2,THYMELEAF]
-    #模塊配置
-    modules: [ 'api','app' ] 
+    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,SPRINGCLOUD,ZOOKEEPER,SWAGGER2,DUBBO,REDIS,VUE]
+    #生成构建脚本/工程构建工具,可选值MAVEN:生成pom.xml、GRADLE:生成build.gradle、不配置:不生成构建脚本
+    projectBuilder: MAVEN
+    #工程默认版本号
+    version: 1.0.1-SNAPSHOT
     #开发人员
     author: heyw
     #版权
     copyright: hyw Copyright (c) 2017-2020 All Rights Reserved.
+    #jdk版本
+    javaVersion: 1.8
+    #表名、字段名、是否使用下划线命名
+    separators: [_,-]
+    #是否大写命名
+    capitalMode: false
+    #数据库表映射到实体的命名策略  
+    naming: TOCAMEL
+    #是否生成字段常量,默认 false） 
+    columnConstant: false
     #生成文件的编码
     encoding: UTF-8
     #模板文件目录,自定义模板时复制此目录，并修改此目录名
@@ -42,49 +64,32 @@ global:
     #资源文件目录
     resource: src/main/resources
     #非模板文件排除渲染 
-    excludes: [ 'js','css','dll','exe','eot','png','jpg','swf','svg','ttf','woff','woff2','eot']
-#策略配置
-strategy: 
-    #父包名
-    rootPackage: com.demo.test
-    #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
-    include:   
-    #需要排除的表名
-    exclude: 
-    #表前缀
-    tablePrefix: ['cw_','batch_','dhz_']
-    #jdk版本
-    javaVersion: 1.8
-    #生成构建脚本/工程构建工具,可选值MAVEN:生成pom.xml、GRADLE:生成build.gradle、不配置:不生成构建脚本
-    projectBuilder: MAVEN
-    #工程默认版本号
-    version: 1.0.1-SNAPSHOT
-    #表名、字段名、是否使用下划线命名
-    separators: [_,-]
-    #是否大写命名
-    capitalMode: false
-    #数据库表映射到实体的命名策略  
-    naming: TOCAMEL
-    #是否生成字段常量,默认 false） 
-    columnConstant: false
+    resources: [ 'js','css','dll','exe','eot','png','jpg','gif','swf','svg','ttf','woff','woff2','eot']
+    
 # 组件配置    
 components: 
   DUBBO: 
+    dubbo_version: 2.7.0
     spring_boot_dubbo_version: 1.0.0-SNAPSHOT
     dubbo_registry: zookeeper://localhost:2181?backup=localhost:2182,localhost:2183
     dubbo_port: 20800
     dubbo_protocol: dubbo 
   ZOOKEEPER: 
     connect-string: localhost:2181
-    zkclient_version: '0.10'
+    curator_version: '4.0.1'
   ROCKETMQ: 
     spring_boot_starter_rocketmq_version: 0.0.4  
     name-server-address: localhost:9876    
   SPRINGBOOT: 
-    springboot_version: 1.5.6.RELEASE
+    springboot_version: 2.1.6.RELEASE
     write_null_value: true
     server_port: 8081
     ssl: false
+  SPRINGCLOUD: 
+    springcloud_version: 2.1.6.RELEASE
+    springcloud_commons_version: 2.1.2.RELEASE
+    springcloud_alibaba_version: 2.1.0.RELEASE
+    
   REDIS: 
     spring_redis_password: 123456
     spring_redis_cluster_nodes: localhost:7001, localhost:7002, localhost:7003, localhost:8001, localhost:8002, localhost:8003
@@ -95,8 +100,8 @@ components:
     zipkin_version: '1.0.2'
     zipkin_baseUrl: http://localhost:9411
   MYBATIS: 
-    #SQL语句配置类型，可选值xml:xml mapper文件;annotation：sql注解
-    sqlType: xml
+    #配置类型，可选值xml:xml mapper文件;annotation：sql注解;plus:mybatis-plus
+    mapperType: plus
     #mapper的父类,自定义父类必须写全类名（包含类的包名）
     superMapperClass: BaseMapper
     #Entity父类的公共字段
@@ -138,11 +143,16 @@ components:
     resourceDir: spring
     rest: true
     crud: true
-    superControllerClass: 
-    resp_data_type_json: false
+    superControllerClass: BaseController
+    resp_data_type_json: true
     json_type: fastjson
+    jsonp: false
   THYMELEAF: 
     suffix: .html
+  VUE: 
+    assetsDir: 'static'
+    filenameHashing: true
+    productionSourceMap: false
     
   
     

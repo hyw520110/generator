@@ -5,7 +5,7 @@ dataSource:
     #明文密码
     url: jdbc:mysql://pre.big-box.com.cn:3306/cw_test?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
-    pwd: bigbox!QAZ
+    pwd: 123456
     
     #数据源密码密文配置
     # 明文密码时值留空或注释;密文密码时配置config
@@ -16,7 +16,7 @@ dataSource:
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
-    outputDir: /Users/a123/work/demo
+    outputDir: /Users/a123/workspace/demo
     #项目描述
     description: 代码生成器
     #是否删除输出目录,默认为false，谨慎修改！ 

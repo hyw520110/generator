@@ -237,4 +237,10 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
 		return !startsWith(text, "java");
 	}
 
+	public static boolean isEmptyArray(String... sDefault) {
+		if (null == sDefault || sDefault.length == 0) {
+			return true;
+		}
+		return sDefault.length == 1 ? org.apache.commons.lang.StringUtils.isEmpty(sDefault[0]) : false;
+	}
 }

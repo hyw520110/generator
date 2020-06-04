@@ -1,7 +1,0 @@
-2020-06-03 16:56:39.385 [main] INFO  com.alibaba.druid.pool.DruidDataSource[DruidDataSource.java:854] --  {dataSource-1} inited
- 2020-06-03 16:56:41.119 [main] INFO  org.hyw.tools.generator.AbstractGenerator[AbstractGenerator.java:67] --  开始读取数据库元数据...
- 2020-06-03 16:56:51.750 [main] INFO  org.hyw.tools.generator.AbstractGenerator[AbstractGenerator.java:67] --  开始读取数据库元数据...
- 2020-06-03 16:57:16.071 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:205] --  url:jar:file:/Users/a123/.m2/repository/com/hyw/tools/generator-core/1.0.0-SNAPSHOT/generator-core-1.0.0-SNAPSHOT.jar!/templates,subDirName:modules
- java.io.FileNotFoundException: file:/Users/a123/.m2/repository/com/hyw/tools/generator-core/1.0.0-SNAPSHOT/generator-core-1.0.0-SNAPSHOT.jar!/templates (No such file or directory)
-	at java.util.zip.ZipFile.open(Native Method)
-	at java.util.zip.ZipFile.<init>(ZipFile.java:225)

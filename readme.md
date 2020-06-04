@@ -1,4 +1,4 @@
-##主要功能：
+## 主要功能：
 
 - 支持主流关系型数据库(mysql、oracle、postgresql、sqlserver)
 - 支持整库生成、指定部分表、反选表生成,支持数据库表复合主键的生成
@@ -7,7 +7,7 @@
 - 支持模板自定义,排版风格支持自定义,java类注释支持自定义(更改模板文件comment.vm)
 - 支持组件扩展，组件特性自定义及特性扩展
 
-##技术组件：
+## 技术组件：
 
 - 持久层：mybatis/mybatis-plus、 JPA
 - 分布式配置&注册中心：zookeeper
@@ -15,9 +15,9 @@
 - 分布式缓存：redis集群&切片缓存
 - 分布式实时数据链路追踪:skywalking、zipkin
 - 分布式消息中间件rocketmq
--  微服务：springboot、springcloud
--  前端页面：ant design pro vue、thymeleaf
--  用户认证鉴权:jwt、shiro
+- 微服务：springboot、springcloud
+- 前端页面：ant design pro vue、thymeleaf
+- 用户认证鉴权:jwt、shiro
 
 ## 生成器版本
 - 命令行版生成器（工程下的cmd目录）
@@ -98,7 +98,7 @@
 	yarn install 
 	yarn run serve
  
-## 自定义支持介绍
+## 自定义特性介绍
 - 自定义工程构建工具：maven(pom.xml)、gradle(build.gradle)、无
 
 - 自定义工程模块，支持生成单工程和多模块工程，多模块工程，工程模块名可自定义
@@ -118,7 +118,7 @@
 	- 在模板目录(templates)下新建目录，目录名为{模块数组index},如dubbo的配置文件在app模块中，则新建{2}文件夹,在文件夹下新建（文件夹）模板文件
 	- 在配置文件中新增组件配置(非必须),配置模板所需的配置信息
 
-
+- 更多自定义特性，查看生成器配置文件或源码...
 
 	
 	

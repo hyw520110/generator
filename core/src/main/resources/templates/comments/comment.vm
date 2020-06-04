@@ -1,0 +1,7 @@
+/**
+*#if("$!{table.comment}"=="") $!{comment} #else $!{table.comment} #end #set($comment="")
+  
+* @author ${author}
+* @since 2020-05-26
+* @copyright: ${copyright}
+*/

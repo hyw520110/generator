@@ -1,0 +1,4 @@
+2020-05-29 21:45:23.429 [main] ERROR org.hyw.tools.generator.cmd.CmdGenerator[null:-1] --  driver:com.mysql.jdbc.Driver,url:jdbc:mysql://192.168.1.202:3306/cw_test,usr:root connect fail:Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+ 

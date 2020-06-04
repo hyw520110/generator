@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- scan扫描配置文件的变化并自动重新配置 -->
+<configuration scan="true" scanPeriod="30 seconds" debug="true" packagingData="${log.packagingData:-true}">
+	<timestamp key="timestamp" datePattern="yyyyMMdd'T'HHmmss"/>
+	<property name="LOG_BASE" value="./logs/${log.dir.name:-${timestamp}}/${log.dir.name:-${timestamp}}"  />
+	<property name="CHARSET" value="UTF-8" />
+	<jmxConfigurator />
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"
+			charset="${CHARSET}">
+			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %X{userId}-%X{_sessionId}-%X{_ip} %msg%n %ex{2}</pattern>
+		</encoder>
+	</appender>
+	<!-- 错误日志配置 RollingFileAppender继承自ch.qos.logback.core.FileAppender -->
+	<appender name="common-error"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 限定只输出ERROR级别的日志 -->
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+		<File>${LOG_BASE}_error.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_BASE}_error_%d{yyyy-MM-dd_HH}.%i.log
+			</fileNamePattern>
+			<!-- 保留天数 -->
+			<maxHistory>${log.maxHistory:-60}</maxHistory>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>${log.maxFileSize:-10MB}</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<append>true</append>
+		<encoder charset="${CHARSET}"
+			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %X{userId}-%X{_sessionId}-%X{_ip}  %msg%n %ex{2}</pattern>
+			<charset>${CHARSET}</charset>
+			<immediateFlush>true</immediateFlush>
+		</encoder>
+	</appender>
+	<!-- 应用日志 -->
+	<appender name="common-default"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${LOG_BASE}_default.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_BASE}_default.%d{yyyy-MM-dd}.%i.log
+			</fileNamePattern>
+			<!-- 保留天数 -->
+			<maxHistory>${log.maxHistory:-60}</maxHistory>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>${log.maxFileSize:-10MB}</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+			<!-- HTML文件输出:encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder" 
+			pattern class="ch.qos.logback.classic.html.HTMLLayout" -->
+		<append>true</append>
+		<encoder charset="${CHARSET}"
+			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %X{userId}-%X{_sessionId}-%X{_ip}  %msg%n %ex{2}</pattern>
+			<charset>${CHARSET}</charset>
+			<immediateFlush>true</immediateFlush>
+		</encoder>
+	</appender>
+
+	<!-- logger的向上传递性属性 additivity默认为true -->
+	<logger name="ch.qos.logback.classic" level="WARN" />
+	<logger name="java.sql" level="WARN" />
+	<logger name="jdbc" level="WARN" />
+	<!-- 调试应用程序时，只需设置root的输出级别为debug,设置第三方开源组件(hibernate spring)日志输出级别为ERROR(屏蔽设置为OFF) 
+		<logger name="org" level="ERROR"/> -->
+	<logger name="org.hibernate" level="INFO" />
+	<logger name="org.hibernate.cache" level="ERROR" />
+	<logger name="org.hibernate.sql" level="INFO" />
+	<logger name="org.hibernate.engine" level="INFO" />
+	<logger name="org.hibernate.type" level="ERROR" />
+	<logger name="org.hibernate.util" level="ERROR" />
+	<logger name="org.hibernate.cfg" level="WARN" />
+
+	<logger name="org.springframework" level="INFO" />
+	<logger name="org.springframework.web" level="INFO" />
+
+	<logger name="org.apache" level="INFO" />
+	<logger name="org.apache.shiro" level="INFO" />
+	<logger name="org.apache.mina" level="WARN" />
+
+	<!-- 如果SimpleMappingExceptionResolver的warnLogCategory不为空，spring就会使用apache的org.apache.commons.logging.Log日志工具记录异常，级别是warn。 -->
+	<logger
+		name="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver"
+		level="WARN" />
+
+	<logger name="com.danga.MemCached" level="INFO" />
+	<logger name="net.sf.ehcache" level="INFO" />
+	<logger name="freemarker" level="INFO" />
+
+	<logger name="org.eclipse.jetty" level="INFO" />
+	<logger name="com.opensymphony" level="WARN" />
+	<logger name="net.sf" level="WARN" />
+	<!-- 输出SQL语句 -->
+	<logger name="druid.sql.Statement" level="${log.druid.sql.Statement.level:-DEBUG}" />
+	<logger name="com.alibaba.dubbo" level="INFO" />
+	<root level="${log.root.level:-INFO}">
+		<!--将appender添加到root logger下 -->
+		<appender-ref ref="stdout"  level="${log.stdout.level:-INFO}"/>
+		<appender-ref ref="common-error" level="ERROR" />
+		<appender-ref ref="common-default"   />
+	</root>
+ 
+</configuration>

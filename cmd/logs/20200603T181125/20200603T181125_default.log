@@ -1,0 +1,605 @@
+2020-06-03 18:11:32.393 [main] INFO  com.alibaba.druid.pool.DruidDataSource[DruidDataSource.java:854] --  {dataSource-1} inited
+ 2020-06-03 18:11:34.507 [main] INFO  org.hyw.tools.generator.AbstractGenerator[AbstractGenerator.java:67] --  开始读取数据库元数据...
+ 2020-06-03 18:11:40.709 [main] INFO  org.hyw.tools.generator.AbstractGenerator[AbstractGenerator.java:67] --  开始读取数据库元数据...
+ 2020-06-03 18:11:41.065 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/api/pom.xml
+ 2020-06-03 18:11:41.069 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/api/readme.md
+ 2020-06-03 18:11:41.073 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/jsconfig.json
+ 2020-06-03 18:11:41.076 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/LICENSE
+ 2020-06-03 18:11:41.080 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/webstorm.config.js
+ 2020-06-03 18:11:41.081 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.env.preview
+ 2020-06-03 18:11:41.084 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/jest.config.js
+ 2020-06-03 18:11:41.086 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/tests/unit/.eslintrc.js
+ 2020-06-03 18:11:41.087 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.classpath
+ 2020-06-03 18:11:41.089 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.editorconfig
+ 2020-06-03 18:11:41.092 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/README.md
+ 2020-06-03 18:11:41.095 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/option2/loading.svg
+ 2020-06-03 18:11:41.098 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/option2/loading.css
+ 2020-06-03 18:11:41.103 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/option2/html_code_segment.html
+ 2020-06-03 18:11:41.104 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/loading.css
+ 2020-06-03 18:11:41.107 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/loading.html
+ 2020-06-03 18:11:41.108 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/logo.png
+ 2020-06-03 18:11:41.161 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/color.less
+ 2020-06-03 18:11:41.185 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/avatar2.jpg
+ 2020-06-03 18:11:41.196 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/babel.config.js
+ 2020-06-03 18:11:41.211 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/package.json
+ 2020-06-03 18:11:41.217 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.env
+ 2020-06-03 18:11:41.220 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.project
+ 2020-06-03 18:11:41.230 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/vue.config.js
+ 2020-06-03 18:11:41.232 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.prettierrc
+ 2020-06-03 18:11:41.233 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.travis.yml
+ 2020-06-03 18:11:41.235 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/App.vue
+ 2020-06-03 18:11:41.239 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/directives/action.js
+ 2020-06-03 18:11:41.244 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/icons.js
+ 2020-06-03 18:11:41.247 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/bootstrap.js
+ 2020-06-03 18:11:41.250 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/lazy_use.js
+ 2020-06-03 18:11:41.251 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/use.js
+ 2020-06-03 18:11:41.252 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/lazy_lib/components_use.js
+ 2020-06-03 18:11:41.255 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/config/router.config.js
+ 2020-06-03 18:11:41.257 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/config/defaultSettings.js
+ 2020-06-03 18:11:41.258 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/util.js
+ 2020-06-03 18:11:41.259 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/index.js
+ 2020-06-03 18:11:41.263 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/other.js
+ 2020-06-03 18:11:41.266 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/user.js
+ 2020-06-03 18:11:41.268 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/auth.js
+ 2020-06-03 18:11:41.295 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/tagCloud.js
+ 2020-06-03 18:11:41.301 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/manage.js
+ 2020-06-03 18:11:41.303 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/article.js
+ 2020-06-03 18:11:41.318 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/permission.js
+ 2020-06-03 18:11:41.320 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/util.js
+ 2020-06-03 18:11:41.321 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/device.js
+ 2020-06-03 18:11:41.322 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/axios.js
+ 2020-06-03 18:11:41.324 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/utils.less
+ 2020-06-03 18:11:41.326 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/request.js
+ 2020-06-03 18:11:41.341 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/mixin.js
+ 2020-06-03 18:11:41.345 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/helper/permission.js
+ 2020-06-03 18:11:41.348 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/filter.js
+ 2020-06-03 18:11:41.351 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/permissions.js
+ 2020-06-03 18:11:41.355 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/storage.js
+ 2020-06-03 18:11:41.356 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/main.js
+ 2020-06-03 18:11:41.358 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Tree/Tree.jsx
+ 2020-06-03 18:11:41.360 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/global.less
+ 2020-06-03 18:11:41.363 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/PageLoading/index.jsx
+ 2020-06-03 18:11:41.365 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/HeadInfo.vue
+ 2020-06-03 18:11:41.368 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/UserMenu.vue
+ 2020-06-03 18:11:41.378 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/components/tools/Breadcrumb.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 30, column 40]
+ 2020-06-03 18:11:41.379 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/TwoStepCaptcha.vue
+ 2020-06-03 18:11:41.382 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/Logo.vue
+ 2020-06-03 18:11:41.384 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/DetailList.vue
+ 2020-06-03 18:11:41.385 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/_util/util.js
+ 2020-06-03 18:11:41.390 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Result/Result.vue
+ 2020-06-03 18:11:41.391 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Result/index.js
+ 2020-06-03 18:11:41.392 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/StandardFormRow/StandardFormRow.vue
+ 2020-06-03 18:11:41.393 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/StandardFormRow/index.js
+ 2020-06-03 18:11:41.395 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/ArticleListContent/index.js
+ 2020-06-03 18:11:41.396 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/ArticleListContent/ArticleListContent.vue
+ 2020-06-03 18:11:41.398 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/CountDown/index.js
+ 2020-06-03 18:11:41.413 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/components/CountDown/CountDown.vue render class org.apache.velocity.exception.ParseErrorException:Encountered "(h)}:" at <unknown template>[line 46, column 26]
+Was expecting one of:
+    "[" ...
+    "}" ...
+    
+ 2020-06-03 18:11:41.417 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/CountDown/index.md
+ 2020-06-03 18:11:41.419 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/IconSelector/icons.js
+ 2020-06-03 18:11:41.422 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/IconSelector/index.js
+ 2020-06-03 18:11:41.424 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/IconSelector/README.md
+ 2020-06-03 18:11:41.429 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/IconSelector/IconSelector.vue
+ 2020-06-03 18:11:41.431 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/MultiTab/index.js
+ 2020-06-03 18:11:41.432 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/MultiTab/index.less
+ 2020-06-03 18:11:41.440 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/MultiTab/MultiTab.vue
+ 2020-06-03 18:11:41.442 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Trend/index.js
+ 2020-06-03 18:11:41.444 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Trend/index.less
+ 2020-06-03 18:11:41.448 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Trend/index.md
+ 2020-06-03 18:11:41.451 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Trend/Trend.vue
+ 2020-06-03 18:11:41.454 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/themeColor.js
+ 2020-06-03 18:11:41.456 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/SettingItem.vue
+ 2020-06-03 18:11:41.458 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/index.js
+ 2020-06-03 18:11:41.491 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/SettingDrawer.vue
+ 2020-06-03 18:11:41.493 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/settingConfig.js
+ 2020-06-03 18:11:41.500 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NoticeIcon/NoticeIcon.vue
+ 2020-06-03 18:11:41.502 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NoticeIcon/index.js
+ 2020-06-03 18:11:41.504 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/DescriptionList/index.js
+ 2020-06-03 18:11:41.512 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/DescriptionList/DescriptionList.vue
+ 2020-06-03 18:11:41.517 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/TransferBar.vue
+ 2020-06-03 18:11:41.519 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/Liquid.vue
+ 2020-06-03 18:11:41.522 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/RankList.vue
+ 2020-06-03 18:11:41.527 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/TagCloud.vue
+ 2020-06-03 18:11:41.529 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/MiniProgress.vue
+ 2020-06-03 18:11:41.531 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/Radar.vue
+ 2020-06-03 18:11:41.535 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/MiniArea.vue
+ 2020-06-03 18:11:41.538 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/ChartCard.vue
+ 2020-06-03 18:11:41.540 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/Trend.vue
+ 2020-06-03 18:11:41.541 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/MiniBar.vue
+ 2020-06-03 18:11:41.543 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/Bar.vue
+ 2020-06-03 18:11:41.546 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/chart.less
+ 2020-06-03 18:11:41.548 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/smooth.area.less
+ 2020-06-03 18:11:41.551 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/MiniSmoothArea.vue
+ 2020-06-03 18:11:41.552 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/GlobalFooter/index.js
+ 2020-06-03 18:11:41.554 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/index.js
+ 2020-06-03 18:11:41.562 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/PageHeader/PageHeader.vue
+ 2020-06-03 18:11:41.564 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/PageHeader/index.js
+ 2020-06-03 18:11:41.568 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/index.less
+ 2020-06-03 18:11:41.580 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/TagSelect/TagSelectOption.jsx
+ 2020-06-03 18:11:41.591 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/TagSelect/index.jsx
+ 2020-06-03 18:11:41.623 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/List.vue
+ 2020-06-03 18:11:41.624 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/index.js
+ 2020-06-03 18:11:41.630 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/index.less
+ 2020-06-03 18:11:41.638 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/Item.vue
+ 2020-06-03 18:11:41.640 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/index.md
+ 2020-06-03 18:11:41.641 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/GlobalHeader/GlobalHeader.vue
+ 2020-06-03 18:11:41.647 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/GlobalHeader/index.js
+ 2020-06-03 18:11:41.651 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/components/Table/index.js render class org.apache.velocity.exception.ParseErrorException:Encountered ".." at <unknown template>[line 82, column 9]
+Was expecting one of:
+    "}" ...
+    "}" ...
+    
+ 2020-06-03 18:11:41.660 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/components/Table/README.md render class org.apache.velocity.exception.ParseErrorException:Encountered ")\n          }).then(res => {\n            return res.result\n          })\n        },\n        selectedRowKeys: [],\n        selectedRows: []\n      }\n    },\n    methods: {\n      onSelectChange (selectedRowKeys, selectedRows) {\n         this.selectedRowKeys = selectedRowKeys\n         this.selectedRows = selectedRows\n       }\n    }\n  }\n</script>\n\n```\n\n\n\n\u4f8b\u5b502\n----\n\n\uff08\u7b80\u5355\u7684\u8868\u683c\uff0c\u6700\u540e\u4e00\u5217\u662f\u5404\u79cd\u64cd\u4f5c\uff09\n\n```vue\n<template>\n  <s-table\n    ref=\"table\"\n    size=\"default\"\n    :columns=\"columns\"\n    :data=\"loadData\"\n  >\n    <span slot=\"action\" slot-scope=\"text, record\">\n      <a>\u7f16\u8f91</a>\n      <a-divider type=\"vertical\"/>\n      <a-dropdown>\n        <a class=\"ant-dropdown-link\">\n          \u66f4\u591a <a-icon type=\"down\"/>\n        </a>\n        <a-menu slot=\"overlay\">\n          <a-menu-item>\n            <a href=\"javascript:;\">1st menu item</a>\n          </a-menu-item>\n          <a-menu-item>\n            <a href=\"javascript:;\">2nd menu item</a>\n          </a-menu-item>\n          <a-menu-item>\n            <a href=\"javascript:;\">3rd menu item</a>\n          </a-menu-item>\n        </a-menu>\n      </a-dropdown>\n    </span>\n  </s-table>\n</template>\n\n<script>\n  import STable from \'@/components/table/\'\n\n  export default {\n    components: {\n      STable\n    },\n    data() {\n      return {\n        columns: [\n          {\n            title: \'\u89c4\u5219\u7f16\u53f7\',\n            dataIndex: \'no\'\n          },\n          {\n            title: \'\u63cf\u8ff0\',\n            dataIndex: \'description\'\n          },\n          {\n            title: \'\u670d\u52a1\u8c03\u7528\u6b21\u6570\',\n            dataIndex: \'callNo\',\n          },\n          {\n            title: \'\u72b6\u6001\',\n            dataIndex: \'status\',\n          },\n          {\n            title: \'\u66f4\u65b0\u65f6\u95f4\',\n            dataIndex: \'updatedAt\',\n          },\n          {\n            table: \'\u64cd\u4f5c\',\n            dataIndex: \'action\',\n            scopedSlots: {customRender: \'action\'},\n          }\n        ],\n        // \u67e5\u8be2\u6761\u4ef6\u53c2\u6570\n        queryParam: {},\n        // \u52a0\u8f7d\u6570\u636e\u65b9\u6cd5 \u5fc5\u987b\u4e3a Promise \u5bf9\u8c61\n        loadData: parameter => {\n          return this." at <unknown template>[line 74, column 61]
+Was expecting one of:
+    "[" ...
+    "," ...
+    ")" ...
+    <WHITESPACE> ...
+    
+ 2020-06-03 18:11:41.661 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Menu/SideMenu.vue
+ 2020-06-03 18:11:41.662 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Menu/index.js
+ 2020-06-03 18:11:41.666 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Menu/menu.js
+ 2020-06-03 18:11:41.689 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Menu/menu.render.js
+ 2020-06-03 18:11:41.690 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/FooterToolbar/FooterToolBar.vue
+ 2020-06-03 18:11:41.692 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/FooterToolbar/index.js
+ 2020-06-03 18:11:41.693 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/FooterToolbar/index.less
+ 2020-06-03 18:11:41.694 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/FooterToolbar/index.md
+ 2020-06-03 18:11:41.695 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Ellipsis/index.js
+ 2020-06-03 18:11:41.702 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/components/Ellipsis/Ellipsis.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 56, column 47]
+ 2020-06-03 18:11:41.704 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Ellipsis/index.md
+ 2020-06-03 18:11:41.709 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/components/Exception/ExceptionPage.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "y" (121), after : "t" at *unset*[line 4, column 68]
+ 2020-06-03 18:11:41.710 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Exception/type.js
+ 2020-06-03 18:11:41.712 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Exception/index.js
+ 2020-06-03 18:11:41.722 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/components/Editor/QuillEditor.vue render class org.apache.velocity.exception.ParseErrorException:Encountered "\n          })\n        }\n      }\n    },\n    onEditorBlur (quill) {\n      console.log(\'editor blur!\', quill)\n    },\n    onEditorFocus (quill) {\n      console.log(\'editor focus!\', quill)\n    },\n    onEditorReady (quill) {\n      console.log(\'editor ready!\', quill)\n    },\n    onEditorChange ({ quill, html, text }) {\n      console.log(\'editor change!\', quill, html, text)\n      this." at <unknown template>[line 121, column 42]
+Was expecting one of:
+    "[" ...
+    "," ...
+    "}" ...
+    <WHITESPACE> ...
+    "}" ...
+    
+ 2020-06-03 18:11:41.724 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Editor/WangEditor.vue
+ 2020-06-03 18:11:41.730 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NumberInfo/NumberInfo.vue
+ 2020-06-03 18:11:41.732 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NumberInfo/index.js
+ 2020-06-03 18:11:41.733 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NumberInfo/index.less
+ 2020-06-03 18:11:41.736 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NumberInfo/index.md
+ 2020-06-03 18:11:41.739 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/IframeView.vue
+ 2020-06-03 18:11:41.745 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/RouteView.vue
+ 2020-06-03 18:11:41.750 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/index.js
+ 2020-06-03 18:11:41.759 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/PageView.vue
+ 2020-06-03 18:11:41.761 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/BlankLayout.vue
+ 2020-06-03 18:11:41.763 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/BasicLayout.vue
+ 2020-06-03 18:11:41.764 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/usergrouprolemapping.js
+ 2020-06-03 18:11:41.766 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/usergroupmapping.js
+ 2020-06-03 18:11:41.767 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/cresource.js
+ 2020-06-03 18:11:41.768 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/role.js
+ 2020-06-03 18:11:41.770 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/param.js
+ 2020-06-03 18:11:41.773 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/media.js
+ 2020-06-03 18:11:41.774 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/user.js
+ 2020-06-03 18:11:41.775 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/userpostmapping.js
+ 2020-06-03 18:11:41.778 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/index.js
+ 2020-06-03 18:11:41.779 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/gallery.js
+ 2020-06-03 18:11:41.780 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/login.js
+ 2020-06-03 18:11:41.782 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/userdeptmapping.js
+ 2020-06-03 18:11:41.783 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/manage.js
+ 2020-06-03 18:11:41.785 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/cuser.js
+ 2020-06-03 18:11:41.786 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/userrolemapping.js
+ 2020-06-03 18:11:41.787 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/tool.js
+ 2020-06-03 18:11:41.788 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/roleresourcemapping.js
+ 2020-06-03 18:11:41.789 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/crole.js
+ 2020-06-03 18:11:41.793 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/stepForm/Step2.vue
+ 2020-06-03 18:11:41.795 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/stepForm/Step3.vue
+ 2020-06-03 18:11:41.799 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/stepForm/Step1.vue
+ 2020-06-03 18:11:41.800 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/stepForm/StepForm.vue
+ 2020-06-03 18:11:41.804 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/form/advancedForm/AdvancedForm.vue render class org.apache.velocity.exception.ParseErrorException:Encountered " ? 256 : 80}px)` : \'100%\'}\">\n      <span class=\"popover-wrapper\">\n        <a-popover title=\"\u8868\u5355\u6821\u9a8c\u4fe1\u606f\" overlayClassName=\"antd-pro-pages-forms-style-errorPopover\" trigger=\"click\" :getPopupContainer=\"trigger => trigger.parentNode\">\n          <template slot=\"content\">\n            <li v-for=\"item in errors\" :key=\"item.key\" @click=\"scrollToField(item.key)\" class=\"antd-pro-pages-forms-style-errorListItem\">\n              <a-icon type=\"cross-circle-o\" class=\"antd-pro-pages-forms-style-errorIcon\" />\n              <div class=\"\">{{ item.message }}</div>\n              <div class=\"antd-pro-pages-forms-style-errorField\">{{ item.fieldLabel }}</div>\n            </li>\n          </template>\n          <span class=\"antd-pro-pages-forms-style-errorIcon\" v-if=\"errors.length > 0\">\n            <a-icon type=\"exclamation-circle\" />{{ errors.length }}\n          </span>\n        </a-popover>\n      </span>\n      <a-button type=\"primary\" @click=\"validate\" :loading=\"loading\">\u63d0\u4ea4</a-button>\n    </footer-tool-bar>\n  </div>\n</template>\n\n<script>\nimport RepositoryForm from \'./RepositoryForm\'\nimport TaskForm from \'./TaskForm\'\nimport FooterToolBar from \'@/components/FooterToolbar\'\nimport { mixin, mixinDevice } from \'@/utils/mixin\'\n\nconst fieldLabels = {\n  name: \'\u4ed3\u5e93\u540d\',\n  url: \'\u4ed3\u5e93\u57df\u540d\',\n  owner: \'\u4ed3\u5e93\u7ba1\u7406\u5458\',\n  approver: \'\u5ba1\u6279\u4eba\',\n  dateRange: \'\u751f\u6548\u65e5\u671f\',\n  type: \'\u4ed3\u5e93\u7c7b\u578b\',\n  name2: \'\u4efb\u52a1\u540d\',\n  url2: \'\u4efb\u52a1\u63cf\u8ff0\',\n  owner2: \'\u6267\u884c\u4eba\',\n  approver2: \'\u8d23\u4efb\u4eba\',\n  dateRange2: \'\u751f\u6548\u65e5\u671f\',\n  type2: \'\u4efb\u52a1\u7c7b\u578b\'\n}\n\nexport default {\n  name: \'AdvancedForm\',\n  mixins: [mixin, mixinDevice],\n  components: {\n    FooterToolBar,\n    RepositoryForm,\n    TaskForm\n  },\n  data () {\n    return {\n      description: \'\u9ad8\u7ea7\u8868\u5355\u5e38\u89c1\u4e8e\u4e00\u6b21\u6027\u8f93\u5165\u548c\u63d0\u4ea4\u5927\u6279\u91cf\u6570\u636e\u7684\u573a\u666f\u3002\',\n      loading: false,\n      memberLoading: false,\n\n      // table\n      columns: [\n        {\n          title: \'\u6210\u5458\u59d3\u540d\',\n          dataIndex: \'name\',\n          key: \'name\',\n          width: \'20%\',\n          scopedSlots: { customRender: \'name\' }\n        },\n        {\n          title: \'\u5de5\u53f7\',\n          dataIndex: \'workId\',\n          key: \'workId\',\n          width: \'20%\',\n          scopedSlots: { customRender: \'workId\' }\n        },\n        {\n          title: \'\u6240\u5c5e\u90e8\u95e8\',\n          dataIndex: \'department\',\n          key: \'department\',\n          width: \'40%\',\n          scopedSlots: { customRender: \'department\' }\n        },\n        {\n          title: \'\u64cd\u4f5c\',\n          key: \'action\',\n          scopedSlots: { customRender: \'operation\' }\n        }\n      ],\n      data: [\n        {\n          key: \'1\',\n          name: \'\u5c0f\u660e\',\n          workId: \'001\',\n          editable: false,\n          department: \'\u884c\u653f\u90e8\'\n        },\n        {\n          key: \'2\',\n          name: \'\u674e\u8389\',\n          workId: \'002\',\n          editable: false,\n          department: \'IT\u90e8\'\n        },\n        {\n          key: \'3\',\n          name: \'\u738b\u5c0f\u5e05\',\n          workId: \'003\',\n          editable: false,\n          department: \'\u8d22\u52a1\u90e8\'\n        }\n      ],\n\n      errors: []\n    }\n  },\n  methods: {\n    handleSubmit (e) {\n      e.preventDefault()\n    },\n    newMember () {\n      const length = this.data.length\n      this.data.push({\n        key: length === 0 ? \'1\' : (parseInt(this.data[length - 1].key) + 1).toString(),\n        name: \'\',\n        workId: \'\',\n        department: \'\',\n        editable: true,\n        isNew: true\n      })\n    },\n    remove (key) {\n      const newData = this.data.filter(item => item.key !== key)\n      this.data = newData\n    },\n    saveRow (record) {\n      this.memberLoading = true\n      const { key, name, workId, department } = record\n      if (!name || !workId || !department) {\n        this.memberLoading = false\n        this." at <unknown template>[line 57, column 97]
+Was expecting one of:
+    "[" ...
+    "}" ...
+    
+ 2020-06-03 18:11:41.807 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/advancedForm/RepositoryForm.vue
+ 2020-06-03 18:11:41.810 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/advancedForm/TaskForm.vue
+ 2020-06-03 18:11:41.812 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/BasicForm.vue
+ 2020-06-03 18:11:41.813 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/result/Success.vue
+ 2020-06-03 18:11:41.814 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/result/Error.vue
+ 2020-06-03 18:11:41.815 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/404.vue
+ 2020-06-03 18:11:41.847 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/Home.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 196, column 55]
+ 2020-06-03 18:11:41.871 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/other/PermissionList.vue render class org.apache.velocity.exception.ParseErrorException:Encountered ")\n        }).then(res => {\n          const result = res.result\n          result.data.map(permission => {\n            permission.actionList = JSON.parse(permission.actionData)\n            return permission\n          })\n          return result\n        })\n      },\n\n      selectedRowKeys: [],\n      selectedRows: []\n    }\n  },\n  filters: {\n    statusFilter (status) {\n      const statusMap = {\n        1: \'\u6b63\u5e38\',\n        2: \'\u7981\u7528\'\n      }\n      return statusMap[status]\n    }\n  },\n  created () {\n    this.loadPermissionList()\n  },\n  methods: {\n    loadPermissionList () {\n      // permissionList\n      new Promise(resolve => {\n        const data = [\n          { label: \'\u65b0\u589e\', value: \'add\', defaultChecked: false },\n          { label: \'\u67e5\u8be2\', value: \'get\', defaultChecked: false },\n          { label: \'\u4fee\u6539\', value: \'update\', defaultChecked: false },\n          { label: \'\u5217\u8868\', value: \'query\', defaultChecked: false },\n          { label: \'\u5220\u9664\', value: \'delete\', defaultChecked: false },\n          { label: \'\u5bfc\u5165\', value: \'import\', defaultChecked: false },\n          { label: \'\u5bfc\u51fa\', value: \'export\', defaultChecked: false }\n        ]\n        setTimeout(resolve(data), 1500)\n      }).then(res => {\n        this.permissionList = res\n      })\n    },\n    handleEdit (record) {\n      this.mdl = Object.assign({}, record)\n      console.log(this.mdl)\n      this.visible = true\n    },\n    handleOk () {\n\n    },\n    onChange (selectedRowKeys, selectedRows) {\n      this.selectedRowKeys = selectedRowKeys\n      this.selectedRows = selectedRows\n    },\n    toggleAdvanced () {\n      this.advanced = !this.advanced\n    }\n  },\n  watch: {\n    /*\n      \'selectedRows\': function (selectedRows) {\n        this.needTotalList = this.needTotalList.map(item => {\n          return {\n            ...item,\n            total: selectedRows.reduce( (sum, val) => {\n              return sum + val[item.dataIndex]\n            }, 0)\n          }\n        })\n      }\n      */\n  }\n}\n</script>\n" at <unknown template>[line 196, column 59]
+Was expecting one of:
+    "[" ...
+    "," ...
+    ")" ...
+    <WHITESPACE> ...
+    
+ 2020-06-03 18:11:41.877 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/other/TreeList.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "`" (96), after : "" at *unset*[line 132, column 26]
+ 2020-06-03 18:11:41.884 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/other/IconSelectorView.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "<" (60), after : "" at *unset*[line 23, column 26]
+ 2020-06-03 18:11:41.887 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/UserList.vue
+ 2020-06-03 18:11:41.896 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/other/RoleList.vue render class org.apache.velocity.exception.ParseErrorException:Encountered ")\n        }).then(res => {\n          return res.result\n        })\n      },\n\n      selectedRowKeys: [],\n      selectedRows: []\n    }\n  },\n  methods: {\n    handleEdit (record) {\n      this.mdl = Object.assign({}, record)\n\n      this.mdl.permissions.forEach(permission => {\n        permission.actionsOptions = permission.actionEntitySet.map(action => {\n          return { label: action.describe, value: action.action, defaultCheck: action.defaultCheck }\n        })\n      })\n\n      console.log(this.mdl)\n      this.visible = true\n    },\n    handleOk () {\n      // \u65b0\u589e/\u4fee\u6539 \u6210\u529f\u65f6\uff0c\u91cd\u8f7d\u5217\u8868\n      this." at <unknown template>[line 132, column 59]
+Was expecting one of:
+    "[" ...
+    "," ...
+    ")" ...
+    <WHITESPACE> ...
+    
+ 2020-06-03 18:11:41.903 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/other/TableInnerEditList.vue render class org.apache.velocity.exception.ParseErrorException:Encountered ")\n        }).then(res => {\n          return res.result\n        })\n      },\n\n      selectedRowKeys: [],\n      selectedRows: []\n    }\n  },\n  methods: {\n\n    handleChange (value, key, column, record) {\n      console.log(value, key, column)\n      record[column.dataIndex] = value\n    },\n    edit (row) {\n      row.editable = true\n      // row = Object.assign({}, row)\n    },\n    // eslint-disable-next-line\n    del (row) {\n      this." at <unknown template>[line 177, column 59]
+Was expecting one of:
+    "[" ...
+    "," ...
+    ")" ...
+    <WHITESPACE> ...
+    
+ 2020-06-03 18:11:41.907 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/modules/OrgModal.vue
+ 2020-06-03 18:11:41.912 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/modules/RoleModal.vue
+ 2020-06-03 18:11:41.921 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/user/Login.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 148, column 50]
+ 2020-06-03 18:11:41.924 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/param/CreateForm.vue
+ 2020-06-03 18:11:41.951 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/param/ParamView.vue
+ 2020-06-03 18:11:41.952 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/dashboard/Monitor.vue
+ 2020-06-03 18:11:41.978 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/dashboard/Workplace.vue
+ 2020-06-03 18:11:41.983 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/dashboard/Analysis.vue render class org.apache.velocity.exception.ParseErrorException:Encountered " + 1}\u6708`,\n    y: Math.floor(Math.random() * 1000) + 200\n  })\n  barData2.push({\n    x: `" at <unknown template>[line 223, column 12]
+Was expecting one of:
+    "[" ...
+    "}" ...
+    
+ 2020-06-03 18:11:41.987 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/common/CreateForm.vue
+ 2020-06-03 18:11:42.015 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/common/ListView.vue
+ 2020-06-03 18:11:42.018 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/profile/advanced/Advanced.vue
+ 2020-06-03 18:11:42.023 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/profile/basic/Index.vue
+ 2020-06-03 18:11:42.035 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/StandardList.vue
+ 2020-06-03 18:11:42.036 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/CardList.vue
+ 2020-06-03 18:11:42.053 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/list/search/Projects.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 119, column 74]
+ 2020-06-03 18:11:42.087 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/search/SearchLayout.vue
+ 2020-06-03 18:11:42.089 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/search/components/CardInfo.vue
+ 2020-06-03 18:11:42.090 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/search/components/IconText.vue
+ 2020-06-03 18:11:42.101 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/list/search/Article.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 149, column 48]
+ 2020-06-03 18:11:42.111 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/list/search/Applications.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 137, column 74]
+ 2020-06-03 18:11:42.115 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/table/List.vue
+ 2020-06-03 18:11:42.135 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/table/Edit.vue
+ 2020-06-03 18:11:42.150 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/modules/CreateForm.vue
+ 2020-06-03 18:11:42.154 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/modules/StepByStepModal.vue
+ 2020-06-03 18:11:42.161 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/modules/TaskForm.vue
+ 2020-06-03 18:11:42.179 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/QueryList.vue
+ 2020-06-03 18:11:42.208 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/list/TableList.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "`" (96), after : "" at *unset*[line 257, column 28]
+ 2020-06-03 18:11:42.215 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Custom.vue
+ 2020-06-03 18:11:42.223 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Index.vue
+ 2020-06-03 18:11:42.229 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/AvatarModal.vue
+ 2020-06-03 18:11:42.233 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/BaseSetting.vue
+ 2020-06-03 18:11:42.235 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Binding.vue
+ 2020-06-03 18:11:42.236 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Notification.vue
+ 2020-06-03 18:11:42.245 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Security.vue
+ 2020-06-03 18:11:42.253 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/account/center/Index.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 146, column 51]
+ 2020-06-03 18:11:42.254 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/center/page/App.vue
+ 2020-06-03 18:11:42.257 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/center/page/index.js
+ 2020-06-03 18:11:42.266 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/account/center/page/Project.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 67, column 74]
+ 2020-06-03 18:11:42.271 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/views/account/center/page/Article.vue render class org.apache.velocity.exception.ParseErrorException:Lexical error,   Encountered: "=" (61), after : "" at *unset*[line 55, column 48]
+ 2020-06-03 18:11:42.271 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/exception/403.vue
+ 2020-06-03 18:11:42.272 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/exception/404.vue
+ 2020-06-03 18:11:42.273 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/exception/500.vue
+ 2020-06-03 18:11:42.278 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/tool/GenCodeView.vue
+ 2020-06-03 18:11:42.279 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/assets/background.svg
+ 2020-06-03 18:11:42.282 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/assets/logo.png
+ 2020-06-03 18:11:42.284 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/assets/icons/bx-analyse.svg
+ 2020-06-03 18:11:42.285 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/assets/logo.svg
+ 2020-06-03 18:11:42.286 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/getters.js
+ 2020-06-03 18:11:42.287 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/index.js
+ 2020-06-03 18:11:42.289 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/mutation-types.js
+ 2020-06-03 18:11:42.290 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/modules/user.js
+ 2020-06-03 18:11:42.292 [main] ERROR org.hyw.tools.generator.Generator[Generator.java:159] --  template file:vue/src/store/modules/permission.js render class org.apache.velocity.exception.ParseErrorException:Encountered " && parent.resourceUri || \'\'}/" at <unknown template>[line 45, column 25]
+Was expecting one of:
+    "[" ...
+    "}" ...
+    
+ 2020-06-03 18:11:42.293 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/modules/app.js
+ 2020-06-03 18:11:42.294 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/router/index.js
+ 2020-06-03 18:11:42.296 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/router/README.md
+ 2020-06-03 18:11:42.370 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/parent/pom.xml
+ 2020-06-03 18:11:42.380 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/parent/readme.md
+ 2020-06-03 18:11:42.421 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/pom.xml
+ 2020-06-03 18:11:42.423 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/readme.md
+ 2020-06-03 18:11:42.496 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/jsconfig.json
+ 2020-06-03 18:11:42.511 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/LICENSE
+ 2020-06-03 18:11:42.511 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/webstorm.config.js
+ 2020-06-03 18:11:42.512 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.env.preview
+ 2020-06-03 18:11:42.513 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/jest.config.js
+ 2020-06-03 18:11:42.514 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/tests/unit/.eslintrc.js
+ 2020-06-03 18:11:42.515 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.classpath
+ 2020-06-03 18:11:42.516 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.editorconfig
+ 2020-06-03 18:11:42.518 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/README.md
+ 2020-06-03 18:11:42.521 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/option2/loading.svg
+ 2020-06-03 18:11:42.524 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/option2/loading.css
+ 2020-06-03 18:11:42.528 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/option2/html_code_segment.html
+ 2020-06-03 18:11:42.530 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/loading.css
+ 2020-06-03 18:11:42.533 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/loading/loading.html
+ 2020-06-03 18:11:42.534 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/logo.png
+ 2020-06-03 18:11:42.536 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/color.less
+ 2020-06-03 18:11:42.538 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/avatar2.jpg
+ 2020-06-03 18:11:42.539 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/babel.config.js
+ 2020-06-03 18:11:42.540 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/package.json
+ 2020-06-03 18:11:42.541 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.env
+ 2020-06-03 18:11:42.541 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.project
+ 2020-06-03 18:11:42.542 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/vue.config.js
+ 2020-06-03 18:11:42.543 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.prettierrc
+ 2020-06-03 18:11:42.544 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.travis.yml
+ 2020-06-03 18:11:42.546 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/App.vue
+ 2020-06-03 18:11:42.547 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/directives/action.js
+ 2020-06-03 18:11:42.547 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/icons.js
+ 2020-06-03 18:11:42.548 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/bootstrap.js
+ 2020-06-03 18:11:42.549 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/lazy_use.js
+ 2020-06-03 18:11:42.550 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/use.js
+ 2020-06-03 18:11:42.551 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/core/lazy_lib/components_use.js
+ 2020-06-03 18:11:42.551 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/config/router.config.js
+ 2020-06-03 18:11:42.552 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/config/defaultSettings.js
+ 2020-06-03 18:11:42.554 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/util.js
+ 2020-06-03 18:11:42.556 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/index.js
+ 2020-06-03 18:11:42.556 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/other.js
+ 2020-06-03 18:11:42.559 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/user.js
+ 2020-06-03 18:11:42.560 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/auth.js
+ 2020-06-03 18:11:42.561 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/tagCloud.js
+ 2020-06-03 18:11:42.562 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/manage.js
+ 2020-06-03 18:11:42.563 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/mock/services/article.js
+ 2020-06-03 18:11:42.564 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/permission.js
+ 2020-06-03 18:11:42.565 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/util.js
+ 2020-06-03 18:11:42.566 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/device.js
+ 2020-06-03 18:11:42.567 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/axios.js
+ 2020-06-03 18:11:42.568 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/utils.less
+ 2020-06-03 18:11:42.569 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/request.js
+ 2020-06-03 18:11:42.569 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/mixin.js
+ 2020-06-03 18:11:42.570 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/helper/permission.js
+ 2020-06-03 18:11:42.572 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/filter.js
+ 2020-06-03 18:11:42.573 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/permissions.js
+ 2020-06-03 18:11:42.575 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/storage.js
+ 2020-06-03 18:11:42.576 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/main.js
+ 2020-06-03 18:11:42.576 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Tree/Tree.jsx
+ 2020-06-03 18:11:42.577 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/global.less
+ 2020-06-03 18:11:42.578 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/PageLoading/index.jsx
+ 2020-06-03 18:11:42.579 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/HeadInfo.vue
+ 2020-06-03 18:11:42.579 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/UserMenu.vue
+ 2020-06-03 18:11:42.580 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/Breadcrumb.vue
+ 2020-06-03 18:11:42.581 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/TwoStepCaptcha.vue
+ 2020-06-03 18:11:42.584 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/Logo.vue
+ 2020-06-03 18:11:42.585 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/tools/DetailList.vue
+ 2020-06-03 18:11:42.585 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/_util/util.js
+ 2020-06-03 18:11:42.586 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Result/Result.vue
+ 2020-06-03 18:11:42.587 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Result/index.js
+ 2020-06-03 18:11:42.588 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/StandardFormRow/StandardFormRow.vue
+ 2020-06-03 18:11:42.588 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/StandardFormRow/index.js
+ 2020-06-03 18:11:42.589 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/ArticleListContent/index.js
+ 2020-06-03 18:11:42.590 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/ArticleListContent/ArticleListContent.vue
+ 2020-06-03 18:11:42.590 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/CountDown/index.js
+ 2020-06-03 18:11:42.591 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/CountDown/CountDown.vue
+ 2020-06-03 18:11:42.594 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/CountDown/index.md
+ 2020-06-03 18:11:42.595 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/IconSelector/icons.js
+ 2020-06-03 18:11:42.596 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/IconSelector/index.js
+ 2020-06-03 18:11:42.597 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/IconSelector/README.md
+ 2020-06-03 18:11:42.598 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/IconSelector/IconSelector.vue
+ 2020-06-03 18:11:42.600 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/MultiTab/index.js
+ 2020-06-03 18:11:42.600 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/MultiTab/index.less
+ 2020-06-03 18:11:42.601 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/MultiTab/MultiTab.vue
+ 2020-06-03 18:11:42.602 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Trend/index.js
+ 2020-06-03 18:11:42.603 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Trend/index.less
+ 2020-06-03 18:11:42.603 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Trend/index.md
+ 2020-06-03 18:11:42.604 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Trend/Trend.vue
+ 2020-06-03 18:11:42.605 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/themeColor.js
+ 2020-06-03 18:11:42.605 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/SettingItem.vue
+ 2020-06-03 18:11:42.606 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/index.js
+ 2020-06-03 18:11:42.607 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/SettingDrawer.vue
+ 2020-06-03 18:11:42.608 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/SettingDrawer/settingConfig.js
+ 2020-06-03 18:11:42.609 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NoticeIcon/NoticeIcon.vue
+ 2020-06-03 18:11:42.610 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NoticeIcon/index.js
+ 2020-06-03 18:11:42.610 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/DescriptionList/index.js
+ 2020-06-03 18:11:42.612 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/DescriptionList/DescriptionList.vue
+ 2020-06-03 18:11:42.613 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/TransferBar.vue
+ 2020-06-03 18:11:42.614 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/Liquid.vue
+ 2020-06-03 18:11:42.615 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/RankList.vue
+ 2020-06-03 18:11:42.616 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/TagCloud.vue
+ 2020-06-03 18:11:42.617 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/MiniProgress.vue
+ 2020-06-03 18:11:42.618 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/Radar.vue
+ 2020-06-03 18:11:42.618 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/MiniArea.vue
+ 2020-06-03 18:11:42.619 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/ChartCard.vue
+ 2020-06-03 18:11:42.620 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/Trend.vue
+ 2020-06-03 18:11:42.621 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/MiniBar.vue
+ 2020-06-03 18:11:42.621 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/Bar.vue
+ 2020-06-03 18:11:42.622 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/chart.less
+ 2020-06-03 18:11:42.623 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/smooth.area.less
+ 2020-06-03 18:11:42.624 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Charts/MiniSmoothArea.vue
+ 2020-06-03 18:11:42.625 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/GlobalFooter/index.js
+ 2020-06-03 18:11:42.626 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/index.js
+ 2020-06-03 18:11:42.626 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/PageHeader/PageHeader.vue
+ 2020-06-03 18:11:42.627 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/PageHeader/index.js
+ 2020-06-03 18:11:42.628 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/index.less
+ 2020-06-03 18:11:42.629 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/TagSelect/TagSelectOption.jsx
+ 2020-06-03 18:11:42.630 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/TagSelect/index.jsx
+ 2020-06-03 18:11:42.631 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/List.vue
+ 2020-06-03 18:11:42.632 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/index.js
+ 2020-06-03 18:11:42.633 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/index.less
+ 2020-06-03 18:11:42.634 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/Item.vue
+ 2020-06-03 18:11:42.635 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/AvatarList/index.md
+ 2020-06-03 18:11:42.636 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/GlobalHeader/GlobalHeader.vue
+ 2020-06-03 18:11:42.637 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/GlobalHeader/index.js
+ 2020-06-03 18:11:42.637 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Table/index.js
+ 2020-06-03 18:11:42.638 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Table/README.md
+ 2020-06-03 18:11:42.639 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Menu/SideMenu.vue
+ 2020-06-03 18:11:42.640 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Menu/index.js
+ 2020-06-03 18:11:42.643 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Menu/menu.js
+ 2020-06-03 18:11:42.644 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Menu/menu.render.js
+ 2020-06-03 18:11:42.645 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/FooterToolbar/FooterToolBar.vue
+ 2020-06-03 18:11:42.646 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/FooterToolbar/index.js
+ 2020-06-03 18:11:42.647 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/FooterToolbar/index.less
+ 2020-06-03 18:11:42.650 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/FooterToolbar/index.md
+ 2020-06-03 18:11:42.651 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Ellipsis/index.js
+ 2020-06-03 18:11:42.652 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Ellipsis/Ellipsis.vue
+ 2020-06-03 18:11:42.652 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Ellipsis/index.md
+ 2020-06-03 18:11:42.653 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Exception/ExceptionPage.vue
+ 2020-06-03 18:11:42.656 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Exception/type.js
+ 2020-06-03 18:11:42.657 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Exception/index.js
+ 2020-06-03 18:11:42.666 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Editor/QuillEditor.vue
+ 2020-06-03 18:11:42.667 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/Editor/WangEditor.vue
+ 2020-06-03 18:11:42.668 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NumberInfo/NumberInfo.vue
+ 2020-06-03 18:11:42.669 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NumberInfo/index.js
+ 2020-06-03 18:11:42.669 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NumberInfo/index.less
+ 2020-06-03 18:11:42.670 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/NumberInfo/index.md
+ 2020-06-03 18:11:42.671 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/IframeView.vue
+ 2020-06-03 18:11:42.672 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/RouteView.vue
+ 2020-06-03 18:11:42.673 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/index.js
+ 2020-06-03 18:11:42.674 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/PageView.vue
+ 2020-06-03 18:11:42.675 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/BlankLayout.vue
+ 2020-06-03 18:11:42.676 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/BasicLayout.vue
+ 2020-06-03 18:11:42.677 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/usergrouprolemapping.js
+ 2020-06-03 18:11:42.678 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/usergroupmapping.js
+ 2020-06-03 18:11:42.678 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/cresource.js
+ 2020-06-03 18:11:42.679 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/role.js
+ 2020-06-03 18:11:42.680 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/param.js
+ 2020-06-03 18:11:42.681 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/media.js
+ 2020-06-03 18:11:42.682 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/user.js
+ 2020-06-03 18:11:42.683 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/userpostmapping.js
+ 2020-06-03 18:11:42.684 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/index.js
+ 2020-06-03 18:11:42.685 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/gallery.js
+ 2020-06-03 18:11:42.686 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/login.js
+ 2020-06-03 18:11:42.687 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/userdeptmapping.js
+ 2020-06-03 18:11:42.688 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/manage.js
+ 2020-06-03 18:11:42.690 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/cuser.js
+ 2020-06-03 18:11:42.691 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/userrolemapping.js
+ 2020-06-03 18:11:42.692 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/tool.js
+ 2020-06-03 18:11:42.697 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/roleresourcemapping.js
+ 2020-06-03 18:11:42.698 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/crole.js
+ 2020-06-03 18:11:42.698 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/stepForm/Step2.vue
+ 2020-06-03 18:11:42.700 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/stepForm/Step3.vue
+ 2020-06-03 18:11:42.701 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/stepForm/Step1.vue
+ 2020-06-03 18:11:42.702 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/stepForm/StepForm.vue
+ 2020-06-03 18:11:42.702 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/advancedForm/AdvancedForm.vue
+ 2020-06-03 18:11:42.703 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/advancedForm/RepositoryForm.vue
+ 2020-06-03 18:11:42.704 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/advancedForm/TaskForm.vue
+ 2020-06-03 18:11:42.704 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/form/BasicForm.vue
+ 2020-06-03 18:11:42.705 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/result/Success.vue
+ 2020-06-03 18:11:42.706 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/result/Error.vue
+ 2020-06-03 18:11:42.707 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/404.vue
+ 2020-06-03 18:11:42.709 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/Home.vue
+ 2020-06-03 18:11:42.714 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/PermissionList.vue
+ 2020-06-03 18:11:42.716 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/TreeList.vue
+ 2020-06-03 18:11:42.717 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/IconSelectorView.vue
+ 2020-06-03 18:11:42.718 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/UserList.vue
+ 2020-06-03 18:11:42.719 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/RoleList.vue
+ 2020-06-03 18:11:42.720 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/TableInnerEditList.vue
+ 2020-06-03 18:11:42.721 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/modules/OrgModal.vue
+ 2020-06-03 18:11:42.721 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/other/modules/RoleModal.vue
+ 2020-06-03 18:11:42.733 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/user/Login.vue
+ 2020-06-03 18:11:42.734 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/param/CreateForm.vue
+ 2020-06-03 18:11:42.734 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/param/ParamView.vue
+ 2020-06-03 18:11:42.735 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/dashboard/Monitor.vue
+ 2020-06-03 18:11:42.736 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/dashboard/Workplace.vue
+ 2020-06-03 18:11:42.736 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/dashboard/Analysis.vue
+ 2020-06-03 18:11:42.737 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/common/CreateForm.vue
+ 2020-06-03 18:11:42.738 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/common/ListView.vue
+ 2020-06-03 18:11:42.739 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/profile/advanced/Advanced.vue
+ 2020-06-03 18:11:42.740 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/profile/basic/Index.vue
+ 2020-06-03 18:11:42.741 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/StandardList.vue
+ 2020-06-03 18:11:42.741 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/CardList.vue
+ 2020-06-03 18:11:42.742 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/search/Projects.vue
+ 2020-06-03 18:11:42.743 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/search/SearchLayout.vue
+ 2020-06-03 18:11:42.744 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/search/components/CardInfo.vue
+ 2020-06-03 18:11:42.744 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/search/components/IconText.vue
+ 2020-06-03 18:11:42.745 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/search/Article.vue
+ 2020-06-03 18:11:42.746 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/search/Applications.vue
+ 2020-06-03 18:11:42.747 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/table/List.vue
+ 2020-06-03 18:11:42.748 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/table/Edit.vue
+ 2020-06-03 18:11:42.748 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/modules/CreateForm.vue
+ 2020-06-03 18:11:42.750 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/modules/StepByStepModal.vue
+ 2020-06-03 18:11:42.751 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/modules/TaskForm.vue
+ 2020-06-03 18:11:42.761 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/QueryList.vue
+ 2020-06-03 18:11:42.761 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/list/TableList.vue
+ 2020-06-03 18:11:42.769 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Custom.vue
+ 2020-06-03 18:11:42.772 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Index.vue
+ 2020-06-03 18:11:42.787 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/AvatarModal.vue
+ 2020-06-03 18:11:42.788 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/BaseSetting.vue
+ 2020-06-03 18:11:42.789 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Binding.vue
+ 2020-06-03 18:11:42.790 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Notification.vue
+ 2020-06-03 18:11:42.794 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/settings/Security.vue
+ 2020-06-03 18:11:42.795 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/center/Index.vue
+ 2020-06-03 18:11:42.797 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/center/page/App.vue
+ 2020-06-03 18:11:42.800 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/center/page/index.js
+ 2020-06-03 18:11:42.802 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/center/page/Project.vue
+ 2020-06-03 18:11:42.804 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/account/center/page/Article.vue
+ 2020-06-03 18:11:42.804 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/exception/403.vue
+ 2020-06-03 18:11:42.805 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/exception/404.vue
+ 2020-06-03 18:11:42.806 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/exception/500.vue
+ 2020-06-03 18:11:42.807 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/tool/GenCodeView.vue
+ 2020-06-03 18:11:42.807 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/assets/background.svg
+ 2020-06-03 18:11:42.810 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/assets/logo.png
+ 2020-06-03 18:11:42.814 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/assets/icons/bx-analyse.svg
+ 2020-06-03 18:11:42.816 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/assets/logo.svg
+ 2020-06-03 18:11:42.817 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/getters.js
+ 2020-06-03 18:11:42.818 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/index.js
+ 2020-06-03 18:11:42.818 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/mutation-types.js
+ 2020-06-03 18:11:42.819 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/modules/user.js
+ 2020-06-03 18:11:42.819 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/modules/permission.js
+ 2020-06-03 18:11:42.820 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/store/modules/app.js
+ 2020-06-03 18:11:42.821 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/router/index.js
+ 2020-06-03 18:11:42.822 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/router/README.md
+ 2020-06-03 18:11:42.886 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/api/src/main/java/com/big/box/demo/api/vo/Result.java
+ 2020-06-03 18:11:42.888 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/api/src/main/java/com/big/box/demo/api/enums/StatusCode.java
+ 2020-06-03 18:11:42.894 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/utils/JWTUtil.java
+ 2020-06-03 18:11:42.904 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/filter/JWTFilter.java
+ 2020-06-03 18:11:42.915 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/service/impl/TokenServiceImpl.java
+ 2020-06-03 18:11:42.918 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/service/TokenService.java
+ 2020-06-03 18:11:42.920 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/logback.xml
+ 2020-06-03 18:11:42.924 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/springboot/runner/StartupRunner.java
+ 2020-06-03 18:11:42.926 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/springboot/swagger2/Swagger2Configuration.java
+ 2020-06-03 18:11:42.928 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/bin/startup.sh
+ 2020-06-03 18:11:42.929 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/bin/stop.sh
+ 2020-06-03 18:11:42.940 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/maven/assembly.xml
+ 2020-06-03 18:11:42.953 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/Booter.java
+ 2020-06-03 18:11:42.955 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/utils/SpringUtils.java
+ 2020-06-03 18:11:42.957 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/utils/HttpUtils.java
+ 2020-06-03 18:11:42.963 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/banner.txt
+ 2020-06-03 18:11:42.977 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/controller/commons/ErrorController.java
+ 2020-06-03 18:11:42.980 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/bootstrap.yml
+ 2020-06-03 18:11:43.001 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/data/UserInfo.json
+ 2020-06-03 18:11:43.033 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/data/ResourceResponseVo.json
+ 2020-06-03 18:11:43.035 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/conf/messages.properties
+ 2020-06-03 18:11:43.040 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/aspects/LogAspect.java
+ 2020-06-03 18:11:43.063 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/api/src/main/java/com/big/box/demo/api/entity/BaseEntity.java
+ 2020-06-03 18:11:43.068 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/api/src/main/java/com/big/box/demo/api/service/BaseService.java
+ 2020-06-03 18:11:43.070 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/vo/BaseModel.java
+ 2020-06-03 18:11:43.071 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/vo/TokenVo.java
+ 2020-06-03 18:11:43.073 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/vo/ResourceResponseVo.java
+ 2020-06-03 18:11:43.075 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/vo/Resource.java
+ 2020-06-03 18:11:43.077 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/vo/LoginVo.java
+ 2020-06-03 18:11:43.079 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/vo/UserInfo.java
+ 2020-06-03 18:11:43.081 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/vo/Role.java
+ 2020-06-03 18:11:43.084 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/vo/LoginResponseVo.java
+ 2020-06-03 18:11:43.103 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/vo/UserAuthCache.java
+ 2020-06-03 18:11:43.122 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/service/impl/BaseServiceImpl.java
+ 2020-06-03 18:11:43.140 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/plus/MybatisPlusConfiguration.java
+ 2020-06-03 18:11:43.143 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/plus/MybatisPlusMetaObjectHandler.java
+ 2020-06-03 18:11:43.147 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/test/java/com/big/box/demo/app/test/redis/RedisTemplateTest.java
+ 2020-06-03 18:11:43.153 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/public/index.html
+ 2020-06-03 18:11:43.154 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.project
+ 2020-06-03 18:11:43.157 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/utils/domUtil.js
+ 2020-06-03 18:11:43.160 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/components/GlobalFooter/GlobalFooter.vue
+ 2020-06-03 18:11:43.166 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/layouts/UserLayout.vue
+ 2020-06-03 18:11:43.169 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/test/java/com/big/box/demo/app/test/zookeeper/ZkTool.java
+ 2020-06-03 18:11:43.176 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/test/java/com/big/box/demo/app/test/dubbo/DubboTest.java
+ 2020-06-03 18:11:43.302 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/test/resources/zookeeper.data
+ 2020-06-03 18:11:43.306 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/test/resources/bootstrap.yml
+ 2020-06-03 18:11:43.321 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/test/resources/application.yml
+ 2020-06-03 18:11:43.324 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/mvc/JsonFormContentFilter.java
+ 2020-06-03 18:11:43.332 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/mvc/WebMvcConfigurer.java
+ 2020-06-03 18:11:43.338 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/controller/commons/BaseController.java
+ 2020-06-03 18:11:43.351 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/controller/LoginController.java
+ 2020-06-03 18:11:43.355 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/interceptor/ContextInterceptor.java
+ 2020-06-03 18:11:43.361 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/shiro/ShiroRealm.java
+ 2020-06-03 18:11:43.363 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/shiro/ShiroConfig.java
+ 2020-06-03 18:11:43.445 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/api/src/main/java/com/big/box/demo/api/entity/Device.java
+ 2020-06-03 18:11:43.474 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/api/src/main/java/com/big/box/demo/api/service/DeviceService.java
+ 2020-06-03 18:11:43.514 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/mapper/DeviceMapper.java
+ 2020-06-03 18:11:43.629 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/resources/mappers/DeviceMapper.xml
+ 2020-06-03 18:11:43.671 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/service/impl/DeviceServiceImpl.java
+ 2020-06-03 18:11:43.674 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/.project
+ 2020-06-03 18:11:43.705 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/api/Device.js
+ 2020-06-03 18:11:43.778 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/Device/DeviceList.vue
+ 2020-06-03 18:11:43.803 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/vue/src/views/Device/DeviceForm.vue
+ 2020-06-03 18:11:43.818 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/test/java/com/big/box/demo/app/test/controller/DeviceControllerTest.java
+ 2020-06-03 18:11:43.903 [main] WARN  org.hyw.tools.generator.Generator[Generator.java:169] --  override:/Users/a123/workspace/demo/app/src/main/java/com/big/box/demo/app/controller/DeviceController.java
+ 2020-06-03 18:11:43.904 [main] INFO  org.hyw.tools.generator.AbstractGenerator[AbstractGenerator.java:225] --  文件已生成:/Users/a123/workspace/demo
+ 

@@ -15,7 +15,7 @@ dataSource:
 #全局配置
 global:
     #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
-    outputDir: /Users/a123/workspace/demo
+    outputDir: /output/demo
     #项目描述
     description: 代码生成器
     #是否删除输出目录,默认为false，谨慎修改！ 

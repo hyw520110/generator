@@ -68,6 +68,20 @@
 			<artifactId>sentinel-datasource-zookeeper</artifactId>
 		</dependency>
 #end
+#else
+		<dependency>
+			<groupId>com.alibaba.csp</groupId>
+			<artifactId>sentinel-core</artifactId> 
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba.csp</groupId>
+			<artifactId>sentinel-annotation-aspectj</artifactId>
+		</dependency>
+		<!-- 接入sentinel控制台实时监控 -->
+		<dependency>
+			<groupId>com.alibaba.csp</groupId> 
+			<artifactId>sentinel-transport-simple-http</artifactId>
+		</dependency>
 #end
 #if(${SENTINEL})
 		<dependency>

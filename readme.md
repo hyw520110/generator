@@ -12,7 +12,6 @@
 
 - 前端页面：ant design pro vue、thymeleaf
 - 用户认证鉴权:jwt、shiro
-<<<<<<< HEAD
 - 流量哨兵(流量控制)：sentinel
 - 分布式配置&注册中心&接口限流规则：zookeeper
 - 分布式服务治理：dubbo
@@ -20,14 +19,6 @@
 - 分布式消息中间件rocketmq
 - 分布式缓存：redis集群&切片缓存
 - APM系统(分布式实时数据链路追踪):skywalking、zipkin
-=======
-- 分布式配置&注册中心：zookeeper
-- 分布式服务治理：dubbo
-- 微服务：springboot、springcloud alibaba
-- 分布式消息中间件rocketmq
-- 分布式缓存：redis集群&切片缓存
-- 分布式实时数据链路追踪:skywalking、zipkin
->>>>>>> branch 'master' of https://github.com/hyw520110/generator.git
 - 持久层：mybatis/mybatis-plus、 JPA
 
 ## 生成器版本
@@ -41,7 +32,7 @@
 
 - 分支下载zip包或通过源码构建获取zip包（工程根目录下执行：mvn clean package，在cmd工程target目录下获取zip包）
 - 解压zip包，到任意目录
-- 执行bin目录下的命令脚本start.bat或start.sh
+- 执行bin目录下的命令脚本startup.bat或startup.sh
 - 根据命令行提示，输入数据源配置和生成配置（生成目录、根包等）,一般只需输入数据源配置，其他配置直接回车保持默认即可
 
 
@@ -85,9 +76,9 @@
 
 
 
-## 服务启动(生成的后台工程和前端工程服务)
+## 应用服务启动(生成的工程服务)
 	
-生成代码完成后，资源管理器会自动打开生成路径,默认包含后台工程和前台工程(vue)，后台工程初始化数据之后就可以启动服务，启动服务可通过源码执行启动或脚本执行启动
+代码生成完成后，资源管理器会自动打开生成路径,默认包含后台工程和前台工程(vue)，后台工程初始化数据之后就可以启动服务，启动服务可通过源码执行启动或脚本执行启动
 
 ### 后台工程初始化
 

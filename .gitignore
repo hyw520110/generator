@@ -11,3 +11,5 @@ target
 **/logs/**
 **/node_modules/**
 **/generator.yaml
+**/yarn.lock
+**/package-lock.json

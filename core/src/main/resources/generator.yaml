@@ -5,7 +5,7 @@ dataSource:
     #明文密码
     url: jdbc:mysql://pre.big-box.com.cn:3306/cw_test?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
-    pwd: 123456
+    pwd: bigbox!QAZ
     
     #数据源密码密文配置
     # 明文密码时值留空或注释;密文密码时配置config
@@ -36,7 +36,7 @@ global:
     #表前缀
     tablePrefix: ['cw_','batch_','dhz_']
     #可选组件(枚举类Component)：MYBATIS,SPRINGMVC,SPRINGBOOT,DUBBO,ZIPKIN,ZOOKEEPER,ROCKETMQ,REDIS,SWAGGER2,THYMELEAF
-    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,SPRINGCLOUD,ZOOKEEPER,SWAGGER2,DUBBO,REDIS,SHIRO,JWT,VUE]
+    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,SPRINGCLOUD,ZOOKEEPER,SWAGGER2,DUBBO,REDIS,SHIRO,JWT,VUE,SENTINEL]
     #生成构建脚本/工程构建工具,可选值MAVEN:生成pom.xml、GRADLE:生成build.gradle、不配置:不生成构建脚本
     projectBuilder: MAVEN
     #工程默认版本号
@@ -153,6 +153,12 @@ components:
     assetsDir: 'static'
     filenameHashing: true
     productionSourceMap: false
-    
+  SENTINEL: 
+    dashboard: 
+      server: 192.168.1.130:7030
+    api: 
+      port: 8719
+    app: 
+      type: 1
   
     

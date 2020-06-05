@@ -286,10 +286,12 @@ public class Generator extends AbstractGenerator {
 		Component[] components = global.getComponents();
 		for (Component key : map.keySet()) {
 			Boolean flag = ArrayUtils.contains(components, key);
+			//设置当前包含的组件
 			context.put(key.toString(), flag);
 			if (!flag) {
 				continue;
 			}
+			//加载组件配置
 			Map<String, String> pars = map.get(key);
 			for (Entry<String, String> entry : pars.entrySet()) {
 				context.put(entry.getKey(), entry.getValue());

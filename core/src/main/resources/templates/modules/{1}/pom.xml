@@ -14,14 +14,12 @@
 		<mainClass>${rootPackage}.${projectName}.${moduleName}.Booter</mainClass>
 	</properties>
 	<dependencies>
-
-
 #if($!{SPRINGBOOT})
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-#if(${ZOOKEEPER})		
+#if(${ZOOKEEPER})
 	<!-- zk config service -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -63,7 +61,20 @@
 			<groupId>org.apache.curator</groupId>
 			<artifactId>curator-framework</artifactId>
 		</dependency>
-#end		
+#if(${SENTINEL})
+        <!-- ZooKeeper配置接口限流规则 -->
+		<dependency>
+			<groupId>com.alibaba.csp</groupId>
+			<artifactId>sentinel-datasource-zookeeper</artifactId>
+		</dependency>
+#end
+#end
+#if(${SENTINEL})
+		<dependency>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+		</dependency>
+#end
 #if($!{DUBBO})		
 		<!-- Dubbo Spring Cloud Starter -->
 		<dependency>
@@ -113,7 +124,7 @@
             <artifactId>ehcache</artifactId>
 #if(!$!{SPRINGBOOT})            
             <version>2.10.4</version>
-#end            
+#end
         </dependency>
 		<dependency>
 			<groupId>org.mybatis.caches</groupId>
@@ -141,7 +152,7 @@
 			<artifactId>mysql-connector-java</artifactId>
 #if(!$!{SPRINGBOOT})  
 			<version>5.1.43</version>
-#end			
+#end
 		</dependency>
 #end
 		<dependency>
@@ -187,7 +198,7 @@
 		    <groupId>org.springframework.boot</groupId>  
 		    <artifactId>spring-boot-starter-data-redis</artifactId>  
 		</dependency>  
-#end		
+#end
 		<!-- Undertow是红帽公司的java开源高性能web服务器(Wildfly默认的Web服务器)-->  
 		<dependency>
 	        <groupId>org.springframework.boot</groupId>
@@ -202,7 +213,6 @@
 #end
 		</dependency>
 #end
-
 
 #if($!{SWAGGER2})
 		<dependency>
@@ -236,6 +246,7 @@
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>swagger-bootstrap-ui</artifactId>
         </dependency>
+
 #end
 #if("$!{javaVersion}"=="1.8" && $!{SPRINGBOOT} && $!{DUBBO} && $!{ZIPKIN})    	
 		<!-- 实时数据追踪 -->
@@ -315,7 +326,7 @@
 			<artifactId>junit</artifactId>
 #if(!$!{SPRINGBOOT})
 			<version>4.12</version>
-#end			
+#end
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -14,6 +14,7 @@ import org.hyw.tools.generator.Generator;
 import org.hyw.tools.generator.cmd.enums.ValueType;
 import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.conf.dao.DataSourceConf;
+import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.db.DBType;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ public class CmdGenerator {
 
 	private static final String[] IP = {".*?\\.(com|cn|net|org)","((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}"};
 	private static final String[] PORT = {"([0-9]|[1-9]\\d{1,3}|[1-5]\\d{4}|6[0-4]\\d{3}|65[0-4]\\d{2}|655[0-2]\\d|6553[0-5])"};
+	private static final String[] components= {"MYBATIS,SPRINGMVC,SPRINGBOOT,SPRINGCLOUD,ZOOKEEPER,SWAGGER2,DUBBO,REDIS,SHIRO,JWT,VUE","MYBATIS,SPRINGMVC,SPRINGBOOT,SPRINGCLOUD,ZOOKEEPER,SWAGGER2,DUBBO,REDIS,SHIRO,JWT,VUE,SENTINEL,SKYWALKING"};
 	private static Scanner scanner = new Scanner(System.in);
 
 	public static void main(String[] args) {
@@ -49,12 +51,17 @@ public class CmdGenerator {
 		global.setFileOverride(Boolean.valueOf(scanner("文件是否覆盖", ValueType.REQUIRE_SINGLE, "true", "false")));
 		global.setDescription(scanner("项目描述", ValueType.NOT_REQUIRE_SINGLE, global.getDescription()));
 		global.setModules(scanner("工程模块(多模块逗号分隔)", ValueType.REQUIRE_MULTIPLE, global.getModules()).split(","));
+		System.out.println("选择包含的组件:");
+		System.out.println("1.基础版(生成前后端工程):"+components[0]);
+		System.out.println("2.全量版(包含APM系统):"+components[1]);
+		int index = Integer.valueOf(scanner("选择组件套装", ValueType.REQUIRE_SINGLE, "1","2"))-1;
+		global.setComponents(getComponents(index));
 		global.setRootPackage(scanner("工程包名(根)", ValueType.REQUIRE_SINGLE, global.getRootPackage()));
 		try {
 			List<String> tables = generator.getAllTableNames();
 			String tabName = null;
 			do {
-				tabName = scanner("表名(*代表所有表，输入多张表逗号分隔)", ValueType.REQUIRE_MULTIPLE, "*");
+				tabName = scanner("表名(*代表所有表，如表较多时，代码生成会比较耗时，建议输入多张表逗号分隔)", ValueType.REQUIRE_MULTIPLE, "*");
 				if (contains(tables, tabName)) {
 					break;
 				}
@@ -70,6 +77,15 @@ public class CmdGenerator {
 		} catch (Exception e) {
 			logger.error("查询数据库表异常:", e);
 		}
+	}
+
+	private static Component[] getComponents(int index) {
+		String[] names = components[index].split(",");
+		Component[] components=new Component[names.length];
+		for (int i=0;i<names.length;) {
+			components[i]=Component.getComonent(names[i++]);
+		}
+		return components;
 	}
 
 	private static boolean contains(List<String> tables, String tabName) {
@@ -98,6 +114,7 @@ public class CmdGenerator {
 		String url = String.format(dbType.getUrl(), ip, port, dataBaseName);
 		boolean isEffective = effective(dbType.getDriver(), url, usr, pwd);
 		if (!isEffective) {
+			System.out.println("数据库连接异常，数据源配置错误，请输入正确的数据源配置：");
 			initDataSourceConf(ds);
 			return;
 		}

@@ -30,7 +30,7 @@
 
 ### 命令行版生成器
 
-- 分支下载zip包或通过源码构建获取zip包（工程根目录下执行：mvn clean package，在cmd工程target目录下获取zip包）
+- [release](https://github.com/hyw520110/generator/releases/)下载最新zip包或通过源码构建获取zip包（工程根目录下执行：mvn clean package，在cmd工程target目录下获取zip包）
 - 解压zip包，到任意目录
 - 执行bin目录下的命令脚本startup.bat或startup.sh
 - 根据命令行提示，输入数据源配置和生成配置（生成目录、根包等）,一般只需输入数据源配置，其他配置直接回车保持默认即可

@@ -12,12 +12,13 @@
 
 - 前端页面：ant design pro vue、thymeleaf
 - 用户认证鉴权:jwt、shiro
-- 分布式配置&注册中心：zookeeper
+- 流量哨兵(流量控制)：sentinel
+- 分布式配置&注册中心&接口限流规则：zookeeper
 - 分布式服务治理：dubbo
 - 微服务：springboot、springcloud alibaba
 - 分布式消息中间件rocketmq
 - 分布式缓存：redis集群&切片缓存
-- 分布式实时数据链路追踪:skywalking、zipkin
+- APM系统(分布式实时数据链路追踪):skywalking、zipkin
 - 持久层：mybatis/mybatis-plus、 JPA
 
 ## 生成器版本

@@ -5,7 +5,7 @@ dataSource:
     #明文密码
     url: jdbc:mysql://pre.big-box.com.cn:3306/cw_test?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
-    pwd: bigbox!QAZ
+    pwd: 123456
     
     #数据源密码密文配置
     # 明文密码时值留空或注释;密文密码时配置config

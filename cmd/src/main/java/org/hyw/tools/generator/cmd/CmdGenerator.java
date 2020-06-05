@@ -45,8 +45,8 @@ public class CmdGenerator {
 
 	private static void initGlobalConf(Generator generator) {
 		GlobalConf global = generator.getGlobal();
-		global.setOutputDir(scanner("生成目录", ValueType.REQUIRE_SINGLE, global.getOutputDir()));
-		global.setFileOverride(Boolean.valueOf(scanner("文件覆盖", ValueType.REQUIRE_SINGLE, "true", "false")));
+		global.setOutputDir(scanner("生成目录(此目录需要有写权限)", ValueType.REQUIRE_SINGLE, global.getOutputDir()));
+		global.setFileOverride(Boolean.valueOf(scanner("文件是否覆盖", ValueType.REQUIRE_SINGLE, "true", "false")));
 		global.setDescription(scanner("项目描述", ValueType.NOT_REQUIRE_SINGLE, global.getDescription()));
 		global.setModules(scanner("工程模块(多模块逗号分隔)", ValueType.REQUIRE_MULTIPLE, global.getModules()).split(","));
 		global.setRootPackage(scanner("工程包名(根)", ValueType.REQUIRE_SINGLE, global.getRootPackage()));
@@ -94,7 +94,7 @@ public class CmdGenerator {
 		String dataBaseName = scanner("数据库名", ValueType.NOT_REQUIRE_SINGLE, ds.getDbName());
 		String usr = scanner("数据库用户", ValueType.NOT_REQUIRE_SINGLE, ds.getUsername());
 		// TODO 密码必须输入
-		String pwd = scanner("数据库密码", ValueType.REQUIRE_SINGLE, ds.getPassword());
+		String pwd = scanner("数据库密码", ValueType.REQUIRE_SINGLE, "123456");
 		String url = String.format(dbType.getUrl(), ip, port, dataBaseName);
 		boolean isEffective = effective(dbType.getDriver(), url, usr, pwd);
 		if (!isEffective) {

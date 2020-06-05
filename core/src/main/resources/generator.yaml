@@ -14,11 +14,11 @@ dataSource:
 
 #全局配置
 global:
-    #生成的文件的输出目录,最后一个子目录为项目名,如:d:/output/test，项目名为test
+    #生成文件的输出目录(注意此目录需要有写权限),最后一个子目录为项目名,如:/output/test，项目名为test
     outputDir: /output/demo
     #项目描述
     description: 代码生成器
-    #是否删除输出目录,默认为false，谨慎修改！ 
+    #是否删除输出目录,默认为false，注意：修改需谨慎！ 
     delOutputDir: false
     #是否覆盖已有文件      
     fileOverride: true

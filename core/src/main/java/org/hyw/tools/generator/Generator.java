@@ -237,9 +237,6 @@ public class Generator extends AbstractGenerator {
 		for (File file : files) {
 			String path = file.getPath().replace(dir.getPath(), "").substring(1);
 			try {
-				if(path.endsWith("startup.sh")) {
-					System.out.println(path);
-				}
 				path = buildPath(buildPath, path);
 				String data = null;
 				if (ArrayUtils.contains(global.getResources(), StringUtils.substringAfter(file.getName(), "."))) {

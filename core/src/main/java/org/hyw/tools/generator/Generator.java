@@ -142,7 +142,6 @@ public class Generator extends AbstractGenerator {
 						context.put("controllerName", name + "Controller");
 					}
 					String moduleName = StringUtils.substringBefore(path, File.separator);
-<<<<<<< HEAD
 					context.put("moduleName", moduleName);
 					if (path.endsWith(".java")) {
 						String spackage = getPackage(path);
@@ -241,103 +240,6 @@ public class Generator extends AbstractGenerator {
 				if(path.endsWith("startup.sh")) {
 					System.out.println(path);
 				}
-=======
-					if (path.endsWith(".java")) {
-						String spackage = getPackage(path);
-						String pName = StringUtils.substringAfterLast(spackage, ".");
-						context.put(pName + "Package", spackage);
-					}
-					context.put("moduleName", moduleName);
-					context.put("className",
-							StringUtils.substringBefore(StringUtils.substringAfterLast(path, File.separator), "."));
-					// 渲染文件
-					StringWriter writer = new StringWriter();
-					try {
-						engine.evaluate(context, writer, "", data);
-						data = writer.toString();
-					} catch (Exception e) {
-						logger.error("template file:{} render {}:{}", path, e.getClass(), e.getLocalizedMessage());
-						continue;
-					}
-				}
-			}
-			File dest = new File(global.getOutputDir(), path);
-			if ((!skipRender && StringUtils.isBlank(data)) || (dest.exists() && !global.isFileOverride())) {
-				continue;
-			}
-			if (dest.exists()) {
-				logger.warn("override:{}", dest);
-			} else {
-				logger.info("generator file:{}", dest);
-			}
-			if (skipRender) {
-				FileUtils.writeByteArrayToFile(dest, Base64.getDecoder().decode(data));
-				continue;
-			}
-			FileUtils.write(dest, data);
-		}
-	}
-
-	private String getPackage(String path) {
-		String spackage = (path.contains(global.getSourceDirectory())
-				? StringUtils.substringAfter(path, global.getSourceDirectory())
-				: StringUtils.substringAfter(path, global.getTestSourceDirectory()));
-		return StringUtils.substring(spackage, 1, spackage.lastIndexOf(File.separator)).replaceAll(File.separator, ".");
-	}
-
-	private void prepare() {
-		delDir();
-		mkDirs();
-	}
-
-	public Map<String, String> getTemplates(String subDirName, boolean buildPath, String... componentNames) {
-		URL url = global.getTemplateDirPath();
-		if (null == url) {
-			throw new RuntimeException(subDirName + " template dir not exist!");
-		}
-		Map<String, String> templates = new LinkedHashMap<String, String>();
-		if ("jar".equals(url.getProtocol())) {
-			String entryName = "templates/" + subDirName;
-			Map<String, String> map = FileUtils.getJarEntries(url, entryName,
-					(null == componentNames || componentNames.length == 0)
-							? (entryName + "/" + Component.VUE.name().toLowerCase())
-							: null,
-					global.getResources(), componentNames);
-			for (Entry<String, String> entry : map.entrySet()) {
-				String path = entry.getKey().replace(entryName, "").substring(1);
-				templates.put(buildPath(buildPath, path), entry.getValue());
-			}
-			Map<String, String> resultMap = new TreeMap<>((str1, str2) -> str1.compareTo(str2));
-			resultMap.putAll(templates);
-			return resultMap;
-		}
-		File dir = new File(url.getPath(), subDirName);
-		File[] files = null;
-		if (null != componentNames && componentNames.length > 0) {
-			files = FileUtils.listFiles(dir, componentNames);
-		} else {
-			String[] modules = global.getModules();
-			List<String> list = new ArrayList<>();
-			list.addAll(Arrays.asList(modules));
-			if (list.size() > 1) {
-				list.add("parent");
-			}
-			List<File> moduleFiles = (List<File>) FileUtils.listFiles(dir, new FileFileFilter() {
-				@Override
-				public boolean accept(File file) {
-					String dirName = StringUtils.substringAfter(file.getPath().replace(dir.getPath(), ""),
-							File.separator);
-					dirName = format(StringUtils.substringBefore(dirName, File.separator), global.getModules());
-					return list.contains(dirName);
-				}
-			}, FileFilterUtils.trueFileFilter());
-			files = FileUtils.sort(moduleFiles.toArray(new File[] {}));
-		}
-
-		for (File file : files) {
-			String path = file.getPath().replace(dir.getPath(), "").substring(1);
-			try {
->>>>>>> branch 'master' of https://github.com/hyw520110/generator.git
 				path = buildPath(buildPath, path);
 				String data = null;
 				if (ArrayUtils.contains(global.getResources(), StringUtils.substringAfter(file.getName(), "."))) {

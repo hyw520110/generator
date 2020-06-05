@@ -6,7 +6,6 @@ target
 .classpath
 .DS_Store
 **/.gradle/**
-**/bin/**
 **/target/**
 **/logs/**
 **/node_modules/**

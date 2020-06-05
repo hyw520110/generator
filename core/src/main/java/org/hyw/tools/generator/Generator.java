@@ -142,14 +142,14 @@ public class Generator extends AbstractGenerator {
 						context.put("controllerName", name + "Controller");
 					}
 					String moduleName = StringUtils.substringBefore(path, File.separator);
+					context.put("moduleName", moduleName);
 					if (path.endsWith(".java")) {
 						String spackage = getPackage(path);
 						String pName = StringUtils.substringAfterLast(spackage, ".");
 						context.put(pName + "Package", spackage);
+						context.put("className",
+								StringUtils.substringBefore(StringUtils.substringAfterLast(path, File.separator), "."));
 					}
-					context.put("moduleName", moduleName);
-					context.put("className",
-							StringUtils.substringBefore(StringUtils.substringAfterLast(path, File.separator), "."));
 					// 渲染文件
 					StringWriter writer = new StringWriter();
 					try {
@@ -237,6 +237,9 @@ public class Generator extends AbstractGenerator {
 		for (File file : files) {
 			String path = file.getPath().replace(dir.getPath(), "").substring(1);
 			try {
+				if(path.endsWith("startup.sh")) {
+					System.out.println(path);
+				}
 				path = buildPath(buildPath, path);
 				String data = null;
 				if (ArrayUtils.contains(global.getResources(), StringUtils.substringAfter(file.getName(), "."))) {

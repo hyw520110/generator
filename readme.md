@@ -96,7 +96,7 @@
 
 生成的前后端工程：
 
-![生成工程](images/projects.png)
+![生成工程](images/projects.jpeg)
 
 vue(ant design pro vue)登录页面：
 

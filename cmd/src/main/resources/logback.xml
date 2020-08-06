@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- scan扫描配置文件的变化并自动重新配置 -->
-<configuration scan="true" scanPeriod="30 seconds" debug="true" packagingData="${log.packagingData:-true}">
+<configuration scan="false" scanPeriod="30 seconds" debug="true" packagingData="${log.packagingData:-true}">
 	<timestamp key="timestamp" datePattern="yyyyMMdd'T'HHmmss"/>
 	<property name="LOG_BASE" value="./logs/${log.dir.name:-${timestamp}}/${log.dir.name:-${timestamp}}"  />
 	<property name="CHARSET" value="UTF-8" />
@@ -99,12 +99,13 @@
 	<logger name="net.sf" level="WARN" />
 	<!-- 输出SQL语句 -->
 	<logger name="druid.sql.Statement" level="${log.druid.sql.Statement.level:-DEBUG}" />
+	<logger name="com.alibaba.druid.pool" level="WARN" />
 	<logger name="com.alibaba.dubbo" level="INFO" />
 	<root level="${log.root.level:-INFO}">
 		<!--将appender添加到root logger下 -->
 		<appender-ref ref="stdout"  level="${log.stdout.level:-INFO}"/>
 		<appender-ref ref="common-error" level="ERROR" />
-		<appender-ref ref="common-default"   />
+		<appender-ref ref="common-default"  level="${log.default.level:-INFO}"/>
 	</root>
  
 </configuration>

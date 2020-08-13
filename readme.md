@@ -156,11 +156,33 @@ swagger定制化接口文档:
 
 # 六、FAQ:
 
-1. 启动服务(生成的应用服务)报错：
+1. github图片不显示，hosts添加：
 
-	ClassCastException: java.lang.UnsupportedClassVersionError cannot be cast to [Ljava.lang.Object;
-	- 原因：
-	- 指定生成jdk1.8配置，而运行环境的jdk版本低于1.8
-	- 解决：
-		- 安装jdk1.8/jre1.8,并设置环境变量
-		- 或者在pom中指定jdk为1.7，并去掉zipkin数据追踪依赖、mq消息中间件依赖
+
+		199.232.28.133 raw.githubusercontent.com
+		199.232.68.133 gist.githubusercontent.com
+		199.232.28.133 cloud.githubusercontent.com
+		199.232.28.133 camo.githubusercontent.com
+		199.232.28.133 avatars0.githubusercontent.com
+		199.232.68.133 avatars1.githubusercontent.com
+		199.232.28.133 avatars2.githubusercontent.com
+		199.232.68.133 avatars3.githubusercontent.com
+		199.232.68.133 avatars4.githubusercontent.com
+		199.232.68.133 avatars5.githubusercontent.com
+		199.232.68.133 avatars6.githubusercontent.com
+		199.232.68.133 avatars7.githubusercontent.com
+		199.232.68.133 avatars8.githubusercontent.com
+
+
+2. 启动服务(生成的应用服务)报错：
+
+		ClassCastException: java.lang.UnsupportedClassVersionError cannot be cast to [Ljava.lang.Object;
+
+原因：
+
+- 指定生成jdk1.8配置，而运行环境的jdk版本低于1.8
+
+解决：
+
+- 安装jdk1.8/jre1.8,并设置环境变量
+- 或者在pom中指定jdk为1.7，并去掉zipkin数据追踪依赖、mq消息中间件依赖

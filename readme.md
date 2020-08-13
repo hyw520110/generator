@@ -26,11 +26,19 @@
 ### 生成器版本
 - 命令行版
 - JAVA版
-- web版
+- web版(ant design pro vue)
 
 选择其中一个版本执行即可，推荐命令行版(使用简单)
 
-### 系统预览
+### 预览图
+
+cmd版：
+![cmd版](images/cmd.jpg)
+
+web版：
+![web版](images/web1.jpg)
+![web版](images/web2.jpg)
+![web版](images/web3.jpg)
 
 生成的前后端工程：
 
@@ -74,7 +82,7 @@ swagger定制化接口文档:
     
 	outputDir: /output/test
 	rootPackage: com.test
-以上为必须修改的配置项 ,其他均为可选修改项，更多可选配置项说明见配置文件注释或以下说明
+以上为必须修改的配置项 ,其他均为可选修改项，更多可选配置项说明见配置文件注释
 
 
 #### 2.2、生成代码：
@@ -107,14 +115,12 @@ swagger定制化接口文档:
 	- 进入解压目录,如需修改配置,则先修改配置,否则直接进入bin目录,执行start.bat启动服务,服务启动完成后自动打开浏览器(profile为dev时)
 
 ### 3、启动前端工程
-如组件包含vue(默认配置)时，会自动生成vue工程,命令行进入生成目录下的vue目录，执行：
+如组件包含vue(默认配置)时，会自动生成vue工程
+
+本地环境需要先安装[node](https://nodejs.org/en/)，然后命令行进入生成目录下的vue目录，执行：
 
 	yarn install 
 	yarn run serve
-
-
-
-
 
 ## 四、自定义特性
 - 自定义工程构建工具：maven(pom.xml)、gradle(build.gradle)、无

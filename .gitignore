@@ -12,4 +12,5 @@ target
 **/generator.yaml
 **/yarn.lock
 **/package-lock.json
-**/core/**
+./cmd/bin/**
+./web/bin/**

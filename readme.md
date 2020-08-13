@@ -24,12 +24,34 @@
 - 持久层：mybatis/mybatis-plus、 JPA
 
 ### 生成器版本
-- 命令行版生成器（工程下的cmd目录）
-- JAVA工程版（工程下的core目录）
-- web工程版(工程下的web目录，TODO)
+- 命令行版
+- JAVA版
+- web版
 
 选择其中一个版本执行即可，推荐命令行版(使用简单)
 
+### 系统预览
+
+生成的前后端工程：
+
+![生成工程](images/projects.jpeg)
+
+vue(ant design pro vue)登录页面：
+
+![登录](images/login.png)
+
+主页面菜单:
+
+![主页面](images/main.png)
+
+
+数据库监控:
+
+![druid](images/db.png)
+
+swagger定制化接口文档:
+
+![swagger](images/api.png)
 ## 二、快速开始
 
 
@@ -92,30 +114,9 @@
 
 
 
-## 四、系统预览
-
-生成的前后端工程：
-
-![生成工程](images/projects.jpeg)
-
-vue(ant design pro vue)登录页面：
-
-![登录](images/projects.png)
-
-主页面菜单:
-
-![主页面](images/main.png)
 
 
-数据库监控:
-
-![druid](images/db.png)
-
-swagger定制化接口文档:
-
-![swagger](images/api.png)
-
-## 五、自定义特性
+## 四、自定义特性
 - 自定义工程构建工具：maven(pom.xml)、gradle(build.gradle)、无
 
 - 自定义工程模块，支持生成单工程和多模块工程，多模块工程，工程模块名可自定义
@@ -139,13 +140,13 @@ swagger定制化接口文档:
 
 	
 	
-# 六、TODO LIST:
+# 五、TODO LIST:
 
 1. 各主流关系型数据库驱动包集成及验证（默认只集成mysql驱动包，其他数据库集成相应的数据库驱动包即可）
 
-2. 增加分布式消息中间件
+2. 增加分布式消息中间件rocketmq、kafka
 
-3. redis切片緩存key优化：演示功能，设置过于简单 ,需考虑唯一性以及序列化与反序列化
+3. redis切片緩存key优化：示例设置过于简单 ,需考虑唯一性以及序列化与反序列化
 
 # 七、FAQ:
 

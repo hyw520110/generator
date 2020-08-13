@@ -1,28 +1,27 @@
 <template>
-  <div id="userLayout" :class="['user-layout-wrapper', device]">
+  <div id="userLayout" :class="['user-layout-wrapper', isMobile && 'mobile']">
     <div class="container">
       <div class="top">
         <div class="header">
           <a href="/">
             <img src="~@/assets/logo.svg" class="logo" alt="logo">
-            <span class="title">Ant Design</span>
+            <span class="title">Generator</span>
           </a>
         </div>
         <div class="desc">
-          Ant Design 是西湖区最具影响力的 Web 设计规范
+          <a href="http://www.github.com/hyw520110/generator.git" target="_blank">最简单易用的代码生成器:http://www.github.com/hyw520110/generator.git</a>
         </div>
       </div>
 
-      <route-view></route-view>
+      <router-view />
 
       <div class="footer">
         <div class="links">
-          <a href="_self">帮助</a>
-          <a href="_self">隐私</a>
-          <a href="_self">条款</a>
+          <a href="http://www.github.com/hyw520110/generator.git" target="_blank">github</a>
+          <a href="https://gitee.com/hyw520110/generator" target="_blank">码云</a>
         </div>
         <div class="copyright">
-          Copyright &copy; 2018 白鹭学园技术组出品
+          Copyright &copy; 2020 heyw
         </div>
       </div>
     </div>
@@ -30,16 +29,11 @@
 </template>
 
 <script>
-import RouteView from './RouteView'
-import { mixinDevice } from '@/utils/mixin'
+import { deviceMixin } from '@/store/device-mixin'
 
 export default {
   name: 'UserLayout',
-  components: { RouteView },
-  mixins: [mixinDevice],
-  data () {
-    return {}
-  },
+  mixins: [deviceMixin],
   mounted () {
     document.body.classList.add('userLayout')
   },
@@ -50,7 +44,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  #userLayout.user-layout-wrapper {
+#userLayout.user-layout-wrapper {
     height: 100%;
 
     &.mobile {

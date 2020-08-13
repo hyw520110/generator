@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <page-header-wrapper content="高级表单常见于一次性输入和提交大批量数据的场景">
     <a-card class="card" title="仓库管理" :bordered="false">
       <repository-form ref="repository" :showSubmit="false" />
     </a-card>
@@ -54,7 +54,7 @@
     </a-card>
 
     <!-- fixed footer toolbar -->
-    <footer-tool-bar :style="{ width: isSideMenu() && isDesktop() ? `calc(100% - ${sidebarOpened ? 256 : 80}px)` : '100%'}">
+    <footer-tool-bar :is-mobile="isMobile" :collapsed="sideCollapsed">
       <span class="popover-wrapper">
         <a-popover title="表单校验信息" overlayClassName="antd-pro-pages-forms-style-errorPopover" trigger="click" :getPopupContainer="trigger => trigger.parentNode">
           <template slot="content">
@@ -71,14 +71,14 @@
       </span>
       <a-button type="primary" @click="validate" :loading="loading">提交</a-button>
     </footer-tool-bar>
-  </div>
+  </page-header-wrapper>
 </template>
 
 <script>
 import RepositoryForm from './RepositoryForm'
 import TaskForm from './TaskForm'
 import FooterToolBar from '@/components/FooterToolbar'
-import { mixin, mixinDevice } from '@/utils/mixin'
+import { baseMixin } from '@/store/app-mixin'
 
 const fieldLabels = {
   name: '仓库名',
@@ -97,7 +97,7 @@ const fieldLabels = {
 
 export default {
   name: 'AdvancedForm',
-  mixins: [mixin, mixinDevice],
+  mixins: [baseMixin],
   components: {
     FooterToolBar,
     RepositoryForm,
@@ -105,7 +105,6 @@ export default {
   },
   data () {
     return {
-      description: '高级表单常见于一次性输入和提交大批量数据的场景。',
       loading: false,
       memberLoading: false,
 
@@ -198,27 +197,29 @@ export default {
           resolve({ loop: false })
         }, 800)
       }).then(() => {
-        const target = this.data.filter(item => item.key === key)[0]
+        const target = this.data.find(item => item.key === key)
         target.editable = false
         target.isNew = false
         this.memberLoading = false
       })
     },
     toggle (key) {
-      const target = this.data.filter(item => item.key === key)[0]
+      const target = this.data.find(item => item.key === key)
+      target._originalData = { ...target }
       target.editable = !target.editable
     },
     getRowByKey (key, newData) {
       const data = this.data
-      return (newData || data).filter(item => item.key === key)[0]
+      return (newData || data).find(item => item.key === key)
     },
     cancel (key) {
-      const target = this.data.filter(item => item.key === key)[0]
-      target.editable = false
+      const target = this.data.find(item => item.key === key)
+      Object.keys(target).forEach(key => { target[key] = target._originalData[key] })
+      target._originalData = undefined
     },
     handleChange (value, key, column) {
       const newData = [...this.data]
-      const target = newData.filter(item => key === item.key)[0]
+      const target = newData.find(item => key === item.key)
       if (target) {
         target[column] = value
         this.data = newData
@@ -258,24 +259,19 @@ export default {
         const errors = Object.assign({}, repository.form.getFieldsError(), task.form.getFieldsError())
         const tmp = { ...errors }
         this.errorList(tmp)
-        console.log(tmp)
       })
     },
     errorList (errors) {
       if (!errors || errors.length === 0) {
-        return null
+        return
       }
-      this.errors = Object.keys(errors).map(key => {
-        if (!errors[key]) {
-          return null
-        }
-
-        return {
+      this.errors = Object.keys(errors)
+        .filter(key => errors[key])
+        .map(key => ({
           key: key,
           message: errors[key][0],
           fieldLabel: fieldLabels[key]
-        }
-      })
+        }))
     },
     scrollToField (fieldKey) {
       const labelNode = document.querySelector(`label[for="${fieldKey}"]`)

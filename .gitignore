@@ -1,9 +1,9 @@
 target
 .idea
 *.iml
-.settings
-.project
-.classpath
+**/.settings
+**/.project
+**/.classpath
 .DS_Store
 **/.gradle/**
 **/target/**

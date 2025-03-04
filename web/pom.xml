@@ -69,6 +69,8 @@
 				<includes>
 					<include>bin/*.bat</include>
 					<include>bin/*.sh</include>
+					<include>*.properties</include>
+					<include>*.yaml</include>
 				</includes>
 				<filtering>true</filtering>
 			</resource>

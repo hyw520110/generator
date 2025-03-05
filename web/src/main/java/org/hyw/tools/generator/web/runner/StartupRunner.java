@@ -1,10 +1,8 @@
 package org.hyw.tools.generator.web.runner;
 
-import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -31,31 +29,54 @@ public class StartupRunner implements CommandLineRunner {
 		runNode();
 		openBrowser();
 	}
-	
+
 	@Async
-	public void runNode()  {
-		try {
-			StringWriter w=new StringWriter();
-			IOUtils.copy(Runtime.getRuntime().exec("start-dev.sh").getInputStream(), w);
-			System.out.println("run:"+w);
-		} catch (Exception e) {
-		}
+	public void runNode() {
+		execScriptFile("start-dev.sh", true);
 	}
 
 	@Async
 	public void openBrowser() {
-		String url = "http://localhost:" + port;
+		// 启动前端开发服务
+		execScriptFile("open-brower.sh", false);
+	}
+
+	private void execScriptFile(String shell, boolean async) {
+		File sh = new File(shell).getAbsoluteFile();
+		if (!sh.exists()) {
+			return;
+		}
 		try {
-			if (Desktop.isDesktopSupported()) {
-				Desktop.getDesktop().browse(new URI(url));
+			ProcessBuilder pb = new ProcessBuilder(sh.getAbsolutePath());
+			Process process = pb.start();
+			if (!async) {
 				return;
 			}
-			String shell = (System.getProperty("os.name").startsWith("Mac") ? "open /Applications/Safari.app "
-					: System.getProperty("os.name").startsWith("Win")?"rundll32 url.dll,FileProtocolHandler ":"/usr/share/applications/google-chrome.desktop ") + url;
-			logger.info("exec shell:{}", shell);
-			Runtime.getRuntime().exec(shell);
-		} catch (IOException | URISyntaxException e) {
-			logger.warn("open url:{} ,{}", url, e.getLocalizedMessage());
+			// 异步处理输出流
+			Thread outputThread = new Thread(() -> {
+				try {
+					IOUtils.copy(process.getInputStream(), System.out);
+				} catch (IOException e) {
+					logger.error("Error reading output stream from script: {}", shell, e);
+				}
+			});
+			outputThread.start();
+
+			// 异步处理错误流
+			Thread errorThread = new Thread(() -> {
+				try {
+					IOUtils.copy(process.getErrorStream(), System.err);
+				} catch (IOException e) {
+					logger.error("Error reading error stream from script: {}", shell, e);
+				}
+			});
+			errorThread.start();
+
+			// 等待脚本执行完成
+			int exitCode = process.waitFor();
+			logger.info("{} exited with code: {}", shell, exitCode);
+		} catch (IOException | InterruptedException e) {
+			logger.warn("exec {} Failed: {}", shell, e.getLocalizedMessage());
 		}
 	}
 }

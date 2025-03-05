@@ -52,7 +52,7 @@
     </a-card>
 
     <a-card
-      style="margin-top: 10px"
+      style="margin-top: 5px"
       :bordered="false">
       <div style="margin-bottom: 16px">
         <a-button
@@ -67,8 +67,9 @@
             {{ `选择了 ${selectedRowKeys.length} 项` }}
           </template>
         </span>
+
       </div>
-      <a-alert v-if="errorMessage" type="error" :message="errorMessage" style="margin-bottom: 16px" />
+
       <a-table
         ref="table"
         size="default"
@@ -87,6 +88,7 @@
           </template>
         </span>
       </a-table>
+      <a-alert v-if="errorMessage" type="error" :message="errorMessage" style="margin-bottom: 16px" />
     </a-card>
   </div>
 </template>

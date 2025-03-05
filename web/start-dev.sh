@@ -6,8 +6,13 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
+CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # 检查 Node.js 是否已安装
 check_node() {
+  # 手动加载 nvm 脚本以确保其可用
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   if ! command -v node &> /dev/null; then
     echo -e "${RED}错误：Node.js 未安装，请先安装 Node.js${NC}"
     echo -e "${YELLOW}建议使用 nvm 安装和管理 Node.js 版本："
@@ -25,9 +30,7 @@ check_nvm() {
   elif [ -n "$BASH_VERSION" ]; then
     source ~/.bashrc
   fi
-  # 手动加载 nvm 脚本以确保其可用
-  export NVM_DIR="$HOME/.nvm"
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
   # 重新加载配置文件后再次检查 nvm 是否可用
   if ! command -v nvm &> /dev/null; then
     echo -e "${YELLOW}未检测到 nvm，正在尝试安装...${NC}"
@@ -81,11 +84,21 @@ install_dependencies() {
   echo -e "${GREEN}正在配置 Yarn 镜像源...${NC}"
   yarn config set registry https://registry.npmmirror.com
   
-  echo -e "${GREEN}正在清理并安装依赖...${NC}"
-  rm -rf ./yarn.lock node_modules && yarn cache clean
+  #echo -e "${GREEN}正在清理并安装依赖...${NC}"
+  #rm -rf ./yarn.lock node_modules && yarn cache clean
   yarn install --frozen-lockfile --verbose
   if [ $? -ne 0 ]; then
     echo -e "${RED}依赖安装失败，请检查网络或日志${NC}"
+    exit 1
+  fi
+}
+
+# 检测端口是否被占用
+check_port() {
+  local port=$(cat ${CURRENT_DIR}/vue.config.js |grep "port:"|awk -F': ' '{print $2}')
+  if lsof -i :$port > /dev/null 2>&1; then
+    echo -e "${RED}错误：端口 $port 已被占用，请检查并释放该端口${NC}"
+    netstat -anp|grep $port
     exit 1
   fi
 }
@@ -113,6 +126,10 @@ main() {
   fi
 
   install_dependencies
+
+  # 检查端口是否被占用
+  check_port
+
   start_dev_server
   
   echo -e "${GREEN}开发环境已成功启动！${NC}"

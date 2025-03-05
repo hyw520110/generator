@@ -9,8 +9,8 @@
 	<name>${project.artifactId}</name>
 	<url>http://www.github.com/hyw520110/generator.git</url>
 	<properties>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<main.class>org.hyw.tools.generator.cmd.CmdGenerator</main.class>
 	</properties>

@@ -3,7 +3,7 @@ package org.hyw.tools.generator.enums;
 import org.hyw.tools.generator.utils.StringUtils;
 
 public enum Component {
-	MYBATIS, JPA, DUBBO, ZIPKIN, SKYWALKING, ZOOKEEPER, ROCKETMQ, SPRINGBOOT, SPRINGCLOUD, SPRINGMVC, REDIS, SWAGGER2,
+	MYBATIS, JPA, DUBBO, ZIPKIN, SKYWALKING, ZOOKEEPER,NACOS, ROCKETMQ, SPRINGBOOT, SPRINGCLOUD, SPRINGMVC, REDIS, SWAGGER2,
 	THYMELEAF, JWT, SHIRO, VUE,SENTINEL;
 
 	public static Component getComonent(String name) {

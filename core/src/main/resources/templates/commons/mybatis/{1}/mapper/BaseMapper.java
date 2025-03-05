@@ -9,9 +9,9 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 #parse('/templates/comments/comment.vm')
-public interface BaseMapper<E> {
+public interface BaseMapper<E,PK> {
 
-	E selectById(Long id);
+	E findById(PK id);
 	
 	E query(E rdObject);
 	
@@ -59,7 +59,7 @@ public interface BaseMapper<E> {
     */
     Integer update(E entity);
     
-    void remove(Long id);
+    void deleteById(PK id);
     
 }
 #end

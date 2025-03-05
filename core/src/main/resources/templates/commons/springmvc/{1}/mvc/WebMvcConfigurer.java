@@ -35,15 +35,16 @@ import com.alibaba.fastjson.serializer.ValueFilter;
 import com.alibaba.fastjson.serializer.ToStringSerializer;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+#if("plus"=="$mapperType")
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+#end
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import ${interceptorPackage}.ContextInterceptor;
 
 @Configuration
-public class WebMvcConfigurer extends WebMvcConfigurationSupport { // WebMvcConfigurerAdapter {
+public class WebMvcConfigurer extends org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport {
 	
 	private static final Logger logger = LoggerFactory.getLogger(WebMvcConfigurer.class);
 	
@@ -74,9 +75,9 @@ public class WebMvcConfigurer extends WebMvcConfigurationSupport { // WebMvcConf
 #end
 
 	@Override
-	protected void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
 		if(converters.isEmpty()) {
-			super.addDefaultHttpMessageConverters(converters);
+			super.extendMessageConverters(converters);
 		}
 #if("fastjson"=="${json_type}")
 		converters.add(0, fastJsonHttpMessageConverter());

@@ -5,13 +5,15 @@
         label="生成目录"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="此目录需要有写权限，最后一级子目录为项目名"
       >
-        <a-input v-decorator="['outputDir', { initialValue: '/output/demo', rules: [{required: true, message: '请输入生成目录，此目录需可写，最后一级子目录为项目名'}] }]" placeholder="此目录需可写，最后一级子目录为项目名"/>
+        <a-input v-decorator="['outputDir', { initialValue: '/opt/output/demo', rules: [{required: true, message: '请输入生成目录，此目录需可写，最后一级子目录为项目名'}] }]" placeholder="此目录需可写，最后一级子目录为项目名"/>
       </a-form-item>
       <a-form-item
         label="项目描述"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="项目描述，如：后台管理项目，移动端项目"
       >
         <a-input v-decorator="['description', { initialValue: '代码生成器', rules: [{required: false, message: '请输入项目描述'}] }]" placeholder="项目描述"/>
       </a-form-item>
@@ -19,6 +21,7 @@
         label="包名"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="java类包名"
       >
         <a-input v-decorator="['rootPackage', { initialValue: 'com.hyw.generator', rules: [{required: true, message: '请输入包名'}] }]" placeholder="com.big.box"/>
       </a-form-item>
@@ -26,6 +29,7 @@
         label="工程模块"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="工程模块名，多个用逗号分隔，如：api,app"
       >
         <a-input v-decorator="['modules', { initialValue: 'api,app', rules: [{required: true, message: '请输入工程模块名'}] }]" placeholder="工程模块名，如：api,app"/>
       </a-form-item>
@@ -33,6 +37,7 @@
         label="删除生成目录"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="删除生成目录，默认否，开启时需谨慎!"
       >
         <ASwitch v-decorator="['delOutputDir', { valuePropName:'checked', initialValue:false }]" checkedChildren="是" unCheckedChildren="否"/>
       </a-form-item>
@@ -40,6 +45,7 @@
         label="文件覆盖"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="生成同名文件时，是否覆盖原文件/强制生成"
       >
         <ASwitch v-decorator="['fileOverride', { valuePropName:'checked', initialValue:true }]" checkedChildren="是" unCheckedChildren="否" />
       </a-form-item>
@@ -47,6 +53,7 @@
         label="打开目录"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="代码生成完成后是否打开生成目录"
       >
         <ASwitch v-decorator="['openDir', { valuePropName:'checked', initialValue:true }]" checkedChildren="是" unCheckedChildren="否" />
       </a-form-item>
@@ -55,15 +62,6 @@
       </a-form-item>
     </a-form>
     <a-divider />
-    <div class="step-form-style-desc">
-      <h3>说明</h3>
-      <h4>生成目录</h4>
-      <p>此目录需要有写权限，最后一级子目录为项目名</p>
-      <h4>删除生成目录</h4>
-      <p>执行代码生成前，先删除生成目录，默认关闭，开启时需谨慎!</p>
-      <h4>文件覆盖</h4>
-      <p>生成同名文件时，是否覆盖原文件/强制生成</p>
-    </div>
   </div>
 </template>
 

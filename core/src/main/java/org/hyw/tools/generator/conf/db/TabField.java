@@ -87,9 +87,8 @@ public class TabField extends BaseBean {
 		this.type = type;
 	}
 
-
 	public String getPropertyName() {
-		return propertyName;
+		return getCapitalName();
 	}
 
 	public void setPropertyName(String propertyName) {
@@ -104,16 +103,18 @@ public class TabField extends BaseBean {
 	}
 
 	public String getComment() {
-		return comment;
+		return StringUtils
+				.chomp(StringUtils.isNotBlank(comment) ? StringUtils.trim(comment.replaceAll("\\R", "")) : comment);
 	}
 
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
 
-	public boolean isNotNullAble(){
-	    return !isNullAble();
+	public boolean isNotNullAble() {
+		return !isNullAble();
 	}
+
 	public boolean isNullAble() {
 		return nullAble;
 	}

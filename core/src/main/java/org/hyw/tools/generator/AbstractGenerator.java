@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -65,6 +64,10 @@ public abstract class AbstractGenerator extends BaseBean {
 		try {
 			con = dataSource.getCon();
 			QuerySQL sql = dataSource.getQuerySQL();
+//			ResultSet catalogs = con.getMetaData().getCatalogs();
+//			while(catalogs.next()) {
+//				System.out.println(catalogs.getString(1));
+//			}
 			logger.debug("开始读取数据库元数据...");
 			pst = con.prepareStatement(sql.getTabComments());
 			results = pst.executeQuery();

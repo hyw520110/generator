@@ -6,10 +6,12 @@
 	<property name="LOG_BASE" value="/logs/#[[${LOG_DIR}]]#/#[[${LOG_DIR}]]#"  />
 	<property name="CHARSET" value="UTF-8" />
 	<jmxConfigurator />
+	<property name="CONSOLE_PATTERN" value="%yellow(%date{yyyy-MM-dd HH:mm:ss}) |%highlight(%-5level) |%blue(%thread) |%blue(%file:%line) |%green(%logger) |%cyan(%msg%n)"/>
+	<property name="pattern" value="%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %replace(%caller{1}){'\t|Caller.{1}0| at|\R |\n', ''} %X{userId}-%X{_sessionId}-%X{_ip} %msg%n %ex{FULL}"/>
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"
 			charset="#[[${CHARSET}]]#">
-			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %X{userId}-%X{_sessionId}-%X{_ip} %msg%n %ex{2}</pattern>
+			<pattern>#[[${pattern}]]#</pattern>
 		</encoder>
 	</appender>
 	<!-- 错误日志配置 RollingFileAppender继承自ch.qos.logback.core.FileAppender -->
@@ -35,7 +37,7 @@
 		<append>true</append>
 		<encoder charset="#[[${CHARSET}]]#"
 			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %X{userId}-%X{_sessionId}-%X{_ip}  %msg%n %ex{2}</pattern>
+			<pattern>#[[${pattern}]]#</pattern>
 			<charset>#[[${CHARSET}]]#</charset>
 			<immediateFlush>true</immediateFlush>
 		</encoder>
@@ -59,7 +61,7 @@
 		<append>true</append>
 		<encoder charset="#[[${CHARSET}]]#"
 			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %X{userId}-%X{_sessionId}-%X{_ip}  %msg%n %ex{2}</pattern>
+			<pattern>#[[${pattern}]]#</pattern>
 			<charset>#[[${CHARSET}]]#</charset>
 			<immediateFlush>true</immediateFlush>
 		</encoder>

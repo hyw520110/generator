@@ -9,7 +9,6 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,10 +76,11 @@ public class Generator extends AbstractGenerator {
 
 	/**
 	 * 生成代码
+	 * @throws IOException 
 	 * 
 	 * @throws Exception
 	 */
-	public void execute() {
+	public void execute() throws IOException {
 		prepare();
 		URL dir = global.getTemplateDirPath();
 		if (dir == null) {
@@ -109,12 +109,11 @@ public class Generator extends AbstractGenerator {
 		openDir();
 	}
 
-	private void render(final URL dir, VelocityContext context, Map<String, String> templates, boolean render) {
+	private void render(final URL dir, VelocityContext context, Map<String, String> templates, boolean render) throws IOException {
 		render(dir, context, templates, render, null);
 	}
 
-	private void render(final URL dir, VelocityContext context, Map<String, String> templates, boolean render,
-			String name) {
+	public void render(final URL dir, VelocityContext context, Map<String, String> templates, boolean render, String name) throws IOException {
 		if (null == templates || templates.isEmpty()) {
 			logger.error("{}目录下没有所需的模板文件！", dir);
 			return;
@@ -123,71 +122,64 @@ public class Generator extends AbstractGenerator {
 			String path = entry.getKey();
 			String data = entry.getValue();
 			try {
-				String ext = StringUtils.lowerCase(StringUtils.substringAfterLast(path, "."));
-				// 判断文件类型是否渲染
-				boolean skipRender = ArrayUtils.contains(global.getResources(), ext);
-				// logger.debug("path:{},ext:{},skip render:{}", path, ext, skipRender);
-				if (!skipRender) {
-					if (render) {
-						if (StringUtils.isNotBlank(name)) {
-							try {
-								path = String.format(path,
-										StringUtils.countMatches(path, "%s") > 1 ? StringUtils.lowercaseFirst(name)
-												: name,
-										name);
-							} catch (Exception e) {
-								logger.error("path:{},name:{}", path, name);
-							}
-							context.put("entityName", name);
-							context.put("mapperName", name + "Mapper");
-							context.put("serviceName", name + "Service");
-							context.put("serviceImplName", name + "ServiceImpl");
-							context.put("controllerName", name + "Controller");
-						}
-						String moduleName = StringUtils.substringBefore(path, File.separator);
-						context.put("moduleName", moduleName);
-						if (path.endsWith(".java")) {
-							String spackage = getPackage(path);
-							String pName = StringUtils.substringAfterLast(spackage, ".");
-							context.put(pName + "Package", spackage);
-							context.put("className",
-									StringUtils.substringBefore(StringUtils.substringAfterLast(path, SEPARATOR), "."));
-							context.put(context.get("className") + "Package", spackage);
-						}
-						// 渲染文件
-						StringWriter writer = new StringWriter();
+				boolean skipRender = isResourceFile(path);
+				if (render && !skipRender && !ArrayUtils.contains(global.getExcludeDir(), "/" + StringUtils
+						.substringBetween(StringUtils.substringAfter(path, global.getResourceDirectory()), "/", "/"))) {
+					if (StringUtils.isNotBlank(name)) {
 						try {
-							engine.evaluate(context, writer, "", data);
-							data = writer.toString();
+							path = String.format(path,
+									StringUtils.countMatches(path, "%s") > 1 ? StringUtils.lowercaseFirst(name) : name,
+									name);
 						} catch (Exception e) {
-							logger.error("template file:{} render {}:{}", path, e.getClass(), e.getLocalizedMessage());
-							continue;
+							logger.error("path:{},name:{}", path, name);
 						}
+						context.put("entityName", name);
+						context.put("mapperName", name + "Mapper");
+						context.put("serviceName", name + "Service");
+						context.put("serviceImplName", name + "ServiceImpl");
+						context.put("controllerName", name + "Controller");
+					}
+					String moduleName = StringUtils.substringBefore(path, SEPARATOR);
+					context.put("moduleName", moduleName);
+					if (path.endsWith(".java")) {
+						String spackage = getPackage(path);
+						String pName = StringUtils.substringAfterLast(spackage, ".");
+						context.put(pName + "Package", spackage);
+						context.put("className",
+								StringUtils.substringBefore(StringUtils.substringAfterLast(path, SEPARATOR), "."));
+						context.put(context.get("className") + "Package", spackage);
+					}
+					StringWriter writer = new StringWriter();
+					try {
+						engine.evaluate(context, writer, "", data);
+						data = writer.toString();
+					} catch (Exception e) {
+						logger.error("template file:{} render {}:{}", path, e.getClass(), e.getLocalizedMessage());
+						continue;
 					}
 				}
 				File dest = new File(global.getOutputDir(), path);
 				if ((!skipRender && StringUtils.isBlank(data)) || (dest.exists() && !global.isFileOverride())) {
 					continue;
 				}
-				if (dest.exists()) {
-					logger.warn("override:{}", dest);
-				} else {
-					logger.info("generator file:{}", dest);
+				logger.info("{} file:{}", dest.exists() ? "override" : "generate", dest);
+				if (skipRender) {
+					FileUtils.copyFile(new File(data), dest);
+					continue;
 				}
-				try {
-					if (skipRender) {
-						FileUtils.writeByteArrayToFile(dest, Base64.getDecoder().decode(data));
-						continue;
-					}
-					FileUtils.write(dest, data);
-				} catch (Exception e) {
-					logger.error("write file:{}", dest, e);
-				}
-
+				FileUtils.write(dest, data);
 			} catch (Exception e) {
 				logger.error("render file:{}", path, e);
+				if(e instanceof IOException) {
+					throw e;
+				}
 			}
 		}
+	}
+
+	private boolean isResourceFile(String path) {
+		return ArrayUtils.contains(global.getResources(),
+				StringUtils.lowerCase(StringUtils.substringAfterLast(path, ".")));
 	}
 
 	private String getPackage(String path) {
@@ -252,14 +244,8 @@ public class Generator extends AbstractGenerator {
 		for (File file : files) {
 			String path = file.getPath().replace(dir.getPath(), "").substring(1);
 			try {
-				path = buildPath(buildPath, path);
-				String data = null;
-				if (ArrayUtils.contains(global.getResources(), StringUtils.substringAfter(file.getName(), "."))) {
-					data = Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(file));
-				} else {
-					data = FileUtils.readFileToString(file, global.getEncoding());
-				}
-				templates.put(path, data);
+				templates.put(buildPath(buildPath, path), isResourceFile(file.getName()) ? file.getAbsolutePath()
+						: FileUtils.readFileToString(file, global.getEncoding()));
 			} catch (IOException e) {
 				logger.error("read file:{}", file, e);
 			}

@@ -11,21 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 #parse('/templates/comments/comment.vm')
 @org.springframework.stereotype.Service
 #if($!{DUBBO})
-@org.apache.dubbo.config.annotation.Service
+@org.apache.dubbo.config.annotation.DubboService
 #end
-public class ${className} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})}<#if("plus"=="$mapperType")${StringUtils.capitalFirst("$entityName")}Mapper,#end${StringUtils.capitalFirst("$entityName")}> #end implements ${serviceName} {
+public class ${className} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})}<#if("plus"=="$mapperType")${StringUtils.capitalFirst("$entityName")}Mapper,$entityName#else ${StringUtils.capitalFirst("$entityName")},${table.primaryKeyClass}#end> #end implements ${serviceName} {
 #if("plus"!="$mapperType")
 #set($sName=${StringUtils.lowercaseFirst($mapperName)})
 
 	@Autowired
 	private ${mapperName} ${sName};
 	
-	public ${StringUtils.capitalFirst("$entityName")} findById(#foreach($field in ${table.primarykeyFields})${field.fieldType.type} ${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end){
-		return ${sName}.findById(#foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
-	}
-
-	public Integer deleteById(#foreach($field in ${table.primarykeyFields})${field.fieldType.type} ${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end){
-		return ${sName}.deleteById(#foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
-	}
 #end
 }

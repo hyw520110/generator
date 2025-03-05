@@ -13,7 +13,7 @@ import java.util.Date;
 
 #set($comment="公共实体类/公有属性")
 #parse('/templates/comments/comment.vm')
-public abstract class BaseEntity#if("plus"=="$mapperType")<T extends BaseEntity> extends Model<T>#else<T>#end implements Serializable  {
+public abstract class BaseEntity#if("plus"=="$mapperType")<T extends BaseEntity<T>> extends Model<T>#else<T>#end implements Serializable  {
 
     private static final long serialVersionUID = 1L;
 	 

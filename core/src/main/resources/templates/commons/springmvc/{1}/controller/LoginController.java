@@ -1,3 +1,4 @@
+#if($VUE)
 package ${controllerPackage};
 
 import java.io.File;
@@ -145,3 +146,4 @@ public class LoginController {
 	}
 
 }
+#end

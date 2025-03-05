@@ -9,7 +9,7 @@ function resolve (dir) {
   return path.join(__dirname, dir)
 }
 
-// check Git
+// Check Git
 function getGitHash () {
   try {
     return GitRevision.version()
@@ -20,7 +20,7 @@ function getGitHash () {
 const isProd = process.env.NODE_ENV === 'production'
 
 const assetsCDN = {
-  // webpack build externals
+  // Webpack build externals
   externals: {
     vue: 'Vue',
     'vue-router': 'VueRouter',
@@ -37,10 +37,10 @@ const assetsCDN = {
   ]
 }
 
-// vue.config.js
+// Vue.config.js
 const vueConfig = {
   configureWebpack: {
-    // webpack plugins
+    // Webpack plugins
     plugins: [
       // Ignore all locale files of moment.js
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
@@ -50,21 +50,24 @@ const vueConfig = {
         BUILD_DATE: buildDate
       })
     ],
-    // if prod, add externals
+    // If prod, add externals
     externals: isProd ? assetsCDN.externals : {}
   },
 
   chainWebpack: (config) => {
-    config.resolve.alias
-      .set('@$', resolve('src'))
+    config.resolve.alias.set('@$', resolve('src'))
 
     const svgRule = config.module.rule('svg')
     svgRule.uses.clear()
+
     svgRule
       .oneOf('inline')
       .resourceQuery(/inline/)
-      .use('vue-svg-icon-loader')
-      .loader('vue-svg-icon-loader')
+      .use('babel-loader')
+      .loader('babel-loader')
+      .end()
+      .use('vue-svg-loader')
+      .loader('vue-svg-loader') // 确保 vue-svg-loader 已配置
       .end()
       .end()
       .oneOf('external')
@@ -74,10 +77,9 @@ const vueConfig = {
         name: 'assets/[name].[hash:8].[ext]'
       })
 
-    // if prod is on
-    // assets require on cdn
+    // If prod is on, assets require on CDN
     if (isProd) {
-      config.plugin('html').tap(args => {
+      config.plugin('html').tap((args) => {
         args[0].cdn = assetsCDN
         return args
       })
@@ -87,21 +89,20 @@ const vueConfig = {
   css: {
     loaderOptions: {
       less: {
-        modifyVars: {
-          // less vars，customize ant design theme
-
-          // 'primary-color': '#F5222D',
-          // 'link-color': '#F5222D',
-          'border-radius-base': '2px'
-        },
-        // DO NOT REMOVE THIS LINE
-        javascriptEnabled: true
+        lessOptions: {
+          javascriptEnabled: true,
+          modifyVars: {
+            // 'primary-color': '#F5222D',
+            // 'link-color': '#F5222D',
+            'border-radius-base': '2px'
+          }
+        }
       }
     }
   },
 
   devServer: {
-    // development server port 8000
+    // Development server port 8000
     port: 8000
     // If you want to turn on the proxy, please remove the mockjs /src/main.jsL11
     // proxy: {
@@ -113,17 +114,17 @@ const vueConfig = {
     // }
   },
 
-  // disable source map in production
-  productionSourceMap: false,
+  // Disable source map in production
+  productionSourceMap: true,
   lintOnSave: undefined,
-  // babel-loader no-ignore node_modules/*
+  // Babel-loader no-ignore node_modules/*
   transpileDependencies: []
 }
 
 // preview.pro.loacg.com only do not use in your production;
 if (process.env.VUE_APP_PREVIEW === 'true') {
   console.log('VUE_APP_PREVIEW', true)
-  // add `ThemeColorReplacer` plugin to webpack plugins
+  // Add `ThemeColorReplacer` plugin to Webpack plugins
   vueConfig.configureWebpack.plugins.push(createThemeColorReplacerPlugin())
 }
 

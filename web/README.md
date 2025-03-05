@@ -13,3 +13,17 @@ Compiles and minifies for production
 Lints and fixes files
 
 	yarn run lint
+	
+	
+### QA
+
+错误：
+
+```
+1 error potentially fixable with the `--fix` option.
+```
+执行：
+
+```
+yarn run lint --fix
+```

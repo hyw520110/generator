@@ -1,21 +1,22 @@
 #if(${StringUtils.indexOf("$superServiceClass",'.')}==-1)
 package ${servicePackage};
 
-import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
+#if("plus" == "$mapperType")
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+#end
+
 #set($comment="公共接口")
 #parse('/templates/comments/comment.vm')
-public interface BaseService<T> #if("plus"=="$mapperType")extends com.baomidou.mybatisplus.extension.service.IService<T>#end{
-
-#if("plus"!="$mapperType")
+#if("plus"=="$mapperType")
+public interface BaseService<T> extends com.baomidou.mybatisplus.extension.service.IService<T>{
+#else
+public interface BaseService<T> {
 	/**
 	 * <p>
 	 * 根据 ID 查询
@@ -23,7 +24,7 @@ public interface BaseService<T> #if("plus"=="$mapperType")extends com.baomidou.m
 	 *
 	 * @param id 主键ID
 	 */
-	T getById(Serializable id);
+	T getById(PK id);
 
 	/**
 	 * 根据指定条件查询一条记录
@@ -72,6 +73,8 @@ public interface BaseService<T> #if("plus"=="$mapperType")extends com.baomidou.m
 	 * @return boolean
 	 */
 	boolean save(T entity);
+	
+	void deleteById(PK Id);
 #end
 
 }#end

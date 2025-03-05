@@ -1,5 +1,6 @@
 package org.hyw.tools.generator.web.controller;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -11,15 +12,16 @@ import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.ProjectBuilder;
+import org.hyw.tools.generator.web.enums.StatusCode; // 添加导入语句
 import org.hyw.tools.generator.web.model.Result;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
-
 
 /**
  * 代码生成器
@@ -51,9 +53,9 @@ public class CodeGenController {
 
 	@PostMapping("/tables")
 	public Result<String> getTables(String ipAndPort, String dbName, String username, String pwd, String include,
-			String exclude,String tablePrefix) {
-		if(StringUtils.isNotBlank(tablePrefix)) {
-			generator.getGlobal().setTablePrefix(StringUtils.split(tablePrefix, ","));	
+			String exclude, String tablePrefix) {
+		if (StringUtils.isNotBlank(tablePrefix)) {
+			generator.getGlobal().setTablePrefix(StringUtils.split(tablePrefix, ","));
 		}
 		generator.getGlobal().setMatchMode(true);
 		generator.getGlobal().setInclude(StringUtils.isNotBlank(include) ? include.split(",") : null);
@@ -80,14 +82,14 @@ public class CodeGenController {
 	}
 
 	@PostMapping("/step1")
-	public Result<Object> step1(String outputDir, String description, String rootPackage, String modules, 
-			boolean delOutputDir,boolean fileOverride,boolean openDir) {
+	public Result<Object> step1(String outputDir, String description, String rootPackage, String modules,
+			boolean delOutputDir, boolean fileOverride, boolean openDir) {
 		GlobalConf global = generator.getGlobal();
 		global.setOutputDir(outputDir);
 		global.setDescription(description);
 		global.setRootPackage(rootPackage);
 		global.setModules(StringUtils.split(modules, ","));
-		
+
 		global.setDelOutputDir(delOutputDir);
 		global.setFileOverride(fileOverride);
 		global.setOpenDir(openDir);
@@ -95,29 +97,29 @@ public class CodeGenController {
 	}
 
 	@PostMapping("/step2")
-	public Result<Object> step2(String view, String projectBuilder, String springBootVersion, String springCloudVersion,String springCloudAlibabaVersion,
-			String dubboVersion, String mybatisType,String connectString, String redisHost, String redisPassword, String sentinelAddr,
-			String skywalkingAddr, String secure) {
+	public Result<Object> step2(String view, String projectBuilder, String springBootVersion, String springCloudVersion,
+			String springCloudAlibabaVersion, String dubboVersion, String mybatisType, String connectString,
+			String redisHost, String redisPassword, String sentinelAddr, String skywalkingAddr, String secure) {
 		GlobalConf global = generator.getGlobal();
 		ArrayUtils.removeElement(global.getComponents(), Component.VUE);
 		ArrayUtils.removeElement(global.getComponents(), Component.THYMELEAF);
 		Component viewComponent = Component.getComonent(view);
 		global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), viewComponent));
-		if(viewComponent==Component.VUE) {
+		if (viewComponent == Component.VUE) {
 			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.SHIRO));
 			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.JWT));
 		}
 		global.setProjectBuilder(ProjectBuilder.valueOf(projectBuilder));
 		Map<Component, Map<String, String>> map = generator.getComponents();
-		map.get(Component.SPRINGBOOT).put(Component.SPRINGBOOT.name().toLowerCase()+"_version", springBootVersion);
-		map.get(Component.SPRINGCLOUD).put(Component.SPRINGCLOUD.name().toLowerCase()+"_version", springCloudVersion);
+		map.get(Component.SPRINGBOOT).put(Component.SPRINGBOOT.name().toLowerCase() + "_version", springBootVersion);
+		map.get(Component.SPRINGCLOUD).put(Component.SPRINGCLOUD.name().toLowerCase() + "_version", springCloudVersion);
 		map.get(Component.SPRINGCLOUD).put("springcloud_alibaba_version", springCloudAlibabaVersion);
-		if(StringUtils.isBlank(dubboVersion)) {
+		if (StringUtils.isBlank(dubboVersion)) {
 			ArrayUtils.removeElement(global.getComponents(), Component.DUBBO);
-		}else {
-			map.get(Component.DUBBO).put(Component.DUBBO.name().toLowerCase()+"_version", dubboVersion);	
+		} else {
+			map.get(Component.DUBBO).put(Component.DUBBO.name().toLowerCase() + "_version", dubboVersion);
 		}
-		map.get(Component.MYBATIS).put("mapperType", mybatisType);	
+		map.get(Component.MYBATIS).put("mapperType", mybatisType);
 		map.get(Component.ZOOKEEPER).put("connect-string", connectString);
 		map.get(Component.REDIS).put("spring_redis_cluster_nodes", redisHost);
 		map.get(Component.REDIS).put("spring_redis_password", redisPassword);
@@ -127,10 +129,12 @@ public class CodeGenController {
 	}
 
 	@PostMapping("/exec")
-	public Result<?> exec(String tabName) {
-		generator.getGlobal().setInclude(StringUtils.isBlank(tabName)?null:tabName.split(","));
+	@ResponseBody
+	public Result<?> exec(String tabName) throws IOException {
+		generator.getGlobal().setInclude(StringUtils.isBlank(tabName) ? null : tabName.split(","));
 		generator.getGlobal().setMatchMode(false);
 		generator.execute();
-		return Result.ok();
+		return Result.ok(generator.getGlobal().getOutputDir());
+
 	}
 }

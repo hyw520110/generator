@@ -154,6 +154,20 @@ public class GlobalConf extends BaseBean {
 	 */
 	private String[] resources;
 	
+	/**
+	 * 非模板文件排除渲染
+	 */
+	private String[] excludeDir;
+	
+	
+	public String[] getExcludeDir() {
+		return excludeDir;
+	}
+
+	public void setExcludeDir(String[] excludeDir) {
+		this.excludeDir = excludeDir;
+	}
+
 	public String getOutputDir() {
 		return outputDir;
 	}

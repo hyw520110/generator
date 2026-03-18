@@ -1,0 +1,21 @@
+## ============================================
+## 文件头注释模板
+## 使用方式：#include("comments/comment.vm")
+## 或在新模板中使用：#fileHeader($table $author $copyright)
+## ============================================
+
+#if(!$date)
+#set($date = "")
+#end
+
+/**
+#if("$!{table.comment}" != "" && "$!{table.comment}" != "null")
+ * ${table.comment}
+#else
+ * ${comment}
+#end
+ *
+ * @author ${author}
+ * @since ${date}
+ * @copyright ${copyright}
+ */

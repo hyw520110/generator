@@ -198,4 +198,37 @@ public class Table extends BaseBean {
 	public void setCreateTime(String createTime) {
 		this.createTime = createTime;
 	}
+	
+	/**
+	 * 判断是否为复合主键
+	 */
+	public boolean isCompositePrimaryKey() {
+		return getPrimarykeyFields().size() > 1;
+	}
+	
+	/**
+	 * 获取主键信息
+	 */
+	public PrimaryKeyInfo getPrimaryKeyInfo() {
+		if (!hasPrimarykeys()) {
+			return null;
+		}
+		List<TabField> pkFields = getPrimarykeyFields();
+		// 传入空的包名作为默认值，实际使用时可以通过其他方式设置
+		return new PrimaryKeyInfo(pkFields, "");
+	}
+	
+	/**
+	 * 获取主键类类型
+	 */
+	public Class<?> getPrimaryKeyClass() {
+		List<TabField> pkFields = getPrimarykeyFields();
+		if (pkFields.isEmpty()) {
+			return Long.class;
+		}
+		if (pkFields.size() == 1) {
+			return pkFields.get(0).getFieldType().getClaz();
+		}
+		return Object.class;
+	}
 }

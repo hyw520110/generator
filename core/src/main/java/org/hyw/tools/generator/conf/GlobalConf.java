@@ -14,6 +14,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.Naming;
 import org.hyw.tools.generator.enums.ProjectBuilder;
+import org.hyw.tools.generator.template.EngineType;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,6 +154,10 @@ public class GlobalConf extends BaseBean {
 	 * 非模板文件排除渲染
 	 */
 	private String[] resources;
+	/**
+	 * 模板引擎类型
+	 */
+	private String templateEngine = "freemarker";
 	
 	public String getOutputDir() {
 		return outputDir;
@@ -420,6 +425,22 @@ public class GlobalConf extends BaseBean {
 
 	public void setResources(String[] resources) {
 		this.resources = resources;
+	}
+
+	public String getTemplateEngine() {
+		return templateEngine;
+	}
+
+	public void setTemplateEngine(String templateEngine) {
+		this.templateEngine = templateEngine;
+	}
+
+	/**
+	 * 获取模板引擎类型（枚举）
+	 * @return 模板引擎类型
+	 */
+	public EngineType getEngineType() {
+		return EngineType.fromName(templateEngine);
 	}
 
 	public boolean isMatchMode() {

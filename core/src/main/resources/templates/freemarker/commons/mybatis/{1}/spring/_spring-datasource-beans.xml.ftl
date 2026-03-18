@@ -1,0 +1,78 @@
+<#noparse>
+	<bean id="jdbc"  class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+          <property name="location" value="classpath:/conf/jdbc.properties"/>
+    </bean>
+   <!-- 监控统计 -->
+	<bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+		<property name="slowSqlMillis" value="#{jdbc['slowSqlMillis']}" />
+		<property name="logSlowSql" value="#{jdbc['logSlowSql']}" />
+		<property name="mergeSql" value="#{jdbc['mergeSql']}" />
+	</bean>
+	<!-- 可执行SQL日志 -->
+	 <bean id="log-filter" class="com.alibaba.druid.filter.logging.Slf4jLogFilter">
+	  	<property name="resultSetLogEnabled" value="false" />
+        <property name="statementExecutableSqlLogEnable" value="#{jdbc['statementExecutableSqlLogEnable']}" />
+  	</bean>
+	<!-- 数据源配置,https://github.com/alibaba/druid/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close" >
+		<property name="driverClassName" value="#{jdbc['driver']}" />
+		<property name="url" value="#{jdbc['url']}" />
+		<property name="username" value="#{jdbc['userName']}" />
+		<property name="password" value="#{jdbc['password']}" />
+		<property name="filters" value="#{jdbc['filters']}" />
+		<property name="connectionProperties" value="#{jdbc['connectionProperties']}"/>
+		<!-- 配置初始、最小、最大 -->
+     	<property name="initialSize" value="#{jdbc['initialSize']}" />
+	    <property name="minIdle" value="#{jdbc['minIdle']}" />
+     	<property name="maxActive" value="#{jdbc['maxActive']}" />
+     	<property name="validationQuery" value="#{jdbc['validationQuery']}" />
+		<!-- 配置获取连接等待超时的时间 -->
+	    <property name="maxWait" value="#{jdbc['maxWait']}" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+	    <property name="timeBetweenEvictionRunsMillis" value="#{jdbc['timeBetweenEvictionRunsMillis']}" />
+	    <!-- 配置一个连接在池中最小生存的时间，单位是毫秒  -->
+	    <property name="minEvictableIdleTimeMillis" value="#{jdbc['minEvictableIdleTimeMillis']}" />
+	
+	    <property name="testWhileIdle" value="#{jdbc['testWhileIdle']}" />
+	    <property name="testOnBorrow" value="#{jdbc['testOnBorrow']}" />
+	    <property name="testOnReturn" value="#{jdbc['testOnReturn']}" />
+	
+	    <property name="poolPreparedStatements" value="#{jdbc['poolPreparedStatements']}" />
+	    <property name="maxOpenPreparedStatements" value="#{jdbc['maxOpenPreparedStatements']}" />
+	    <!-- 打开removeAbandoned功能,对性能会有一些影响，建议怀疑存在泄漏之后再打开，
+		在内置监控界面查看ActiveConnection StackTrace属性的，可以看到未关闭连接的具体堆栈信息，从而方便查出哪些连接泄漏了
+		内置监控页面，查看JdbcPoolConnectionOpenCount和JdbcPoolConnectionCloseCount属性，如果不相等，就是泄漏了
+		-->
+		<property name="removeAbandoned" value="#{jdbc['removeAbandoned']}" /> 
+		<!-- 1800秒，也就是30分钟  连接超过30分钟未关闭，就会被强行回收，并且日志记录连接申请时的调用堆栈-->
+	  	<property name="removeAbandonedTimeout" value="#{jdbc['removeAbandonedTimeout']}" />
+	  	<!-- 关闭abandoned连接时输出错误日志 --> 
+	  	<property name="logAbandoned" value="#{jdbc['logAbandoned']}" /> 
+	  	<!-- 合并多个数据源的监控数据 -->
+		<property name="useGlobalDataSourceStat" value="#{jdbc['useGlobalDataSourceStat']}" />
+		<property name="proxyFilters">
+			<list>
+				<ref bean="stat-filter" />
+				<ref bean="log-filter"/>
+			</list>
+		</property>	
+	</bean>
+
+	<!-- 对数据源进行事务管理 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+		<property name="nestedTransactionAllowed" value="true" />
+	</bean>
+	
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<constructor-arg name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<tx:annotation-driven transaction-manager="transactionManager"
+		proxy-target-class="true" />
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations" value="classpath*:mappers/*.xml" />
+	
+</#noparse>

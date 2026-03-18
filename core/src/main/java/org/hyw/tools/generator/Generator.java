@@ -23,6 +23,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.template.EngineType;
 import org.hyw.tools.generator.utils.FileUtils;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
@@ -123,10 +124,9 @@ public class Generator extends AbstractGenerator {
 			String path = entry.getKey();
 			String data = entry.getValue();
 			try {
-				String ext = StringUtils.lowerCase(StringUtils.substringAfterLast(path, "."));
-				// 判断文件类型是否渲染
-				boolean skipRender = ArrayUtils.contains(global.getResources(), ext);
-				// logger.debug("path:{},ext:{},skip render:{}", path, ext, skipRender);
+				// 只有以模板后缀（.ftl 或 .vm）结尾的文件才需要渲染，其他文件直接跳过
+				boolean skipRender = !path.toLowerCase().endsWith(global.getEngineType().getExtension());
+				// logger.debug("path:{},engine extension:{},skip render:{}", path, global.getEngineType().getExtension(), skipRender);
 				if (!skipRender) {
 					if (render) {
 						if (StringUtils.isNotBlank(name)) {
@@ -176,7 +176,7 @@ public class Generator extends AbstractGenerator {
 				}
 				try {
 					if (skipRender) {
-						FileUtils.writeByteArrayToFile(dest, Base64.getDecoder().decode(data));
+						FileUtils.write(dest, data);
 						continue;
 					}
 					FileUtils.write(dest, data);

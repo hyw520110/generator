@@ -10,6 +10,10 @@ public enum ValueType {
 		return this.name().startsWith("REQUIRE");
 	}
 
+	public boolean isRequired() {
+		return isRequire();
+	}
+
 	public boolean isSingle() {
 		return this.name().endsWith("SINGLE") || this.name().contains("SINGLE");
 	}

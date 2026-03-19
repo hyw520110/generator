@@ -86,22 +86,51 @@ start_backend() {
     JAVA_OPTS="-server -Xms512M -Xmx512M -Djava.io.tmpdir=$LOG_DIR/"
     [ -n "$DEBUG_PORT" ] && JAVA_OPTS="$JAVA_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=$DEBUG_PORT"
 
+# =============================================================================
+# 后端启动逻辑 (Java)
+# =============================================================================
+wait_for_port() {
+    local port=$1
+    local name=$2
+    local timeout=60
+    local count=0
+    printf "${GREEN}[INFO]${NC} 正在等待 %s 就绪 (端口: %s) " "$name" "$port"
+    while ! nc -z localhost "$port" >/dev/null 2>&1; do
+        printf "."
+        sleep 1
+        count=$((count + 1))
+        if [ $count -ge $timeout ]; then
+            printf "${RED} [超时]${NC}\n"
+            echo_error "$name 启动超时，请检查后端配置"
+            return 1
+        fi
+    done
+    printf "${GREEN} [OK]${NC}\n"
+}
+
+start_backend() {
+    echo_info ">>> 正在启动后端服务 (静默模式)..."
+    
+    # 获取后端端口 (从 vite.config.js 的代理配置中提取，默认为 8081)
+    BACKEND_PORT=$(grep "target:" vite.config.js | awk -F: '{print $3}' | tr -d "', " | head -n 1)
+    [ -z "$BACKEND_PORT" ] && BACKEND_PORT="8081"
+
     if [ $IS_DEV_MODE -eq 0 ]; then
         echo_info "模式：开发模式 (Maven)"
-        mvn spring-boot:run -Dspring-boot.run.arguments="${JAVA_CMD_ARGS[*]}" > "$LOG_DIR/backend_stdout.log" 2>&1 &
+        mvn spring-boot:run -Dspring-boot.run.arguments="${JAVA_CMD_ARGS[*]}" > /dev/null 2>&1 &
     else
         echo_info "模式：部署模式 (JAR)"
-        # 使用 Maven 占位符，由生成项目的 Maven 构建时自动替换
         ARTIFACT_ID="@project.artifactId@"
         APP_NAME=$(ls -t $LIB_DIR/${ARTIFACT_ID}-*.jar 2>/dev/null | head -n 1)
-        # 如果 Maven 未过滤（例如直接从源码运行），则回退到模糊匹配
         if [ "$ARTIFACT_ID" = "@project.artifactId@" ] || [ -z "$APP_NAME" ]; then
             APP_NAME=$(ls -t $LIB_DIR/*.jar 2>/dev/null | head -n 1)
         fi
-        java $JAVA_OPTS -jar "$APP_NAME" "${JAVA_CMD_ARGS[@]}" > "$LOG_DIR/backend_stdout.log" 2>&1 &
+        java $JAVA_OPTS -jar "$APP_NAME" "${JAVA_CMD_ARGS[@]}" > /dev/null 2>&1 &
     fi
     BACKEND_PID=$!
-    echo_info "后端服务已在后台启动 (PID: $BACKEND_PID, 日志: $LOG_DIR/backend_stdout.log)"
+    
+    # 等待后端就绪
+    wait_for_port "$BACKEND_PORT" "后端服务"
 }
 
 # =============================================================================
@@ -109,9 +138,8 @@ start_backend() {
 # =============================================================================
 open_browser() {
     local url=$1
-    # 延迟几秒等服务完全启动
     (
-        sleep 5
+        sleep 2
         echo_info "尝试打开浏览器: $url"
         if [ "$(uname)" = "Darwin" ]; then
             open "$url"
@@ -122,7 +150,7 @@ open_browser() {
 }
 
 start_frontend() {
-    echo_info ">>> 正在启动前端服务..."
+    echo_info ">>> 正在启动前端服务 (终端模式)..."
     
     if [ $IS_DEV_MODE -eq 0 ]; then
         # 基于哈希的依赖检查
@@ -130,7 +158,6 @@ start_frontend() {
         [ -f "yarn.lock" ] && files_to_hash="$files_to_hash yarn.lock"
         [ -f "package-lock.json" ] && files_to_hash="$files_to_hash package-lock.json"
         
-        # 跨平台计算 MD5
         local current_hash=$(cat $files_to_hash 2>/dev/null | (md5sum 2>/dev/null || md5) | awk '{print $1}')
         local stored_hash=$(cat .dep_hash 2>/dev/null || echo "")
 
@@ -153,25 +180,22 @@ start_frontend() {
             fi
         fi
 
-        # 提取端口 (从 vite.config.js)
         local port=$(grep "port:" vite.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
-        [ -z "$port" ] && port="8000" # 默认值
+        [ -z "$port" ] && port="8000"
         
-        # 启动前端并打开浏览器
-        if command -v yarn > /dev/null 2>&1; then
-            echo_info "使用 yarn 启动前端 (端口: $port, 日志: $LOG_DIR/frontend_stdout.log)..."
-            yarn dev > "$LOG_DIR/frontend_stdout.log" 2>&1 &
-        elif command -v npm > /dev/null 2>&1; then
-            echo_info "使用 npm 启动前端 (端口: $port, 日志: $LOG_DIR/frontend_stdout.log)..."
-            npm run dev > "$LOG_DIR/frontend_stdout.log" 2>&1 &
-        else
-            echo_error "未检测到 yarn 或 npm，无法启动前端开发环境"
-            return 1
-        fi
-        FRONTEND_PID=$!
         open_browser "http://localhost:$port"
-        echo_info "前端开发服务器已在后台启动 (PID: $FRONTEND_PID)"
+        
+        if command -v yarn > /dev/null 2>&1; then
+            echo_info "执行: yarn dev"
+            yarn dev
+        else
+            echo_info "执行: npm run dev"
+            npm run dev
+        fi
     else
+        echo_info "模式：部署模式 (静态资源) 已由后端托管。"
+    fi
+}
         echo_info "模式：部署模式 (静态资源)"
         echo_info "前端资源已整合在后端 JAR 的静态目录中，无需独立启动。"
     fi

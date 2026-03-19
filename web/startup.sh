@@ -88,7 +88,7 @@ start_backend() {
 
     if [ $IS_DEV_MODE -eq 0 ]; then
         echo_info "模式：开发模式 (Maven)"
-        mvn spring-boot:run -Dspring-boot.run.arguments="${JAVA_CMD_ARGS[*]}" &
+        mvn spring-boot:run -Dspring-boot.run.arguments="${JAVA_CMD_ARGS[*]}" > "$LOG_DIR/backend_stdout.log" 2>&1 &
     else
         echo_info "模式：部署模式 (JAR)"
         # 使用 Maven 占位符，由生成项目的 Maven 构建时自动替换
@@ -98,31 +98,78 @@ start_backend() {
         if [ "$ARTIFACT_ID" = "@project.artifactId@" ] || [ -z "$APP_NAME" ]; then
             APP_NAME=$(ls -t $LIB_DIR/*.jar 2>/dev/null | head -n 1)
         fi
-        java $JAVA_OPTS -jar "$APP_NAME" "${JAVA_CMD_ARGS[@]}" &
+        java $JAVA_OPTS -jar "$APP_NAME" "${JAVA_CMD_ARGS[@]}" > "$LOG_DIR/backend_stdout.log" 2>&1 &
     fi
     BACKEND_PID=$!
-    echo_info "后端服务已在后台启动 (PID: $BACKEND_PID)"
+    echo_info "后端服务已在后台启动 (PID: $BACKEND_PID, 日志: $LOG_DIR/backend_stdout.log)"
 }
 
 # =============================================================================
 # 前端启动逻辑 (Node/Vue)
 # =============================================================================
+open_browser() {
+    local url=$1
+    # 延迟几秒等服务完全启动
+    (
+        sleep 5
+        echo_info "尝试打开浏览器: $url"
+        if [ "$(uname)" = "Darwin" ]; then
+            open "$url"
+        elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
+            xdg-open "$url" 2>/dev/null || echo_warn "无法自动打开浏览器，请手动访问: $url"
+        fi
+    ) &
+}
+
 start_frontend() {
     echo_info ">>> 正在启动前端服务..."
     
     if [ $IS_DEV_MODE -eq 0 ]; then
-        # 开发模式：使用 yarn 或 npm 启动
+        # 基于哈希的依赖检查
+        local files_to_hash="package.json"
+        [ -f "yarn.lock" ] && files_to_hash="$files_to_hash yarn.lock"
+        [ -f "package-lock.json" ] && files_to_hash="$files_to_hash package-lock.json"
+        
+        # 跨平台计算 MD5
+        local current_hash=$(cat $files_to_hash 2>/dev/null | (md5sum 2>/dev/null || md5) | awk '{print $1}')
+        local stored_hash=$(cat .dep_hash 2>/dev/null || echo "")
+
+        if [ ! -d "node_modules" ] || [ "$current_hash" != "$stored_hash" ]; then
+            echo_warn "检测到依赖变更，正在安装前端依赖 (详情见: $LOG_DIR/frontend_install.log)..."
+            if command -v yarn > /dev/null 2>&1; then
+                if yarn install > "$LOG_DIR/frontend_install.log" 2>&1; then
+                    echo "$current_hash" > .dep_hash
+                else
+                    echo_error "前端依赖安装失败，请检查日志: $LOG_DIR/frontend_install.log"
+                    return 1
+                fi
+            else
+                if npm install > "$LOG_DIR/frontend_install.log" 2>&1; then
+                    echo "$current_hash" > .dep_hash
+                else
+                    echo_error "前端依赖安装失败，请检查日志: $LOG_DIR/frontend_install.log"
+                    return 1
+                fi
+            fi
+        fi
+
+        # 提取端口 (从 vite.config.js)
+        local port=$(grep "port:" vite.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
+        [ -z "$port" ] && port="8000" # 默认值
+        
+        # 启动前端并打开浏览器
         if command -v yarn > /dev/null 2>&1; then
-            echo_info "使用 yarn 启动前端..."
-            yarn dev &
+            echo_info "使用 yarn 启动前端 (端口: $port, 日志: $LOG_DIR/frontend_stdout.log)..."
+            yarn dev > "$LOG_DIR/frontend_stdout.log" 2>&1 &
         elif command -v npm > /dev/null 2>&1; then
-            echo_info "使用 npm 启动前端..."
-            npm run dev &
+            echo_info "使用 npm 启动前端 (端口: $port, 日志: $LOG_DIR/frontend_stdout.log)..."
+            npm run dev > "$LOG_DIR/frontend_stdout.log" 2>&1 &
         else
             echo_error "未检测到 yarn 或 npm，无法启动前端开发环境"
             return 1
         fi
         FRONTEND_PID=$!
+        open_browser "http://localhost:$port"
         echo_info "前端开发服务器已在后台启动 (PID: $FRONTEND_PID)"
     else
         echo_info "模式：部署模式 (静态资源)"

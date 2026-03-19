@@ -9,9 +9,9 @@
 <#--  -------------------------------------------- -->
 <#macro fileHeader table author copyright>
 /**
-<#if table.comment?has_content  &&  "$!{table.comment}" != "null">
+<#if table.comment?has_content  &&  "${table.comment!}" != "null">
  * ${table.comment!}
-<<<#else>>>
+<#else>
  * ${table.beanName!} 实体类
 </#if>
  *
@@ -88,7 +88,7 @@ package ${packageName!};
 <#--  Lombok @EqualsAndHashCode 注解 -->
 <#--  -------------------------------------------- -->
 <#macro lombokEqualsAndHashCode callSuper>
-@EqualsAndHashCode(<#if callSuper>callSuper = true<<<#else>>> callSuper = false</#if>)
+@EqualsAndHashCode(<#if callSuper>callSuper = true<#else> callSuper = false</#if>)
 </#macro>
 
 <#--  -------------------------------------------- -->
@@ -256,5 +256,5 @@ package ${packageName!};
 <#--  返回：true/false -->
 <#--  -------------------------------------------- -->
 <#macro isEmpty str>
-<#if "$!str" == ""  ||  "$!str" == "null">true<<<#else>>> false</#if>
+<#if "$!str" == ""  ||  "$!str" == "null">true<#else> false</#if>
 </#macro>

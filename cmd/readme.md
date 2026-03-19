@@ -18,8 +18,8 @@
 cmd/
 ├── src/main/java/      # 命令行生成器源码
 ├── logs/               # 运行日志及临时文件
-├── startup.sh          # Linux/Unix 启动脚本
-├── startup.bat         # Windows 启动脚本
+├── run.sh              # Linux/Unix 启动脚本
+├── run.bat             # Windows 启动脚本
 └── pom.xml             # Maven 项目配置
 ```
 
@@ -40,7 +40,7 @@ mvn clean package
 确保已执行 `mvn compile`，然后运行：
 
 ```bash
-./startup.sh
+./run.sh
 ```
 
 #### 部署模式 (生产环境)
@@ -48,28 +48,28 @@ mvn clean package
 将打包后的 `generator-cmd-1.0.1-SNAPSHOT.jar` 放入 `lib` 目录，然后运行：
 
 ```bash
-./startup.sh
+./run.sh
 ```
 
 ### 3.3 常用命令参数
 
 ```bash
 # 交互式模式（传统方式）
-./startup.sh                        # 自动检测模式启动，交互式输入配置
-./startup.sh 5005                   # 启动 + 调试端口
-./startup.sh my.yaml                # 启动 + 自定义配置文件
-./startup.sh my.yaml 5005           # 启动 + 自定义配置 + 调试端口
+./run.sh                        # 自动检测模式启动，交互式输入配置
+./run.sh 5005                   # 启动 + 调试端口
+./run.sh my.yaml                # 启动 + 自定义配置文件
+./run.sh my.yaml 5005           # 启动 + 自定义配置 + 调试端口
 
 # 快速模式（新增，适合自动化）
-./startup.sh --help                 # 查看帮助信息
+./run.sh --help                 # 查看帮助信息
 
 # 最小化参数（使用默认值）
-./startup.sh --quick \
+./run.sh --quick \
   --db-password 123456 \
   --db-name mydb
 
 # 完整参数
-./startup.sh --quick \
+./run.sh --quick \
   --db-type mysql \
   --db-ip 192.168.1.100 \
   --db-port 3306 \
@@ -80,7 +80,7 @@ mvn clean package
   --package com.example.demo
 
 # 快速模式生成指定表
-./startup.sh --quick \
+./run.sh --quick \
   --db-password 123456 \
   --db-name mydb \
   --tables user_info,order_info \
@@ -88,7 +88,7 @@ mvn clean package
   --package com.example.demo
 
 # 使用配置文件（命令行参数可覆盖配置）
-./startup.sh --config my-config.yaml --quick
+./run.sh --config my-config.yaml --quick
 ```
 
 ## 四、配置说明

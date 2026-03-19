@@ -6,7 +6,7 @@ package ${rootPackage}.key;
 import java.io.Serializable;
 import java.util.Objects;
 
-<#if lombok>
+<#if lombok?? && lombok>
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -19,7 +19,7 @@ import lombok.AllArgsConstructor;
  * @author ${author}
  * @date ${date}
  */
-<#if lombok>
+<#if lombok?? && lombok>
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,12 +28,12 @@ public class ${table.beanName}Key implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-<#if lombok?has_content>
     <#list table.primaryKeyInfo.fields as field>
     /** ${field.comment} */
     private ${field.fieldType.type} ${field.propertyName};
     </#list>
 
+<#if !lombok?? || !lombok>
     <#list table.primaryKeyInfo.fields as field>
     public ${field.fieldType.type} get${field.capitalName}() {
         return ${field.propertyName};
@@ -44,9 +44,7 @@ public class ${table.beanName}Key implements Serializable {
     }
 
     </#list>
-</#if>
 
-<#if lombok?has_content>
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -14,7 +14,7 @@
 </#list>
           <a-col :md="8" :sm="24">
             <span class="table-page-search-submitButtons">
-              <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
+              <a-button type="primary" @click="\$refs.table.refresh(true)">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
             </span>
           </a-col>
@@ -23,10 +23,10 @@
     </div>
 
     <div class="table-operator">
-      <a-button type="primary" icon="plus" @click="$refs.createModal.add()">新建</a-button>
+      <a-button type="primary" icon="plus" @click="\$refs.createModal.add()">新建</a-button>
       <a-dropdown v-if="selectedRowKeys.length > 0">
         <a-menu slot="overlay">
-          <a-menu-item key="1" @click="$refs.createModal.batchDelete()"><a-icon type="delete" />删除</a-menu-item>
+          <a-menu-item key="1" @click="\$refs.createModal.batchDelete()"><a-icon type="delete" />删除</a-menu-item>
         </a-menu>
         <a-button style="margin-left: 8px">
           批量操作 <a-icon type="down" />
@@ -53,7 +53,7 @@
 </#list>
       <span slot="action" slot-scope="text, record">
         <template>
-          <a @click="$refs.createModal.edit(record.id)">编辑</a>
+          <a @click="\$refs.createModal.edit(record.id)">编辑</a>
           <a-divider type="vertical" />
           <a @click="handleDelete(record.id)">删除</a>
         </template>
@@ -101,7 +101,7 @@ export default {
       visible: false,
       confirmLoading: false,
       // 创建表单
-      form: this.$form.createForm(this),
+      form: this.\$form.createForm(this),
       // 查询条件参数
       queryParam: {},
       // 加载数据方法 必须为 Promise 对象
@@ -125,24 +125,24 @@ export default {
     },
     handleEdit (record) {
       this.visible = true
-      this.$nextTick(() => {
+      this.\$nextTick(() => {
         this.form.setFieldsValue(record)
       })
     },
     handleDelete (id) {
-      this.$confirm({
+      this.\$confirm({
         title: '确认删除',
         content: '确定要删除这条记录吗？',
         onOk: () => {
           del${table.beanName?cap_first}(id).then(res => {
-            this.$message.info('删除成功')
-            this.$refs.table.refresh()
+            this.\$message.info('删除成功')
+            this.\$refs.table.refresh()
           })
         }
       })
     },
     handleOk () {
-      this.$refs.table.refresh()
+      this.\$refs.table.refresh()
     },
     onSelectChange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys
@@ -153,7 +153,7 @@ export default {
     },
     resetSearchForm () {
       this.queryParam = {}
-      this.$refs.table.refresh(true)
+      this.\$refs.table.refresh(true)
     }
   }
 }

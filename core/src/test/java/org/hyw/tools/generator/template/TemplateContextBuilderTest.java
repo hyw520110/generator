@@ -27,15 +27,15 @@ public class TemplateContextBuilderTest {
         dataSource.setDBType(DBType.MYSQL);
         
         // 创建组件配置
-        Map<Component, Map<String, String>> components = new HashMap<>();
+        Map<Component, Map<String, Object>> components = new HashMap<>();
         
-        Map<String, String> dubboConfig = new HashMap<>();
+        Map<String, Object> dubboConfig = new HashMap<>();
         dubboConfig.put("dubbo_version", "2.7.8");
         dubboConfig.put("dubbo_registry", "zookeeper://localhost:2181");
         dubboConfig.put("dubbo_port", "20800");
         components.put(Component.DUBBO, dubboConfig);
         
-        Map<String, String> sentinelConfig = new HashMap<>();
+        Map<String, Object> sentinelConfig = new HashMap<>();
         sentinelConfig.put("sentinel_version", "1.8.0");
         components.put(Component.SENTINEL, sentinelConfig);
         

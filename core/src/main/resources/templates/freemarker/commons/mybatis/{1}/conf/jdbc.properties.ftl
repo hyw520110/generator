@@ -6,7 +6,7 @@ userName=${dataSource.username!}
 filters=stat
 password=${dataSource.password!}
 connectionProperties= 
-<<<#else>>>
+<#else>
 filters=config
 password=${dataSource.pwd!}
 connectionProperties=${dataSource.properties!}

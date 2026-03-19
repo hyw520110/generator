@@ -10,7 +10,7 @@
 	<table class="table  table-bordered table-hover">
 		<#list table.fields as field>
 		<tr>
-			<td class="jqgrow ui-row-ltr ui-widget-content"  ><#if field.comment?has_content?has_content>${field.propertyName!}<<<#else>>>${field.comment!}</#if></td>
+			<td class="jqgrow ui-row-ltr ui-widget-content"  ><#if field.comment?has_content?has_content>${field.propertyName!}<#else>${field.comment!}</#if></td>
 			<td th:text="*{bean.${field.propertyName!}}">${field.comment!}</td>
 		</tr>
 		</#list>

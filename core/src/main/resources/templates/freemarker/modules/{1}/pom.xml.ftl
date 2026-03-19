@@ -68,7 +68,7 @@
 			<artifactId>sentinel-datasource-zookeeper</artifactId>
 		</dependency>
 </#if>
-<<<#else>>>
+<#else>
 		<dependency>
 			<groupId>com.alibaba.csp</groupId>
 			<artifactId>sentinel-core</artifactId> 
@@ -102,7 +102,7 @@
 			<artifactId>dubbo</artifactId>
 		</dependency> -->
 </#if>
-<#if "plus"=="mapperType">
+<#if mapperType?? && mapperType == "plus">
 		<!-- mybatis-plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
@@ -120,7 +120,7 @@
 		    <version>2.2</version>
 		    <scope>test</scope>
 		</dependency>
-<<<#else>>>
+<#else>
 		<!-- mybatis -->
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
@@ -218,7 +218,7 @@
 	        <groupId>org.springframework.boot</groupId>
 	        <artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
-<#if "fastjson"=="$!{json_type}">
+<#if "fastjson"=="${json_type!}">
 		<dependency>
 		  <groupId>com.alibaba</groupId>
 		  <artifactId>fastjson</artifactId>
@@ -262,19 +262,19 @@
         </dependency>
 
 </#if>
-<#if "$!{javaVersion}"=="1.8"  &&  !SPRINGBOOT  &&  !DUBBO  &&  !ZIPKIN>    	
+<#if "${javaVersion!}"=="1.8"  &&  !SPRINGBOOT  &&  !DUBBO  &&  !ZIPKIN>    	
 		<!-- 实时数据追踪 -->
     	<dependency>
             <groupId>com.github.jessyZu</groupId>
    			<artifactId>dubbo-zipkin-spring-starter</artifactId>
-   			<version>${zipkin_version!}</version>
+   			<version>${r"${zipkin_version}"}</version>
         </dependency>
 <#if ROCKETMQ>        
 		<!-- rocketmq -->
 		<dependency>
 		    <groupId>com.maihaoche</groupId>
 		    <artifactId>spring-boot-starter-rocketmq</artifactId>
-		    <version>${spring_boot_starter_rocketmq_version!}</version>
+		    <version>${r"${spring_boot_starter_rocketmq_version}"}</version>
 		</dependency>
 </#if>
 </#if>
@@ -298,8 +298,16 @@
 		   <groupId>org.springframework.boot</groupId>
 		   <artifactId>spring-boot-starter-test</artifactId>
 		   <scope>test</scope>
-		</dependency>		
-<<<#else>>>
+		</dependency>
+<#if lombok?has_content && lombok>
+		<!-- lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+</#if>		
+<#else>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>

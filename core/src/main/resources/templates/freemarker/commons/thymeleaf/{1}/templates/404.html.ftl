@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<#noparse><!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <body>
@@ -7,4 +7,4 @@
 <p>try this:</p>
 <a href="VisitCustomer/list">VisitCustomer/list</a>
 </body>    
-</html>
+</html></#noparse>

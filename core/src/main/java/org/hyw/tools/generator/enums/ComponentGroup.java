@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.hyw.tools.generator.utils.ConfigValidator;
 import org.hyw.tools.generator.utils.ConfigValidator.ValidationResult;
 
@@ -20,8 +18,6 @@ import org.hyw.tools.generator.utils.ConfigValidator.ValidationResult;
  * @author heyiwu
  * @version 2.0
  */
-@Getter
-@AllArgsConstructor
 public enum ComponentGroup {
     
     // ==================== 必选组（必须选择一个）====================
@@ -80,7 +76,20 @@ public enum ComponentGroup {
     		this.groupName = groupName;
     		this.required = required;
     		this.components = Collections.unmodifiableList(Arrays.asList(components));
-    	}    
+    	}
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public List<Component> getComponents() {
+        return components;
+    }
+
     /**
      * 检查组件是否属于该组
      */
@@ -288,19 +297,19 @@ public enum ComponentGroup {
             
             try {
                 var componentsMethod = clazz.getMethod("getComponents");
-                var components = (Map<?, Map<String, String>>) componentsMethod.invoke(globalConf);
+                var components = (Map<?, Map<String, Object>>) componentsMethod.invoke(globalConf);
                 
                 // 获取 Spring Boot 版本
                 if (components.containsKey(Component.SPRINGBOOT)) {
                     var bootConfig = components.get(Component.SPRINGBOOT);
-                    springBootVersion = bootConfig.get("springboot_version");
+                    springBootVersion = (String) bootConfig.get("springboot_version");
                 }
                 
                 // 获取 Spring Cloud 版本
                 if (components.containsKey(Component.SPRINGCLOUD)) {
                     var cloudConfig = components.get(Component.SPRINGCLOUD);
-                    springCloudVersion = cloudConfig.get("springcloud_version");
-                    springCloudAlibabaVersion = cloudConfig.get("springcloud_alibaba_version");
+                    springCloudVersion = (String) cloudConfig.get("springcloud_version");
+                    springCloudAlibabaVersion = (String) cloudConfig.get("springcloud_alibaba_version");
                 }
             } catch (Exception e) {
                 // 无法获取版本信息，跳过版本兼容性检查

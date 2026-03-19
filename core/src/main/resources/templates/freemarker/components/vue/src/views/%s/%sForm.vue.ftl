@@ -35,7 +35,7 @@ export default {
       title: '操作',
       visible: false,
       confirmLoading: false,
-      form: this.$form.createForm(this),
+      form: this.\$form.createForm(this),
       id: ''
     }
   },
@@ -67,11 +67,11 @@ export default {
             this.confirmLoading = false
             if (this.id) {
               edit${table.beanName?cap_first}({ ...values, id: this.id }).then(res => {
-                this.$emit('ok')
+                this.\$emit('ok')
               })
             } else {
               add${table.beanName?cap_first}(values).then(res => {
-                this.$emit('ok')
+                this.\$emit('ok')
               })
             }
             this.form.resetFields()

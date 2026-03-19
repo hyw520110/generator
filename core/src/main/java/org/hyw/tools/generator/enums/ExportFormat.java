@@ -1,38 +1,32 @@
 package org.hyw.tools.generator.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
- * 文档导出格式枚举
- * <p>
- * 定义数据库表结构导出时支持的文档格式
- * </p>
- *
- * @author heyiwu
- * @version 2.0
+ * 导出格式枚举
  */
-@Getter
-@AllArgsConstructor
 public enum ExportFormat {
 
-	/**
-	 * Word 文档格式 (.docx)
-	 */
-	DOCX(".docx", "Word 文档"),
+    PDF("pdf", "PDF 文档"),
+    DOCX("docx", "Word 文档"),
+    EXCEL("xlsx", "Excel 表格"),
+    HTML("html", "HTML 页面"),
+    MARKDOWN("md", "Markdown 文本");
 
-	/**
-	 * PDF 文档格式 (.pdf)
-	 */
-	PDF(".pdf", "PDF 文档");
+    private final String extension;
+    private final String description;
 
-	/**
-	 * 文件扩展名
-	 */
-	private final String extension;
+    ExportFormat(String extension, String description) {
+        this.extension = extension;
+        this.description = description;
+    }
 
-	/**
-	 * 格式描述
-	 */
-	private final String description;
+    public String getExtension() { return extension; }
+    public String getDescription() { return description; }
+
+    public static ExportFormat fromExtension(String ext) {
+        if (ext == null) return null;
+        for (ExportFormat format : values()) {
+            if (format.extension.equalsIgnoreCase(ext)) return format;
+        }
+        return null;
+    }
 }

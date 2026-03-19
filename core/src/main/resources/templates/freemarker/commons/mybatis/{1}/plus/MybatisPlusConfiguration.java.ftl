@@ -1,4 +1,4 @@
-<#if "plus"=="mapperType">
+<#if mapperType?? && mapperType == "plus">
 package ${plusPackage!};
 
 import com.baomidou.mybatisplus.core.injector.ISqlInjector;

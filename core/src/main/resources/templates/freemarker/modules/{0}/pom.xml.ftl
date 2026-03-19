@@ -39,7 +39,7 @@
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
 		</dependency>
-<#if "plus"=="mapperType">
+<#if mapperType?? && mapperType == "plus">
 		<dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-core</artifactId>

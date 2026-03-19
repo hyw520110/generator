@@ -28,6 +28,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 	public static Map<String, String> getJarEntries(URL url, String entryName, String excludeEntry,
 			String[] byteFileExt, String... subEntryNames) {
 		if (null == url || !"jar".equals(url.getProtocol())) {
+			logger.debug("URL is null or not JAR protocol: {}", url);
 			return null;
 		}
 		Map<String, String> map = new LinkedHashMap<String, String>();
@@ -35,16 +36,19 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 		try {
 			jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
 			List<String> list = getEntryNames(entryName, subEntryNames);
+			logger.debug("getJarEntries - entryName: {}, subEntryNames: {}, list: {}", entryName, Arrays.toString(subEntryNames), list);
 			Enumeration<JarEntry> entries = jarFile.entries();
+			int matchCount = 0;
 			while (entries.hasMoreElements()) {
 				JarEntry entry = entries.nextElement();
-				//logger.debug("entry path:{}",entry.getName());
-				if (!entry.getName().startsWith(entryName)
-						|| (StringUtils.isNotBlank(excludeEntry) && entry.getName().startsWith(excludeEntry))
+				String entryPath = entry.getName();
+				if (!entryPath.startsWith(entryName)
+						|| (StringUtils.isNotBlank(excludeEntry) && entryPath.startsWith(excludeEntry))
 						|| entry.isDirectory()) {
 					continue;
 				}
-				if (startWith(list, entry.getName())) {
+				if (startWith(list, entryPath)) {
+					matchCount++;
 					if (null!=byteFileExt&&ArrayUtils.contains(byteFileExt, StringUtils.substringAfterLast(entry.getName(), "."))) {
 						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 						IOUtils.copy(jarFile.getInputStream(entry), baos);
@@ -56,6 +60,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 					map.put(entry.getName(), sWriter.toString());
 				}
 			}
+			logger.debug("getJarEntries - matched {} entries for entryName: {}", matchCount, entryName);
 		} catch (Exception e) {
 			logger.error("getJarEntries:jar:file:{}!{} ,exception:", jarFile, entryName, e);
 		}

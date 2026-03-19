@@ -22,7 +22,7 @@
 		<spring-boot.version>${springboot_version!}</spring-boot.version>
 </#if>
 <#if springcloud_version?has_content>
-		<spring-cloud-zookeeper.version><#noparse>${spring_cloud_zookeeper_version}</#noparse></spring-cloud-zookeeper.version>
+		<spring-cloud-zookeeper.version>${spring_cloud_zookeeper_version!}</spring-cloud-zookeeper.version>
 		<curator.version>${curator_version!}</curator.version>
 		<spring-cloud-build.version>${springcloud_version!}</spring-cloud-build.version>
 		<spring-cloud-alibaba.version>${springcloud_alibaba_version!}</spring-cloud-alibaba.version>

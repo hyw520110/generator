@@ -108,7 +108,7 @@ public class CodeGenController {
 			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.JWT));
 		}
 		global.setProjectBuilder(ProjectBuilder.valueOf(projectBuilder));
-		Map<Component, Map<String, String>> map = generator.getComponents();
+		Map<Component, Map<String, Object>> map = generator.getComponents();
 		map.get(Component.SPRINGBOOT).put(Component.SPRINGBOOT.name().toLowerCase()+"_version", springBootVersion);
 		map.get(Component.SPRINGCLOUD).put(Component.SPRINGCLOUD.name().toLowerCase()+"_version", springCloudVersion);
 		map.get(Component.SPRINGCLOUD).put("springcloud_alibaba_version", springCloudAlibabaVersion);

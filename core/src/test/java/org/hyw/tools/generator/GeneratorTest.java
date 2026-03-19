@@ -26,7 +26,7 @@ public class GeneratorTest {
 		// 获取单例
 		generator = Generator.getInstance();
 		
-		// 1. 配置数据源 (根据您的 startup.sh 参数配置)
+		// 1. 配置数据源 (根据您的 run.sh 参数配置)
 		DataSourceConf dataSource = new DataSourceConf();
 		String dbName = "db_20260317202850";
 		dataSource.setUrl("jdbc:mysql://127.0.0.1:3306/" + dbName + "?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC");
@@ -46,10 +46,11 @@ public class GeneratorTest {
 		global.setOutputDir(outputDir);
 		global.setAuthor("heyiwu");
 		global.setRootPackage("org.hyw.test");
-		global.setModules(new String[]{"demo"});
+		global.setModules(new String[]{"api", "app"});
 		global.setComponents(new Component[]{Component.MYBATIS, Component.SPRINGMVC});
 		global.setFileOverride(true);
 		global.setDelOutputDir(true);
+		global.setSeparators(new char[]{'_', '-'});
 		
 		// 3. 通过反射注入配置 (因为 Generator.load 是私有的且由静态块调用)
 		injectField(generator, "dataSource", dataSource);

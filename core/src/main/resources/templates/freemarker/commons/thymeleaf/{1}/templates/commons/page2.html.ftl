@@ -1,3 +1,4 @@
+<#-- 使用 (table.beanName)! 安全访问语法，当 table 不存在时输出空字符串 -->
 <table class="ui-pg-table ui-common-table ui-pager-table ">
 		<tbody>
 			<tr>
@@ -55,7 +56,7 @@
 									class="ui-pg-button ui-corner-all ui-state-disabled" title="首頁"
 									style="cursor: default;"><span
 									class="ui-icon ace-icon fa fa-angle-double-left bigger-140"><a
-										th:href="@{/${table.beanName!}/list(pageNo=1,pageRows=${page.pageSize!})}">首页</a></span>
+										th:href="@{/${(table.beanName)!}/list(pageNo=1,pageRows=${page.pageSize!})}">首页</a></span>
 								</td>
 								<td id="prev_grid-pager"
 									class="ui-pg-button ui-corner-all ui-state-disabled"

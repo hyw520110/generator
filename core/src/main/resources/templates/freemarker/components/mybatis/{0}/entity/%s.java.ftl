@@ -11,7 +11,7 @@ import java.io.Serializable;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 </#if>
-<#if "plus"=="mapperType">
+<#if mapperType?? && mapperType == "plus">
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -25,10 +25,10 @@ import io.swagger.annotations.ApiModelProperty;
 <#if table.comment??>
 @ApiModel(value="${table.name!}", description="${table.comment!}")
 </#if>
-<#if "plus"=="mapperType">
+<#if mapperType?? && mapperType == "plus">
 @TableName("${table.name!}")
 </#if>
-public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}<#if "plus"=="mapperType"><${className!}></#if><#else> implements Serializable </#if>{
+public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}<#if mapperType?? && mapperType == "plus"><${className!}></#if><#else> implements Serializable </#if>{
 
     private static final long serialVersionUID = 1L;
 
@@ -46,28 +46,17 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
 
 
 
-<#if "plus"=="mapperType">
-
+<#if mapperType?? && mapperType == "plus">
 <#if field.primarykey>
-
 	@TableId(value = "${field.name!}", type = IdType.AUTO)
-
 <#else>
-
 	@TableField(value = "${field.name!}")
-
 </#if>
-
 </#if>
-
 	@ApiModelProperty(value = <#if field.comment?has_content>"${field.comment!}"<#else>"${field.name!}"</#if>,required = <#if field.isNullAble()>false <#else> true </#if>)
-
-<#if field.commonField || (superEntityClass?? && superEntityClass?contains('.'))>
-
+<#if !field.commonField || (superEntityClass?? && superEntityClass?contains('.'))>
 <#if field.isNullAble()?has_content>    @NotNull
-
 </#if>
-
     private ${field.fieldType.type!} ${field.propertyName!};
     
 </#if>    
@@ -118,7 +107,7 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
         this.${field.propertyName!} = ${field.propertyName!};
     }
 </#list>
-<#if "plus"=="mapperType">
+<#if mapperType?? && mapperType == "plus">
 <#if table.hasPrimarykeys()>
 	@Override
 	protected ${table.primaryKeyField.propertyType!} pkVal() {
@@ -128,7 +117,7 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
 	public String toString() {
 	    return "${className!}{" +
 		<#list table.fields as field>
-		"<#if item_index + 1 gt 1>, </#if>${field.propertyName!}="+${field.propertyName!}+
+		"<#if field_index gt 0>, </#if>${field.propertyName!}="+${field.propertyName!}+
 		</#list> "}";
 	}
 </#if>

@@ -26,7 +26,7 @@
 			"resourceView": "RouteView",
 			"sort": 0
 		}, {
-			"childResources": [<#list tables as table><#assign index =item_index + 1+10><#assign id =item_index + 1+20>{
+			"childResources": [<#list tables as table><#assign index =table?index + 1+10><#assign id =table?index + 1+20>{
 					"childResources": [{
 						"childResources": [],
 						"parentResourceId": ${index!},

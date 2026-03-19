@@ -69,21 +69,21 @@
 						<th id="grid-table_cb" class="ui-th-column ui-th-ltr ui-state-default" width="6%">操作</th>
 				<#list table.fields as field>
 				<th id="grid-table_${field.propertyName!}" class="ui-th-column ui-th-ltr ui-state-default sorting" data-name="id" data-type="0"><#if field.comment?has_content>${field.comment!}
-					<<<#else>>> ${field.name!} </#if></th> </#list>
+					<#else> ${field.name!} </#if></th> </#list>
 			</tr>
 		</thead>
 		<tbody>
-			<tr th:each="item,stats: ${page.list!}">
+			<tr th:each="item,stats: <#noparse>${page.list}</#noparse>">
 				<td class="ui-th-column ui-th-ltr ui-state-default" style="text-align:center;">
 							<span class="yg-checkbox" onselectstart="return false"></span>
 				</td>
 				<td  class="jqgrow ui-row-ltr ui-widget-content action-buttons">
-					<a th:href="@{/${table.beanName!}/view/{id}/view(id=<#list table.primarykeyFields as field>*{item.${field.propertyName!}}<#if item_index + 1 lt table.primarykeyFields.size()>,</#if></#list>)}" class="ace-icon fa fa-search-plus bigger-130 blue" name="layerBtn" data-title="查看"></a>
-					<a th:href="@{/${table.beanName!}/view/{id}/update(id=<#list table.primarykeyFields as field>*{item.${field.propertyName!}}<#if item_index + 1 lt table.primarykeyFields.size()>,</#if></#list>)}" class="ace-icon fa fa-pencil bigger-130 green" name="layerBtn" data-title="编辑"></a>
-					<a th:href="@{/${table.beanName!}/del/{id}(id=<#list table.primarykeyFields as field>*{item.${field.propertyName!}}<#if item_index + 1 lt table.primarykeyFields.size()>,</#if></#list>)}" class="ace-icon fa fa-trash-o bigger-120 red" onclick="return delFun(this)"></a>
+					<a th:href="@{/${table.beanName!}/view/{id}/view(id=<#list table.primarykeyFields as field>*{item.${field.propertyName!}}<#if field?index + 1 lt table.primarykeyFields?size>,</#if></#list>)}" class="ace-icon fa fa-search-plus bigger-130 blue" name="layerBtn" data-title="查看"></a>
+					<a th:href="@{/${table.beanName!}/view/{id}/update(id=<#list table.primarykeyFields as field>*{item.${field.propertyName!}}<#if field?index + 1 lt table.primarykeyFields?size>,</#if></#list>)}" class="ace-icon fa fa-pencil bigger-130 green" name="layerBtn" data-title="编辑"></a>
+					<a th:href="@{/${table.beanName!}/del/{id}(id=<#list table.primarykeyFields as field>*{item.${field.propertyName!}}<#if field?index + 1 lt table.primarykeyFields?size>,</#if></#list>)}" class="ace-icon fa fa-trash-o bigger-120 red" onclick="return delFun(this)"></a>
 				</td> 
 				<#list table.fields as field>
-				<td th:text="*{item.${field.propertyName!}}" th:class="${stats.even!}? 'jqgrow ui-row-ltr ui-widget-content' : 'jqgrow ui-row-ltr ui-widget-content ui-priority-secondary'" data-name="id">字段名${item_index!} + 1}</td>
+				<td th:text="*{item.${field.propertyName!}}" th:class="<#noparse>${stats.even?string('jqgrow ui-row-ltr ui-widget-content', 'jqgrow ui-row-ltr ui-widget-content ui-priority-secondary')}</#noparse>" data-name="id">字段名${field?index!0 + 1}</td>
 				</#list>
 			</tr>
 		</tbody>

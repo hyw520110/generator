@@ -30,7 +30,7 @@ public class ${className!} implements Serializable{
 <#list table.fields as field>
     <#if field.propertyType.equals("Boolean")>
     <#assign getprefix ="is">
-    <<<#else>>>
+    <#else>
     <#assign getprefix ="get">
     </#if>
 

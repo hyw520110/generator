@@ -1,4 +1,4 @@
-<div id="pageInfo">
+<#noparse><div id="pageInfo">
 	<ul class="pagination" th:fragment="pageInfo (action)">
 		<li th:unless="${page.isFirstPage!}">
 			<a th:href="@{${action!}(pageNo=1,pageRows=${page.pageSize!})}" aria-label="Previous">首页</a>
@@ -35,4 +35,4 @@
 			</div>
 		</li>
 	</ul>
-</div>
+</div></#noparse>

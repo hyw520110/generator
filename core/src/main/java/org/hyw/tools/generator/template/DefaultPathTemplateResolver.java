@@ -107,11 +107,13 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
                 subPath = StringUtils.substringAfter(subPath, "test/");
             }
 
-            // 构建完整路径：moduleName/src/main/java/rootPackage/subPath
+            // 构建完整路径：moduleName/src/main/java/rootPackage/projectName/moduleName/subPath
             String sourceDir = isTest ? global.getTestSourceDirectory() : global.getSourceDirectory();
             String rootPackage = global.getRootPackage().replace(".", SEPARATOR);
+            String projectName = global.getProjectName();
+            String moduleName = firstModule != null ? firstModule : "api";
 
-            return toPath(firstModule != null ? firstModule : "api", sourceDir, rootPackage, subPath);
+            return toPath(moduleName, sourceDir, rootPackage, projectName, moduleName, subPath);
         } else {
             // 模块路径：正常处理
             // 提取第一个目录作为模块名
@@ -133,11 +135,12 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
                 subPath = StringUtils.substringAfter(subPath, "test/");
             }
 
-            // 构建完整路径
+            // 构建完整路径：moduleName/src/main/java/rootPackage/projectName/moduleName/subPath
             String sourceDir = isTest ? global.getTestSourceDirectory() : global.getSourceDirectory();
             String rootPackage = global.getRootPackage().replace(".", SEPARATOR);
+            String projectName = global.getProjectName();
 
-            return toPath(moduleName, sourceDir, rootPackage, subPath);
+            return toPath(moduleName, sourceDir, rootPackage, projectName, moduleName, subPath);
         }
     }
     

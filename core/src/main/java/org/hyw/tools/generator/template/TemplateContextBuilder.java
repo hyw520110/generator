@@ -45,7 +45,7 @@ public class TemplateContextBuilder {
     /**
      * 组件配置
      */
-    private final Map<Component, Map<String, String>> components;
+    private final Map<Component, Map<String, Object>> components;
 
     /**
      * 构造函数
@@ -55,7 +55,7 @@ public class TemplateContextBuilder {
      * @param components 组件配置
      */
     public TemplateContextBuilder(GlobalConf global, DataSourceConf dataSource, 
-                                  Map<Component, Map<String, String>> components) {
+                                  Map<Component, Map<String, Object>> components) {
         this.global = global;
         this.dataSource = dataSource;
         this.components = components;
@@ -144,7 +144,17 @@ public class TemplateContextBuilder {
         // 添加 spring 对象
         Map<String, Object> springMap = new HashMap<>();
         springMap.put("version", "5.3.21");
+        Map<String, Object> applicationMap = new HashMap<>();
+        applicationMap.put("name", global.getProjectName());
+        springMap.put("application", applicationMap);
         builder.variable("spring", springMap);
+        
+        // 添加 skywalking 对象
+        Map<String, Object> skywalkingMap = new HashMap<>();
+        skywalkingMap.put("addr", "localhost:11800");
+        skywalkingMap.put("agent", "/usr/local/skywalking");
+        skywalkingMap.put("agent-home", "/usr/local/skywalking-agent");
+        builder.variable("skywalking", skywalkingMap);
         
         // 添加 maven 对象
         Map<String, Object> mavenMap = new HashMap<>();
@@ -168,12 +178,18 @@ public class TemplateContextBuilder {
         builder.variable("project", projectMap);
         
         // 添加组件标志（大写和小写都支持）
+        // 注意：配置对象（如 skywalking）已经设置，组件标志需要同时添加大写和小写键
+        // 但要避免覆盖已设置的配置对象
         Map<String, Object> componentMap = buildComponentMap();
+        Set<String> configObjects = Set.of("skywalking", "sentinel", "dashboard", "spring", "project");
         componentMap.forEach((key, value) -> {
-            // 添加小写键（如 thymeleaf）
+            // 添加大写键（如 SKYWALKING）
             builder.variable(key, value);
-            // 添加大写键（如 THYMELEAF）
-            builder.variable(key.toUpperCase(), value);
+            // 添加小写键（如 skywalking），但跳过配置对象
+            String lowerKey = key.toLowerCase();
+            if (!configObjects.contains(lowerKey)) {
+                builder.variable(lowerKey, value);
+            }
         });
 
         // 添加额外的包名变量（组件包名）
@@ -194,10 +210,23 @@ public class TemplateContextBuilder {
 
         // 添加额外的配置变量
         builder.variable("BASE_DIR", "");
-        builder.variable("connect", new HashMap<String, Object>() {{
-            put("timeout", 3000);
-        }});
+        builder.variable("connect-timeout", "3000");  // 修复：connect-timeout 应该是字符串
+        builder.variable("connect-string", "localhost:2181");  // 添加 zookeeper connect-string
         builder.variable("cachePath", "");
+        
+        // 添加 dashboard 对象（Sentinel 配置）
+        Map<String, Object> dashboardMap = new HashMap<>();
+        dashboardMap.put("server", "localhost:8080");
+        builder.variable("dashboard", dashboardMap);
+        
+        // 添加 page 对象（分页配置）
+        Map<String, Object> pageMap = new HashMap<>();
+        pageMap.put("isFirstPage", true);
+        pageMap.put("isLastPage", true);
+        pageMap.put("pageNum", 1);
+        pageMap.put("pageSize", 10);
+        pageMap.put("list", new ArrayList<>());
+        builder.variable("page", pageMap);
         builder.variable("validatedValue", "");
         builder.variable("superControllerClass", "");
         builder.variable("superEntityClass", "");
@@ -210,6 +239,13 @@ public class TemplateContextBuilder {
         builder.variable("jdbc", "");
         builder.variable("spring_redis_password", "");
         builder.variable("tables", new ArrayList<>());
+        
+        // 添加 Spring Cloud 相关版本变量
+        builder.variable("springboot_version", "2.3.2.RELEASE");
+        builder.variable("springcloud_version", "2.3.1.RELEASE");
+        builder.variable("springcloud_alibaba_version", "2.2.5.RELEASE");
+        builder.variable("spring_cloud_zookeeper_version", "2.2.3.RELEASE");
+        builder.variable("curator_version", "4.0.1");
 
         // 添加 enumsPackage 和 interceptorPackage
         builder.variable("enumsPackage", projectPackage + ".enums");
@@ -227,21 +263,34 @@ public class TemplateContextBuilder {
         // 加载组件配置
         if (components != null && !components.isEmpty()) {
             Component[] enabledComponents = global.getComponents();
-            for (Map.Entry<Component, Map<String, String>> entry : components.entrySet()) {
+            org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TemplateContextBuilder.class);
+            log.debug("开始加载组件配置, enabledComponents: {}", java.util.Arrays.toString(enabledComponents));
+            log.debug("components.entrySet()大小: {}", components.entrySet().size());
+            
+            for (Map.Entry<Component, Map<String, Object>> entry : components.entrySet()) {
                 Component component = entry.getKey();
-                Map<String, String> config = entry.getValue();
+                Map<String, Object> config = entry.getValue();
                 
                 // 检查组件是否启用
                 boolean isEnabled = enabledComponents != null && 
-                    Arrays.asList(enabledComponents).contains(component);
+                    java.util.Arrays.asList(enabledComponents).contains(component);
+                
+                log.debug("检查组件: {}, isEnabled: {}, config: {}", component, isEnabled, config);
                 
                 if (isEnabled && config != null) {
                     // 加载组件的所有配置参数
-                    for (Map.Entry<String, String> configEntry : config.entrySet()) {
-                        builder.variable(configEntry.getKey(), configEntry.getValue());
+                    for (Map.Entry<String, Object> configEntry : config.entrySet()) {
+                        String key = configEntry.getKey();
+                        Object value = configEntry.getValue();
+                        builder.variable(key, value);
+                        // 调试日志：输出组件配置
+                        log.debug("加载组件配置: {} = {}", key, value);
                     }
                 }
             }
+        } else {
+            org.slf4j.LoggerFactory.getLogger(TemplateContextBuilder.class)
+                .warn("组件配置为空或null: components={}", components);
         }
 
         return builder.build();
@@ -354,15 +403,15 @@ public class TemplateContextBuilder {
     private Map<String, Object> buildComponentMap() {
         Map<String, Object> componentMap = new HashMap<>();
         
-        // 为所有组件添加默认值 false
+        // 为所有组件添加默认值 false（使用大写变量名）
         for (Component component : Component.values()) {
-            componentMap.put(component.name().toLowerCase(), false);
+            componentMap.put(component.name(), false);
         }
         
         // 如果组件被启用，设置为 true
         if (global.getComponents() != null) {
             for (Component component : global.getComponents()) {
-                componentMap.put(component.name().toLowerCase(), true);
+                componentMap.put(component.name(), true);
             }
         }
         

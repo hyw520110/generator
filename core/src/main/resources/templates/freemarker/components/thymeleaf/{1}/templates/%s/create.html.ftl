@@ -1,7 +1,6 @@
-<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout">
 <head>
-<title>查看${table.comment!}</title>
+<title>添加${table.comment!}</title>
 <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
 <link rel="stylesheet" href="/static/css/ace.min.css" class="ace-main-stylesheet" id="main-ace-style" />
 <link rel="stylesheet" href="/static/css/style.css" />
@@ -10,16 +9,15 @@
 	<form th:action="@{/${table.beanName!}/add}" method="POST" th:object="${bean!}">
 	<table class="table  table-bordered table-hover">
 		<#list table.fields as field>
-		<#if field.isPrimarykey()?has_content>
+		<#if !field.isPrimarykey()>
 		<tr>
-			
 			<td class="jqgrow ui-row-ltr ui-widget-content" >
-			<span ><#if field.comment?has_content?has_content>${field.propertyName!}<<<#else>>>${field.comment!}</#if></span>
+			<span ><#if field.comment?has_content>${field.comment!}<#else>${field.propertyName!}</#if></span>
 			</td>
 			<td>
 				<input type="text" name="${field.propertyName!}"  />
-				<span th:if="*{${field.isNotNullAble()!}}"  th:title="必输项" style="color: red">*</span>
-				<span th:if="${#fields.hasErrors('${field.propertyName!}')}" th:errors="*{${field.propertyName!}}">错误消息</span>
+				<span <#if field.isNotNullAble()>th:title="必输项" style="color: red"</#if>>*</span>
+				<span th:if="<#noparse>${#fields.hasErrors('</#noparse>${field.propertyName!}<#noparse>')}</#noparse>" th:errors="*{${field.propertyName!}}">错误消息</span>
 			</td>
 		</tr>
 		</#if>

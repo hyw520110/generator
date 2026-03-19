@@ -4,106 +4,78 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
 
 import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.enums.Component;
 
-import lombok.Builder;
-import lombok.Data;
-
-/**
- * 模板数据模型
- * <p>
- * 封装模板渲染所需的常用变量，提供强类型支持。
- * </p>
- *
- * @author heyiwu
- * @version 2.0
- */
-@Data
-@Builder
 public class TemplateModel {
-
-    /**
-     * 全局配置
-     */
     private GlobalConf config;
-
-    /**
-     * 当前处理的表信息
-     */
     private Table table;
-
-    /**
-     * 所有表信息（用于全局引用）
-     */
-    private java.util.List<Table> allTables;
-
-    /**
-     * 作者名称
-     */
+    private List<Table> allTables;
     private String author;
-
-    /**
-     * 当前日期（格式化字符串）
-     */
-    @Builder.Default
     private String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-    /**
-     * 版权信息
-     */
     private String copyright;
-
-    /**
-     * 项目名称
-     */
     private String projectName;
-
-    /**
-     * 根包名
-     */
     private String rootPackage;
-
-    /**
-     * 当前模块名称
-     */
     private String moduleName;
-
-    /**
-     * 实体类包名（计算值）
-     */
     private String entityPackage;
-
-    /**
-     * 已启用的组件列表
-     */
     private Set<Component> components;
-
-    /**
-     * 自定义扩展变量
-     */
     private Map<String, Object> extra;
 
-    /**
-     * 获取指定名称的扩展变量
-     */
-    @SuppressWarnings("unchecked")
+    public GlobalConf getConfig() { return config; }
+    public void setConfig(GlobalConf config) { this.config = config; }
+    public Table getTable() { return table; }
+    public void setTable(Table table) { this.table = table; }
+    public List<Table> getAllTables() { return allTables; }
+    public void setAllTables(List<Table> allTables) { this.allTables = allTables; }
+    public String getAuthor() { return author; }
+    public void setAuthor(String author) { this.author = author; }
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
+    public String getCopyright() { return copyright; }
+    public void setCopyright(String copyright) { this.copyright = copyright; }
+    public String getProjectName() { return projectName; }
+    public void setProjectName(String projectName) { this.projectName = projectName; }
+    public String getRootPackage() { return rootPackage; }
+    public void setRootPackage(String rootPackage) { this.rootPackage = rootPackage; }
+    public String getModuleName() { return moduleName; }
+    public void setModuleName(String moduleName) { this.moduleName = moduleName; }
+    public String getEntityPackage() { return entityPackage; }
+    public void setEntityPackage(String entityPackage) { this.entityPackage = entityPackage; }
+    public Set<Component> getComponents() { return components; }
+    public void setComponents(Set<Component> components) { this.components = components; }
+    public Map<String, Object> getExtra() { return extra; }
+    public void setExtra(Map<String, Object> extra) { this.extra = extra; }
+
     public <T> T getExtra(String key) {
         return extra != null ? (T) extra.get(key) : null;
     }
 
-    /**
-     * 判断是否启用指定组件
-     */
     public boolean hasComponent(Component component) {
         return components != null && components.contains(component);
     }
 
-    /**
-     * 快速访问常用的组件开关（用于 FTL 简写）
-     */
     public boolean isMybatis() { return hasComponent(Component.MYBATIS); }
     public boolean isJpa() { return hasComponent(Component.JPA); }
+
+    public static Builder builder() { return new Builder(); }
+
+    public static class Builder {
+        private TemplateModel model = new TemplateModel();
+        public Builder config(GlobalConf config) { model.setConfig(config); return this; }
+        public Builder table(Table table) { model.setTable(table); return this; }
+        public Builder allTables(List<Table> allTables) { model.setAllTables(allTables); return this; }
+        public Builder author(String author) { model.setAuthor(author); return this; }
+        public Builder date(String date) { model.setDate(date); return this; }
+        public Builder copyright(String copyright) { model.setCopyright(copyright); return this; }
+        public Builder projectName(String projectName) { model.setProjectName(projectName); return this; }
+        public Builder rootPackage(String rootPackage) { model.setRootPackage(rootPackage); return this; }
+        public Builder moduleName(String moduleName) { model.setModuleName(moduleName); return this; }
+        public Builder entityPackage(String entityPackage) { model.setEntityPackage(entityPackage); return this; }
+        public Builder components(Set<Component> components) { model.setComponents(components); return this; }
+        public Builder extra(Map<String, Object> extra) { model.setExtra(extra); return this; }
+        public TemplateModel build() { return model; }
+    }
 }

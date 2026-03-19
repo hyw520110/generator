@@ -6,5 +6,5 @@ import ${servicePackage!}.${superServiceClass!};
 </#if>
 
 <#include 'comments/comment.ftl'>
-public interface ${className!} <#if superServiceClass??> extends ${superServiceClass!}<${entityName!}><#if "plus"!="mapperType">,${table.getPrimaryKeyClass()!}</#if>> </#if>{
+public interface ${className!} <#if superServiceClass??> extends ${superServiceClass!}<${entityName!}> </#if>{
 }

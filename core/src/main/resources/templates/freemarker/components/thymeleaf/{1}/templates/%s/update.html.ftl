@@ -12,9 +12,9 @@
 <#list table.fields as field>
 <#if field.isPrimarykey()>
 			<input type="hidden" name="${field.propertyName!}" th:value="*{bean.${field.propertyName!}}" />
-<<<#else>>>
+<#else>
 		<tr>
-			<td class="jqgrow ui-row-ltr ui-widget-content"  ><#if field.comment?has_content?has_content>${field.propertyName!}<<<#else>>>${field.comment!}</#if></td>
+			<td class="jqgrow ui-row-ltr ui-widget-content"  ><#if field.comment?has_content?has_content>${field.propertyName!}<#else>${field.comment!}</#if></td>
 			<td>
 				<input type="text" name="${field.propertyName!}" th:value="*{bean.${field.propertyName!}}"/>
 			</td>

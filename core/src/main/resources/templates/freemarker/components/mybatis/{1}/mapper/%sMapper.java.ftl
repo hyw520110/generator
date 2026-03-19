@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import ${entityPackage!}.${entityName!};
-<#if superMapperClass??>
+<#if superMapperClass?? && superMapperClass?has_content>
 <#if mapperType=="plus">
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 <#else>
@@ -16,10 +16,9 @@ import ${mapperPackage!}.${superMapperClass!};
 </#if>
 </#if>
 </#if>
-<#if REDIS?has_content && mapperType!="plus">
+<#if REDIS?? && mapperType!="plus">
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 </#if>
 <#if mapperType=="SQL">
@@ -31,33 +30,23 @@ import org.apache.ibatis.annotations.Select;
 <#if mapperType=="SQL">
 @Mapper
 </#if>
-<#if "annotation"=="mapperType">
+<#if "annotation"==mapperType!>
 @Repository
 </#if>
-<#if REDIS?has_content && "plus"!=mapperType>
-@CacheConfig(cacheNames = "${entityName?lower_case}")
+<#if REDIS?? && "plus"!=mapperType!>
+@CacheConfig(cacheNames = "${entityName!?lower_case}")
 </#if>
-public interface ${className!} <#if superMapperClass??> extends ${superMapperClass!}<${entityName}><#if "plus"!=mapperType>,${table.primaryKeyClass!}</#if>> </#if>{
+public interface ${className!} <#if superMapperClass?? && superMapperClass?has_content> extends ${superMapperClass!}<${entityName!}> </#if>{
 
-<#if "plus"!=mapperType>
-<#if "annotation"==mapperType>
-        //TODO
-<#assign conditions = []>
-<#list table.primarykeyFields as field>
-<#assign conditions = conditions + ["${field.name!} = " + "#{" + field.propertyName + "}"]>
-</#list>
-<#assign whereClause = conditions?join(" and ")>
-    @Select("SELECT * FROM " + table.beanName + " WHERE " + whereClause)
-</#if>
-<#if REDIS?has_content>
+<#if "plus"!=mapperType!>
+<#if REDIS??>
     @Cacheable(key = "#p0")
 </#if>
 	public ${entityName!} findById(<#list table.primarykeyFields as field>@Param("${field.propertyName!}")${field.fieldType.type!} ${field.propertyName!}<#if field?has_next>,</#if></#list>);
 	
-<#if REDIS?has_content>
+<#if REDIS??>
     @CacheEvict(key = "#p0")
 	public void deleteById(<#list table.primarykeyFields as field>@Param("${field.propertyName!}")${field.fieldType.type!} ${field.propertyName!}<#if field?has_next>,</#if></#list>);
 </#if>
-
-}
 </#if>
+}

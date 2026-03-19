@@ -109,7 +109,13 @@
 				<artifactId>shiro-spring</artifactId>
 				<version><#noparse>${shiro.version}</#noparse></version>
 			</dependency>
-<#if "plus"=="mapperType">
+			<!-- lombok -->
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.20</version>
+			</dependency>
+<#if mapperType?? && mapperType == "plus">
 			<!-- mybatis-plus -->
 			<dependency>
 				<groupId>com.baomidou</groupId>

@@ -85,15 +85,15 @@ public class Booter{
         return validator;  
     } 
 
-<#if ssl??>
+<#if ssl?? && ssl>
 	/**
 	 * tomcat ssl /http2https  
 	 * @author:  heyiwu 
 	 * @return
 	 */
 	@Bean
-    public EmbeddedServletContainerFactory servletContainer() {
-        TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory() {
+    public ServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
             @Override
             protected void postProcessContext(Context context) {
                 SecurityConstraint constraint = new SecurityConstraint();

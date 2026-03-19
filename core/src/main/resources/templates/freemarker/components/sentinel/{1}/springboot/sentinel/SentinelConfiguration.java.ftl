@@ -1,4 +1,5 @@
-
+<#-- 定义 Spring Boot 表达式前缀变量 -->
+<#assign spel="${'$'}{">
 package ${sentinelPackage!};
 
 import java.util.List;
@@ -17,9 +18,9 @@ import com.alibaba.fastjson.TypeReference;
 
 @Configuration
 public class SentinelConfiguration {
-	@Value("<#noparse>${spring.cloud.zookeeper.connect!}-string:</#noparse>${connect!}-string}<#noparse>}</#noparse>")
+	@Value("${spel}spring.cloud.zookeeper.connect-string:localhost:2181}")
 	private String ZK_SERVER_ADDR;
-	@Value("${spring.application.name!}")
+	@Value("${spel}spring.application.name}")
 	private String appName;
 	@PostConstruct
 	public void init() {

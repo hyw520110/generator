@@ -160,6 +160,10 @@ public class GlobalConf extends BaseBean {
 	 */
 	private String[] resources;
 	/**
+	 * 排除渲染的目录
+	 */
+	private String[] excludeDir;
+	/**
 	 * 模板引擎类型
 	 */
 	private String templateEngine = "freemarker";
@@ -467,6 +471,14 @@ public class GlobalConf extends BaseBean {
 
 	public void setResources(String[] resources) {
 		this.resources = resources;
+	}
+
+	public String[] getExcludeDir() {
+		return excludeDir;
+	}
+
+	public void setExcludeDir(String[] excludeDir) {
+		this.excludeDir = excludeDir;
 	}
 
 	public String getTemplateEngine() {

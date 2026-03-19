@@ -29,7 +29,7 @@
 		</div>
 		<div class="main-content">
 			<fieldset>
-			    <legend>${tables.size()!}张表</legend>
+			    <legend>${tables?size!0}张表</legend>
 			    <input id="search" placeholder="搜索" class="col-xs-5 col-sm-3" type="text" style="margin-left: 10px;"/>
 			</fieldset>
 	<table border="1" class="table  table-bordered table-hover" id="tables">
@@ -44,7 +44,7 @@
 		<tbody>
 <#list tables as tab>		
 			<tr>
-				<td>${item_index!} + 1</td>
+				<td>${tab?index!0 + 1}</td>
 				<td class="detail ace-icon  fa-angle-double-down green" style="cursor: pointer; font: normal normal normal 14px/1 FontAwesome;"></td>
 				<td><a href="${tab.beanName!}/list">${tab.name!}</a></td>
 				<td>${tab.comment!}</td>

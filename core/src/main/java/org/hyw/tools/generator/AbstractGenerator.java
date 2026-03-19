@@ -55,7 +55,7 @@ public abstract class AbstractGenerator extends BaseBean {
 	/**
 	 * 组件配置
 	 */
-	protected Map<Component, Map<String, String>> components;
+	protected Map<Component, Map<String, Object>> components;
 	
 	/**
 	 * 表元数据缓存
@@ -333,11 +333,11 @@ public abstract class AbstractGenerator extends BaseBean {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
 
-	public Map<Component, Map<String, String>> getComponents() {
+	public Map<Component, Map<String, Object>> getComponents() {
 		return components;
 	}
 
-	public void setComponents(Map<Component, Map<String, String>> components) {
+	public void setComponents(Map<Component, Map<String, Object>> components) {
 		this.components = components;
 	}
 }

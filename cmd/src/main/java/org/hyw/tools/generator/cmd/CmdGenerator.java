@@ -72,6 +72,9 @@ public class CmdGenerator {
 			initTableSelectionConf(generator, scanner, isAutoCreated, quickMode);
 
 			// 4. 执行生成
+			// 调试：打印组件配置
+			logger.info("调试 - global.getComponents(): {}", Arrays.toString(generator.getGlobal().getComponents()));
+			logger.info("调试 - components配置Map: {}", generator.getComponents());
 			executeGeneration(generator);
 
 		} catch (Exception e) {
@@ -315,7 +318,7 @@ public class CmdGenerator {
 	}
 
 	private static void printHelp() {
-		System.out.println("用法: ./startup.sh --quick --db-password <password>");
+		System.out.println("用法: ./run.sh --quick --db-password <password>");
 	}
 
 	/**

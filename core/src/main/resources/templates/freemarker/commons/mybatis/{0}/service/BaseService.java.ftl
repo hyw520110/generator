@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 
 <#assign comment ="公共接口">
 <#include 'comments/comment.ftl'>
-<#if "plus"=="mapperType">
+<#if mapperType?? && mapperType == "plus">
 public interface BaseService<T> extends com.baomidou.mybatisplus.extension.service.IService<T>{
 <#else>
 public interface BaseService<T> {
@@ -24,7 +24,7 @@ public interface BaseService<T> {
 	 *
 	 * @param id 主键ID
 	 */
-	T getById(PK id);
+	T getById(Object id);
 
 	/**
 	 * 根据指定条件查询一条记录
@@ -74,7 +74,7 @@ public interface BaseService<T> {
 	 */
 	boolean save(T entity);
 
-	void deleteById(PK Id);
+	void deleteById(Object Id);
 </#if>
 
 }

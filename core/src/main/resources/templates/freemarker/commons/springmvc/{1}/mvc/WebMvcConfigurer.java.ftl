@@ -35,7 +35,7 @@ import com.alibaba.fastjson.serializer.ValueFilter;
 import com.alibaba.fastjson.serializer.ToStringSerializer;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
-<#if "plus"=="mapperType">
+<#if mapperType?? && mapperType == "plus">
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 </#if>
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -145,7 +145,7 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 //		serializeConfig.put(Long.class, ToStringSerializer.instance);
 //		serializeConfig.put(Long.TYPE, ToStringSerializer.instance);
 //		conf.setSerializeConfig(serializeConfig);
-<#if "plus"=="mapperType">	
+<#if mapperType?? && mapperType == "plus">	
 //		NameFilter nameFilter = new NameFilter() {
 //			@Override
 //			public String process(Object object, String name, Object value) {

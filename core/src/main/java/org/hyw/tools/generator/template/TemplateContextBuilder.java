@@ -43,14 +43,22 @@ public class TemplateContextBuilder {
     private final DataSourceConf dataSource;
 
     /**
+     * 组件配置
+     */
+    private final Map<Component, Map<String, String>> components;
+
+    /**
      * 构造函数
      *
      * @param global 全局配置
      * @param dataSource 数据源配置
+     * @param components 组件配置
      */
-    public TemplateContextBuilder(GlobalConf global, DataSourceConf dataSource) {
+    public TemplateContextBuilder(GlobalConf global, DataSourceConf dataSource, 
+                                  Map<Component, Map<String, String>> components) {
         this.global = global;
         this.dataSource = dataSource;
+        this.components = components;
     }
 
     /**
@@ -215,6 +223,26 @@ public class TemplateContextBuilder {
                 put("sourceEncoding", "UTF-8");
             }});
         }});
+
+        // 加载组件配置
+        if (components != null && !components.isEmpty()) {
+            Component[] enabledComponents = global.getComponents();
+            for (Map.Entry<Component, Map<String, String>> entry : components.entrySet()) {
+                Component component = entry.getKey();
+                Map<String, String> config = entry.getValue();
+                
+                // 检查组件是否启用
+                boolean isEnabled = enabledComponents != null && 
+                    Arrays.asList(enabledComponents).contains(component);
+                
+                if (isEnabled && config != null) {
+                    // 加载组件的所有配置参数
+                    for (Map.Entry<String, String> configEntry : config.entrySet()) {
+                        builder.variable(configEntry.getKey(), configEntry.getValue());
+                    }
+                }
+            }
+        }
 
         return builder.build();
     }

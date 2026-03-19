@@ -131,7 +131,7 @@ public class Generator extends AbstractGenerator {
 		
 		// 初始化模板渲染器和上下文构建器
 		templateRenderer = new TemplateRenderer();
-		contextBuilder = new TemplateContextBuilder(global, dataSource);
+		contextBuilder = new TemplateContextBuilder(global, dataSource, components);
 		
 		// 创建全局上下文
 		RenderContext globalContext = contextBuilder.buildGlobalContext();

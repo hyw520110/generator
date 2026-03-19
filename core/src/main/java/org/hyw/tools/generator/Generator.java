@@ -236,7 +236,13 @@ public class Generator extends AbstractGenerator {
 	}
 		
 	private void writeToFile(String path, String data, boolean skipRender) {
-		File dest = new File(global.getOutputDir(), path);
+		// 如果文件是模板文件（需要渲染），移除模板扩展名
+		String outputPath = path;
+		if (!skipRender) {
+			outputPath = global.getEngineType().removeExtension(path);
+		}
+		
+		File dest = new File(global.getOutputDir(), outputPath);
 		
 		if ((!skipRender && StringUtils.isBlank(data)) || (dest.exists() && !global.isFileOverride())) {
 			return;

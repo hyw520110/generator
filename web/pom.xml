@@ -65,21 +65,46 @@
 		<finalName>${project.name}</finalName>
 		<resources>
 			<resource>
+				<directory>${project.basedir}</directory>
+				<includes>
+					<include>startup.sh</include>
+					<include>startup.bat</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+			<resource>
 				<directory>${project.basedir}/src/main/resources</directory>
+				<filtering>true</filtering>
 				<includes>
 					<include>bin/*.bat</include>
 					<include>bin/*.sh</include>
 					<include>*.properties</include>
 					<include>*.yaml</include>
 				</includes>
-				<filtering>true</filtering>
 			</resource>
 			<resource>
 				<directory>${project.basedir}/src/main/resources</directory>
 				<filtering>false</filtering>
+				<excludes>
+					<exclude>bin/*.bat</exclude>
+					<exclude>bin/*.sh</exclude>
+				</excludes>
 			</resource>
 		</resources>
 		<plugins>
+			<!-- Spring Boot 运行插件 -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- 编译插件：设置编译版本、编码 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

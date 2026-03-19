@@ -77,6 +77,8 @@
 	<logger name="org.hibernate.type" level="ERROR" />
 	<logger name="org.hibernate.util" level="ERROR" />
 	<logger name="org.hibernate.cfg" level="WARN" />
+	<!-- Generator debug log -->
+	<logger name="org.hyw.tools.generator" level="DEBUG" />
 
 	<logger name="org.springframework" level="INFO" />
 	<logger name="org.springframework.web" level="INFO" />

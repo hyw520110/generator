@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout">
+<head>
+<title>查看${table.comment!}</title>
+<link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+<link rel="stylesheet" href="/static/css/ace.min.css" class="ace-main-stylesheet" id="main-ace-style" />
+<link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+	<table class="table  table-bordered table-hover">
+		<#list table.fields as field>
+		<tr>
+			<td class="jqgrow ui-row-ltr ui-widget-content"  ><#if field.comment?has_content?has_content>${field.propertyName!}<#else>${field.comment!}</#if></td>
+			<td th:text="*{bean.${field.propertyName!}}">${field.comment!}</td>
+		</tr>
+		</#list>
+	</table>
+</body>
+</html>

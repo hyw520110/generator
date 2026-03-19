@@ -48,10 +48,44 @@ const vueConfig = {
         APP_VERSION: `"${require('./package.json').version}"`,
         GIT_HASH: JSON.stringify(getGitHash()),
         BUILD_DATE: buildDate
+      }),
+      // 添加性能监控插件
+      new webpack.ProgressPlugin({
+        profile: false
       })
     ],
-    // If prod, add externals
-    externals: isProd ? assetsCDN.externals : {}
+    // if prod, add externals
+    externals: isProd ? assetsCDN.externals : {},
+    // 优化打包体积
+    optimization: {
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            name: 'chunk-vendors',
+            test: /[\\/]node_modules[\\/]/,
+            priority: 10,
+            chunks: 'initial'
+          },
+          antd: {
+            name: 'chunk-antd',
+            test: /[\\/]node_modules[\\/](ant-design-vue|@ant-design)[\\/]/,
+            priority: 20,
+            chunks: 'initial'
+          },
+          common: {
+            name: 'chunk-common',
+            minChunks: 2,
+            priority: 5,
+            chunks: 'initial',
+            reuseExistingChunk: true
+          }
+        }
+      },
+      runtimeChunk: {
+        name: 'runtime'
+      }
+    }
   },
 
   chainWebpack: (config) => {
@@ -89,15 +123,31 @@ const vueConfig = {
   css: {
     loaderOptions: {
       less: {
-        lessOptions: {
-          javascriptEnabled: true,
-          modifyVars: {
-            // 'primary-color': '#F5222D',
-            // 'link-color': '#F5222D',
-            'border-radius-base': '2px'
-          }
-        }
+        modifyVars: {
+          // less vars，customize ant design theme
+          // 'primary-color': '#F5222D',
+          // 'link-color': '#F5222D',
+          'border-radius-base': '2px',
+          // 优化CSS变量
+          'font-size-base': '14px',
+          'line-height-base': '1.5',
+          'border-radius-base': '6px'
+        },
+        // DO NOT REMOVE THIS LINE
+        javascriptEnabled: true
       }
+    }
+  },
+  
+  // 启用Gzip压缩
+  chainWebpack: (config) => {
+    if (isProd) {
+      config.plugin('CompressionWebpackPlugin').use(require('compression-webpack-plugin'), [{
+        algorithm: 'gzip',
+        test: /\.(js|css|html|svg)$/,
+        threshold: 8192,
+        minRatio: 0.8
+      }])
     }
   },
 

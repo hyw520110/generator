@@ -14,3 +14,10 @@ target
 **/package-lock.json
 ./cmd/bin/**
 ./web/bin/**
+
+# 生成的代码输出目录
+**/demo/
+
+# 迁移工具（一次性使用）
+convert_velocity_to_freemarker.sh
+velocity_to_freemarker_converter.pl

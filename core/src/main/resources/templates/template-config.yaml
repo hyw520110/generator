@@ -1,0 +1,198 @@
+# 模板配置文件
+# 用于定义模板组、模板路径、目标路径等信息
+
+# 模板引擎配置
+engine:
+  default: freemarker  # 默认模板引擎：freemarker
+  support:
+    - freemarker
+    - velocity
+
+# 模板组定义
+groups:
+  # 基础模板组（必选）
+  - id: base
+    name: 基础工程
+    required: true
+    engine: freemarker
+    templates:
+      - name: file-header
+        path: base/comment/file-header.ftl
+        target: none
+
+  # 持久层模板组（互斥）
+  - id: persistence
+    name: 持久层
+    required: true
+    exclusive: true
+    options:
+      - id: MYBATIS
+        engine: freemarker
+        templates:
+          - name: entity
+            path: persistence/mybatis/entity.java.ftl
+            target: "{module}/src/main/java/{package}/entity/{entityName}.java"
+
+          - name: mapper
+            path: persistence/mybatis/mapper.java.ftl
+            target: "{module}/src/main/java/{package}/mapper/{entityName}Mapper.java"
+
+          - name: service
+            path: persistence/mybatis/service.java.ftl
+            target: "{module}/src/main/java/{package}/service/{entityName}Service.java"
+
+          - name: service-impl
+            path: persistence/mybatis/service-impl.java.ftl
+            target: "{module}/src/main/java/{package}/service/impl/{entityName}ServiceImpl.java"
+
+      - id: JPA
+        engine: freemarker
+        templates:
+          - name: entity-jpa
+            path: persistence/jpa/entity.java.ftl
+            target: "{module}/src/main/java/{package}/domain/{entityName}.java"
+
+  # Web 层模板组（互斥）
+  - id: web
+    name: Web 层
+    required: false
+    exclusive: true
+    options:
+      - id: SPRINGMVC
+        engine: freemarker
+        templates:
+          - name: controller
+            path: web/springmvc/controller.java.ftl
+            target: "{module}/src/main/java/{package}/controller/{entityName}Controller.java"
+
+      - id: VUE
+        engine: freemarker
+        templates:
+          - name: vue-list
+            path: web/vue/list.vue.ftl
+            target: "vue/src/views/{entityName}/list.vue"
+
+  # 安全组件组（互斥）
+  - id: security
+    name: 安全组件
+    required: false
+    exclusive: true
+    options:
+      - id: SHIRO
+        engine: freemarker
+        templates:
+          - name: shiro-config
+            path: security/shiro/ShiroConfig.java.ftl
+            target: "{module}/src/main/java/{package}/config/ShiroConfig.java"
+
+      - id: JWT
+        engine: freemarker
+        templates:
+          - name: jwt-filter
+            path: security/jwt/JWTFilter.java.ftl
+            target: "{module}/src/main/java/{package}/filter/JWTFilter.java"
+
+  # 微服务组件组
+  - id: microservice
+    name: 微服务组件
+    required: false
+    exclusive: false
+    options:
+      - id: DUBBO
+        engine: freemarker
+        templates:
+          - name: dubbo-config
+            path: microservice/dubbo/DubboConfig.java.ftl
+            target: "{module}/src/main/java/{package}/config/DubboConfig.java"
+
+      - id: SPRINGCLOUD
+        engine: freemarker
+        templates:
+          - name: springcloud-config
+            path: microservice/springcloud/SpringCloudConfig.java.ftl
+            target: "{module}/src/main/java/{package}/config/SpringCloudConfig.java"
+
+  # 监控组件组
+  - id: monitoring
+    name: 监控组件
+    required: false
+    exclusive: false
+    options:
+      - id: SKYWALKING
+        engine: freemarker
+        templates:
+          - name: skywalking-config
+            path: monitoring/skywalking/SkywalkingConfig.java.ftl
+            target: "{module}/src/main/java/{package}/config/SkywalkingConfig.java"
+
+      - id: ZIPKIN
+        engine: freemarker
+        templates:
+          - name: zipkin-config
+            path: monitoring/zipkin/ZipkinConfig.java.ftl
+            target: "{module}/src/main/java/{package}/config/ZipkinConfig.java"
+
+  # 公共组件组
+  - id: common
+    name: 公共组件
+    required: false
+    exclusive: false
+    templates:
+      - name: macros
+        path: common/macros.ftl
+        target: none
+
+# 变量定义
+variables:
+  global:
+    - name: author
+      description: 作者
+      required: false
+    - name: copyright
+      description: 版权信息
+      required: false
+    - name: rootPackage
+      description: 根包名
+      required: true
+    - name: moduleName
+      description: 模块名
+      required: true
+
+  table:
+    - name: table.name
+      description: 表名
+      source: database
+    - name: table.beanName
+      description: 实体类名
+      source: generated
+    - name: table.comment
+      description: 表注释
+      source: database
+    - name: table.fields
+      description: 字段列表
+      source: database
+    - name: table.primaryKeyField
+      description: 主键字段
+      source: database
+
+# 渲染规则
+render:
+  # 资源文件不渲染，直接复制
+  # 注意：现在根据文件是否以 .ftl 结尾来判断是否为模板文件
+  # .ftl 结尾的是 FreeMarker 模板文件，需要渲染
+  # 不以 .ftl 结尾的文件（如 banner.txt, application.properties 等）直接复制
+  resources:
+    - jar
+    - png
+    - jpg
+    - gif
+    - svg
+    - eot
+    - ttf
+    - woff
+    - woff2
+
+  # 排除的目录
+  excludeDirs:
+    - /static/
+    - /assets/

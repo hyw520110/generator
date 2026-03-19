@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -26,12 +28,16 @@ import org.hyw.tools.generator.conf.dao.QuerySQL;
 import org.hyw.tools.generator.conf.db.TabField;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.exception.GeneratorException;
 import org.hyw.tools.generator.enums.FieldType;
 import org.hyw.tools.generator.enums.Naming;
 import org.hyw.tools.generator.enums.db.DBType;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 public abstract class AbstractGenerator extends BaseBean {
 
@@ -49,51 +55,91 @@ public abstract class AbstractGenerator extends BaseBean {
 	/**
 	 * 组件配置
 	 */
-	protected Map<Component, Map<String, String>> components;
+	protected Map<Component, Map<String, Object>> components;
+	
+	/**
+	 * 表元数据缓存
+	 */
+	protected Cache<String, List<Table>> tableCache = Caffeine.newBuilder()
+			.maximumSize(1000)
+			.expireAfterWrite(30, TimeUnit.MINUTES)
+			.recordStats()
+			.build();
 
-	public List<Table> getTables()  {
+	public List<Table> getTables() {
 		return getTables(false);
 	}
 
-	public List<Table> getTables(boolean all)  {
-		Connection con = null;
-		PreparedStatement pst = null;
-		Statement st = null;
-		ResultSet results = null;
+	public List<Table> getTables(boolean all) {
+		String cacheKey = buildCacheKey(all);
+		
+		// 先尝试从缓存获取
+		List<Table> cachedTables = tableCache.getIfPresent(cacheKey);
+		if (cachedTables != null) {
+			logger.debug("从缓存获取表元数据，缓存命中: {}", cacheKey);
+			return cachedTables;
+		}
+		
+		// 缓存未命中，从数据库查询
+		List<Table> tables = queryTablesFromDatabase(all);
+		
+		// 存入缓存
+		if (!tables.isEmpty()) {
+			tableCache.put(cacheKey, tables);
+			logger.debug("表元数据已缓存: {}", cacheKey);
+		}
+		
+		return tables;
+	}
+	
+	private String buildCacheKey(boolean all) {
+		StringBuilder key = new StringBuilder();
+		key.append(dataSource.getDbName()).append(":");
+		key.append(all ? "all" : "filtered").append(":");
+		
+		if (!all) {
+			key.append(Arrays.toString(global.getInclude())).append(":");
+					key.append(Arrays.toString(global.getExclude())).append(":");
+				}
+				
+				key.append(global.isMatchMode()).append(":");
+				key.append(Arrays.toString(global.getTablePrefix())).append(":");
+				key.append(global.getNaming()).append(":");
+				key.append(global.isCapitalMode());		
+		return key.toString();
+	}
+	
+	private List<Table> queryTablesFromDatabase(boolean all) {
 		ArrayList<Table> tables = new ArrayList<>();
-		try {
-			con = dataSource.getCon();
-			QuerySQL sql = dataSource.getQuerySQL();
-//			ResultSet catalogs = con.getMetaData().getCatalogs();
-//			while(catalogs.next()) {
-//				System.out.println(catalogs.getString(1));
-//			}
-			logger.debug("开始读取数据库元数据...");
-			pst = con.prepareStatement(sql.getTabComments());
-			results = pst.executeQuery();
-			while (results.next()) {
-				String tabName = results.getString(sql.getTbName());
-				if (StringUtils.isEmpty(tabName)) {
-					System.err.println(Arrays.toString(global.getInclude()) + "数据库为空！！！");
-					break;
+		QuerySQL sql = dataSource.getQuerySQL();
+		logger.debug("开始从数据库读取表元数据...");
+		
+		try (Connection con = dataSource.getCon();
+			 PreparedStatement pst = con.prepareStatement(sql.getTabComments());
+			 Statement st = con.createStatement()) {
+			
+			try (ResultSet results = pst.executeQuery()) {
+				while (results.next()) {
+					String tabName = results.getString(sql.getTbName());
+					if (StringUtils.isEmpty(tabName)) {
+						System.err.println(Arrays.toString(global.getInclude()) + "数据库为空！！！");
+						break;
+					}
+					if (!all && (!match(global.getInclude(), tabName, true)
+							|| match(global.getExclude(), tabName, false))) {
+						continue;
+					}
+					Table table = new Table(tabName, results.getString(sql.getTbComment()));
+					table.setBeanName(StringUtils.capitalFirst(processName(tabName)));
+					table.setCreateTime(results.getString(sql.getTbCreateTime()));
+					tables.add(this.setTableFields(table, st));
 				}
-				if (!all && (!match(global.getInclude(), tabName, true)
-						|| match(global.getExclude(), tabName, false))) {
-					continue;
-				}
-				Table table = new Table(tabName, results.getString(sql.getTbComment()));
-				table.setBeanName(StringUtils.capitalFirst(processName(tabName)));
-				table.setCreateTime(results.getString(sql.getTbCreateTime()));
-				if (null == st) {
-					st = con.createStatement();
-				}
-				tables.add(this.setTableFields(table, st));
 			}
 		} catch (Exception e) {
-			logger.error("query database:{} tables fail!",dataSource.getDbName());
-		} finally {
-			close(st, results, pst, con);
+			logger.error("查询数据库表失败: {}", dataSource.getDbName(), e);
+			throw new GeneratorException("查询数据库表失败", e);
 		}
+		
 		return tables;
 	}
 
@@ -125,15 +171,13 @@ public abstract class AbstractGenerator extends BaseBean {
 	 * 设置表字段信息
 	 * 
 	 * @param table 表信息
-	 * @param con   数据库连接对象
+	 * @param st    数据库Statement对象
 	 * @return
 	 * @throws SQLException
 	 */
 	private Table setTableFields(Table table, Statement st) throws SQLException {
-		ResultSet results = null;
-		try {
-			QuerySQL sql = dataSource.getQuerySQL();
-			results = st.executeQuery(String.format(sql.getTbFields(), table.getName()));
+		QuerySQL sql = dataSource.getQuerySQL();
+		try (ResultSet results = st.executeQuery(String.format(sql.getTbFields(), table.getName()))) {
 			while (results.next()) {
 				TabField field = new TabField(results.getString(sql.getFieldName()),
 						results.getString(sql.getFieldType()));
@@ -161,8 +205,6 @@ public abstract class AbstractGenerator extends BaseBean {
 			}
 		} catch (SQLException e) {
 			logger.error("SQL Exception：{}", e.getMessage());
-		} finally {
-			close(results);
 		}
 		return table;
 	}
@@ -291,11 +333,11 @@ public abstract class AbstractGenerator extends BaseBean {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
 
-	public Map<Component, Map<String, String>> getComponents() {
+	public Map<Component, Map<String, Object>> getComponents() {
 		return components;
 	}
 
-	public void setComponents(Map<Component, Map<String, String>> components) {
+	public void setComponents(Map<Component, Map<String, Object>> components) {
 		this.components = components;
 	}
 }

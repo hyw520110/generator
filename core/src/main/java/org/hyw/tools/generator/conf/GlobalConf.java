@@ -164,6 +164,13 @@ public class GlobalConf extends BaseBean {
 	}
 
 	public void setOutputDir(String outputDir) {
+		if (StringUtils.isBlank(outputDir)) {
+			throw new IllegalArgumentException("输出目录不能为空");
+		}
+		// 验证路径安全性，防止路径遍历攻击
+		if (outputDir.contains("..") || outputDir.contains("~")) {
+			throw new IllegalArgumentException("输出目录包含非法字符: " + outputDir);
+		}
 		this.outputDir = outputDir;
 	}
 
@@ -283,7 +290,23 @@ public class GlobalConf extends BaseBean {
 	}
 
 	public void setEncoding(String encoding) {
+		if (StringUtils.isBlank(encoding)) {
+			throw new IllegalArgumentException("编码不能为空");
+		}
+		// 验证编码格式
+		if (!isValidEncoding(encoding)) {
+			throw new IllegalArgumentException("不支持的编码格式: " + encoding);
+		}
 		this.encoding = encoding;
+	}
+	
+	private boolean isValidEncoding(String encoding) {
+		try {
+			"test".getBytes(encoding);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	public void setTemplateDir(String templateDir) {
@@ -298,6 +321,20 @@ public class GlobalConf extends BaseBean {
 		URL url = GlobalConf.class.getResource(templateDir);
 		if (null == url) {
 			return null;
+		}
+		return url;
+	}
+
+	/**
+	 * 获取基于模板引擎类型的模板目录路径
+	 * @return 模板目录路径（包含引擎子目录）
+	 */
+	public URL getEngineTemplateDirPath() {
+		String engineDir = templateDir + "/" + getEngineType().getName();
+		URL url = GlobalConf.class.getResource(engineDir);
+		if (null == url) {
+			logger.warn("模板引擎目录不存在: {}，使用默认模板目录: {}", engineDir, templateDir);
+			url = GlobalConf.class.getResource(templateDir);
 		}
 		return url;
 	}
@@ -432,7 +469,18 @@ public class GlobalConf extends BaseBean {
 	}
 
 	public void setTemplateEngine(String templateEngine) {
+		if (StringUtils.isBlank(templateEngine)) {
+			throw new IllegalArgumentException("模板引擎不能为空");
+		}
+		// 验证模板引擎类型
+		if (!isValidTemplateEngine(templateEngine)) {
+			throw new IllegalArgumentException("不支持的模板引擎类型: " + templateEngine);
+		}
 		this.templateEngine = templateEngine;
+	}
+	
+	private boolean isValidTemplateEngine(String engine) {
+		return "freemarker".equalsIgnoreCase(engine) || "velocity".equalsIgnoreCase(engine);
 	}
 
 	/**

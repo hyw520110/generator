@@ -11,21 +11,25 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<slf4j.version>1.7.24</slf4j.version>
-		<logback.version>1.1.10</logback.version>
+		
+		<!-- 统一版本管理 -->
+		<slf4j.version>1.7.36</slf4j.version>
+		<logback.version>1.2.12</logback.version>
 		<velocity.version>1.7</velocity.version>
-		<snakeyaml.version>1.18</snakeyaml.version>
+		<snakeyaml.version>2.0</snakeyaml.version>
 		<lombok.version>1.18.24</lombok.version>
-		<freemarker.version>2.3.34</freemarker.version>
-		<caffeine.version>2.9.3</caffeine.version>
-		<commons-io.version>2.4</commons-io.version>
-		<commons-lang3.version>3.20.0</commons-lang3.version>
-		<pdfbox.version>2.0.24</pdfbox.version>
-		<poi.version>4.1.2</poi.version>
-		<druid.version>1.2.28</druid.version>
-		<lombok.version>1.18.44</lombok.version>
+		<freemarker.version>2.3.32</freemarker.version>
+		<caffeine.version>3.1.8</caffeine.version>
+		<commons-io.version>2.11.0</commons-io.version>
+		<commons-lang3.version>3.12.0</commons-lang3.version>
+		<pdfbox.version>2.0.27</pdfbox.version>
+		<poi.version>5.2.3</poi.version>
+		<druid.version>1.2.18</druid.version>
 		<junit.version>4.13.2</junit.version>
 		<mysql.version>8.0.33</mysql.version>
+		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+		<versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
 	</properties>
 	
 	<dependencyManagement>
@@ -126,7 +130,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.11.0</version>
+					<version>${maven-compiler-plugin.version}</version>
 					<configuration>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
@@ -137,13 +141,13 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>${maven-source-plugin.version}</version>
 				</plugin>
 				<!-- 依赖版本检测插件 -->
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>versions-maven-plugin</artifactId>
-					<version>2.16.2</version>
+					<version>${versions-maven-plugin.version}</version>
 					<configuration>
 						<generateBackupPoms>false</generateBackupPoms>
 					</configuration>

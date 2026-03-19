@@ -82,32 +82,77 @@ public class Generator extends AbstractGenerator {
 	 * @throws Exception
 	 */
 	public void execute() {
-		prepare();
-		URL dir = global.getTemplateDirPath();
-		if (dir == null) {
-			logger.error("模板目录：{}不存在!", dir);
-			return;
+		long startTime = System.currentTimeMillis();
+		try {
+			validateConfig();
+			prepare();
+			generateCode();
+			long duration = System.currentTimeMillis() - startTime;
+			logger.info("代码生成完成，耗时: {}ms", duration);
+		} catch (Exception e) {
+			long duration = System.currentTimeMillis() - startTime;
+			logger.error("代码生成失败，耗时: {}ms", duration, e);
+			throw new GeneratorException("代码生成失败", e);
 		}
+	}
+	
+	private void validateConfig() {
+		if (global == null) {
+			throw new GeneratorException("全局配置不能为空");
+		}
+		
+		if (StringUtils.isBlank(global.getOutputDir())) {
+			throw new GeneratorException("输出目录不能为空");
+		}
+		
+		if (global.getEngineTemplateDirPath() == null) {
+			throw new GeneratorException("模板目录不存在: " + global.getTemplateDir());
+		}
+		
+		if (dataSource == null) {
+			throw new GeneratorException("数据源配置不能为空");
+		}
+		
+		if (global.getComponents() == null || global.getComponents().length == 0) {
+			logger.warn("未配置任何组件，将生成基础代码结构");
+		}
+	}
+	
+	private void generateCode() {
 		List<Table> tables = getTables();
 		if (tables.isEmpty()) {
 			logger.warn("查询表为空！");
 			return;
 		}
+		
 		engine = getVelocityEngine();
 		VelocityContext context = createVelocityContext();
 		context.put("tables", tables);
+		
 		// 创建工程模块
 		String[] componentNames = global.getComponentNames();
-		render(dir, context, getTemplates("modules", false), true);
-		render(dir, context, getTemplates("modules", false, Component.VUE.name().toLowerCase()), false);
-		// 根据组件配置过滤所需的模板文件
-		render(dir, context, getTemplates("commons", true, componentNames), true);
+		renderModules(context, componentNames);
+		
+		// 渲染组件模板
 		Map<String, String> templates = getTemplates("components", true, componentNames);
 		for (Table table : tables) {
 			context.put("table", table);
-			render(dir, context, templates, true, table.getBeanName());
+			renderComponentTemplates(context, templates, table.getBeanName());
 		}
+		
 		openDir();
+	}
+	
+	private void renderModules(VelocityContext context, String[] componentNames) {
+		URL dir = global.getEngineTemplateDirPath();
+		render(dir, context, getTemplates("modules", false), true);
+		render(dir, context, getTemplates("modules", false, Component.VUE.name().toLowerCase()), false);
+		render(dir, context, getTemplates("commons", true, componentNames), true);
+	}
+	
+	private void renderComponentTemplates(VelocityContext context, Map<String, String> templates, String tableName) {
+		URL dir = global.getEngineTemplateDirPath();
+		render(dir, context, templates, true, tableName);
 	}
 
 	private void render(final URL dir, VelocityContext context, Map<String, String> templates, boolean render) {
@@ -120,76 +165,94 @@ public class Generator extends AbstractGenerator {
 			logger.error("{}目录下没有所需的模板文件！", dir);
 			return;
 		}
+		
 		for (Entry<String, String> entry : templates.entrySet()) {
 			String path = entry.getKey();
 			String data = entry.getValue();
 			try {
-				// 只有以模板后缀（.ftl 或 .vm）结尾的文件才需要渲染，其他文件直接跳过
-				boolean skipRender = !path.toLowerCase().endsWith(global.getEngineType().getExtension());
-				// logger.debug("path:{},engine extension:{},skip render:{}", path, global.getEngineType().getExtension(), skipRender);
-				if (!skipRender) {
-					if (render) {
-						if (StringUtils.isNotBlank(name)) {
-							try {
-								path = String.format(path,
-										StringUtils.countMatches(path, "%s") > 1 ? StringUtils.lowercaseFirst(name)
-												: name,
-										name);
-							} catch (Exception e) {
-								logger.error("path:{},name:{}", path, name);
-							}
-							context.put("entityName", name);
-							context.put("mapperName", name + "Mapper");
-							context.put("serviceName", name + "Service");
-							context.put("serviceImplName", name + "ServiceImpl");
-							context.put("controllerName", name + "Controller");
-						}
-						String moduleName = StringUtils.substringBefore(path, File.separator);
-						context.put("moduleName", moduleName);
-						if (path.endsWith(".java")) {
-							String spackage = getPackage(path);
-							String pName = StringUtils.substringAfterLast(spackage, ".");
-							context.put(pName + "Package", spackage);
-							context.put("className",
-									StringUtils.substringBefore(StringUtils.substringAfterLast(path, SEPARATOR), "."));
-							context.put(context.get("className") + "Package", spackage);
-						}
-						// 渲染文件
-						StringWriter writer = new StringWriter();
-						try {
-							engine.evaluate(context, writer, "", data);
-							data = writer.toString();
-						} catch (Exception e) {
-							logger.error("template file:{} render {}:{}", path, e.getClass(), e.getLocalizedMessage());
-							continue;
-						}
-					}
-				}
-				File dest = new File(global.getOutputDir(), path);
-				if ((!skipRender && StringUtils.isBlank(data)) || (dest.exists() && !global.isFileOverride())) {
-					continue;
-				}
-				if (dest.exists()) {
-					logger.warn("override:{}", dest);
-				} else {
-					logger.info("generator file:{}", dest);
-				}
-				try {
-					if (skipRender) {
-						FileUtils.write(dest, data);
-						continue;
-					}
-					FileUtils.write(dest, data);
-				} catch (Exception e) {
-					logger.error("write file:{}", dest, e);
-				}
-
+				renderTemplateFile(dir, context, path, data, render, name);
 			} catch (Exception e) {
-				logger.error("render file:{}", path, e);
+				logger.error("渲染文件失败: {}", path, e);
 			}
 		}
 	}
-
+		
+	private void renderTemplateFile(final URL dir, VelocityContext context, String path, String data, 
+			boolean render, String name) {
+		// 只有以模板后缀（.ftl 或 .vm）结尾的文件才需要渲染，其他文件直接跳过
+		boolean skipRender = !path.toLowerCase().endsWith(global.getEngineType().getExtension());
+		
+		if (!skipRender && render && StringUtils.isNotBlank(name)) {
+			prepareTemplateContext(context, path, name);
+		}
+		
+		if (!skipRender && render) {
+			try (StringWriter writer = new StringWriter()) {
+				engine.evaluate(context, writer, "", data);
+				data = writer.toString();
+			} catch (Exception e) {
+				logger.error("模板文件渲染失败: {}, 错误: {}", path, e.getMessage());
+				return;
+			}
+		}
+		
+		writeToFile(path, data, skipRender);
+	}
+		
+	private void prepareTemplateContext(VelocityContext context, String path, String name) {
+		try {
+			if (StringUtils.countMatches(path, "%s") > 1) {
+				path = String.format(path, StringUtils.lowercaseFirst(name), name);
+			} else {
+				path = String.format(path, name);
+			}
+		} catch (Exception e) {
+			logger.error("路径格式化失败: {}, name: {}", path, name);
+		}
+		
+		context.put("entityName", name);
+		context.put("mapperName", name + "Mapper");
+		context.put("serviceName", name + "Service");
+		context.put("serviceImplName", name + "ServiceImpl");
+		context.put("controllerName", name + "Controller");
+		
+		String moduleName = StringUtils.substringBefore(path, File.separator);
+		context.put("moduleName", moduleName);
+		
+		if (path.endsWith(".java")) {
+			prepareJavaContext(context, path);
+		}
+	}
+		
+	private void prepareJavaContext(VelocityContext context, String path) {
+		String spackage = getPackage(path);
+		String pName = StringUtils.substringAfterLast(spackage, ".");
+		context.put(pName + "Package", spackage);
+		
+		String className = StringUtils.substringBefore(StringUtils.substringAfterLast(path, SEPARATOR), ".");
+		context.put("className", className);
+		context.put(className + "Package", spackage);
+	}
+		
+	private void writeToFile(String path, String data, boolean skipRender) {
+		File dest = new File(global.getOutputDir(), path);
+		
+		if ((!skipRender && StringUtils.isBlank(data)) || (dest.exists() && !global.isFileOverride())) {
+			return;
+		}
+		
+		if (dest.exists()) {
+			logger.warn("覆盖文件: {}", dest);
+		} else {
+			logger.info("生成文件: {}", dest);
+		}
+		
+		try {
+			FileUtils.write(dest, data);
+		} catch (Exception e) {
+			logger.error("写入文件失败: {}", dest, e);
+		}
+	}
 	private String getPackage(String path) {
 		String spackage = (path.contains(global.getSourceDirectory())
 				? StringUtils.substringAfter(path, global.getSourceDirectory())

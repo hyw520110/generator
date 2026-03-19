@@ -168,7 +168,7 @@ public class TemplateContextBuilder {
             builder.variable(key.toUpperCase(), value);
         });
 
-        // 添加额外的包名变量
+        // 添加额外的包名变量（组件包名）
         builder.variable("voPackage", projectPackage + ".vo");
         builder.variable("mvcPackage", projectPackage + ".mvc");
         builder.variable("implPackage", projectPackage + ".service.impl");
@@ -178,6 +178,11 @@ public class TemplateContextBuilder {
         builder.variable("swagger2Package", projectPackage + ".swagger2");
         builder.variable("factoryPackage", projectPackage + ".beans.factory");
         builder.variable("runnerPackage", projectPackage + ".runner");
+        builder.variable("dubboPackage", projectPackage + ".dubbo");  // 添加dubboPackage
+        builder.variable("sentinelPackage", projectPackage + ".sentinel");  // 添加sentinelPackage
+        builder.variable("skywalkingPackage", projectPackage + ".skywalking");  // 添加skywalkingPackage
+        builder.variable("thymeleafPackage", projectPackage + ".thymeleaf");  // 添加thymeleafPackage
+        builder.variable("vuePackage", projectPackage + ".vue");  // 添加vuePackage
 
         // 添加额外的配置变量
         builder.variable("BASE_DIR", "");

@@ -192,6 +192,17 @@ public class Generator extends AbstractGenerator {
 				data.contains("#if") || data.contains("#foreach") || 
 				data.contains("${") || data.contains("%s");
 		
+		// 调试日志：输出文件信息和模板内容
+		if (logger.isDebugEnabled()) {
+			logger.debug("处理文件: {}", path);
+			logger.debug("是否为模板文件: {}", isTemplateFile);
+			if (isTemplateFile) {
+				logger.debug("模板内容前100字符: {}", data.substring(0, Math.min(100, data.length())));
+				logger.debug("上下文变量数量: {}", context.toFreeMarkerContext().size());
+				logger.debug("上下文变量: {}", context.toFreeMarkerContext().keySet());
+			}
+		}
+		
 		// 如果是模板且需要渲染
 		if (isTemplateFile && render) {
 			// 准备表相关的上下文
@@ -200,9 +211,21 @@ public class Generator extends AbstractGenerator {
 			}
 			
 			// 渲染模板
+			String originalData = data;
 			try {
 				EngineType engineType = global.getEngineType();
 				data = templateRenderer.render(data, context, engineType);
+				
+				// 调试日志：比较渲染前后的内容
+				if (logger.isDebugEnabled()) {
+					logger.debug("模板渲染完成: {}", path);
+					logger.debug("渲染前长度: {}, 渲染后长度: {}", originalData.length(), data.length());
+					if (!originalData.equals(data)) {
+						logger.debug("内容已改变！");
+					} else {
+						logger.debug("内容未改变，可能渲染失败或无需渲染");
+					}
+				}
 			} catch (Exception e) {
 				logger.error("模板文件渲染失败: {}, 错误: {}", path, e.getMessage(), e);
 				return;

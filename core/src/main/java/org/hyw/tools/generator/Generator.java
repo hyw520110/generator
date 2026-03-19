@@ -20,11 +20,13 @@ import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.exception.GeneratorException;
 import org.hyw.tools.generator.template.EngineType;
+import org.hyw.tools.generator.template.RenderContext;
+import org.hyw.tools.generator.template.TemplateContextBuilder;
+import org.hyw.tools.generator.template.TemplateRenderer;
 import org.hyw.tools.generator.utils.FileUtils;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
@@ -48,7 +50,8 @@ public class Generator extends AbstractGenerator {
 	 */
 	private static String conf = "/generator.yaml";
 	private static Generator generator;
-	private VelocityEngine engine;
+	private TemplateRenderer templateRenderer;
+	private TemplateContextBuilder contextBuilder;
 	private static final String SEPARATOR = "/";
 	static {
 		load(conf);
@@ -126,41 +129,45 @@ public class Generator extends AbstractGenerator {
 			return;
 		}
 		
-		engine = getVelocityEngine();
-		VelocityContext context = createVelocityContext();
-		context.put("tables", tables);
+		// 初始化模板渲染器和上下文构建器
+		templateRenderer = new TemplateRenderer();
+		contextBuilder = new TemplateContextBuilder(global, dataSource);
+		
+		// 创建全局上下文
+		RenderContext globalContext = contextBuilder.buildGlobalContext();
+		globalContext.put("tables", tables);
 		
 		// 创建工程模块
 		String[] componentNames = global.getComponentNames();
-		renderModules(context, componentNames);
+		renderModules(globalContext, componentNames);
 		
 		// 渲染组件模板
 		Map<String, String> templates = getTemplates("components", true, componentNames);
 		for (Table table : tables) {
-			context.put("table", table);
-			renderComponentTemplates(context, templates, table.getBeanName());
+			RenderContext tableContext = contextBuilder.buildTableContext(table);
+			renderComponentTemplates(tableContext, templates, table.getBeanName());
 		}
 		
 		openDir();
 	}
 	
-	private void renderModules(VelocityContext context, String[] componentNames) {
+	private void renderModules(RenderContext context, String[] componentNames) {
 		URL dir = global.getEngineTemplateDirPath();
 		render(dir, context, getTemplates("modules", false), true);
 		render(dir, context, getTemplates("modules", false, Component.VUE.name().toLowerCase()), false);
 		render(dir, context, getTemplates("commons", true, componentNames), true);
 	}
 	
-	private void renderComponentTemplates(VelocityContext context, Map<String, String> templates, String tableName) {
+	private void renderComponentTemplates(RenderContext context, Map<String, String> templates, String tableName) {
 		URL dir = global.getEngineTemplateDirPath();
 		render(dir, context, templates, true, tableName);
 	}
 
-	private void render(final URL dir, VelocityContext context, Map<String, String> templates, boolean render) {
+	private void render(final URL dir, RenderContext context, Map<String, String> templates, boolean render) {
 		render(dir, context, templates, render, null);
 	}
 
-	private void render(final URL dir, VelocityContext context, Map<String, String> templates, boolean render,
+	private void render(final URL dir, RenderContext context, Map<String, String> templates, boolean render,
 			String name) {
 		if (null == templates || templates.isEmpty()) {
 			logger.error("{}目录下没有所需的模板文件！", dir);
@@ -178,61 +185,47 @@ public class Generator extends AbstractGenerator {
 		}
 	}
 		
-	private void renderTemplateFile(final URL dir, VelocityContext context, String path, String data, 
+	private void renderTemplateFile(final URL dir, RenderContext context, String path, String data, 
 			boolean render, String name) {
-		// 只有以模板后缀（.ftl 或 .vm）结尾的文件才需要渲染，其他文件直接跳过
-		boolean skipRender = !path.toLowerCase().endsWith(global.getEngineType().getExtension());
+		// 判断是否为模板文件（基于内容和路径）
+		boolean isTemplateFile = path.toLowerCase().endsWith(global.getEngineType().getExtension()) ||
+				data.contains("#if") || data.contains("#foreach") || 
+				data.contains("${") || data.contains("%s");
 		
-		if (!skipRender && render && StringUtils.isNotBlank(name)) {
-			prepareTemplateContext(context, path, name);
-		}
-		
-		if (!skipRender && render) {
-			try (StringWriter writer = new StringWriter()) {
-				engine.evaluate(context, writer, "", data);
-				data = writer.toString();
+		// 如果是模板且需要渲染
+		if (isTemplateFile && render) {
+			// 准备表相关的上下文
+			if (StringUtils.isNotBlank(name)) {
+				context = prepareTableContext(context, name);
+			}
+			
+			// 渲染模板
+			try {
+				EngineType engineType = global.getEngineType();
+				data = templateRenderer.render(data, context, engineType);
 			} catch (Exception e) {
-				logger.error("模板文件渲染失败: {}, 错误: {}", path, e.getMessage());
+				logger.error("模板文件渲染失败: {}, 错误: {}", path, e.getMessage(), e);
 				return;
 			}
 		}
 		
-		writeToFile(path, data, skipRender);
+		// 移除模板扩展名并写入文件
+		String outputPath = isTemplateFile ? global.getEngineType().removeExtension(path) : path;
+		writeToFile(outputPath, data, !isTemplateFile);
 	}
 		
-	private void prepareTemplateContext(VelocityContext context, String path, String name) {
-		try {
-			if (StringUtils.countMatches(path, "%s") > 1) {
-				path = String.format(path, StringUtils.lowercaseFirst(name), name);
-			} else {
-				path = String.format(path, name);
-			}
-		} catch (Exception e) {
-			logger.error("路径格式化失败: {}, name: {}", path, name);
-		}
+	private RenderContext prepareTableContext(RenderContext context, String name) {
+		// 克隆上下文以避免污染原始上下文
+		RenderContext tableContext = context.createChildContext();
 		
-		context.put("entityName", name);
-		context.put("mapperName", name + "Mapper");
-		context.put("serviceName", name + "Service");
-		context.put("serviceImplName", name + "ServiceImpl");
-		context.put("controllerName", name + "Controller");
+		// 添加表相关的变量
+		tableContext.put("entityName", name);
+		tableContext.put("mapperName", name + "Mapper");
+		tableContext.put("serviceName", name + "Service");
+		tableContext.put("serviceImplName", name + "ServiceImpl");
+		tableContext.put("controllerName", name + "Controller");
 		
-		String moduleName = StringUtils.substringBefore(path, File.separator);
-		context.put("moduleName", moduleName);
-		
-		if (path.endsWith(".java")) {
-			prepareJavaContext(context, path);
-		}
-	}
-		
-	private void prepareJavaContext(VelocityContext context, String path) {
-		String spackage = getPackage(path);
-		String pName = StringUtils.substringAfterLast(spackage, ".");
-		context.put(pName + "Package", spackage);
-		
-		String className = StringUtils.substringBefore(StringUtils.substringAfterLast(path, SEPARATOR), ".");
-		context.put("className", className);
-		context.put(className + "Package", spackage);
+		return tableContext;
 	}
 		
 	private void writeToFile(String path, String data, boolean skipRender) {

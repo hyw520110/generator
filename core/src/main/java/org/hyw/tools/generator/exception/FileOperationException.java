@@ -27,7 +27,7 @@ public class FileOperationException extends GeneratorException {
      * @param message 错误消息
      */
     public FileOperationException(File file, String message) {
-        super("FILE_ERROR", message);
+        super(message);
         this.file = file;
     }
 
@@ -39,7 +39,7 @@ public class FileOperationException extends GeneratorException {
      * @param cause   原因
      */
     public FileOperationException(File file, String message, Throwable cause) {
-        super("FILE_ERROR", message, cause);
+        super(message, cause);
         this.file = file;
     }
 
@@ -51,7 +51,7 @@ public class FileOperationException extends GeneratorException {
      * @param args    错误参数
      */
     public FileOperationException(File file, String message, Object... args) {
-        super("FILE_ERROR", message, args);
+        super(message);
         this.file = file;
     }
 

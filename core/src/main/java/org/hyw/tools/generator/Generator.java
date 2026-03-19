@@ -23,6 +23,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.exception.GeneratorException;
 import org.hyw.tools.generator.template.EngineType;
 import org.hyw.tools.generator.utils.FileUtils;
 import org.hyw.tools.generator.utils.StringUtils;

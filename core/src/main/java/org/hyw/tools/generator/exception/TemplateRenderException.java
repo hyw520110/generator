@@ -19,7 +19,7 @@ public class TemplateRenderException extends GeneratorException {
      * @param message 错误消息
      */
     public TemplateRenderException(String message) {
-        super("TEMPLATE_RENDER_ERROR", message);
+        super(message);
     }
 
     /**
@@ -29,7 +29,7 @@ public class TemplateRenderException extends GeneratorException {
      * @param cause   原因
      */
     public TemplateRenderException(String message, Throwable cause) {
-        super("TEMPLATE_RENDER_ERROR", message, cause);
+        super(message, cause);
     }
 
     /**
@@ -39,6 +39,6 @@ public class TemplateRenderException extends GeneratorException {
      * @param args    错误参数
      */
     public TemplateRenderException(String message, Object... args) {
-        super("TEMPLATE_RENDER_ERROR", message, args);
+        super(message);
     }
 }

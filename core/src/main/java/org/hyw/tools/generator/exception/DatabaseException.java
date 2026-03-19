@@ -19,7 +19,7 @@ public class DatabaseException extends GeneratorException {
      * @param message 错误消息
      */
     public DatabaseException(String message) {
-        super("DB_ERROR", message);
+        super(message);
     }
 
     /**
@@ -29,7 +29,7 @@ public class DatabaseException extends GeneratorException {
      * @param cause   原因
      */
     public DatabaseException(String message, Throwable cause) {
-        super("DB_ERROR", message, cause);
+        super(message, cause);
     }
 
     /**
@@ -39,6 +39,6 @@ public class DatabaseException extends GeneratorException {
      * @param args    错误参数
      */
     public DatabaseException(String message, Object... args) {
-        super("DB_ERROR", message, args);
+        super(message);
     }
 }

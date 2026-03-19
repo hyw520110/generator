@@ -28,6 +28,7 @@ import org.hyw.tools.generator.conf.dao.QuerySQL;
 import org.hyw.tools.generator.conf.db.TabField;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.exception.GeneratorException;
 import org.hyw.tools.generator.enums.FieldType;
 import org.hyw.tools.generator.enums.Naming;
 import org.hyw.tools.generator.enums.db.DBType;
@@ -98,14 +99,13 @@ public abstract class AbstractGenerator extends BaseBean {
 		
 		if (!all) {
 			key.append(Arrays.toString(global.getInclude())).append(":");
-			key.append(Arrays.toString(global.getExclude())).append(":");
-		}
-		
-		key.append(global.getMatchMode()).append(":");
-		key.append(Arrays.toString(global.getTablePrefix())).append(":");
-		key.append(global.getNaming()).append(":");
-		key.append(global.isCapitalMode());
-		
+					key.append(Arrays.toString(global.getExclude())).append(":");
+				}
+				
+				key.append(global.isMatchMode()).append(":");
+				key.append(Arrays.toString(global.getTablePrefix())).append(":");
+				key.append(global.getNaming()).append(":");
+				key.append(global.isCapitalMode());		
 		return key.toString();
 	}
 	

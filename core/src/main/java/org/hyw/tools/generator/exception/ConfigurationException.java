@@ -19,7 +19,7 @@ public class ConfigurationException extends GeneratorException {
      * @param message 错误消息
      */
     public ConfigurationException(String message) {
-        super("CONFIG_ERROR", message);
+        super(message);
     }
 
     /**
@@ -29,7 +29,7 @@ public class ConfigurationException extends GeneratorException {
      * @param cause   原因
      */
     public ConfigurationException(String message, Throwable cause) {
-        super("CONFIG_ERROR", message, cause);
+        super(message, cause);
     }
 
     /**
@@ -39,6 +39,6 @@ public class ConfigurationException extends GeneratorException {
      * @param args    错误参数
      */
     public ConfigurationException(String message, Object... args) {
-        super("CONFIG_ERROR", message, args);
+        super(message);
     }
 }

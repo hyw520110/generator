@@ -266,7 +266,7 @@ public class TemplateContextBuilder {
             .put("entityNameLower", table.getLowercaseBeanName())
             .put("tableName", table.getName())
             .put("tableComment", table.getComment())
-            .put("fields", table.getFields())  // 允许模板通过${fields}直接访问
+            .put("fields", table.getFields())
             .put("fieldCount", table.getFieldsSize())
             .put("primaryKeyField", table.getPrimaryKeyField())
             .put("primaryKeyClass", table.getPrimaryKeyClass())
@@ -274,11 +274,13 @@ public class TemplateContextBuilder {
             .put("isCompositePrimaryKey", table.isCompositePrimaryKey())
             .put("primaryKeyInfo", table.getPrimaryKeyInfo())
             .put("importPackages", table.getImportPackages())
-            .put("className", table.getBeanName() + "Controller")  // 添加className变量
-            .put("mapperName", table.getBeanName() + "Mapper")     // 添加mapperName变量
-            .put("serviceName", table.getBeanName() + "Service")    // 添加serviceName变量
-            .put("serviceImplName", table.getBeanName() + "ServiceImpl") // 添加serviceImplName变量
-            .put("controllerName", table.getBeanName() + "Controller"); // 添加controllerName变量
+            .put("className", table.getBeanName() + "Controller")
+            .put("mapperName", table.getBeanName() + "Mapper")
+            .put("serviceName", table.getBeanName() + "Service")
+            .put("serviceImplName", table.getBeanName() + "ServiceImpl")
+            .put("controllerName", table.getBeanName() + "Controller")
+            .put("daoName", table.getBeanName() + "Dao")
+            .put("xmlName", table.getBeanName() + "Mapper");
         
         // 添加字段相关的快捷变量
         addFieldShortcuts(tableContext, table);

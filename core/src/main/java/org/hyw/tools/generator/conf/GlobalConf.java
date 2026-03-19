@@ -139,6 +139,11 @@ public class GlobalConf extends BaseBean {
 	private String encoding = "UTF-8";
 
 	/**
+	 * 是否为模拟模式（不生成文件，仅打印日志）
+	 */
+	private boolean dryRun = false;
+
+	/**
 	 * 模板目录
 	 */
 	private String templateDir = "/templates";

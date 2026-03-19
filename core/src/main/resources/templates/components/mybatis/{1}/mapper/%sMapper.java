@@ -33,7 +33,7 @@ import org.apache.ibatis.annotations.Select;
 #if($!{REDIS}&&"plus"!="$mapperType")
 @CacheConfig(cacheNames = "${StringUtils.lowercaseFirst($className)}")
 #end
-public interface ${className} #if(${superMapperClass}) extends ${StringUtils.getClassName(${superMapperClass})}<${StringUtils.capitalFirst("$entityName")}> #end{
+public interface ${className} #if(${superMapperClass}) extends ${StringUtils.getClassName(${superMapperClass})}<${StringUtils.capitalFirst("$entityName")}#if("plus"!="$mapperType"),${table.primaryKeyClass}#end> #end{
 #if("${mapperType}"!="plus")
 #if("${mapperType}"=="annotation")
         //TODO 
@@ -46,7 +46,8 @@ public interface ${className} #if(${superMapperClass}) extends ${StringUtils.get
 	
 #if($!{REDIS})
     @CacheEvict(key = "#p0")
+	public void deleteById(#foreach($field in ${table.primarykeyFields})@Param("${field.propertyName}")${field.fieldType.type} ${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
 #end
-	public Integer deleteById(#foreach($field in ${table.primarykeyFields})@Param("${field.propertyName}")${field.fieldType.type} ${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
+	
 #end
 }

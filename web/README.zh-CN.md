@@ -1,3 +1,7 @@
+安装环境
+nodejs安装
+安装yarn: npm i yarn -g
+
 安装依赖
 
 	yarn install

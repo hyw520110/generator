@@ -158,7 +158,8 @@
 	
  	<modules>
  		<module>./cmd</module>
- 		<module>./core</module>
+		<module>./core</module>
+		<module>./web</module>
  	</modules>
 </project>
 

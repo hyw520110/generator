@@ -35,7 +35,9 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 @SpringBootApplication
 @EnableCaching
 @EnableAsync
-#if("plus"!="$mapperType")@MapperScan("${mapperPackage}")#end
+#if("plus"!="$mapperType")
+@MapperScan("${mapperPackage}")
+#end
 public class Booter{
     
 	public static void main(String[] args ){

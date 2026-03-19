@@ -73,12 +73,33 @@
         </a-radio-group>
       </a-form-item>
       <a-form-item
-        label="zookeeper"
+        label="分布式配置"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
         class="stepFormText"
       >
-        <a-input v-decorator="['connectString', { initialValue: 'localhost:2181', rules: [{required: true, message: '请输入zookeeper连接地址'}] }]" placeholder="zookeeper连接地址,如:localhost:2181"/>
+        <a-radio-group button-style="solid" v-decorator="['configCenter', { initialValue: 'ZOOKEEPER', rules: [{required: true}] }]">
+          <a-radio-button value="ZOOKEEPER">zookeeper</a-radio-button>
+          <a-radio-button value="NACOS">nacos</a-radio-button>
+        </a-radio-group>
+      </a-form-item>
+      <a-form-item
+        label="zookeeper地址"
+        v-if="form.getFieldValue('configCenter') === 'ZOOKEEPER'"
+        :labelCol="labelCol"
+        :wrapperCol="wrapperCol"
+        class="stepFormText"
+      >
+        <a-input v-decorator="['zookeeperAddr', { initialValue: 'localhost:2181', rules: [{required: true, message: '请输入zookeeper连接地址'}] }]" placeholder="zookeeper连接地址,如:localhost:2181"/>
+      </a-form-item>
+      <a-form-item
+        label="nacos地址"
+        v-if="form.getFieldValue('configCenter') === 'NACOS'"
+        :labelCol="labelCol"
+        :wrapperCol="wrapperCol"
+        class="stepFormText"
+      >
+        <a-input v-decorator="['nacosAddr', { initialValue: 'localhost:8848', rules: [{required: true, message: '请输入nacos连接地址'}] }]" placeholder="nacos连接地址,如:localhost:8848"/>
       </a-form-item>
       <a-form-item
         label="redis地址"
@@ -122,10 +143,11 @@
         </a-checkbox-group>
       </a-form-item>
       <a-form-item :wrapperCol="{span: 19, offset: 5}">
-        <a-button style="margin-left: 8px" @click="prevStep">上一步</a-button>
-        <a-button :loading="loading" type="primary" @click="nextStep">下一步</a-button>
+        <a-button :loading="loading" style="margin-left: 8px; margin-right: 16px; cursor: pointer;" @click="prevStep">上一步</a-button>
+        <a-button :loading="loading" type="primary" style="cursor: pointer;" @click="nextStep">下一步</a-button>
       </a-form-item>
     </a-form>
+    <a-divider />
   </div>
 </template>
 

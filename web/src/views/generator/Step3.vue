@@ -52,7 +52,7 @@
     </a-card>
 
     <a-card
-      style="margin-top: 10px"
+      style="margin-top: 5px"
       :bordered="false">
       <div style="margin-bottom: 16px">
         <a-button
@@ -67,7 +67,9 @@
             {{ `选择了 ${selectedRowKeys.length} 项` }}
           </template>
         </span>
+
       </div>
+
       <a-table
         ref="table"
         size="default"
@@ -86,20 +88,20 @@
           </template>
         </span>
       </a-table>
+      <a-alert v-if="errorMessage" type="error" :message="errorMessage" style="margin-bottom: 16px" />
     </a-card>
   </div>
 </template>
 
 <script>
-import { STable, Ellipsis, Result } from '@/components'
+import { STable, Ellipsis } from '@/components' // 删除: import { STable, Ellipsis, Result } from '@/components'
 import { getTableList, genCode } from '@/api/generator'
 
 export default {
   name: 'GenCodeView',
   components: {
     STable,
-    Ellipsis,
-    Result
+    Ellipsis
   },
   data () {
     return {
@@ -131,6 +133,7 @@ export default {
       selectedRowKeys: [],
       selectedRows: [],
       loading: false,
+      errorMessage: '',
 
       // custom table alert & rowSelection
       options: {
@@ -159,12 +162,22 @@ export default {
   },
   methods: {
     start () {
-      // 批量生成代码
-      this.loading = true
-      genCode({ 'tabName': this.selectedRowKeys.join(',') }).then(res => {
-        this.loading = false
-        this.selectedRowKeys = []
-      })
+        // 批量生成代码
+        this.loading = true
+        genCode({ 'tabName': this.selectedRowKeys.join(',') })
+            .then(res => {
+                this.loading = false
+                this.selectedRowKeys = []
+                if (res.status === 10000) {
+                    this.errorMessage = '代码已生成 ' + res.message
+                } else {
+                    this.errorMessage = ''
+                }
+            })
+            .catch(err => {
+                this.loading = false
+                this.errorMessage = err.response ? err.response.data.message : '生成代码时发生错误'
+            })
     },
     handQuery (e) {
       e.preventDefault()

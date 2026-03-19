@@ -40,7 +40,6 @@ import {
   Skeleton,
   Popconfirm,
   PageHeader,
-  Result,
   Statistic,
   Descriptions,
   message,
@@ -94,7 +93,6 @@ Vue.use(Progress)
 Vue.use(Skeleton)
 Vue.use(Popconfirm)
 Vue.use(PageHeader)
-Vue.use(Result)
 Vue.use(Statistic)
 Vue.use(Descriptions)
 
@@ -112,5 +110,3 @@ Vue.use(MultiTab)
 Vue.use(PageLoading)
 Vue.use(PermissionHelper)
 Vue.use(VueCropper)
-
-process.env.NODE_ENV !== 'production' && console.warn('[antd-pro] NOTICE: Antd use lazy-load.')

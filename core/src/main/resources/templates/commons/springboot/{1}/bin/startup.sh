@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 KEYWORD="${project.name}.jar"
 
@@ -8,7 +8,7 @@ cd $BASE_DIR
 
 [ ! -d "$BASE_DIR/logs" ] && mkdir $BASE_DIR/logs
 
-JAVA_OPTS="-server -Xms512M -Xmx512M -Xmn200M -XX:MetaspaceSize=64M -XX:MaxMetaspaceSize=128M -Xss256k -XX:ParallelGCThreads=20 -XX:+UseConcMarkSweepGC -Djava.io.tmpdir=/logs/"
+JAVA_OPTS="-server -Xms${JAVA_XMS:-512M} -Xmx${JAVA_XMX:-512M} -Xmn${JAVA_XMN:-200M} -XX:MetaspaceSize=64M -XX:MaxMetaspaceSize=128M -Xss256k -XX:ParallelGCThreads=20 -XX:+UseConcMarkSweepGC -Djava.io.tmpdir=${TMP_DIR:-/logs/}"
 #if($SENTINEL)
 SENTINEL_OPTS=-Dproject.name=${project.name} -Dcsp.sentinel.dashboard.server=${dashboard.server} -Dcsp.sentinel.api.port=${api.port}  -Dcsp.sentinel.app.type=${app.type}
 #end

@@ -3,13 +3,13 @@
     <div class="container">
       <div class="top">
         <div class="header">
-          <a href="/">
+          <a href="http://www.github.com/hyw520110/generator.git">
             <img src="~@/assets/logo.svg" class="logo" alt="logo">
             <span class="title">Generator</span>
           </a>
         </div>
         <div class="desc">
-          <a href="http://www.github.com/hyw520110/generator.git" target="_blank">最简单易用的代码生成器:http://www.github.com/hyw520110/generator.git</a>
+          <a href="http://www.github.com/hyw520110/generator.git" target="_blank">最简单易用的代码生成器</a>
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.hyw.tools.generator.conf.BaseBean;
+import org.hyw.tools.generator.enums.FieldType;
 import org.hyw.tools.generator.utils.StringUtils;
 
 public class Table extends BaseBean {
@@ -78,10 +79,18 @@ public class Table extends BaseBean {
 		}
 		return null;
 	}
-
+	
+	public String getPrimaryKeyClass() {
+		List<TabField> list = getPrimarykeyFields();
+		if (null != list && list.size()>=1) {
+			return list.get(0).getFieldType().getType();
+		}
+		//TODO 复合主键处理
+		return null;
+	}
 	/**
 	 * 是否有主键
-	 * 
+	 * TODO 无主键
 	 * @return
 	 */
 	public boolean hasPrimarykeys() {

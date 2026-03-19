@@ -9,7 +9,6 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +81,7 @@ public class Generator extends AbstractGenerator {
 
 	/**
 	 * 生成代码
+	 * @throws IOException 
 	 * 
 	 * @throws Exception
 	 */
@@ -304,6 +304,11 @@ public class Generator extends AbstractGenerator {
 			String outputPath = isTemplateFile ? global.getEngineType().removeExtension(path) : path;
 			writeToFile(outputPath, data, !isTemplateFile);
 		}
+	}
+
+	private boolean isResourceFile(String path) {
+		return ArrayUtils.contains(global.getResources(),
+				StringUtils.lowerCase(StringUtils.substringAfterLast(path, ".")));
 	}
 
 	private String getPackage(String path) {

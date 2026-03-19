@@ -119,41 +119,11 @@ export default {
   },
   methods: {
     i18nRender,
-    handleMediaQuery (val) {
-      this.query = val
-      if (this.isMobile && !val['screen-xs']) {
-        this.isMobile = false
-        return
-      }
-      if (!this.isMobile && val['screen-xs']) {
-        this.isMobile = true
-        this.collapsed = false
-        this.settings.contentWidth = CONTENT_WIDTH_TYPE.Fluid
-        // this.settings.fixSiderbar = false
-      }
-    },
-    handleCollapse (val) {
-      this.collapsed = val
-    },
-    handleSettingChange ({ type, value }) {
-      console.log('type', type, value)
-      type && (this.settings[type] = value)
-      switch (type) {
-        case 'contentWidth':
-          this.settings[type] = value
-          break
-        case 'layout':
-          if (value === 'sidemenu') {
-            this.settings.contentWidth = CONTENT_WIDTH_TYPE.Fluid
-          } else {
-            this.settings.fixSiderbar = false
-            this.settings.contentWidth = CONTENT_WIDTH_TYPE.Fixed
-          }
-          break
-      }
-    },
-    logoRender () {
-      return <LogoSvg />
+    handleMediaQuery (val) { /***/ },
+    handleCollapse (val) { /***/ },
+    handleSettingChange ({ type, value }) { /***/ },
+    logoRender (h) {
+      return h(LogoSvg)
     }
   }
 }

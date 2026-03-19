@@ -12,10 +12,13 @@ public enum StatusCode {
     SYSTEM_AUTH_ERROR(99994, "无权限进行该操作"),
     SENTINEL_ERROR(99993, "服务器繁忙,请稍后再试"),
     
+    
     UNAUTH_ERROR(90000, "无权进行该操作"),
     TOKEN_ERROR(90001, "令牌非法,无权进行该操作"),
     AUTH_USER_NOT_EXIST_ERROR(90002, "无权限,用户不存在"),
-    AUTH_USER_LOCK_ERROR(90003, "无权限,用户已锁定");
+    AUTH_USER_LOCK_ERROR(90003, "无权限,用户已锁定"),
+    DIR_CREATE_ERROR(90004, "目录无法创建文件");
+    
 
     // 各业务服务使用从2xxxx - 8xxxx的状态码
 

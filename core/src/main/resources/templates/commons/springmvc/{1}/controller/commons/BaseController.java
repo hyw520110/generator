@@ -10,10 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 #if($!{springboot_version})
 import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
+#if($mapperType == "plus")
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
+#end
 import org.springframework.stereotype.Controller;
 #end
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +26,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import ${entityPackage}.BaseEntity;
 import ${servicePackage}.BaseService;
+#if($VUE)
 import ${rootPackage}.${projectName}.api.vo.Result;
+#end
 import io.swagger.annotations.ApiOperation;
 #set($comment="公共接口实现")
 #parse('/templates/comments/comment.vm')
 public class BaseController<BizService extends BaseService,Entity extends BaseEntity> {
-	
+#if($VUE)	
     @Autowired
     protected BizService bizService;
     protected static final String AUTH_TYPE_WEB = "web";
@@ -80,6 +83,7 @@ public class BaseController<BizService extends BaseService,Entity extends BaseEn
 	public Result<IPage<Entity>> page(@RequestParam(name = "pageNum",defaultValue = "1",required = false)Integer pageNo,@RequestParam(name = "pageSize",defaultValue = "10",required = false) Integer pageSize, Entity entity) {
 	    IPage<Entity> page = bizService.page(new Page(pageNo, pageSize),new QueryWrapper(entity));
 	    return new Result<>(page);
-	}    
+	} 
+#end
 }
 #end

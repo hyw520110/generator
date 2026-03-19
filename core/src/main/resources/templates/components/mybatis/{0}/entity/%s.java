@@ -73,10 +73,12 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
     }
 #end
 #if("plus"=="$mapperType")
+#if($table.hasPrimarykeys())
 	@Override
-	protected java.io.Serializable pkVal() {
-	    return this.id;
+	protected $table.primaryKeyField.propertyType pkVal() {
+	    return this.$table.primaryKeyField.propertyName;
 	}
+#end
 	public String toString() {
 	    return "${className}{" +
 		#foreach($field in ${table.fields})

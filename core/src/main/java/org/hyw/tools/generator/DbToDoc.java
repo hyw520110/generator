@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.hyw.tools.generator.conf.db.TabField;
 import org.hyw.tools.generator.conf.db.Table;
@@ -26,16 +27,7 @@ import java.util.List;
  */
 public class DbToDoc {
 
-	public static void main(String[] args) {
-		Generator generator = Generator.getInstance();
-		List<Table> tables = generator.getTables();
-		
-		// 导出为 Word
-		toDoc(tables, ExportFormat.DOCX, "/output/" + generator.getDataSource().getDbName() + ".docx");
-		
-		// 导出为 PDF
-		toDoc(tables, ExportFormat.PDF, "/output/" + generator.getDataSource().getDbName() + ".pdf");
-	}
+	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DbToDoc.class);
 
 	/**
 	 * 导出数据库表结构为文档
@@ -44,17 +36,28 @@ public class DbToDoc {
 	 * @param fileName 输出文件名
 	 */
 	public static void toDoc(List<Table> tables, ExportFormat format, String fileName) {
+		toDoc(tables, format, fileName, null);
+	}
+	
+	/**
+	 * 导出数据库表结构为文档
+	 * @param tables 表列表
+	 * @param format 导出格式 (DOCX 或 PDF)
+	 * @param fileName 输出文件名
+	 * @param fontPaths PDF 中文字体路径列表（按优先级排序，为空则使用默认字体）
+	 */
+	public static void toDoc(List<Table> tables, ExportFormat format, String fileName, List<String> fontPaths) {
 		try {
 			if (format == ExportFormat.DOCX) {
 				exportToWord(tables, fileName);
-				System.out.println("Word 文档生成成功: " + fileName);
+				logger.info("Word 文档生成成功: {}", fileName);
 			} else if (format == ExportFormat.PDF) {
-				exportToPDF(tables, fileName);
-				System.out.println("PDF 文档生成成功: " + fileName);
+				exportToPDF(tables, fileName, fontPaths);
+				logger.info("PDF 文档生成成功: {}", fileName);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.err.println("文档生成失败: " + e.getMessage());
+			logger.error("文档生成失败: {}", e.getMessage(), e);
+			throw new org.hyw.tools.generator.exception.GeneratorException("文档生成失败: " + e.getMessage(), e);
 		}
 	}
 
@@ -171,8 +174,11 @@ public class DbToDoc {
 	/**
 	 * 导出为 PDF 文档
 	 */
-	private static void exportToPDF(List<Table> tables, String fileName) throws IOException {
+	private static void exportToPDF(List<Table> tables, String fileName, List<String> fontPaths) throws IOException {
 		try (PDDocument document = new PDDocument()) {
+			// 加载中文字体
+			PDType0Font chineseFont = loadChineseFont(document, fontPaths);
+			
 			PDPage page = new PDPage(PDRectangle.A4);
 			document.addPage(page);
 
@@ -184,7 +190,7 @@ public class DbToDoc {
 				float tableLineHeight = 12;
 
 				// 标题
-				contentStream.setFont(PDType1Font.HELVETICA_BOLD, 18);
+				contentStream.setFont(chineseFont, 18);
 				contentStream.beginText();
 				contentStream.newLineAtOffset(margin, yPosition);
 				contentStream.showText("数据库结构定义");
@@ -192,7 +198,7 @@ public class DbToDoc {
 				yPosition -= 30;
 
 				// 表汇总标题
-				contentStream.setFont(PDType1Font.HELVETICA_BOLD, 14);
+				contentStream.setFont(chineseFont, 14);
 				contentStream.beginText();
 				contentStream.newLineAtOffset(margin, yPosition);
 				contentStream.showText("表汇总");
@@ -200,7 +206,7 @@ public class DbToDoc {
 				yPosition -= 20;
 
 				// 绘制表汇总表格
-				contentStream.setFont(PDType1Font.HELVETICA, 10);
+				contentStream.setFont(chineseFont, 10);
 				float[] columnWidths = {60, 150, 200};
 				float tableWidth = columnWidths[0] + columnWidths[1] + columnWidths[2];
 				float xPosition = margin;
@@ -208,7 +214,7 @@ public class DbToDoc {
 				// 表头
 				contentStream.setLineWidth(0.5f);
 				contentStream.setStrokingColor(Color.GRAY);
-				drawTableRow(contentStream, xPosition, yPosition, columnWidths, new String[]{"序号", "表中文名", "表英文名"}, true);
+				drawTableRow(contentStream, chineseFont, xPosition, yPosition, columnWidths, new String[]{"序号", "表中文名", "表英文名"}, true);
 				yPosition -= tableLineHeight;
 
 				// 表数据
@@ -225,7 +231,7 @@ public class DbToDoc {
 						contentStream = new PDPageContentStream(document, page);
 						yPosition = page.getMediaBox().getHeight() - margin;
 					}
-					drawTableRow(contentStream, xPosition, yPosition, columnWidths, 
+					drawTableRow(contentStream, chineseFont, xPosition, yPosition, columnWidths, 
 						new String[]{String.valueOf(index++), process(tab.getComment()), tab.getName()}, false);
 					yPosition -= tableLineHeight;
 				}
@@ -250,7 +256,7 @@ public class DbToDoc {
 					}
 
 					// 表标题
-					contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
+					contentStream.setFont(chineseFont, 12);
 					contentStream.beginText();
 					contentStream.newLineAtOffset(margin, yPosition);
 					contentStream.showText(tabComment + "(" + tab.getName() + ")");
@@ -259,16 +265,13 @@ public class DbToDoc {
 
 					// 字段表格
 					float[] fieldColumnWidths = {100, 120, 80, 80, 200};
-					float fieldTableWidth = fieldColumnWidths[0] + fieldColumnWidths[1] + fieldColumnWidths[2] + fieldColumnWidths[3] + fieldColumnWidths[4];
 
 					// 表头
-					contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
-					drawTableRow(contentStream, xPosition, yPosition, fieldColumnWidths, 
-						new String[]{"名称", "类型", "是否为空", "是否主键", "描述"}, true);
+					drawTableRow(contentStream, chineseFont, xPosition, yPosition, fieldColumnWidths, 
+						new String[]{"名称", "类型", "是否为空", "主键", "描述"}, true);
 					yPosition -= tableLineHeight;
 
 					// 字段数据
-					contentStream.setFont(PDType1Font.HELVETICA, 9);
 					for (TabField field : fields) {
 						if (yPosition < 50) {
 							contentStream.close();
@@ -277,7 +280,7 @@ public class DbToDoc {
 							contentStream = new PDPageContentStream(document, page);
 							yPosition = page.getMediaBox().getHeight() - margin;
 						}
-						drawTableRow(contentStream, xPosition, yPosition, fieldColumnWidths, 
+						drawTableRow(contentStream, chineseFont, xPosition, yPosition, fieldColumnWidths, 
 							new String[]{
 								field.getName(), 
 								field.getType(), 
@@ -297,11 +300,49 @@ public class DbToDoc {
 			document.save(new File(fileName));
 		}
 	}
+	
+	/**
+	 * 加载中文字体
+	 * 依次尝试配置的字体路径和常见的系统中文字体路径
+	 * 支持 TTF 和 TTC (TrueType Collection) 格式
+	 * @param document PDF 文档
+	 * @param fontPaths 配置的字体路径列表（按优先级排序）
+	 */
+	private static PDType0Font loadChineseFont(PDDocument document, List<String> fontPaths) throws IOException {
+		// 从配置的字体路径列表中依次尝试加载
+		if (fontPaths != null && !fontPaths.isEmpty()) {
+			for (String fontPath : fontPaths) {
+				if (fontPath == null || fontPath.trim().isEmpty()) {
+					continue;
+				}
+				File fontFile = new File(fontPath.trim());
+				if (fontFile.exists()) {
+					try {
+						logger.info("加载中文字体: {}", fontPath);
+						return loadFontFile(document, fontFile);
+					} catch (IOException e) {
+						logger.warn("加载字体失败 {}: {}", fontPath, e.getMessage());
+					}
+				}
+			}
+		}
+		
+		throw new IOException("未找到可用的中文字体，请在配置文件 app.pdf.fonts 中配置字体路径");
+	}
+	
+	/**
+	 * 加载字体文件，支持 TTF 和 TTC 格式
+	 */
+	private static PDType0Font loadFontFile(PDDocument document, File fontFile) throws IOException {
+		// PDFBox 2.x 可以直接加载 TTC 文件，会自动选择第一个字体
+		// 对于 TTF/OTF 文件也使用相同方法
+		return PDType0Font.load(document, fontFile);
+	}
 
 	/**
 	 * 绘制 PDF 表格行
 	 */
-	private static void drawTableRow(PDPageContentStream contentStream, float x, float y, 
+	private static void drawTableRow(PDPageContentStream contentStream, PDType0Font font, float x, float y, 
 			float[] columnWidths, String[] texts, boolean isHeader) throws IOException {
 		contentStream.setLineWidth(0.5f);
 		
@@ -326,7 +367,9 @@ public class DbToDoc {
 		// 填充表头背景色
 		if (isHeader) {
 			contentStream.setNonStrokingColor(new Color(176, 196, 222));
-			contentStream.addRect(x, y - 12, columnWidths[0] + columnWidths[1] + columnWidths[2], 12);
+			float totalWidth = 0;
+			for (float w : columnWidths) totalWidth += w;
+			contentStream.addRect(x, y - 12, totalWidth, 12);
 			contentStream.fill();
 		}
 
@@ -339,9 +382,10 @@ public class DbToDoc {
 			if (text != null && text.length() > 15) {
 				text = text.substring(0, 15) + "...";
 			}
+			contentStream.setFont(font, isHeader ? 10 : 9);
 			contentStream.beginText();
 			contentStream.newLineAtOffset(currentX + 5, y - 9);
-			contentStream.showText(text);
+			contentStream.showText(text != null ? text : "");
 			contentStream.endText();
 			currentX += columnWidths[i];
 		}

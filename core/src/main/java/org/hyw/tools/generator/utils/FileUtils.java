@@ -2,6 +2,8 @@ package org.hyw.tools.generator.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -14,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -124,5 +128,53 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 			}
 		});
 		return files;
+	}
+
+	/**
+	 * 将文件夹打包为ZIP写入输出流
+	 * @param folder 要打包的文件夹
+	 * @param zos Zip输出流
+	 * @throws IOException IO异常
+	 */
+	public static void zipFolder(File folder, ZipOutputStream zos) throws IOException {
+		zipFolder(folder, folder.getName(), zos);
+	}
+
+	/**
+	 * 递归打包文件夹
+	 * @param folder 要打包的文件夹
+	 * @param parentPath 父路径（用于ZIP条目）
+	 * @param zos Zip输出流
+	 * @throws IOException IO异常
+	 */
+	public static void zipFolder(File folder, String parentPath, ZipOutputStream zos) throws IOException {
+		File[] files = folder.listFiles();
+		if (files == null) {
+			return;
+		}
+
+		byte[] buffer = new byte[8192];
+
+		for (File file : files) {
+			String entryPath = parentPath + "/" + file.getName();
+
+			if (file.isDirectory()) {
+				// 递归处理子目录
+				zipFolder(file, entryPath, zos);
+			} else {
+				// 添加文件到zip
+				ZipEntry entry = new ZipEntry(entryPath);
+				zos.putNextEntry(entry);
+
+				try (FileInputStream fis = new FileInputStream(file)) {
+					int len;
+					while ((len = fis.read(buffer)) > 0) {
+						zos.write(buffer, 0, len);
+					}
+				}
+
+				zos.closeEntry();
+			}
+		}
 	}
 }

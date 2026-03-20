@@ -1,42 +1,19 @@
 <template>
-  <v-chart :width="width" :height="height" :padding="[0]" :data="data" :scale="scale">
-    <v-tooltip :show-title="false" />
-    <v-coord type="rect" direction="TL" />
-    <v-point position="x*y" color="category" shape="cloud" tooltip="value*category" />
-  </v-chart>
+  <div class="tag-cloud-placeholder" :style="{ width: width + 'px', height: height + 'px' }">
+    <div v-for="(tag, index) in displayTags" :key="index" 
+         :style="{ 
+           fontSize: getFontSize(tag.value) + 'px', 
+           color: getColor(index),
+           display: 'inline-block',
+           margin: '5px',
+           padding: '2px 8px'
+         }">
+      {{ tag.name }}
+    </div>
+  </div>
 </template>
 
 <script>
-import { registerShape } from 'viser-vue'
-const DataSet = require('@antv/data-set')
-
-const imgUrl = 'https://gw.alipayobjects.com/zos/rmsportal/gWyeGLCdFFRavBGIDzWk.png'
-
-const scale = [
-  { dataKey: 'x', nice: false },
-  { dataKey: 'y', nice: false }
-]
-
-registerShape('point', 'cloud', {
-  draw (cfg, container) {
-    return container.addShape('text', {
-      attrs: {
-        fillOpacity: cfg.opacity,
-        fontSize: cfg.origin._origin.size,
-        rotate: cfg.origin._origin.rotate,
-        text: cfg.origin._origin.text,
-        textAlign: 'center',
-        fontFamily: cfg.origin._origin.font,
-        fill: cfg.color,
-        textBaseline: 'Alphabetic',
-        ...cfg.style,
-        x: cfg.x,
-        y: cfg.y
-      }
-    })
-  }
-})
-
 export default {
   name: 'TagCloud',
   props: {
@@ -53,61 +30,38 @@ export default {
       default: 640
     }
   },
-  data () {
-    return {
-      data: [],
-      scale
-    }
-  },
-  watch: {
-    tagList: function (val) {
-      if (val.length > 0) {
-        this.initTagCloud(val)
-      }
-    }
-  },
-  mounted () {
-    if (this.tagList.length > 0) {
-      this.initTagCloud(this.tagList)
+  computed: {
+    displayTags () {
+      return this.tagList || []
+    },
+    min () {
+      if (!this.tagList.length) return 0
+      return Math.min(...this.tagList.map(t => t.value))
+    },
+    max () {
+      if (!this.tagList.length) return 1
+      return Math.max(...this.tagList.map(t => t.value))
     }
   },
   methods: {
-    initTagCloud (dataSource) {
-      const { height, width } = this
-
-      const dv = new DataSet.View().source(dataSource)
-      const range = dv.range('value')
-      const min = range[0]
-      const max = range[1]
-      const imageMask = new Image()
-      imageMask.crossOrigin = ''
-      imageMask.src = imgUrl
-      imageMask.onload = () => {
-        dv.transform({
-          type: 'tag-cloud',
-          fields: ['name', 'value'],
-          size: [width, height],
-          imageMask,
-          font: 'Verdana',
-          padding: 0,
-          timeInterval: 5000, // max execute time
-          rotate () {
-            let random = ~~(Math.random() * 4) % 4
-            if (random === 2) {
-              random = 0
-            }
-            return random * 90 // 0, 90, 270
-          },
-          fontSize (d) {
-            if (d.value) {
-              return ((d.value - min) / (max - min)) * (32 - 8) + 8
-            }
-            return 0
-          }
-        })
-        this.data = dv.rows
-      }
+    getFontSize (value) {
+      return ((value - this.min) / (this.max - this.min || 1)) * (32 - 8) + 8
+    },
+    getColor (index) {
+      const colors = ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96', '#fa8c16']
+      return colors[index % colors.length]
     }
   }
 }
 </script>
+
+<style scoped>
+.tag-cloud-placeholder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+</style>

@@ -3,56 +3,58 @@
     <a-form
       id="formLogin"
       class="user-layout-login"
-      ref="formLogin"
-      :form="form"
+      ref="formRef"
+      :model="formState"
       @submit="handleSubmit"
     >
       <a-tabs
-        :activeKey="customActiveKey"
+        v-model:activeKey="customActiveKey"
         :tabBarStyle="{ textAlign: 'center', borderBottom: 'unset' }"
         @change="handleTabClick"
       >
         <a-tab-pane key="tab1" tab="账号密码登录">
           <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" message="账户或密码错误（admin/ant.design )" />
-          <a-form-item>
+          <a-form-item name="username">
             <a-input
               size="large"
               type="text"
               placeholder="账户: admin"
-              v-decorator="[
-                'username',
-                {rules: [{ required: true, message: '请输入帐户名或邮箱地址' }, { validator: handleUsernameOrEmail }], validateTrigger: 'change'}
-              ]"
+              v-model:value="formState.username"
             >
-              <a-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              <template #prefix>
+                <UserOutlined :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              </template>
             </a-input>
           </a-form-item>
 
-          <a-form-item>
+          <a-form-item name="password">
             <a-input-password
               size="large"
               placeholder="密码: admin or ant.design"
-              v-decorator="[
-                'password',
-                {rules: [{ required: true, message: '请输入密码' }], validateTrigger: 'blur'}
-              ]"
+              v-model:value="formState.password"
             >
-              <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              <template #prefix>
+                <LockOutlined :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              </template>
             </a-input-password>
           </a-form-item>
         </a-tab-pane>
         <a-tab-pane key="tab2" tab="手机号登录">
-          <a-form-item>
-            <a-input size="large" type="text" placeholder="手机号" v-decorator="['mobile', {rules: [{ required: true, pattern: /^1[34578]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
-              <a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+          <a-form-item name="mobile">
+            <a-input size="large" type="text" placeholder="手机号" v-model:value="formState.mobile">
+              <template #prefix>
+                <MobileOutlined :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              </template>
             </a-input>
           </a-form-item>
 
           <a-row :gutter="16">
             <a-col class="gutter-row" :span="16">
-              <a-form-item>
-                <a-input size="large" type="text" placeholder="验证码" v-decorator="['captcha', {rules: [{ required: true, message: '请输入验证码' }], validateTrigger: 'blur'}]">
-                  <a-icon slot="prefix" type="mail" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              <a-form-item name="captcha">
+                <a-input size="large" type="text" placeholder="验证码" v-model:value="formState.captcha">
+                  <template #prefix>
+                    <MailOutlined :style="{ color: 'rgba(0,0,0,.25)' }"/>
+                  </template>
                 </a-input>
               </a-form-item>
             </a-col>
@@ -62,15 +64,14 @@
                 tabindex="-1"
                 :disabled="state.smsSendBtn"
                 @click.stop.prevent="getCaptcha"
-                v-text="!state.smsSendBtn && '获取验证码' || (state.time+' s')"
-              ></a-button>
+              >{{ !state.smsSendBtn ? '获取验证码' : (state.time + ' s') }}</a-button>
             </a-col>
           </a-row>
         </a-tab-pane>
       </a-tabs>
 
       <a-form-item>
-        <a-checkbox v-decorator="['rememberMe', { valuePropName: 'checked' }]">自动登录</a-checkbox>
+        <a-checkbox v-model:checked="formState.rememberMe">自动登录</a-checkbox>
         <router-link
           :to="{ name: 'recover', params: { user: 'aaa'} }"
           class="forge-password"
@@ -92,13 +93,13 @@
       <div class="user-login-other">
         <span>其他登录方式</span>
         <a>
-          <a-icon class="item-icon" type="alipay-circle"></a-icon>
+          <AlipayCircleOutlined class="item-icon"/>
         </a>
         <a>
-          <a-icon class="item-icon" type="taobao-circle"></a-icon>
+          <TaobaoCircleOutlined class="item-icon"/>
         </a>
         <a>
-          <a-icon class="item-icon" type="weibo-circle"></a-icon>
+          <WeiboCircleOutlined class="item-icon"/>
         </a>
         <router-link class="register" :to="{ name: 'register' }">注册账户</router-link>
       </div>
@@ -114,168 +115,222 @@
 </template>
 
 <script>
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+import { notification, message } from 'ant-design-vue'
 import md5 from 'md5'
+import {
+  UserOutlined,
+  LockOutlined,
+  MobileOutlined,
+  MailOutlined,
+  AlipayCircleOutlined,
+  TaobaoCircleOutlined,
+  WeiboCircleOutlined
+} from '@ant-design/icons-vue'
 import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
-import { mapActions } from 'vuex'
 import { timeFix } from '@/utils/util'
 import { getSmsCaptcha, get2step } from '@/api/login'
 
 export default {
+  name: 'Login',
   components: {
-    TwoStepCaptcha
+    TwoStepCaptcha,
+    UserOutlined,
+    LockOutlined,
+    MobileOutlined,
+    MailOutlined,
+    AlipayCircleOutlined,
+    TaobaoCircleOutlined,
+    WeiboCircleOutlined
   },
-  data () {
-    return {
-      customActiveKey: 'tab1',
+  setup () {
+    const router = useRouter()
+    const store = useStore()
+    const formRef = ref()
+    
+    const customActiveKey = ref('tab1')
+    const isLoginError = ref(false)
+    const requiredTwoStepCaptcha = ref(false)
+    const stepCaptchaVisible = ref(false)
+    const loginType = ref(0)
+    
+    const state = reactive({
+      time: 60,
       loginBtn: false,
-      // login type: 0 email, 1 username, 2 telephone
-      loginType: 0,
-      isLoginError: false,
-      requiredTwoStepCaptcha: false,
-      stepCaptchaVisible: false,
-      form: this.$form.createForm(this),
-      state: {
-        time: 60,
-        loginBtn: false,
-        // login type: 0 email, 1 username, 2 telephone
-        loginType: 0,
-        smsSendBtn: false
+      smsSendBtn: false
+    })
+    
+    const formState = reactive({
+      username: '',
+      password: '',
+      mobile: '',
+      captcha: '',
+      rememberMe: false
+    })
+    
+    const Login = (loginParams) => {
+      return store.dispatch('Login', loginParams)
+    }
+    
+    const Logout = () => {
+      return store.dispatch('Logout')
+    }
+    
+    const handleTabClick = (key) => {
+      customActiveKey.value = key
+    }
+    
+    const handleSubmit = (e) => {
+      e.preventDefault()
+      state.loginBtn = true
+      
+      if (customActiveKey.value === 'tab1') {
+        if (!formState.username) {
+          notification.error({ message: '错误', description: '请输入帐户名或邮箱地址' })
+          state.loginBtn = false
+          return
+        }
+        if (!formState.password) {
+          notification.error({ message: '错误', description: '请输入密码' })
+          state.loginBtn = false
+          return
+        }
+        
+        const regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/
+        const currentLoginType = regex.test(formState.username) ? 0 : 1
+        
+        const loginParams = {
+          [!currentLoginType ? 'email' : 'username']: formState.username,
+          password: md5(formState.password),
+          rememberMe: formState.rememberMe
+        }
+        
+        Login(loginParams)
+          .then((res) => loginSuccess(res))
+          .catch(err => requestFailed(err))
+          .finally(() => {
+            state.loginBtn = false
+          })
+      } else {
+        if (!formState.mobile || !/^1[34578]\d{9}$/.test(formState.mobile)) {
+          notification.error({ message: '错误', description: '请输入正确的手机号' })
+          state.loginBtn = false
+          return
+        }
+        if (!formState.captcha) {
+          notification.error({ message: '错误', description: '请输入验证码' })
+          state.loginBtn = false
+          return
+        }
+        
+        const loginParams = {
+          mobile: formState.mobile,
+          captcha: formState.captcha,
+          rememberMe: formState.rememberMe
+        }
+        
+        Login(loginParams)
+          .then((res) => loginSuccess(res))
+          .catch(err => requestFailed(err))
+          .finally(() => {
+            state.loginBtn = false
+          })
       }
     }
-  },
-  created () {
-    get2step({ })
-      .then(res => {
-        this.requiredTwoStepCaptcha = res.result.stepCode
-      })
-      .catch(() => {
-        this.requiredTwoStepCaptcha = false
-      })
-    // this.requiredTwoStepCaptcha = true
-  },
-  methods: {
-    ...mapActions(['Login', 'Logout']),
-    // handler
-    handleUsernameOrEmail (rule, value, callback) {
-      const { state } = this
-      const regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/
-      if (regex.test(value)) {
-        state.loginType = 0
-      } else {
-        state.loginType = 1
+    
+    const getCaptcha = (e) => {
+      e.preventDefault()
+      
+      if (!formState.mobile || !/^1[34578]\d{9}$/.test(formState.mobile)) {
+        notification.error({ message: '错误', description: '请输入正确的手机号' })
+        return
       }
-      callback()
-    },
-    handleTabClick (key) {
-      this.customActiveKey = key
-      // this.form.resetFields()
-    },
-    handleSubmit (e) {
-      e.preventDefault()
-      const {
-        form: { validateFields },
-        state,
-        customActiveKey,
-        Login
-      } = this
-
-      state.loginBtn = true
-
-      const validateFieldsKey = customActiveKey === 'tab1' ? ['username', 'password'] : ['mobile', 'captcha']
-
-      validateFields(validateFieldsKey, { force: true }, (err, values) => {
-        if (!err) {
-          console.log('login form', values)
-          const loginParams = { ...values }
-          delete loginParams.username
-          loginParams[!state.loginType ? 'email' : 'username'] = values.username
-          loginParams.password = md5(values.password)
-          Login(loginParams)
-            .then((res) => this.loginSuccess(res))
-            .catch(err => this.requestFailed(err))
-            .finally(() => {
-              state.loginBtn = false
-            })
-        } else {
-          setTimeout(() => {
-            state.loginBtn = false
-          }, 600)
+      
+      state.smsSendBtn = true
+      
+      const interval = window.setInterval(() => {
+        if (state.time-- <= 0) {
+          state.time = 60
+          state.smsSendBtn = false
+          window.clearInterval(interval)
         }
-      })
-    },
-    getCaptcha (e) {
-      e.preventDefault()
-      const { form: { validateFields }, state } = this
-
-      validateFields(['mobile'], { force: true }, (err, values) => {
-        if (!err) {
-          state.smsSendBtn = true
-
-          const interval = window.setInterval(() => {
-            if (state.time-- <= 0) {
-              state.time = 60
-              state.smsSendBtn = false
-              window.clearInterval(interval)
-            }
-          }, 1000)
-
-          const hide = this.$message.loading('验证码发送中..', 0)
-          getSmsCaptcha({ mobile: values.mobile }).then(res => {
-            setTimeout(hide, 2500)
-            this.$notification['success']({
-              message: '提示',
-              description: '验证码获取成功，您的验证码为：' + res.result.captcha,
-              duration: 8
-            })
-          }).catch(err => {
-            setTimeout(hide, 1)
-            clearInterval(interval)
-            state.time = 60
-            state.smsSendBtn = false
-            this.requestFailed(err)
-          })
-        }
-      })
-    },
-    stepCaptchaSuccess () {
-      this.loginSuccess()
-    },
-    stepCaptchaCancel () {
-      this.Logout().then(() => {
-        this.loginBtn = false
-        this.stepCaptchaVisible = false
-      })
-    },
-    loginSuccess (res) {
-      console.log(res)
-      // check res.homePage define, set $router.push name res.homePage
-      // Why not enter onComplete
-      /*
-      this.$router.push({ name: 'analysis' }, () => {
-        console.log('onComplete')
-        this.$notification.success({
-          message: '欢迎',
-          description: `${timeFix()}，欢迎回来`
+      }, 1000)
+      
+      const hide = message.loading('验证码发送中..', 0)
+      getSmsCaptcha({ mobile: formState.mobile }).then(res => {
+        setTimeout(hide, 2500)
+        notification.success({
+          message: '提示',
+          description: '验证码获取成功，您的验证码为：' + res.result.captcha,
+          duration: 8
         })
+      }).catch(err => {
+        setTimeout(hide, 1)
+        clearInterval(interval)
+        state.time = 60
+        state.smsSendBtn = false
+        requestFailed(err)
       })
-      */
-      this.$router.push({ path: '/' })
-      // 延迟 1 秒显示欢迎信息
+    }
+    
+    const stepCaptchaSuccess = () => {
+      loginSuccess()
+    }
+    
+    const stepCaptchaCancel = () => {
+      Logout().then(() => {
+        state.loginBtn = false
+        stepCaptchaVisible.value = false
+      })
+    }
+    
+    const loginSuccess = (res) => {
+      console.log(res)
+      router.push({ path: '/' })
       setTimeout(() => {
-        this.$notification.success({
+        notification.success({
           message: '欢迎',
           description: `${timeFix()}，欢迎回来`
         })
       }, 1000)
-      this.isLoginError = false
-    },
-    requestFailed (err) {
-      this.isLoginError = true
-      this.$notification['error']({
+      isLoginError.value = false
+    }
+    
+    const requestFailed = (err) => {
+      isLoginError.value = true
+      notification.error({
         message: '错误',
         description: ((err.response || {}).data || {}).message || '请求出现错误，请稍后再试',
         duration: 4
       })
+    }
+    
+    onMounted(() => {
+      get2step({})
+        .then(res => {
+          requiredTwoStepCaptcha.value = res.result.stepCode
+        })
+        .catch(() => {
+          requiredTwoStepCaptcha.value = false
+        })
+    })
+    
+    return {
+      formRef,
+      formState,
+      state,
+      customActiveKey,
+      isLoginError,
+      requiredTwoStepCaptcha,
+      stepCaptchaVisible,
+      loginType,
+      handleTabClick,
+      handleSubmit,
+      getCaptcha,
+      stepCaptchaSuccess,
+      stepCaptchaCancel
     }
   }
 }

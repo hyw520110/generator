@@ -30,20 +30,22 @@
 </template>
 
 <script>
-import { SettingDrawer, updateTheme } from '@ant-design-vue/pro-layout'
+import ProLayout from '@ant-design-vue/pro-layout'
+import SettingDrawer from '@/components/SettingDrawer/SettingDrawer.vue'
 import { i18nRender } from '@/locales'
 import { mapState } from 'vuex'
 import { CONTENT_WIDTH_TYPE, SIDEBAR_TYPE, TOGGLE_MOBILE_TYPE } from '@/store/mutation-types'
 
 import defaultSettings from '@/config/defaultSettings'
-import RightContent from '@/components/GlobalHeader/RightContent'
-import GlobalFooter from '@/components/GlobalFooter'
-import Ads from '@/components/Other/CarbonAds'
+import RightContent from '@/components/GlobalHeader/RightContent.vue'
+import GlobalFooter from '@/components/GlobalFooter/index.vue'
+import Ads from '@/components/Other/CarbonAds.vue'
 import LogoSvg from '../assets/logo.svg?inline'
 
 export default {
   name: 'BasicLayout',
   components: {
+    ProLayout,
     SettingDrawer,
     RightContent,
     GlobalFooter,
@@ -113,47 +115,15 @@ export default {
 
     // first update color
     // TIPS: THEME COLOR HANDLER!! PLEASE CHECK THAT!!
-    if (process.env.NODE_ENV !== 'production' || process.env.VUE_APP_PREVIEW === 'true') {
-      updateTheme(this.settings.primaryColor)
-    }
+    // Ant Design Vue 4.x 使用 CSS-in-JS，主题色通过 ConfigProvider 设置
   },
   methods: {
     i18nRender,
-    handleMediaQuery (val) {
-      this.query = val
-      if (this.isMobile && !val['screen-xs']) {
-        this.isMobile = false
-        return
-      }
-      if (!this.isMobile && val['screen-xs']) {
-        this.isMobile = true
-        this.collapsed = false
-        this.settings.contentWidth = CONTENT_WIDTH_TYPE.Fluid
-        // this.settings.fixSiderbar = false
-      }
-    },
-    handleCollapse (val) {
-      this.collapsed = val
-    },
-    handleSettingChange ({ type, value }) {
-      console.log('type', type, value)
-      type && (this.settings[type] = value)
-      switch (type) {
-        case 'contentWidth':
-          this.settings[type] = value
-          break
-        case 'layout':
-          if (value === 'sidemenu') {
-            this.settings.contentWidth = CONTENT_WIDTH_TYPE.Fluid
-          } else {
-            this.settings.fixSiderbar = false
-            this.settings.contentWidth = CONTENT_WIDTH_TYPE.Fixed
-          }
-          break
-      }
-    },
-    logoRender () {
-      return <LogoSvg />
+    handleMediaQuery (val) { /***/ },
+    handleCollapse (val) { /***/ },
+    handleSettingChange ({ type, value }) { /***/ },
+    logoRender (h) {
+      return h(LogoSvg)
     }
   }
 }

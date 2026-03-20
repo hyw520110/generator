@@ -2,127 +2,107 @@
   <a-modal
     title="操作"
     :width="800"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     @ok="handleOk"
     @cancel="handleCancel"
   >
     <a-steps :current="1">
       <a-step>
-        <!-- <span slot="title">Finished</span> -->
-        <template slot="title">
+        <template #title>
           Finished
         </template>
-        <span slot="description">This is a description.</span>
+        <template #description>
+          This is a description.
+        </template>
       </a-step>
-      <a-step title="In Progress" description="This is a description." />
-      <a-step title="Waiting" description="This is a description." />
+      <a-step title="In Progress" description="This is a description."/>
+      <a-step title="Waiting" description="This is a description."/>
     </a-steps>
   </a-modal>
 </template>
 
 <script>
+import { ref, onMounted, nextTick } from 'vue'
+import { message } from 'ant-design-vue'
 import { getPermissions } from '@/api/manage'
 import { actionToObject } from '@/utils/permissions'
-import pick from 'lodash.pick'
 
 export default {
   name: 'RoleModal',
-  data () {
-    return {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 5 }
-      },
-      wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 16 }
-      },
-      visible: false,
-      confirmLoading: false,
-      mdl: {},
-
-      form: this.$form.createForm(this),
-      permissions: []
+  emits: ['close', 'ok'],
+  setup (props, { emit }) {
+    const visible = ref(false)
+    const confirmLoading = ref(false)
+    const mdl = ref({})
+    const permissions = ref([])
+    
+    const formState = ref({
+      id: '',
+      name: '',
+      status: undefined,
+      describe: ''
+    })
+    
+    const labelCol = { xs: { span: 24 }, sm: { span: 5 } }
+    const wrapperCol = { xs: { span: 24 }, sm: { span: 16 } }
+    
+    const add = () => {
+      edit({ id: 0 })
     }
-  },
-  created () {
-    this.loadPermissions()
-  },
-  methods: {
-    add () {
-      this.edit({ id: 0 })
-    },
-    edit (record) {
-      this.mdl = Object.assign({}, record)
-      this.visible = true
-
-      // 有权限表，处理勾选
-      if (this.mdl.permissions && this.permissions) {
-        // 先处理要勾选的权限结构
+    
+    const edit = (record) => {
+      mdl.value = Object.assign({}, record)
+      visible.value = true
+      
+      if (mdl.value.permissions && permissions.value) {
         const permissionsAction = {}
-        this.mdl.permissions.forEach(permission => {
+        mdl.value.permissions.forEach(permission => {
           permissionsAction[permission.permissionId] = permission.actionEntitySet.map(entity => entity.action)
         })
-        // 把权限表遍历一遍，设定要勾选的权限 action
-        this.permissions.forEach(permission => {
+        permissions.value.forEach(permission => {
           permission.selected = permissionsAction[permission.id] || []
         })
       }
-
-      this.$nextTick(() => {
-        this.form.setFieldsValue(pick(this.mdl, 'id', 'name', 'status', 'describe'))
-      })
-      console.log('this.mdl', this.mdl)
-    },
-    close () {
-      this.$emit('close')
-      this.visible = false
-    },
-    handleOk () {
-      const _this = this
-      // 触发表单验证
-      this.form.validateFields((err, values) => {
-        // 验证表单没错误
-        if (!err) {
-          console.log('form values', values)
-
-          _this.confirmLoading = true
-          // 模拟后端请求 2000 毫秒延迟
-          new Promise((resolve) => {
-            setTimeout(() => resolve(), 2000)
-          }).then(() => {
-            // Do something
-            _this.$message.success('保存成功')
-            _this.$emit('ok')
-          }).catch(() => {
-            // Do something
-          }).finally(() => {
-            _this.confirmLoading = false
-            _this.close()
-          })
+      
+      nextTick(() => {
+        formState.value = {
+          id: record.id,
+          name: record.name,
+          status: record.status,
+          describe: record.describe
         }
       })
-    },
-    handleCancel () {
-      this.close()
-    },
-    onChangeCheck (permission) {
-      permission.indeterminate = !!permission.selected.length && (permission.selected.length < permission.actionsOptions.length)
-      permission.checkedAll = permission.selected.length === permission.actionsOptions.length
-    },
-    onChangeCheckAll (e, permission) {
-      Object.assign(permission, {
-        selected: e.target.checked ? permission.actionsOptions.map(obj => obj.value) : [],
-        indeterminate: false,
-        checkedAll: e.target.checked
+    }
+    
+    const close = () => {
+      emit('close')
+      visible.value = false
+    }
+    
+    const handleOk = () => {
+      confirmLoading.value = true
+      new Promise((resolve) => {
+        setTimeout(() => resolve(), 2000)
+      }).then(() => {
+        message.success('保存成功')
+        emit('ok')
+      }).catch(() => {
+        // Do something
+      }).finally(() => {
+        confirmLoading.value = false
+        close()
       })
-    },
-    loadPermissions () {
-      const that = this
+    }
+    
+    const handleCancel = () => {
+      close()
+    }
+    
+    const loadPermissions = () => {
       getPermissions().then(res => {
         const result = res.result
-        that.permissions = result.map(permission => {
+        permissions.value = result.map(permission => {
           const options = actionToObject(permission.actionData)
           permission.checkedAll = false
           permission.selected = []
@@ -137,7 +117,25 @@ export default {
         })
       })
     }
-
+    
+    onMounted(() => {
+      loadPermissions()
+    })
+    
+    return {
+      labelCol,
+      wrapperCol,
+      visible,
+      confirmLoading,
+      mdl,
+      permissions,
+      formState,
+      add,
+      edit,
+      close,
+      handleOk,
+      handleCancel
+    }
   }
 }
 </script>

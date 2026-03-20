@@ -7,7 +7,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- * 模板引擎工厂
+ * 模板引擎工厂（懒加载模式）
  * 
  * @author heyiwu
  */
@@ -18,35 +18,34 @@ public class TemplateEngineFactory {
      */
     private static final Map<EngineType, TemplateEngine> engines = new EnumMap<>(EngineType.class);
     
-    static {
-        // 初始化引擎
-        engines.put(EngineType.VELOCITY, new VelocityEngineImpl());
-        engines.put(EngineType.FREEMARKER, new FreeMarkerEngineImpl());
-    }
-    
     /**
-     * 获取指定类型的引擎
+     * 获取指定类型的引擎（懒加载）
      */
     public static TemplateEngine getEngine(EngineType type) {
-        TemplateEngine engine = engines.get(type);
-        if (engine == null) {
-            throw new IllegalArgumentException("不支持的模板引擎类型：" + type);
-        }
-        return engine;
+        return engines.computeIfAbsent(type, t -> {
+            switch (t) {
+                case VELOCITY:
+                    return new VelocityEngineImpl();
+                case FREEMARKER:
+                    return new FreeMarkerEngineImpl();
+                default:
+                    throw new IllegalArgumentException("不支持的模板引擎类型：" + t);
+            }
+        });
     }
     
     /**
      * 获取 Velocity 引擎
      */
     public static VelocityEngineImpl getVelocityEngine() {
-        return (VelocityEngineImpl) engines.get(EngineType.VELOCITY);
+        return (VelocityEngineImpl) getEngine(EngineType.VELOCITY);
     }
     
     /**
      * 获取 FreeMarker 引擎
      */
     public static FreeMarkerEngineImpl getFreeMarkerEngine() {
-        return (FreeMarkerEngineImpl) engines.get(EngineType.FREEMARKER);
+        return (FreeMarkerEngineImpl) getEngine(EngineType.FREEMARKER);
     }
     
     /**
@@ -57,10 +56,13 @@ public class TemplateEngineFactory {
             return getEngine(EngineType.VELOCITY); // 默认 Velocity
         }
         
-        for (TemplateEngine engine : engines.values()) {
-            if (engine.supports(templatePath)) {
-                return engine;
-            }
+        // 检查文件扩展名
+        String lowerPath = templatePath.toLowerCase();
+        if (lowerPath.endsWith(".ftl") || lowerPath.endsWith(".ftlh") || lowerPath.endsWith(".ftlx")) {
+            return getEngine(EngineType.FREEMARKER);
+        }
+        if (lowerPath.endsWith(".vm") || lowerPath.endsWith(".vsl")) {
+            return getEngine(EngineType.VELOCITY);
         }
         
         // 默认返回 Velocity

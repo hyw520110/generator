@@ -112,9 +112,10 @@ public abstract class AbstractGenerator extends BaseBean {
 	private List<Table> queryTablesFromDatabase(boolean all) {
 		ArrayList<Table> tables = new ArrayList<>();
 		QuerySQL sql = dataSource.getQuerySQL();
-		logger.debug("开始从数据库读取表元数据...");
+		String dbName = dataSource.getDbName();
+		logger.debug("开始从数据库读取表元数据... 数据库: {}", dbName);
 		
-		try (Connection con = dataSource.getCon();
+		try (Connection con = dataSource.getConnection(dbName);
 			 PreparedStatement pst = con.prepareStatement(sql.getTabComments());
 			 Statement st = con.createStatement()) {
 			

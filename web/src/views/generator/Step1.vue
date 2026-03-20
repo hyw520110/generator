@@ -1,101 +1,124 @@
 <template>
   <div>
-    <a-form :form="form" style="max-width: 800px; margin: 40px auto 0;" >
+    <a-form :model="formState" style="max-width: 800px; margin: 40px auto 0;" ref="formRef" :rules="rules">
       <a-form-item
         label="生成目录"
+        name="outputDir" required
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="此目录需要有写权限，最后一级子目录为项目名"
       >
-        <a-input v-decorator="['outputDir', { initialValue: '/output/demo', rules: [{required: true, message: '请输入生成目录，此目录需可写，最后一级子目录为项目名'}] }]" placeholder="此目录需可写，最后一级子目录为项目名"/>
+        <a-input v-model:value="formState.outputDir" placeholder="此目录需可写，最后一级子目录为项目名"/>
       </a-form-item>
       <a-form-item
         label="项目描述"
+        name="description"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="项目描述，如：后台管理项目，移动端项目"
       >
-        <a-input v-decorator="['description', { initialValue: '代码生成器', rules: [{required: false, message: '请输入项目描述'}] }]" placeholder="项目描述"/>
+        <a-input v-model:value="formState.description" placeholder="项目描述"/>
       </a-form-item>
       <a-form-item
         label="包名"
+        name="rootPackage" required
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="java类包名"
       >
-        <a-input v-decorator="['rootPackage', { initialValue: 'com.hyw.generator', rules: [{required: true, message: '请输入包名'}] }]" placeholder="com.big.box"/>
+        <a-input v-model:value="formState.rootPackage" placeholder="com.big.box"/>
       </a-form-item>
       <a-form-item
         label="工程模块"
+        name="modules" required
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="工程模块名，多个用逗号分隔，如：api,app"
       >
-        <a-input v-decorator="['modules', { initialValue: 'api,app', rules: [{required: true, message: '请输入工程模块名'}] }]" placeholder="工程模块名，如：api,app"/>
+        <a-input v-model:value="formState.modules" placeholder="工程模块名，如：api,app"/>
       </a-form-item>
       <a-form-item
-        label="删除生成目录"
+        label="删除目录"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="删除生成目录，默认否，开启时需谨慎!"
       >
-        <ASwitch v-decorator="['delOutputDir', { valuePropName:'checked', initialValue:false }]" checkedChildren="是" unCheckedChildren="否"/>
+        <a-switch v-model:checked="formState.delOutputDir" checkedChildren="是" unCheckedChildren="否"/>
       </a-form-item>
       <a-form-item
         label="文件覆盖"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="生成同名文件时，是否覆盖原文件/强制生成"
       >
-        <ASwitch v-decorator="['fileOverride', { valuePropName:'checked', initialValue:true }]" checkedChildren="是" unCheckedChildren="否" />
+        <a-switch v-model:checked="formState.fileOverride" checkedChildren="是" unCheckedChildren="否" />
       </a-form-item>
       <a-form-item
         label="打开目录"
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
+        help="代码生成完成后是否打开生成目录"
       >
-        <ASwitch v-decorator="['openDir', { valuePropName:'checked', initialValue:true }]" checkedChildren="是" unCheckedChildren="否" />
+        <a-switch v-model:checked="formState.openDir" checkedChildren="是" unCheckedChildren="否" />
       </a-form-item>
       <a-form-item :wrapperCol="{span: 19, offset: 5}">
         <a-button :loading="loading" type="primary" @click="nextStep">下一步</a-button>
       </a-form-item>
     </a-form>
     <a-divider />
-    <div class="step-form-style-desc">
-      <h3>说明</h3>
-      <h4>生成目录</h4>
-      <p>此目录需要有写权限，最后一级子目录为项目名</p>
-      <h4>删除生成目录</h4>
-      <p>执行代码生成前，先删除生成目录，默认关闭，开启时需谨慎!</p>
-      <h4>文件覆盖</h4>
-      <p>生成同名文件时，是否覆盖原文件/强制生成</p>
-    </div>
   </div>
 </template>
 
 <script>
+import { ref, reactive } from 'vue'
 import { step1 } from '@/api/generator'
+
 export default {
   name: 'Step1',
-  data () {
-    return {
-      labelCol: { lg: { span: 5 }, sm: { span: 5 } },
-      wrapperCol: { lg: { span: 19 }, sm: { span: 19 } },
-      loading: false,
-      form: this.$form.createForm(this)
+  emits: ['nextStep'],
+  setup (props, { emit }) {
+    const formRef = ref()
+    const loading = ref(false)
+    
+    const labelCol = { lg: { span: 5 }, sm: { span: 5 } }
+    const wrapperCol = { lg: { span: 19 }, sm: { span: 19 } }
+    
+    const formState = reactive({
+      outputDir: '/opt/output/demo',
+      description: '代码生成器',
+      rootPackage: 'com.hyw.generator',
+      modules: 'api,app',
+      delOutputDir: false,
+      fileOverride: true,
+      openDir: true
+    })
+    
+    const rules = {
+      outputDir: [{ required: true, message: '请输入生成目录，此目录需可写，最后一级子目录为项目名' }],
+      rootPackage: [{ required: true, message: '请输入包名' }],
+      modules: [{ required: true, message: '请输入工程模块名' }]
     }
-  },
-  methods: {
-    nextStep () {
-      const { form: { validateFields } } = this
-      const that = this
-      // 先校验，通过表单校验后，才进入下一步
-      validateFields((err, values) => {
-        if (!err) {
-          console.log(values)
-          that.loading = true
-          step1(values).then(res => {
-            that.loading = false
-            that.$emit('nextStep')
-          })
-        } else {
-          that.loading = false
-        }
-      })
+    
+    const nextStep = async () => {
+      try {
+        await formRef.value.validate()
+        loading.value = true
+        await step1(formState)
+        loading.value = false
+        emit('nextStep')
+      } catch (error) {
+        loading.value = false
+      }
+    }
+    
+    return {
+      formRef,
+      formState,
+      labelCol,
+      wrapperCol,
+      loading,
+      rules,
+      nextStep
     }
   }
 }
@@ -125,5 +148,16 @@ export default {
     margin-bottom: 12px;
     line-height: 22px;
   }
+}
+
+// 必填项红色星号样式
+:deep(.ant-form-item-required::after) {
+  display: inline-block;
+  margin-left: 4px;
+  color: #ff4d4f;
+  font-size: 14px;
+  font-family: SimSun, sans-serif;
+  line-height: 1;
+  content: '*';
 }
 </style>

@@ -53,7 +53,7 @@ public class Result<T> implements Serializable {
 	}
 
 	public static <T> Result<T> ok(String message, T data) {
-		Result<> r = new Result<T>();
+		Result<T> r = new Result<T>();
 		r.setMessage(message);
 		r.setData(data);
 		return r;

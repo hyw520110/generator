@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-form :form="form" @submit="handleSubmit">
+    <a-form :model="formState" @submit="handleSubmit" ref="formRef">
 
       <a-form-item
         :labelCol="labelCol"
@@ -8,15 +8,13 @@
         label="规则编号"
         hasFeedback
         validateStatus="success"
+        name="no"
       >
         <a-input
           placeholder="规则编号"
-          v-decorator="[
-            'no',
-            {rules: [{ required: true, message: '请输入规则编号' }]}
-          ]"
+          v-model:value="formState.no"
           :disabled="true"
-        ></a-input>
+        />
       </a-form-item>
 
       <a-form-item
@@ -25,8 +23,9 @@
         label="服务调用次数"
         hasFeedback
         validateStatus="success"
+        name="callNo"
       >
-        <a-input-number :min="1" style="width: 100%" v-decorator="['callNo', {rules: [{ required: true }]}]" />
+        <a-input-number :min="1" style="width: 100%" v-model:value="formState.callNo"/>
       </a-form-item>
 
       <a-form-item
@@ -35,8 +34,9 @@
         label="状态"
         hasFeedback
         validateStatus="warning"
+        name="status"
       >
-        <a-select v-decorator="['status', {rules: [{ required: true, message: '请选择状态' }], initialValue: '1'}]">
+        <a-select v-model:value="formState.status">
           <a-select-option :value="1">Option 1</a-select-option>
           <a-select-option :value="2">Option 2</a-select-option>
           <a-select-option :value="3">Option 3</a-select-option>
@@ -49,8 +49,9 @@
         label="描述"
         hasFeedback
         help="请填写一段描述"
+        name="description"
       >
-        <a-textarea :rows="5" placeholder="..." v-decorator="['description', {rules: [{ required: true }]}]" />
+        <a-textarea :rows="5" placeholder="..." v-model:value="formState.description"/>
       </a-form-item>
 
       <a-form-item
@@ -59,19 +60,18 @@
         label="更新时间"
         hasFeedback
         validateStatus="error"
+        name="updatedAt"
       >
         <a-date-picker
           style="width: 100%"
           showTime
           format="YYYY-MM-DD HH:mm:ss"
           placeholder="Select Time"
-          v-decorator="['updatedAt']"
+          v-model:value="formState.updatedAt"
         />
       </a-form-item>
 
-      <a-form-item
-        v-bind="buttonCol"
-      >
+      <a-form-item v-bind="buttonCol">
         <a-row>
           <a-col span="6">
             <a-button type="primary" html-type="submit">提交</a-button>
@@ -87,8 +87,8 @@
 </template>
 
 <script>
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import moment from 'moment'
-import pick from 'lodash.pick'
 
 export default {
   name: 'TableEdit',
@@ -98,62 +98,76 @@ export default {
       default: ''
     }
   },
-  data () {
-    return {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 5 }
-      },
+  emits: ['onGoBack'],
+  setup (props, { emit }) {
+    const formRef = ref()
+    
+    const labelCol = {
+      xs: { span: 24 },
+      sm: { span: 5 }
+    }
+    const wrapperCol = {
+      xs: { span: 24 },
+      sm: { span: 12 }
+    }
+    const buttonCol = {
       wrapperCol: {
         xs: { span: 24 },
-        sm: { span: 12 }
-      },
-      buttonCol: {
-        wrapperCol: {
-          xs: { span: 24 },
-          sm: { span: 12, offset: 5 }
-        }
-      },
-      form: this.$form.createForm(this),
-      id: 0
+        sm: { span: 12, offset: 5 }
+      }
     }
-  },
-  // beforeCreate () {
-  //   this.form = this.$form.createForm(this)
-  // },
-  mounted () {
-    this.$nextTick(() => {
-      this.loadEditInfo(this.record)
+    
+    const formState = reactive({
+      no: '',
+      callNo: 1,
+      status: 1,
+      description: '',
+      updatedAt: null
     })
-  },
-  methods: {
-    handleGoBack () {
-      this.$emit('onGoBack')
-    },
-    handleSubmit () {
-      const { form: { validateFields } } = this
-      validateFields((err, values) => {
-        if (!err) {
-          // eslint-disable-next-line no-console
-          console.log('Received values of form: ', values)
-        }
-      })
-    },
-    handleGetInfo () {
-
-    },
-    loadEditInfo (data) {
-      const { form } = this
-      // ajax
-      console.log(`将加载 ${this.id} 信息到表单`)
+    
+    const handleGoBack = () => {
+      emit('onGoBack')
+    }
+    
+    const handleSubmit = async () => {
+      try {
+        await formRef.value.validate()
+        console.log('Received values of form: ', formState)
+      } catch (err) {
+        // validation failed
+      }
+    }
+    
+    const loadEditInfo = (data) => {
+      console.log(`将加载信息到表单`)
       new Promise((resolve) => {
         setTimeout(resolve, 1500)
       }).then(() => {
-        const formData = pick(data, ['no', 'callNo', 'status', 'description', 'updatedAt'])
-        formData.updatedAt = moment(data.updatedAt)
-        console.log('formData', formData)
-        form.setFieldsValue(formData)
+        formState.no = data.no
+        formState.callNo = data.callNo
+        formState.status = data.status
+        formState.description = data.description
+        formState.updatedAt = moment(data.updatedAt)
+        console.log('formData', formState)
       })
+    }
+    
+    onMounted(() => {
+      nextTick(() => {
+        if (props.record) {
+          loadEditInfo(props.record)
+        }
+      })
+    })
+    
+    return {
+      formRef,
+      formState,
+      labelCol,
+      wrapperCol,
+      buttonCol,
+      handleGoBack,
+      handleSubmit
     }
   }
 }

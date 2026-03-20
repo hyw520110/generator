@@ -1,24 +1,21 @@
-import client from 'webpack-theme-color-replacer/client'
-import generate from '@ant-design/colors/lib/generate'
+import { generate } from '@ant-design/colors'
 
 export default {
   getAntdSerials (color) {
-    // 淡化（即less的tint）
-    const lightens = new Array(9).fill().map((t, i) => {
-      return client.varyColor.lighten(color, i / 10)
-    })
-    // colorPalette变换得到颜色值
     const colorPalettes = generate(color)
-    const rgb = client.varyColor.toNum3(color.replace('#', '')).join(',')
-    return lightens.concat(colorPalettes).concat(rgb)
+    return colorPalettes
   },
   changeColor (newColor) {
-    var options = {
-      newColors: this.getAntdSerials(newColor), // new colors array, one-to-one corresponde with `matchColors`
-      changeUrl (cssUrl) {
-        return `/${cssUrl}` // while router is not `hash` mode, it needs absolute path
-      }
-    }
-    return client.changer.changeColor(options, Promise)
+    // Ant Design Vue 4.x 使用 CSS-in-JS，通过 CSS 变量设置主题色
+    const root = document.documentElement
+    root.style.setProperty('--ant-primary-color', newColor)
+    
+    // 生成色板
+    const colorPalettes = this.getAntdSerials(newColor)
+    colorPalettes.forEach((color, index) => {
+      root.style.setProperty(`--ant-primary-${index + 1}`, color)
+    })
+    
+    return Promise.resolve()
   }
 }

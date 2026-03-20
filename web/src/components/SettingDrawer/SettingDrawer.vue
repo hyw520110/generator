@@ -171,7 +171,7 @@
 </template>
 
 <script>
-import SettingItem from './SettingItem'
+import SettingItem from './SettingItem.vue'
 import config from '@/config/defaultSettings'
 import { updateTheme, updateColorWeak, colorList } from './settingConfig'
 

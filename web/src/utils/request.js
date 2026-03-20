@@ -4,7 +4,10 @@ import storage from 'store'
 import notification from 'ant-design-vue/es/notification'
 import { VueAxios } from './axios'
 import { ACCESS_TOKEN } from '@/store/mutation-types'
-const baseHost = 'http://localhost:8081'
+
+// 开发环境使用代理，生产环境使用绝对路径
+const baseHost = import.meta.env.DEV ? '' : 'http://localhost:8081'
+
 // 创建 axios 实例
 const request = axios.create({
   // API 请求的默认前缀

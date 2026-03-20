@@ -1,20 +1,16 @@
-<script>
-import Tooltip from 'ant-design-vue/es/tooltip'
-import { cutStrByFullLength, getStrFullLength } from '@/components/_util/util'
-/*
-    const isSupportLineClamp = document.body.style.webkitLineClamp !== undefined;
+<template>
+  <a-tooltip v-if="tooltip && fullLength > length">
+    <template #title>{{ fullStr }}</template>
+    <span>{{ displayStr }}</span>
+  </a-tooltip>
+  <span v-else>{{ displayStr }}</span>
+</template>
 
-    const TooltipOverlayStyle = {
-      overflowWrap: 'break-word',
-      wordWrap: 'break-word',
-    };
-  */
+<script>
+import { cutStrByFullLength, getStrFullLength } from '@/components/_util/util'
 
 export default {
   name: 'Ellipsis',
-  components: {
-    Tooltip
-  },
   props: {
     prefixCls: {
       type: String,
@@ -36,29 +32,18 @@ export default {
       default: false
     }
   },
-  methods: {
-    getStrDom (str, fullLength) {
-      return (
-        <span>{ cutStrByFullLength(str, this.length) + (fullLength > this.length ? '...' : '') }</span>
-      )
+  computed: {
+    fullStr () {
+      const slots = this.$slots.default || []
+      return slots.map(vNode => vNode.children || vNode.text || '').join('')
     },
-    getTooltip (fullStr, fullLength) {
-      return (
-        <Tooltip>
-          <template slot="title">{ fullStr }</template>
-          { this.getStrDom(fullStr, fullLength) }
-        </Tooltip>
-      )
+    fullLength () {
+      return getStrFullLength(this.fullStr)
+    },
+    displayStr () {
+      const str = cutStrByFullLength(this.fullStr, this.length)
+      return this.fullLength > this.length ? str + '...' : str
     }
-  },
-  render () {
-    const { tooltip, length } = this.$props
-    const str = this.$slots.default.map(vNode => vNode.text).join('')
-    const fullLength = getStrFullLength(str)
-    const strDom = tooltip && fullLength > length ? this.getTooltip(str, fullLength) : this.getStrDom(str, fullLength)
-    return (
-      strDom
-    )
   }
 }
 </script>

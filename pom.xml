@@ -13,38 +13,55 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		
 		<!-- 统一版本管理 -->
-		<slf4j.version>1.7.36</slf4j.version>
-		<logback.version>1.2.12</logback.version>
+		<spring-boot.version>2.7.18</spring-boot.version>
+		<slf4j.version>1.7.30</slf4j.version>
 		<velocity.version>1.7</velocity.version>
 		<snakeyaml.version>2.0</snakeyaml.version>
 		<lombok.version>1.18.24</lombok.version>
 		<freemarker.version>2.3.32</freemarker.version>
-		<caffeine.version>3.1.8</caffeine.version>
+		<caffeine.version>2.9.3</caffeine.version>
 		<commons-io.version>2.11.0</commons-io.version>
 		<commons-lang3.version>3.12.0</commons-lang3.version>
+		<commons-codec.version>1.15</commons-codec.version>
 		<pdfbox.version>2.0.27</pdfbox.version>
 		<poi.version>5.2.3</poi.version>
+		<jgrapht.version>1.5.2</jgrapht.version>
+		<log4j.version>2.17.1</log4j.version>
 		<druid.version>1.2.18</druid.version>
 		<junit.version>4.13.2</junit.version>
 		<mysql.version>8.0.33</mysql.version>
+		<exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
+		<fastjson.version>1.2.83</fastjson.version>
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+		<maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+		<maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
 		<versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
 	</properties>
 	
 	<dependencyManagement>
 		<dependencies>
+			<!-- Spring Boot BOM (放在最前面，优先级最高) -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			
+			<!-- 内部模块 -->
+			<dependency>
+				<groupId>com.hyw.tools</groupId>
+				<artifactId>generator-core</artifactId>
+				<version>1.0.0-SNAPSHOT</version>
+			</dependency>
+			
 			<!-- 日志门面接口 -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${slf4j.version}</version>
-			</dependency>
-			<!-- logback日志实现 -->
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>${logback.version}</version>
 			</dependency>
 			<!-- 模板引擎 -->
 			<dependency>
@@ -81,6 +98,12 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
 				<version>${commons-lang3.version}</version>
+			</dependency>
+			<!-- Commons Codec -->
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>${commons-codec.version}</version>
 			</dependency>
 			<!-- Lombok -->
 			<dependency>
@@ -120,6 +143,34 @@
 				<artifactId>poi-ooxml</artifactId>
 				<version>${poi.version}</version>
 			</dependency>
+			<!-- JGraphT 图计算库（表关系图） -->
+			<dependency>
+				<groupId>org.jgrapht</groupId>
+				<artifactId>jgrapht-core</artifactId>
+				<version>${jgrapht.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jgrapht</groupId>
+				<artifactId>jgrapht-ext</artifactId>
+				<version>${jgrapht.version}</version>
+			</dependency>
+			<!-- log4j API 和桥接器：解决 xmlbeans 的 log4j 依赖 -->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-api</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-to-slf4j</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+			<!-- FastJSON -->
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>fastjson</artifactId>
+				<version>${fastjson.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	
@@ -143,6 +194,24 @@
 					<artifactId>maven-source-plugin</artifactId>
 					<version>${maven-source-plugin.version}</version>
 				</plugin>
+				<!-- JAR 插件 -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>${maven-jar-plugin.version}</version>
+				</plugin>
+				<!-- Assembly 插件 -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>${maven-assembly-plugin.version}</version>
+				</plugin>
+				<!-- Spring Boot 插件 -->
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot.version}</version>
+				</plugin>
 				<!-- 依赖版本检测插件 -->
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -152,13 +221,20 @@
 						<generateBackupPoms>false</generateBackupPoms>
 					</configuration>
 				</plugin>
+				<!-- 执行插件 -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>${exec-maven-plugin.version}</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
 	
  	<modules>
  		<module>./cmd</module>
- 		<module>./core</module>
+		<module>./core</module>
+		<module>./web</module>
  	</modules>
 </project>
 

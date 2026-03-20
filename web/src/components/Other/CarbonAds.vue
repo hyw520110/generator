@@ -1,4 +1,6 @@
 <script>
+import { h } from 'vue'
+
 const carbonUrl = '//cdn.carbonads.com/carbon.js?serve=CK7DL2JW&placement=antdvcom'
 export default {
   props: {
@@ -43,7 +45,10 @@ export default {
     }
   },
   render () {
-    return <div id="carbon-ads" class={this.isMobile ? 'carbon-mobile' : ''} />
+    return h('div', {
+      id: 'carbon-ads',
+      class: this.isMobile ? 'carbon-mobile' : ''
+    })
   }
 }
 </script>

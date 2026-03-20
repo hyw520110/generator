@@ -1,8 +1,8 @@
 CREATE TABLE person(  
-  Id VARCHAR(36) PRIMARY KEY comment '编号',  
-  Name VARCHAR(64) comment '姓名',  
-  Address VARCHAR(128) comment ' 地址',   
-  Tel VARCHAR(11) comment '电话' 
+  id int  PRIMARY KEY AUTO_INCREMENT comment '编号',  
+  name VARCHAR(64) comment '姓名',  
+  address VARCHAR(128) comment ' 地址',   
+  tel VARCHAR(11) comment '电话'
 ) comment '会员';    
   
 CREATE TABLE orders(  
@@ -66,7 +66,7 @@ INSERT INTO `user_group` VALUES ('1', '2');
 
 
 
-http://www.yiibai.com/mybatis/mybatis-many2many.html
+-- http://www.yiibai.com/mybatis/mybatis-many2many.html
 -- ----------------------------
 INSERT INTO `group` VALUES ('1', 'Group-1');
 INSERT INTO `group` VALUES ('2', 'Group-2');

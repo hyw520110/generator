@@ -14,9 +14,9 @@
 </template>
 
 <script>
-import Step1 from './Step1'
-import Step2 from './Step2'
-import Step3 from './Step3'
+import Step1 from './Step1.vue'
+import Step2 from './Step2.vue'
+import Step3 from './Step3.vue'
 
 export default {
   name: 'StepForm',

@@ -9,10 +9,17 @@
 <script>
 import { domTitle, setDocumentTitle } from '@/utils/domUtil'
 import { i18nRender } from '@/locales'
+import { useI18n } from 'vue-i18n'
+import { useStore } from 'vuex'
 
 export default {
-  data () {
+  setup () {
+    const { getLocaleMessage } = useI18n()
+    const store = useStore()
+    
     return {
+      getLocaleMessage,
+      store
     }
   },
   computed: {
@@ -21,7 +28,9 @@ export default {
       const { title } = this.$route.meta
       title && (setDocumentTitle(`${i18nRender(title)} - ${domTitle}`))
 
-      return this.$i18n.getLocaleMessage(this.$store.getters.lang).antLocale
+      const lang = this.store?.getters?.lang || 'en-US'
+      const messages = this.getLocaleMessage(lang)
+      return messages?.antLocale
     }
   }
 }

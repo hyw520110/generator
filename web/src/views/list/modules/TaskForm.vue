@@ -1,45 +1,25 @@
 <template>
-  <a-form @submit="handleSubmit" :form="form">
-    <a-form-item
-      label="任务名称"
-      :labelCol="labelCol"
-      :wrapperCol="wrapperCol"
-    >
-      <a-input v-decorator="['title', {rules:[{required: true, message: '请输入任务名称'}]}]" />
+  <a-form @submit="handleSubmit" :model="formState" ref="formRef">
+    <a-form-item label="任务名称" :labelCol="labelCol" :wrapperCol="wrapperCol" name="title">
+      <a-input v-model:value="formState.title"/>
     </a-form-item>
-    <a-form-item
-      label="开始时间"
-      :labelCol="labelCol"
-      :wrapperCol="wrapperCol"
-    >
-      <a-date-picker
-        style="width: 100%"
-        valueFormat="YYYY-MM-DD HH:mm"
-        v-decorator="['startAt', {rules:[{required: true, message: '请选择开始时间'}]}]"
-      />
+    <a-form-item label="开始时间" :labelCol="labelCol" :wrapperCol="wrapperCol" name="startAt">
+      <a-date-picker v-model:value="formState.startAt" style="width: 100%" valueFormat="YYYY-MM-DD HH:mm"/>
     </a-form-item>
-    <a-form-item
-      label="任务负责人"
-      :labelCol="labelCol"
-      :wrapperCol="wrapperCol"
-    >
-      <a-select v-decorator="['owner', {rules:[{required: true, message: '请选择开始时间'}]}]">
+    <a-form-item label="任务负责人" :labelCol="labelCol" :wrapperCol="wrapperCol" name="owner">
+      <a-select v-model:value="formState.owner">
         <a-select-option :value="0">付晓晓</a-select-option>
         <a-select-option :value="1">周毛毛</a-select-option>
       </a-select>
     </a-form-item>
-    <a-form-item
-      label="产品描述"
-      :labelCol="labelCol"
-      :wrapperCol="wrapperCol"
-    >
-      <a-textarea v-decorator="['description']"></a-textarea>
+    <a-form-item label="产品描述" :labelCol="labelCol" :wrapperCol="wrapperCol" name="description">
+      <a-textarea v-model:value="formState.description"/>
     </a-form-item>
   </a-form>
 </template>
 
 <script>
-import pick from 'lodash.pick'
+import { ref, reactive, onMounted, watch } from 'vue'
 
 const fields = ['title', 'startAt', 'owner', 'description']
 
@@ -51,43 +31,72 @@ export default {
       default: null
     }
   },
-  data () {
-    return {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 7 }
-      },
-      wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 13 }
-      },
-      form: this.$form.createForm(this)
+  setup (props) {
+    const formRef = ref()
+    
+    const labelCol = {
+      xs: { span: 24 },
+      sm: { span: 7 }
     }
-  },
-  mounted () {
-    this.record && this.form.setFieldsValue(pick(this.record, fields))
-  },
-  methods: {
-    onOk () {
+    const wrapperCol = {
+      xs: { span: 24 },
+      sm: { span: 13 }
+    }
+    
+    const formState = reactive({
+      title: '',
+      startAt: null,
+      owner: undefined,
+      description: ''
+    })
+    
+    onMounted(() => {
+      if (props.record) {
+        fields.forEach(field => {
+          if (props.record[field] !== undefined) {
+            formState[field] = props.record[field]
+          }
+        })
+      }
+    })
+    
+    watch(() => props.record, (newRecord) => {
+      if (newRecord) {
+        fields.forEach(field => {
+          if (newRecord[field] !== undefined) {
+            formState[field] = newRecord[field]
+          }
+        })
+      }
+    })
+    
+    const onOk = () => {
       console.log('监听了 modal ok 事件')
-      return new Promise(resolve => {
-        resolve(true)
-      })
-    },
-    onCancel () {
+      return Promise.resolve(true)
+    }
+    
+    const onCancel = () => {
       console.log('监听了 modal cancel 事件')
-      return new Promise(resolve => {
-        resolve(true)
-      })
-    },
-    handleSubmit () {
-      const { form: { validateFields } } = this
-      this.visible = true
-      validateFields((errors, values) => {
-        if (!errors) {
-          console.log('values', values)
-        }
-      })
+      return Promise.resolve(true)
+    }
+    
+    const handleSubmit = async () => {
+      try {
+        await formRef.value.validate()
+        console.log('values', formState)
+      } catch (errors) {
+        // validation failed
+      }
+    }
+    
+    return {
+      formRef,
+      formState,
+      labelCol,
+      wrapperCol,
+      onOk,
+      onCancel,
+      handleSubmit
     }
   }
 }

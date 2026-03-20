@@ -2,24 +2,23 @@
 
 # =============================================================================
 # Web 代码生成器启动脚本 (支持前后端)
-# 自动检测运行模式：开发模式 (Maven/Node) / 部署模式 (Jar/Static)
+# 自动检测运行模式：开发模式 / 部署模式
 # =============================================================================
 # 用法:
 #   ./startup.sh                         # 同时启动前后端 (默认)
 #   ./startup.sh --backend               # 仅启动后端
 #   ./startup.sh --frontend              # 仅启动前端
 #   ./startup.sh --debug-port 5005       # 启动并开启调试
+#   ./startup.sh -f                      # 强制重启 (先停止已有进程)
 # =============================================================================
 
 set -e
 
-# 设置环境
 export LANG=en_US.UTF-8
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 APP_DIR="$SCRIPT_DIR"
 LOG_DIR="$APP_DIR/logs"
-LIB_DIR="$APP_DIR/lib"
 
 # 颜色输出
 RED='\033[0;31m'
@@ -35,10 +34,10 @@ show_help() {
     echo "用法: ./startup.sh [选项]"
     echo ""
     echo "选项:"
-    echo "  --backend        仅启动后端服务 (Spring Boot)"
-    echo "  --frontend       仅启动前端服务 (Vue/Node)"
+    echo "  --backend        仅启动后端服务"
+    echo "  --frontend       仅启动前端服务"
     echo "  --debug-port     设置后端调试端口 (例如: 5005)"
-    echo "  -f, --force      启动前停止已存在的后端进程 (先优雅再强制)"
+    echo "  -f, --force      启动前停止已存在的进程 (前后端)"
     echo "  -h, --help       显示此帮助信息"
     echo ""
     echo "默认行为: 同时在后台启动前后端服务。"
@@ -55,7 +54,6 @@ START_BACKEND=true
 START_FRONTEND=true
 FORCE_RESTART=false
 DEBUG_PORT=""
-JAVA_CMD_ARGS=()
 
 # 参数解析
 while [ $# -gt 0 ]; do
@@ -65,7 +63,7 @@ while [ $# -gt 0 ]; do
         --debug-port) shift; DEBUG_PORT="$1" ;;
         -f|--force) FORCE_RESTART=true ;;
         -h|--help) show_help ;;
-        *) JAVA_CMD_ARGS+=("$1") ;;
+        *) ;;
     esac
     shift
 done
@@ -74,109 +72,35 @@ cd "$APP_DIR"
 [ ! -d "$LOG_DIR" ] && mkdir -p "$LOG_DIR"
 
 # 如果指定了强制启动，调用停止脚本
-if [ "$FORCE_RESTART" = true ] && [ "$START_BACKEND" = true ]; then
+if [ "$FORCE_RESTART" = true ]; then
     chmod +x ./stop.sh
-    ./stop.sh --force
+    if [ "$START_BACKEND" = true ] && [ "$START_FRONTEND" = true ]; then
+        ./stop.sh --all -f
+    elif [ "$START_BACKEND" = true ]; then
+        ./stop.sh --backend -f
+    elif [ "$START_FRONTEND" = true ]; then
+        ./stop.sh --frontend -f
+    fi
 fi
 
 # =============================================================================
-# 后端启动逻辑 (Java)
+# 后端启动逻辑 - 调用 run.sh
 # =============================================================================
-wait_for_port() {
-    local port=$1
-    local name=$2
-    local timeout=120
-    local count=0
-    printf "${GREEN}[INFO]${NC} 正在等待 %s 就绪 (端口: %s) " "$name" "$port"
-    while ! nc -z localhost "$port" >/dev/null 2>&1; do
-        printf "\r${GREEN}[INFO]${NC} 正在等待 %s 就绪 (端口: %s) [%ds]" "$name" "$port" "$count"
-        sleep 1
-        count=$((count + 1))
-        if [ $count -ge $timeout ]; then
-            printf "\n"
-            echo_error "$name 启动超时，请检查后端配置"
-            return 1
-        fi
-    done
-    printf "\n${GREEN}[INFO]${NC} %s 已就绪！(耗时: %ds)\n" "$name" "$count"
-}
-
 start_backend() {
-    echo_info ">>> 正在启动后端服务 (静默模式)..."
+    echo_info ">>> 正在启动后端服务..."
+    chmod +x ./run.sh
     
-    # 优先从后端配置文件提取端口
-    local conf_dir="src/main/resources"
-    local backend_port=""
-    
-    if [ -f "$conf_dir/application.properties" ]; then
-        backend_port=$(grep "server.port" "$conf_dir/application.properties" | awk -F= '{print $2}' | tr -d '[:space:]')
-    elif [ -f "$conf_dir/application.yml" ]; then
-        backend_port=$(grep "port:" "$conf_dir/application.yml" | head -n 1 | awk '{print $2}' | tr -d '[:space:]')
-    fi
-
-    # 如果后端配置没找到，尝试从前端代理配置提取
-    if [ -z "$backend_port" ]; then
-        backend_port=$(grep "target:" vite.config.js 2>/dev/null | sed -E 's/.*:([0-9]+).*/\1/' | head -n 1)
+    local run_args="--daemon"
+    if [ -n "$DEBUG_PORT" ]; then
+        run_args="$run_args --debug-port $DEBUG_PORT"
     fi
     
-    # 默认值
-    [ -z "$backend_port" ] && backend_port="8081"
-    BACKEND_PORT="$backend_port"
-
-    # Java 检查与版本判定
-    if ! command -v java > /dev/null 2>&1; then echo_error "未检测到 Java"; return 1; fi
-    JAVA_VERSION_STR=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-    MAJOR_VERSION=$(echo "$JAVA_VERSION_STR" | awk -F. '{print $1}')
-    [ "$MAJOR_VERSION" = "1" ] && JAVA_VERSION=$(echo "$JAVA_VERSION_STR" | awk -F. '{print $2}') || JAVA_VERSION="$MAJOR_VERSION"
-
-    JAVA_OPTS="-server -Xms512M -Xmx512M -Djava.io.tmpdir=$LOG_DIR/"
-    [ -n "$DEBUG_PORT" ] && JAVA_OPTS="$JAVA_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=$DEBUG_PORT"
-
-    if [ $IS_DEV_MODE -eq 0 ]; then
-        echo_info "模式：开发模式 (Maven)"
-        mvn spring-boot:run -Dspring-boot.run.arguments="${JAVA_CMD_ARGS[*]}" > /dev/null 2>&1 &
-    else
-        echo_info "模式：部署模式 (JAR)"
-        ARTIFACT_ID="@project.artifactId@"
-        APP_NAME=$(ls -t $LIB_DIR/${ARTIFACT_ID}-*.jar 2>/dev/null | head -n 1)
-        if [ "$ARTIFACT_ID" = "@project.artifactId@" ] || [ -z "$APP_NAME" ]; then
-            APP_NAME=$(ls -t $LIB_DIR/*.jar 2>/dev/null | head -n 1)
-        fi
-        java $JAVA_OPTS -jar "$APP_NAME" "${JAVA_CMD_ARGS[@]}" > /dev/null 2>&1 &
-    fi
-    BACKEND_PID=$!
-    
-    # 等待后端就绪
-    wait_for_port "$BACKEND_PORT" "后端服务"
+    ./run.sh $run_args
 }
 
 # =============================================================================
-# 前端启动逻辑 (Node/Vue)
+# 前端启动逻辑
 # =============================================================================
-open_browser() {
-    local url=$1
-    local port=$2
-    (
-        local timeout=60
-        local count=0
-        # 静默等待前端端口就绪
-        while ! nc -z localhost "$port" >/dev/null 2>&1; do
-            sleep 1
-            count=$((count + 1))
-            if [ $count -ge $timeout ]; then
-                return 1
-            fi
-        done
-        
-        echo_info "前端服务已就绪，正在打开浏览器: $url"
-        if [ "$(uname)" = "Darwin" ]; then
-            open "$url"
-        elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
-            xdg-open "$url" 2>/dev/null || echo_warn "无法自动打开浏览器，请手动访问: $url"
-        fi
-    ) &
-}
-
 start_frontend() {
     echo_info ">>> 正在启动前端服务 (终端模式)..."
     if [ $IS_DEV_MODE -eq 0 ]; then
@@ -202,7 +126,6 @@ start_frontend() {
                 
                 if command -v yarn > /dev/null 2>&1; then
                     yarn config set strict-ssl false
-                    # 第一次尝试失败后，尝试删除 lock 文件重新解析 (解决 nlark.com 等旧地址残留)
                     if yarn install --registry "$reg"; then
                         success=true
                         echo "$current_hash" > .dep_hash
@@ -234,17 +157,15 @@ start_frontend() {
         local port=$(grep "port:" vite.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
         [ -z "$port" ] && port="8000"
         
+        echo_info "启动前端并监听端口: $port"
+        echo_info "访问地址: http://localhost:$port"
+        
         if command -v yarn > /dev/null 2>&1; then
-            echo_info "启动前端并监听端口: $port"
-            # 仅在此时开始异步探测端口
-            open_browser "http://localhost:$port" "$port"
             echo_info "执行: yarn dev"
-            yarn dev
+            yarn dev --open
         else
-            echo_info "启动前端并监听端口: $port"
-            open_browser "http://localhost:$port" "$port"
             echo_info "执行: npm run dev"
-            npm run dev
+            npm run dev -- --open
         fi
     else
         echo_info "模式：部署模式 (静态资源) 已由后端托管。"
@@ -255,8 +176,8 @@ start_frontend() {
 [ "$START_BACKEND" = true ] && start_backend
 [ "$START_FRONTEND" = true ] && start_frontend
 
-# 捕获退出信号
-trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; echo_info '服务已停止';" EXIT
+# 捕获退出信号，调用 stop.sh 停止服务
+trap "echo_info '正在停止服务...'; chmod +x ./stop.sh; ./stop.sh --all 2>/dev/null; echo_info '服务已停止';" EXIT
 
-# 保持脚本运行，监听 PID
+# 保持脚本运行
 wait

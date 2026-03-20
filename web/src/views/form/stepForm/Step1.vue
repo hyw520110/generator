@@ -1,49 +1,25 @@
 <template>
   <div>
-    <a-form :form="form" style="max-width: 500px; margin: 40px auto 0;">
-      <a-form-item
-        label="付款账户"
-        :labelCol="labelCol"
-        :wrapperCol="wrapperCol"
-      >
-        <a-select
-          placeholder="ant-design@alipay.com"
-          v-decorator="['paymentUser', { rules: [{required: true, message: '付款账户必须填写'}] }]">
+    <a-form :model="formState" style="max-width: 500px; margin: 40px auto 0;" ref="formRef">
+      <a-form-item label="付款账户" :labelCol="labelCol" :wrapperCol="wrapperCol" name="paymentUser">
+        <a-select v-model:value="formState.paymentUser" placeholder="ant-design@alipay.com">
           <a-select-option value="1">ant-design@alipay.com</a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item
-        label="收款账户"
-        :labelCol="labelCol"
-        :wrapperCol="wrapperCol"
-      >
-        <a-input-group
-          style="display: inline-block; vertical-align: middle"
-          :compact="true"
-        >
-          <a-select defaultValue="alipay" style="width: 100px">
+      <a-form-item label="收款账户" :labelCol="labelCol" :wrapperCol="wrapperCol">
+        <a-input-group style="display: inline-block; vertical-align: middle" compact>
+          <a-select v-model:value="formState.payChannel" style="width: 100px">
             <a-select-option value="alipay">支付宝</a-select-option>
             <a-select-option value="wexinpay">微信</a-select-option>
           </a-select>
-          <a-input
-            :style="{width: 'calc(100% - 100px)'}"
-            v-decorator="['payType', { initialValue: 'test@example.com', rules: [{required: true, message: '收款账户必须填写'}]}]"
-          />
+          <a-input :style="{width: 'calc(100% - 100px)'}" v-model:value="formState.payType"/>
         </a-input-group>
       </a-form-item>
-      <a-form-item
-        label="收款人姓名"
-        :labelCol="labelCol"
-        :wrapperCol="wrapperCol"
-      >
-        <a-input v-decorator="['name', { initialValue: 'Alex', rules: [{required: true, message: '收款人名称必须核对'}] }]"/>
+      <a-form-item label="收款人姓名" :labelCol="labelCol" :wrapperCol="wrapperCol" name="name">
+        <a-input v-model:value="formState.name"/>
       </a-form-item>
-      <a-form-item
-        label="转账金额"
-        :labelCol="labelCol"
-        :wrapperCol="wrapperCol"
-      >
-        <a-input prefix="￥" v-decorator="['momey', { initialValue: '5000', rules: [{required: true, message: '转账金额必须填写'}] }]"/>
+      <a-form-item label="转账金额" :labelCol="labelCol" :wrapperCol="wrapperCol" name="momey">
+        <a-input prefix="￥" v-model:value="formState.momey"/>
       </a-form-item>
       <a-form-item :wrapperCol="{span: 19, offset: 5}">
         <a-button type="primary" @click="nextStep">下一步</a-button>
@@ -61,24 +37,40 @@
 </template>
 
 <script>
+import { ref, reactive } from 'vue'
+
 export default {
   name: 'Step1',
-  data () {
-    return {
-      labelCol: { lg: { span: 5 }, sm: { span: 5 } },
-      wrapperCol: { lg: { span: 19 }, sm: { span: 19 } },
-      form: this.$form.createForm(this)
+  emits: ['nextStep'],
+  setup (props, { emit }) {
+    const formRef = ref()
+    
+    const labelCol = { lg: { span: 5 }, sm: { span: 5 } }
+    const wrapperCol = { lg: { span: 19 }, sm: { span: 19 } }
+    
+    const formState = reactive({
+      paymentUser: undefined,
+      payChannel: 'alipay',
+      payType: 'test@example.com',
+      name: 'Alex',
+      momey: '5000'
+    })
+    
+    const nextStep = async () => {
+      try {
+        await formRef.value.validate()
+        emit('nextStep')
+      } catch (error) {
+        // validation failed
+      }
     }
-  },
-  methods: {
-    nextStep () {
-      const { form: { validateFields } } = this
-      // 先校验，通过表单校验后，才进入下一步
-      validateFields((err, values) => {
-        if (!err) {
-          this.$emit('nextStep')
-        }
-      })
+    
+    return {
+      formRef,
+      formState,
+      labelCol,
+      wrapperCol,
+      nextStep
     }
   }
 }

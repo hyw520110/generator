@@ -10,42 +10,28 @@ export const PERMISSION_ENUM = {
   'export': { key: 'export', label: '导出' }
 }
 
-function plugin (Vue) {
-  if (plugin.installed) {
-    return
+export default {
+  install (app) {
+    // $auth 权限检查方法
+    app.config.globalProperties.$auth = function (permissions) {
+      const [permission, action] = permissions.split('.')
+      const permissionList = this.$store?.getters?.roles?.permissions || []
+      const found = permissionList.find((val) => {
+        return val.permissionId === permission
+      })
+      if (!found) return false
+      return found.actionList?.findIndex((val) => {
+        return val === action
+      }) > -1
+    }
+
+    // $enum 枚举获取方法
+    app.config.globalProperties.$enum = function (val) {
+      let result = PERMISSION_ENUM
+      val && val.split('.').forEach(v => {
+        result = result && result[v] || null
+      })
+      return result
+    }
   }
-
-  !Vue.prototype.$auth && Object.defineProperties(Vue.prototype, {
-    $auth: {
-      get () {
-        const _this = this
-        return (permissions) => {
-          const [permission, action] = permissions.split('.')
-          const permissionList = _this.$store.getters.roles.permissions
-          return permissionList.find((val) => {
-            return val.permissionId === permission
-          }).actionList.findIndex((val) => {
-            return val === action
-          }) > -1
-        }
-      }
-    }
-  })
-
-  !Vue.prototype.$enum && Object.defineProperties(Vue.prototype, {
-    $enum: {
-      get () {
-        // const _this = this;
-        return (val) => {
-          let result = PERMISSION_ENUM
-          val && val.split('.').forEach(v => {
-            result = result && result[v] || null
-          })
-          return result
-        }
-      }
-    }
-  })
 }
-
-export default plugin

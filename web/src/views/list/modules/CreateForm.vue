@@ -2,19 +2,18 @@
   <a-modal
     title="新建规则"
     :width="640"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="loading"
-    @ok="() => { $emit('ok') }"
-    @cancel="() => { $emit('cancel') }"
+    @ok="handleOk"
+    @cancel="handleCancel"
   >
     <a-spin :spinning="loading">
-      <a-form :form="form" v-bind="formLayout">
-        <!-- 检查是否有 id 并且大于0，大于0是修改。其他是新增，新增不显示主键ID -->
-        <a-form-item v-show="model && model.id > 0" label="主键ID">
-          <a-input v-decorator="['id', { initialValue: 0 }]" disabled />
+      <a-form :model="formState" v-bind="formLayout" ref="formRef">
+        <a-form-item v-show="model && model.id > 0" label="主键ID" name="id">
+          <a-input v-model:value="formState.id" disabled/>
         </a-form-item>
-        <a-form-item label="描述">
-          <a-input v-decorator="['description', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
+        <a-form-item label="描述" name="description">
+          <a-input v-model:value="formState.description"/>
         </a-form-item>
       </a-form>
     </a-spin>
@@ -22,7 +21,7 @@
 </template>
 
 <script>
-import pick from 'lodash.pick'
+import { ref, reactive, watch } from 'vue'
 
 // 表单字段
 const fields = ['description', 'id']
@@ -42,8 +41,11 @@ export default {
       default: () => null
     }
   },
-  data () {
-    this.formLayout = {
+  emits: ['ok', 'cancel'],
+  setup (props, { emit }) {
+    const formRef = ref()
+    
+    const formLayout = {
       labelCol: {
         xs: { span: 24 },
         sm: { span: 7 }
@@ -53,20 +55,37 @@ export default {
         sm: { span: 13 }
       }
     }
-    return {
-      form: this.$form.createForm(this)
-    }
-  },
-  created () {
-    console.log('custom modal created')
-
-    // 防止表单未注册
-    fields.forEach(v => this.form.getFieldDecorator(v))
-
-    // 当 model 发生改变时，为表单设置值
-    this.$watch('model', () => {
-      this.model && this.form.setFieldsValue(pick(this.model, fields))
+    
+    const formState = reactive({
+      id: 0,
+      description: ''
     })
+    
+    watch(() => props.model, (newModel) => {
+      if (newModel) {
+        fields.forEach(field => {
+          if (newModel[field] !== undefined) {
+            formState[field] = newModel[field]
+          }
+        })
+      }
+    }, { immediate: true })
+    
+    const handleOk = () => {
+      emit('ok', { ...formState })
+    }
+    
+    const handleCancel = () => {
+      emit('cancel')
+    }
+    
+    return {
+      formRef,
+      formState,
+      formLayout,
+      handleOk,
+      handleCancel
+    }
   }
 }
 </script>

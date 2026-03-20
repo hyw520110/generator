@@ -22,6 +22,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.velocity.VelocityContext;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.ExportFormat;
 import org.hyw.tools.generator.exception.GeneratorException;
 import org.hyw.tools.generator.template.EngineType;
 import org.hyw.tools.generator.template.RenderContext;
@@ -82,6 +83,7 @@ public class Generator extends AbstractGenerator {
 
 	/**
 	 * 生成代码
+	 * @throws IOException 
 	 * 
 	 * @throws Exception
 	 */
@@ -101,6 +103,35 @@ public class Generator extends AbstractGenerator {
 			if (dataSource != null) {
 				dataSource.close();
 			}
+		}
+	}
+
+	/**
+	 * 生成数据库表文档（Word/PDF）
+	 * @param outputFile 输出文件
+	 * @param format 文档格式：word 或 pdf
+	 * @param fontPaths PDF 中文字体路径列表（按优先级排序）
+	 */
+	public void generateDoc(File outputFile, String format, List<String> fontPaths) {
+		long startTime = System.currentTimeMillis();
+		try {
+			// 获取表列表
+			List<Table> tables = getTables();
+			if (tables.isEmpty()) {
+				throw new GeneratorException("没有找到要生成文档的表");
+			}
+			
+			logger.info("开始生成{}文档，表数量: {}", "word".equals(format) ? "Word" : "PDF", tables.size());
+			
+			// 使用 DbToDoc 工具类生成文档
+			ExportFormat exportFormat = "pdf".equals(format) ? ExportFormat.PDF : ExportFormat.DOCX;
+			DbToDoc.toDoc(tables, exportFormat, outputFile.getAbsolutePath(), fontPaths);
+			
+			long duration = System.currentTimeMillis() - startTime;
+			logger.info("文档生成完成: {}, 耗时: {}ms", outputFile.getAbsolutePath(), duration);
+		} catch (Exception e) {
+			logger.error("生成文档失败", e);
+			throw new GeneratorException("生成文档失败: " + e.getMessage(), e);
 		}
 	}
 	
@@ -304,6 +335,11 @@ public class Generator extends AbstractGenerator {
 			String outputPath = isTemplateFile ? global.getEngineType().removeExtension(path) : path;
 			writeToFile(outputPath, data, !isTemplateFile);
 		}
+	}
+
+	private boolean isResourceFile(String path) {
+		return ArrayUtils.contains(global.getResources(),
+				StringUtils.lowerCase(StringUtils.substringAfterLast(path, ".")));
 	}
 
 	private String getPackage(String path) {

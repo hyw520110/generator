@@ -1,13 +1,16 @@
 package org.hyw.tools.generator.metadata;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -17,6 +20,7 @@ import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.conf.dao.QuerySQL;
 import org.hyw.tools.generator.conf.db.TabField;
 import org.hyw.tools.generator.conf.db.Table;
+import org.hyw.tools.generator.conf.db.TableRelation;
 import org.hyw.tools.generator.enums.FieldType;
 import org.hyw.tools.generator.enums.Naming;
 import org.hyw.tools.generator.enums.db.DBType;
@@ -328,9 +332,175 @@ public class DatabaseMetadataReader implements MetadataReader {
      * 失败的表信息
      */
     @Data
-    @AllArgsConstructor
     public static class FailedTable {
         public final String tableName;
         public final String errorMessage;
+        
+        public FailedTable(String tableName, String errorMessage) {
+            this.tableName = tableName;
+            this.errorMessage = errorMessage;
+        }
+    }
+    
+    /**
+     * 获取表关系（外键关系）
+     * 
+     * @param tableNames 要查询关系的表名列表
+     * @return 表关系列表
+     */
+    public List<TableRelation> getTableRelations(List<String> tableNames) {
+        List<TableRelation> relations = new ArrayList<>();
+        
+        if (tableNames == null || tableNames.isEmpty()) {
+            return relations;
+        }
+        
+        Connection con = null;
+        try {
+            con = dataSource.getCon();
+            DatabaseMetaData metaData = con.getMetaData();
+            String catalog = con.getCatalog();
+            String schema = getSchema(con);
+            
+            // 获取表注释映射（使用同一个连接）
+            Map<String, String> tableComments = getTableComments(tableNames, con);
+            
+            for (String tableName : tableNames) {
+                try {
+                    // 获取该表引用的其他表（外键关系）
+                    try (ResultSet rs = metaData.getImportedKeys(catalog, schema, tableName)) {
+                        while (rs.next()) {
+                            TableRelation relation = new TableRelation();
+                            relation.setSourceTable(tableName);
+                            relation.setSourceComment(tableComments.get(tableName));
+                            relation.setTargetTable(rs.getString("PKTABLE_NAME"));
+                            relation.setTargetComment(tableComments.get(rs.getString("PKTABLE_NAME")));
+                            relation.setFkColumn(rs.getString("FKCOLUMN_NAME"));
+                            relation.setPkColumn(rs.getString("PKCOLUMN_NAME"));
+                            relation.setFkName(rs.getString("FK_NAME"));
+                            
+                            relations.add(relation);
+                            logger.debug("发现表关系: {}", relation.getRelationDesc());
+                        }
+                    }
+                } catch (SQLException e) {
+                    logger.warn("获取表 {} 的外键关系失败: {}", tableName, e.getMessage());
+                }
+            }
+            
+            logger.info("共发现 {} 个表关系", relations.size());
+            
+        } catch (Exception e) {
+            logger.error("获取表关系失败", e);
+            throw new GeneratorException(
+                GeneratorException.ErrorCode.DATABASE_QUERY_FAILED,
+                e,
+                "获取表关系失败：" + e.getMessage()
+            );
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException e) {
+                    logger.warn("关闭数据库连接失败", e);
+                }
+            }
+        }
+        
+        return relations;
+    }
+    
+    /**
+     * 获取所有表的关系（外键关系）
+     */
+    public List<TableRelation> getAllTableRelations() {
+        List<String> tableNames = getAllTableNames();
+        return getTableRelations(tableNames);
+    }
+    
+    /**
+     * 获取表注释映射（自行管理连接）
+     */
+    private Map<String, String> getTableComments(List<String> tableNames) {
+        Map<String, String> comments = new HashMap<>();
+        QuerySQL sql = dataSource.getQuerySQL();
+        
+        Connection con = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+        try {
+            con = dataSource.getCon();
+            pst = con.prepareStatement(sql.getTabComments());
+            rs = pst.executeQuery();
+            
+            while (rs.next()) {
+                String tabName = rs.getString(sql.getTbName());
+                if (tableNames.contains(tabName)) {
+                    comments.put(tabName, rs.getString(sql.getTbComment()));
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("获取表注释失败", e);
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (pst != null) {
+                try { pst.close(); } catch (SQLException e) { }
+            }
+            if (con != null) {
+                try { con.close(); } catch (SQLException e) { }
+            }
+        }
+        
+        return comments;
+    }
+    
+    /**
+     * 获取表注释映射（使用传入的连接，由调用方管理连接生命周期）
+     */
+    private Map<String, String> getTableComments(List<String> tableNames, Connection con) {
+        Map<String, String> comments = new HashMap<>();
+        QuerySQL sql = dataSource.getQuerySQL();
+        
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+        try {
+            pst = con.prepareStatement(sql.getTabComments());
+            rs = pst.executeQuery();
+            
+            while (rs.next()) {
+                String tabName = rs.getString(sql.getTbName());
+                if (tableNames.contains(tabName)) {
+                    comments.put(tabName, rs.getString(sql.getTbComment()));
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("获取表注释失败", e);
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (pst != null) {
+                try { pst.close(); } catch (SQLException e) { }
+            }
+            // 不关闭 con，由调用方管理
+        }
+        
+        return comments;
+    }
+    
+    /**
+     * 获取数据库 schema
+     */
+    private String getSchema(Connection con) throws SQLException {
+        DBType dbType = dataSource.getDBType();
+        if (dbType == DBType.POSTGRE_SQL) {
+            return "public";
+        } else if (dbType == DBType.ORACLE) {
+            return con.getSchema();
+        }
+        // MySQL 默认使用 null（查询所有 schema）
+        return null;
     }
 }

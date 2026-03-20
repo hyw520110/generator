@@ -1,0 +1,29 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: generator-web
+  profiles:
+    active: dev
+
+app:
+  # 自动打开浏览器 (默认关闭，由前端 Vite --open 控制)
+  auto-open-browser: false
+  # 自动启动前端开发服务 (默认关闭)
+  auto-start-frontend: false
+  # 代码下载目录 (默认为用户下载目录)
+  download-dir: ${user.home}/Downloads/generator
+  
+  # PDF 中文字体配置
+  # 格式：目录路径:文件名模式（支持 * 通配符），多项用逗号分隔
+  # 系统按配置顺序依次查找，返回第一个匹配的字体文件
+  pdf:
+    fonts:
+      # macOS 字体配置（按优先级排序）
+      macos: /System/Library/Fonts/Supplemental:Arial Unicode.ttf, /System/Library/Fonts:PingFang*.ttc, /System/Library/Fonts:STHeiti*.ttc, /System/Library/Fonts:Hiragino*.ttc, /Library/Fonts:*.ttf
+      # Windows 字体配置（按优先级排序）
+      windows: C:/Windows/Fonts:simhei.ttf, C:/Windows/Fonts:simsun.ttc, C:/Windows/Fonts:msyh.ttc, C:/Windows/Fonts:msyh*.ttc
+      # Linux 字体配置（按优先级排序）
+      linux: /usr/share/fonts/truetype/droid:DroidSansFallback*.ttf, /usr/share/fonts/truetype/wqy:wqy-microhei*.ttc, /usr/share/fonts/opentype/noto:NotoSansCJK*.ttc, /usr/share/fonts/truetype/noto:NotoSansCJK*.ttf, /usr/share/fonts:*.ttf
+

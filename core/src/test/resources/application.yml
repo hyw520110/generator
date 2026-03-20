@@ -20,13 +20,13 @@ spring:
       #/META-INF/resources,/resources,/public,/templates,/static
       exclude: /static/**,/templates/**    
   datasource:
-    driver-class-name: ${dataSource.driverClassName}
-    url: ${dataSource.url}
-    username: ${dataSource.username}
-    password: ${dataSource.pwd}
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://dev2.shangjinuu.com:3306/dbuser?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: MysqlLx@5$12
     #druid密文密码配置
     druid: 
-      connection-properties: config.decrypt=true;config.decrypt.key=${public-key}
+      connection-properties: config.decrypt=false
       filter: 
         config: 
           enabled: true

@@ -2,24 +2,20 @@
   <a-modal
     title="操作"
     :width="600"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     @ok="handleOk"
     @cancel="handleCancel"
   >
     <a-spin :spinning="confirmLoading">
-      <a-form :form="form">
+      <a-form :model="formState" ref="formRef">
 
-        <a-form-item
-          label="父级ID"
-        >
-          <a-input v-decorator="['parentId', {}]" disabled />
+        <a-form-item label="父级ID" name="parentId">
+          <a-input v-model:value="formState.parentId" disabled/>
         </a-form-item>
 
-        <a-form-item
-          label="机构名称"
-        >
-          <a-input v-decorator="['orgName', {}]" />
+        <a-form-item label="机构名称" name="orgName">
+          <a-input v-model:value="formState.orgName"/>
         </a-form-item>
       </a-form>
     </a-spin>
@@ -27,74 +23,84 @@
 </template>
 
 <script>
+import { ref, reactive, nextTick } from 'vue'
+import { message } from 'ant-design-vue'
+
 export default {
   name: 'OrgModal',
-  data () {
+  emits: ['close', 'ok'],
+  setup (props, { emit }) {
+    const formRef = ref()
+    const visible = ref(false)
+    const confirmLoading = ref(false)
+    const mdl = ref({})
+    
+    const labelCol = { xs: { span: 24 }, sm: { span: 5 } }
+    const wrapperCol = { xs: { span: 24 }, sm: { span: 16 } }
+    
+    const formState = reactive({
+      parentId: '',
+      orgName: ''
+    })
+    
+    const add = (id) => {
+      edit({ parentId: id })
+    }
+    
+    const edit = (record) => {
+      mdl.value = Object.assign({}, record)
+      visible.value = true
+      nextTick(() => {
+        formState.parentId = record.parentId
+        formState.orgName = record.orgName
+      })
+    }
+    
+    const close = () => {
+      emit('close')
+      visible.value = false
+    }
+    
+    const handleOk = async () => {
+      try {
+        await formRef.value.validate()
+        console.log('form values', formState)
+        
+        confirmLoading.value = true
+        new Promise((resolve) => {
+          setTimeout(() => resolve(), 2000)
+        }).then(() => {
+          message.success('保存成功')
+          emit('ok')
+        }).catch(() => {
+          // Do something
+        }).finally(() => {
+          confirmLoading.value = false
+          close()
+        })
+      } catch (err) {
+        // validation failed
+      }
+    }
+    
+    const handleCancel = () => {
+      close()
+    }
+    
     return {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 5 }
-      },
-      wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 16 }
-      },
-      visible: false,
-      confirmLoading: false,
-      mdl: {}
+      formRef,
+      formState,
+      labelCol,
+      wrapperCol,
+      visible,
+      confirmLoading,
+      mdl,
+      add,
+      edit,
+      close,
+      handleOk,
+      handleCancel
     }
-  },
-  beforeCreate () {
-    this.form = this.$form.createForm(this)
-    console.log('form::', this.form)
-  },
-  created () {
-
-  },
-  methods: {
-    add (id) {
-      this.edit({ parentId: id })
-    },
-    edit (record) {
-      this.mdl = Object.assign({}, record)
-      this.visible = true
-      this.$nextTick(() => {
-        this.form.setFieldsValue({ ...record })
-      })
-    },
-    close () {
-      this.$emit('close')
-      this.visible = false
-    },
-    handleOk () {
-      const _this = this
-      // 触发表单验证
-      this.form.validateFields((err, values) => {
-        // 验证表单没错误
-        if (!err) {
-          console.log('form values', values)
-
-          _this.confirmLoading = true
-          // 模拟后端请求 2000 毫秒延迟
-          new Promise((resolve) => {
-            setTimeout(() => resolve(), 2000)
-          }).then(() => {
-            // Do something
-            _this.$message.success('保存成功')
-            _this.$emit('ok')
-          }).catch(() => {
-            // Do something
-          }).finally(() => {
-            _this.confirmLoading = false
-            _this.close()
-          })
-        }
-      })
-    },
-    handleCancel () {
-      this.close()
-    }
-
   }
 }
 </script>

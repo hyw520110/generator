@@ -1,34 +1,20 @@
 <template>
   <a-card :bordered="false">
-    <a-form :form="form1" :self-update="true" @submit="handleForm1Submit">
+    <a-form :model="formState1" :self-update="true" @submit="handleForm1Submit" ref="form1Ref">
       <a-row class="form-row" :gutter="16">
         <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item label="仓库名">
-            <a-input
-              placeholder="请输入仓库名称"
-              v-decorator="[
-                'name',
-                {rules: [{ required: true, message: '请输入仓库名称', whitespace: true}]}
-              ]" />
+          <a-form-item label="仓库名" name="name">
+            <a-input placeholder="请输入仓库名称" v-model:value="formState1.name"/>
           </a-form-item>
         </a-col>
         <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="仓库域名">
-            <a-input
-              addonBefore="http://"
-              addonAfter=".com"
-              placeholder="请输入"
-              v-decorator="[
-                'url',
-                {rules: [{ required: true, message: '请输入仓库域名', whitespace: true}]}
-              ]" />
+          <a-form-item label="仓库域名" name="url">
+            <a-input addonBefore="http://" addonAfter=".com" placeholder="请输入" v-model:value="formState1.url"/>
           </a-form-item>
         </a-col>
         <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库管理员">
-            <a-select placeholder="请选择管理员" v-decorator="[ 'owner', {rules: [{ required: true, message: '请选择管理员'}]} ]">
+          <a-form-item label="仓库管理员" name="owner">
+            <a-select placeholder="请选择管理员" v-model:value="formState1.owner">
               <a-select-option value="王同学">王同学</a-select-option>
               <a-select-option value="李同学">李同学</a-select-option>
               <a-select-option value="黄同学">黄同学</a-select-option>
@@ -38,34 +24,21 @@
       </a-row>
       <a-row class="form-row" :gutter="16">
         <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item
-            label="审批人">
-            <a-select placeholder="请选择审批员" v-decorator="[ 'approver', {rules: [{ required: true, message: '请选择审批员'}]} ]">
+          <a-form-item label="审批人" name="approver">
+            <a-select placeholder="请选择审批员" v-model:value="formState1.approver">
               <a-select-option value="王晓丽">王晓丽</a-select-option>
               <a-select-option value="李军">李军</a-select-option>
             </a-select>
           </a-form-item>
         </a-col>
         <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="生效日期">
-            <a-range-picker
-              style="width: 100%"
-              v-decorator="[
-                'dateRange',
-                {rules: [{ required: true, message: '请选择生效日期'}]}
-              ]" />
+          <a-form-item label="生效日期" name="dateRange">
+            <a-range-picker style="width: 100%" v-model:value="formState1.dateRange"/>
           </a-form-item>
         </a-col>
         <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库类型">
-            <a-select
-              placeholder="请选择仓库类型"
-              v-decorator="[
-                'type',
-                {rules: [{ required: true, message: '请选择仓库类型'}]}
-              ]" >
+          <a-form-item label="仓库类型" name="type">
+            <a-select placeholder="请选择仓库类型" v-model:value="formState1.type">
               <a-select-option value="公开">公开</a-select-option>
               <a-select-option value="私密">私密</a-select-option>
             </a-select>
@@ -73,482 +46,196 @@
         </a-col>
       </a-row>
       <a-form-item v-if="showSubmit">
-        <a-button htmlType="submit" >Submit</a-button>
+        <a-button htmlType="submit">Submit</a-button>
       </a-form-item>
     </a-form>
 
-    <a-form :form="form2" :self-update="true" @submit="handleForm2Submit">
+    <a-divider/>
+
+    <a-form :model="formState2" @submit="handleForm2Submit" ref="form2Ref">
       <a-row class="form-row" :gutter="16">
         <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item label="仓库名">
-            <a-input
-              placeholder="请输入仓库名称"
-              v-decorator="[
-                'name',
-                {rules: [{ required: true, message: '请输入仓库名称', whitespace: true}]}
-              ]" />
+          <a-form-item label="任务名" name="name">
+            <a-input placeholder="请输入任务名称" v-model:value="formState2.name"/>
           </a-form-item>
         </a-col>
         <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="仓库域名">
-            <a-input
-              addonBefore="http://"
-              addonAfter=".com"
-              placeholder="请输入"
-              v-decorator="[
-                'url',
-                {rules: [{ required: true, message: '请输入仓库域名', whitespace: true}]}
-              ]" />
+          <a-form-item label="任务描述" name="description">
+            <a-input placeholder="请输入任务描述" v-model:value="formState2.description"/>
           </a-form-item>
         </a-col>
         <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库管理员">
-            <a-select placeholder="请选择管理员" v-decorator="[ 'owner', {rules: [{ required: true, message: '请选择管理员'}]} ]">
-              <a-select-option value="王同学">王同学</a-select-option>
-              <a-select-option value="李同学">李同学</a-select-option>
-              <a-select-option value="黄同学">黄同学</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row class="form-row" :gutter="16">
-        <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item
-            label="审批人">
-            <a-select placeholder="请选择审批员" v-decorator="[ 'approver', {rules: [{ required: true, message: '请选择审批员'}]} ]">
-              <a-select-option value="王晓丽">王晓丽</a-select-option>
-              <a-select-option value="李军">李军</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="生效日期">
-            <a-range-picker
-              style="width: 100%"
-              v-decorator="[
-                'dateRange',
-                {rules: [{ required: true, message: '请选择生效日期'}]}
-              ]" />
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库类型">
-            <a-select
-              placeholder="请选择仓库类型"
-              v-decorator="[
-                'type',
-                {rules: [{ required: true, message: '请选择仓库类型'}]}
-              ]" >
-              <a-select-option value="公开">公开</a-select-option>
-              <a-select-option value="私密">私密</a-select-option>
+          <a-form-item label="执行人" name="owner">
+            <a-select placeholder="请选择执行人" v-model:value="formState2.owner">
+              <a-select-option value="黄丽丽">黄丽丽</a-select-option>
+              <a-select-option value="李大刀">李大刀</a-select-option>
             </a-select>
           </a-form-item>
         </a-col>
       </a-row>
       <a-form-item v-if="showSubmit">
-        <a-button htmlType="submit" >Submit</a-button>
+        <a-button htmlType="submit">Submit</a-button>
       </a-form-item>
     </a-form>
 
-    <a-form :form="form3" :self-update="true" @submit="handleForm2Submit">
+    <a-divider/>
+
+    <a-form :model="formState3" @submit="handleForm3Submit" ref="form3Ref">
       <a-row class="form-row" :gutter="16">
         <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item label="仓库名">
-            <a-input
-              placeholder="请输入仓库名称"
-              v-decorator="[
-                'name',
-                {rules: [{ required: true, message: '请输入仓库名称', whitespace: true}]}
-              ]" />
+          <a-form-item label="项目名" name="name">
+            <a-input placeholder="请输入项目名称" v-model:value="formState3.name"/>
           </a-form-item>
         </a-col>
         <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="仓库域名">
-            <a-input
-              addonBefore="http://"
-              addonAfter=".com"
-              placeholder="请输入"
-              v-decorator="[
-                'url',
-                {rules: [{ required: true, message: '请输入仓库域名', whitespace: true}]}
-              ]" />
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库管理员">
-            <a-select placeholder="请选择管理员" v-decorator="[ 'owner', {rules: [{ required: true, message: '请选择管理员'}]} ]">
-              <a-select-option value="王同学">王同学</a-select-option>
-              <a-select-option value="李同学">李同学</a-select-option>
-              <a-select-option value="黄同学">黄同学</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row class="form-row" :gutter="16">
-        <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item
-            label="审批人">
-            <a-select placeholder="请选择审批员" v-decorator="[ 'approver', {rules: [{ required: true, message: '请选择审批员'}]} ]">
-              <a-select-option value="王晓丽">王晓丽</a-select-option>
-              <a-select-option value="李军">李军</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="生效日期">
-            <a-range-picker
-              style="width: 100%"
-              v-decorator="[
-                'dateRange',
-                {rules: [{ required: true, message: '请选择生效日期'}]}
-              ]" />
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库类型">
-            <a-select
-              placeholder="请选择仓库类型"
-              v-decorator="[
-                'type',
-                {rules: [{ required: true, message: '请选择仓库类型'}]}
-              ]" >
-              <a-select-option value="公开">公开</a-select-option>
-              <a-select-option value="私密">私密</a-select-option>
-            </a-select>
+          <a-form-item label="项目描述" name="description">
+            <a-input placeholder="请输入项目描述" v-model:value="formState3.description"/>
           </a-form-item>
         </a-col>
       </a-row>
       <a-form-item v-if="showSubmit">
-        <a-button htmlType="submit" >Submit</a-button>
+        <a-button htmlType="submit">Submit</a-button>
       </a-form-item>
     </a-form>
 
-    <a-form :form="form4" :self-update="true" @submit="handleForm2Submit">
+    <a-divider/>
+
+    <a-form :model="formState4" @submit="handleForm4Submit" ref="form4Ref">
       <a-row class="form-row" :gutter="16">
         <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item label="仓库名">
-            <a-input
-              placeholder="请输入仓库名称"
-              v-decorator="[
-                'name',
-                {rules: [{ required: true, message: '请输入仓库名称', whitespace: true}]}
-              ]" />
+          <a-form-item label="部门名" name="name">
+            <a-input placeholder="请输入部门名称" v-model:value="formState4.name"/>
           </a-form-item>
         </a-col>
         <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="仓库域名">
-            <a-input
-              addonBefore="http://"
-              addonAfter=".com"
-              placeholder="请输入"
-              v-decorator="[
-                'url',
-                {rules: [{ required: true, message: '请输入仓库域名', whitespace: true}]}
-              ]" />
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库管理员">
-            <a-select placeholder="请选择管理员" v-decorator="[ 'owner', {rules: [{ required: true, message: '请选择管理员'}]} ]">
-              <a-select-option value="王同学">王同学</a-select-option>
-              <a-select-option value="李同学">李同学</a-select-option>
-              <a-select-option value="黄同学">黄同学</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row class="form-row" :gutter="16">
-        <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item
-            label="审批人">
-            <a-select placeholder="请选择审批员" v-decorator="[ 'approver', {rules: [{ required: true, message: '请选择审批员'}]} ]">
-              <a-select-option value="王晓丽">王晓丽</a-select-option>
-              <a-select-option value="李军">李军</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="生效日期">
-            <a-range-picker
-              style="width: 100%"
-              v-decorator="[
-                'dateRange',
-                {rules: [{ required: true, message: '请选择生效日期'}]}
-              ]" />
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库类型">
-            <a-select
-              placeholder="请选择仓库类型"
-              v-decorator="[
-                'type',
-                {rules: [{ required: true, message: '请选择仓库类型'}]}
-              ]" >
-              <a-select-option value="公开">公开</a-select-option>
-              <a-select-option value="私密">私密</a-select-option>
-            </a-select>
+          <a-form-item label="部门描述" name="description">
+            <a-input placeholder="请输入部门描述" v-model:value="formState4.description"/>
           </a-form-item>
         </a-col>
       </a-row>
       <a-form-item v-if="showSubmit">
-        <a-button htmlType="submit" >Submit</a-button>
+        <a-button htmlType="submit">Submit</a-button>
       </a-form-item>
     </a-form>
 
-    <a-form :form="form5" :self-update="true" @submit="handleForm2Submit">
+    <a-divider/>
+
+    <a-form :model="formState5" @submit="handleForm5Submit" ref="form5Ref">
       <a-row class="form-row" :gutter="16">
         <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item label="仓库名">
-            <a-input
-              placeholder="请输入仓库名称"
-              v-decorator="[
-                'name',
-                {rules: [{ required: true, message: '请输入仓库名称', whitespace: true}]}
-              ]" />
+          <a-form-item label="团队名" name="name">
+            <a-input placeholder="请输入团队名称" v-model:value="formState5.name"/>
           </a-form-item>
         </a-col>
         <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="仓库域名">
-            <a-input
-              addonBefore="http://"
-              addonAfter=".com"
-              placeholder="请输入"
-              v-decorator="[
-                'url',
-                {rules: [{ required: true, message: '请输入仓库域名', whitespace: true}]}
-              ]" />
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库管理员">
-            <a-select placeholder="请选择管理员" v-decorator="[ 'owner', {rules: [{ required: true, message: '请选择管理员'}]} ]">
-              <a-select-option value="王同学">王同学</a-select-option>
-              <a-select-option value="李同学">李同学</a-select-option>
-              <a-select-option value="黄同学">黄同学</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row class="form-row" :gutter="16">
-        <a-col :lg="6" :md="12" :sm="24">
-          <a-form-item
-            label="审批人">
-            <a-select placeholder="请选择审批员" v-decorator="[ 'approver', {rules: [{ required: true, message: '请选择审批员'}]} ]">
-              <a-select-option value="王晓丽">王晓丽</a-select-option>
-              <a-select-option value="李军">李军</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 7, offset: 1}" :lg="{span: 8}" :md="{span: 12}" :sm="24">
-          <a-form-item
-            label="生效日期">
-            <a-range-picker
-              style="width: 100%"
-              v-decorator="[
-                'dateRange',
-                {rules: [{ required: true, message: '请选择生效日期'}]}
-              ]" />
-          </a-form-item>
-        </a-col>
-        <a-col :xl="{span: 9, offset: 1}" :lg="{span: 10}" :md="{span: 24}" :sm="24">
-          <a-form-item
-            label="仓库类型">
-            <a-select
-              placeholder="请选择仓库类型"
-              v-decorator="[
-                'type',
-                {rules: [{ required: true, message: '请选择仓库类型'}]}
-              ]" >
-              <a-select-option value="公开">公开</a-select-option>
-              <a-select-option value="私密">私密</a-select-option>
-            </a-select>
+          <a-form-item label="团队描述" name="description">
+            <a-input placeholder="请输入团队描述" v-model:value="formState5.description"/>
           </a-form-item>
         </a-col>
       </a-row>
       <a-form-item v-if="showSubmit">
-        <a-button htmlType="submit" >Submit</a-button>
+        <a-button htmlType="submit">Submit</a-button>
       </a-form-item>
     </a-form>
-
-    <a-divider />
-
-    <a-table
-      :columns="columns"
-      :dataSource="data"
-      :pagination="false"
-      :loading="tableLoading"
-    >
-      <template v-for="(col, i) in ['name', 'workId', 'department']" :slot="col" slot-scope="text, record">
-        <a-input
-          :key="col"
-          v-if="record.editable"
-          style="margin: -5px 0"
-          :value="text"
-          :placeholder="columns[i].title"
-          @change="e => handleChange(e.target.value, record.key, col)"
-        />
-        <template v-else>{{ text }}</template>
-      </template>
-      <template slot="operation" slot-scope="text, record">
-        <template v-if="record.editable">
-          <span v-if="record.isNew">
-            <a @click="saveRow(record)">添加</a>
-            <a-divider type="vertical" />
-            <a-popconfirm title="是否要删除此行？" @confirm="remove(record.key)">
-              <a>删除</a>
-            </a-popconfirm>
-          </span>
-          <span v-else>
-            <a @click="saveRow(record)">保存</a>
-            <a-divider type="vertical" />
-            <a @click="cancel(record.key)">取消</a>
-          </span>
-        </template>
-        <span v-else>
-          <a @click="toggle(record.key)">编辑</a>
-          <a-divider type="vertical" />
-          <a-popconfirm title="是否要删除此行？" @confirm="remove(record.key)">
-            <a>删除</a>
-          </a-popconfirm>
-        </span>
-      </template>
-    </a-table>
-    <a-button style="width: 100%; margin-top: 16px; margin-bottom: 8px" type="dashed" icon="plus" @click="newMember">新增成员</a-button>
-
   </a-card>
 </template>
 
 <script>
-const columns = [
-  {
-    title: '成员姓名',
-    dataIndex: 'name',
-    key: 'name',
-    width: '20%',
-    scopedSlots: { customRender: 'name' }
-  },
-  {
-    title: '工号',
-    dataIndex: 'workId',
-    key: 'workId',
-    width: '20%',
-    scopedSlots: { customRender: 'workId' }
-  },
-  {
-    title: '所属部门',
-    dataIndex: 'department',
-    key: 'department',
-    width: '40%',
-    scopedSlots: { customRender: 'department' }
-  },
-  {
-    title: '操作',
-    key: 'action',
-    scopedSlots: { customRender: 'operation' }
-  }
-]
+import { ref, reactive } from 'vue'
 
 export default {
   name: 'BigForm',
-  data () {
-    return {
-      showSubmit: true,
-      form1: this.$form.createForm(this),
-      form2: this.$form.createForm(this),
-      form3: this.$form.createForm(this),
-      form4: this.$form.createForm(this),
-      form5: this.$form.createForm(this),
-      tableLoading: false,
-      columns,
-      data: [{
-        key: '1',
-        name: '小明',
-        workId: '001',
-        editable: false,
-        department: '行政部'
-      },
-        {
-          key: '2',
-          name: '李莉',
-          workId: '002',
-          editable: false,
-          department: 'IT部'
-        },
-        {
-          key: '3',
-          name: '王小帅',
-          workId: '003',
-          editable: false,
-          department: '财务部'
-        }]
+  props: {
+    showSubmit: {
+      type: Boolean,
+      default: false
     }
   },
-  mounted () {
-    // 加 10 个表单行
-    new Array(10).fill(0).forEach(() => {
-      this.newMember()
+  setup () {
+    const form1Ref = ref()
+    const form2Ref = ref()
+    const form3Ref = ref()
+    const form4Ref = ref()
+    const form5Ref = ref()
+    
+    const formState1 = reactive({
+      name: '',
+      url: '',
+      owner: undefined,
+      approver: undefined,
+      dateRange: null,
+      type: undefined
     })
-  },
-  methods: {
-    handleForm1Submit (e) {
+    
+    const formState2 = reactive({
+      name: '',
+      description: '',
+      owner: undefined
+    })
+    
+    const formState3 = reactive({
+      name: '',
+      description: ''
+    })
+    
+    const formState4 = reactive({
+      name: '',
+      description: ''
+    })
+    
+    const formState5 = reactive({
+      name: '',
+      description: ''
+    })
+    
+    const handleForm1Submit = (e) => {
       e.preventDefault()
-      this.form1.validateFields()
-    },
-    handleForm2Submit (e) {
+      console.log('Form 1 values:', formState1)
+    }
+    
+    const handleForm2Submit = (e) => {
       e.preventDefault()
-      this.form2.validateFields()
-    },
-
-    handleChange (value, key, column) {
-      const target = this.data.find(item => key === item.key)
-      if (target) {
-        target[column] = value
-      }
-    },
-
-    toggle (record) {
-
-    },
-    saveRow (record) {
-
-    },
-    cancel (key) {
-
-    },
-    remove (key) {
-      this.data = this.data.filter(item => item.key !== key)
-    },
-
-    newMember () {
-      const length = this.data.length
-      this.data.push({
-        key: length === 0 ? '1' : (parseInt(this.data[length - 1].key) + 1).toString(),
-        name: '',
-        workId: '',
-        department: '',
-        editable: true,
-        isNew: true
-      })
+      console.log('Form 2 values:', formState2)
+    }
+    
+    const handleForm3Submit = (e) => {
+      e.preventDefault()
+      console.log('Form 3 values:', formState3)
+    }
+    
+    const handleForm4Submit = (e) => {
+      e.preventDefault()
+      console.log('Form 4 values:', formState4)
+    }
+    
+    const handleForm5Submit = (e) => {
+      e.preventDefault()
+      console.log('Form 5 values:', formState5)
+    }
+    
+    return {
+      form1Ref,
+      form2Ref,
+      form3Ref,
+      form4Ref,
+      form5Ref,
+      formState1,
+      formState2,
+      formState3,
+      formState4,
+      formState5,
+      handleForm1Submit,
+      handleForm2Submit,
+      handleForm3Submit,
+      handleForm4Submit,
+      handleForm5Submit
     }
   }
 }
 </script>
 
 <style scoped>
-
+.form-row {
+  margin-bottom: 16px;
+}
 </style>

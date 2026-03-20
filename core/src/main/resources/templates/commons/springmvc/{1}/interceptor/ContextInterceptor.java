@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,8 @@ public class ContextInterceptor extends HandlerInterceptorAdapter {
     #[[@Value("${context.userName:}")]]#
     private String                   userNameKey;
 
+    private String[] resources= {"js","css","jpg","png","gif"};
+    
     private static ThreadLocal<Long> processTime = new ThreadLocal<Long>();
 
     /**
@@ -61,10 +64,10 @@ public class ContextInterceptor extends HandlerInterceptorAdapter {
         MDC.put("_ip", HttpUtils.getIpAddr(request));
         MDC.put("userId", null == userName ? "" : userName.toString());
 
-        if (!(handler instanceof HandlerMethod)) {
+        String uri = request.getRequestURI().replace(request.getContextPath(), "");
+        if (!(handler instanceof HandlerMethod)||ignore(uri)) {
             return true;
         }
-        String uri = request.getRequestURI().replace(request.getContextPath(), "");
         HandlerMethod hm = (HandlerMethod) handler;
         logger.info("{} URI:{},EXEC:{}.{}",  request.getMethod(),uri, hm.getBeanType().getName(), hm.getMethod().getName());
 		logger.info("request headers:{}",JSON.toJSONString(request.getHeaderNames()));
@@ -114,12 +117,12 @@ public class ContextInterceptor extends HandlerInterceptorAdapter {
      */
     protected void processTime(HttpServletRequest req) {
         Long start = processTime.get();
-        if (null == start) {
+        String uri = req.getRequestURI().replace(req.getContextPath(), "");
+        if (null == start||ignore(uri)) {
             return;
         }
         processTime.remove();
         long processTime = System.currentTimeMillis() - start;
-        String uri = req.getRequestURI().replace(req.getContextPath(), "");
         if (processTime > reqSlowTime) {
             //请求处理时间超过设定的时间,则认为是比较慢的请求即系统瓶颈
             logger.warn("process in {} : {} mills", uri, processTime);
@@ -127,6 +130,8 @@ public class ContextInterceptor extends HandlerInterceptorAdapter {
             logger.info("process in {} : {} mills", uri, processTime);
         }
     }
-
-
+    
+    private boolean ignore(String uri) {
+		return ArrayUtils.contains(resources, StringUtils.substringAfterLast(uri, "."));
+	}
 }

@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import AvatarDropdown from './AvatarDropdown'
-import SelectLang from '@/components/SelectLang'
+import AvatarDropdown from './AvatarDropdown.vue'
+import SelectLang from '@/components/SelectLang/index.vue'
 
 export default {
   name: 'RightContent',

@@ -1,4 +1,4 @@
-import antdEnUS from 'ant-design-vue/es/locale-provider/en_US'
+import antdEnUS from 'ant-design-vue/es/locale/en_US'
 import momentEU from 'moment/locale/eu'
 
 const components = {

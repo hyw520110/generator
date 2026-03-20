@@ -1,3 +1,38 @@
+<template>
+  <div class="ant-pro-multi-tab">
+    <div class="ant-pro-multi-tab-wrapper">
+      <a-tabs
+        hideAdd
+        type="editable-card"
+        v-model:activeKey="activeKey"
+        :tabBarStyle="{ background: '#FFF', margin: 0, paddingLeft: '16px', paddingTop: '1px' }"
+        @edit="onEdit"
+      >
+        <a-tab-pane
+          v-for="page in pages"
+          :key="page.fullPath"
+          :closable="pages.length > 1"
+          :style="{ height: 0 }"
+        >
+          <template #tab>
+            <a-dropdown :trigger="['contextmenu']">
+              <span style="user-select: none">{{ getPageTitle(page) }}</span>
+              <template #overlay>
+                <a-menu @click="({ key }) => closeMenuClick(key, page.fullPath)">
+                  <a-menu-item key="closeThat">关闭当前标签</a-menu-item>
+                  <a-menu-item key="closeRight">关闭右侧</a-menu-item>
+                  <a-menu-item key="closeLeft">关闭左侧</a-menu-item>
+                  <a-menu-item key="closeAll">关闭全部</a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
+          </template>
+        </a-tab-pane>
+      </a-tabs>
+    </div>
+  </div>
+</template>
+
 <script>
 import events from './events'
 
@@ -39,6 +74,9 @@ export default {
     this.selectedLastPath()
   },
   methods: {
+    getPageTitle (page) {
+      return page.meta.customTitle || page.meta.title
+    },
     onEdit (targetKey, action) {
       this[action](targetKey)
     },
@@ -97,26 +135,6 @@ export default {
     },
     closeMenuClick (key, route) {
       this[key](route)
-    },
-    renderTabPaneMenu (e) {
-      return (
-        <a-menu {...{ on: { click: ({ key, item, domEvent }) => { this.closeMenuClick(key, e) } } }}>
-          <a-menu-item key="closeThat">关闭当前标签</a-menu-item>
-          <a-menu-item key="closeRight">关闭右侧</a-menu-item>
-          <a-menu-item key="closeLeft">关闭左侧</a-menu-item>
-          <a-menu-item key="closeAll">关闭全部</a-menu-item>
-        </a-menu>
-      )
-    },
-    // render
-    renderTabPane (title, keyPath) {
-      const menu = this.renderTabPaneMenu(keyPath)
-
-      return (
-        <a-dropdown overlay={menu} trigger={['contextmenu']}>
-          <span style={{ userSelect: 'none' }}>{ title }</span>
-        </a-dropdown>
-      )
     }
   },
   watch: {
@@ -130,33 +148,6 @@ export default {
     activeKey: function (newPathKey) {
       this.$router.push({ path: newPathKey })
     }
-  },
-  render () {
-    const { onEdit, $data: { pages } } = this
-    const panes = pages.map(page => {
-      return (
-        <a-tab-pane
-          style={{ height: 0 }}
-          tab={this.renderTabPane(page.meta.customTitle || page.meta.title, page.fullPath)}
-          key={page.fullPath} closable={pages.length > 1}
-        >
-        </a-tab-pane>)
-    })
-
-    return (
-      <div class="ant-pro-multi-tab">
-        <div class="ant-pro-multi-tab-wrapper">
-          <a-tabs
-            hideAdd
-            type={'editable-card'}
-            v-model={this.activeKey}
-            tabBarStyle={{ background: '#FFF', margin: 0, paddingLeft: '16px', paddingTop: '1px' }}
-            {...{ on: { edit: onEdit } }}>
-            {panes}
-          </a-tabs>
-        </div>
-      </div>
-    )
   }
 }
 </script>

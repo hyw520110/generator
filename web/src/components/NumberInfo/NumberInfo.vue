@@ -7,15 +7,13 @@
       <span>{{ total }}</span>
       <span class="sub-total">
         {{ subTotal }}
-        <icon :type="`caret-${status}`" />
+        <a-icon :type="`caret-${status}`" />
       </span>
     </div>
   </div>
 </template>
 
 <script>
-import Icon from 'ant-design-vue/es/icon'
-
 export default {
   name: 'NumberInfo',
   props: {
@@ -40,15 +38,12 @@ export default {
       default: 'up'
     }
   },
-  components: {
-    Icon
-  },
   data () {
     return {}
   }
 }
 </script>
 
-<style lang="less" scoped>
-  @import "index";
+<style lang="less">
+@import "./index.less";
 </style>

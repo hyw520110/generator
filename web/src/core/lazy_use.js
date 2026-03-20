@@ -1,4 +1,4 @@
-import Vue from 'vue'
+// Vue 3 插件注册 - 按需加载组件
 
 // base library
 import {
@@ -18,7 +18,6 @@ import {
   Modal,
   Table,
   Tabs,
-  Icon,
   Badge,
   Popover,
   Dropdown,
@@ -40,77 +39,82 @@ import {
   Skeleton,
   Popconfirm,
   PageHeader,
-  Result,
   Statistic,
   Descriptions,
   message,
   notification
 } from 'ant-design-vue'
-import Viser from 'viser-vue'
+// import Viser from 'viser-vue' // Vue 2 only
 
 // ext library
-import VueCropper from 'vue-cropper'
+// import VueCropper from 'vue-cropper' // Vue 2 only
 import Dialog from '@/components/Dialog'
 import MultiTab from '@/components/MultiTab'
 import PageLoading from '@/components/PageLoading'
 import PermissionHelper from '@/utils/helper/permission'
-import './directives/action'
+import actionDirective from './directives/action'
 
-Vue.use(ConfigProvider)
-Vue.use(Layout)
-Vue.use(Input)
-Vue.use(InputNumber)
-Vue.use(Button)
-Vue.use(Switch)
-Vue.use(Radio)
-Vue.use(Checkbox)
-Vue.use(Select)
-Vue.use(Card)
-Vue.use(Form)
-Vue.use(Row)
-Vue.use(Col)
-Vue.use(Modal)
-Vue.use(Table)
-Vue.use(Tabs)
-Vue.use(Icon)
-Vue.use(Badge)
-Vue.use(Popover)
-Vue.use(Dropdown)
-Vue.use(List)
-Vue.use(Avatar)
-Vue.use(Breadcrumb)
-Vue.use(Steps)
-Vue.use(Spin)
-Vue.use(Menu)
-Vue.use(Drawer)
-Vue.use(Tooltip)
-Vue.use(Alert)
-Vue.use(Tag)
-Vue.use(Divider)
-Vue.use(DatePicker)
-Vue.use(TimePicker)
-Vue.use(Upload)
-Vue.use(Progress)
-Vue.use(Skeleton)
-Vue.use(Popconfirm)
-Vue.use(PageHeader)
-Vue.use(Result)
-Vue.use(Statistic)
-Vue.use(Descriptions)
+export default {
+  install (app) {
+    // 注册 Ant Design 组件
+    app.use(ConfigProvider)
+    app.use(Layout)
+    app.use(Input)
+    app.use(InputNumber)
+    app.use(Button)
+    app.use(Switch)
+    app.use(Radio)
+    app.use(Checkbox)
+    app.use(Select)
+    app.use(Card)
+    app.use(Form)
+    app.use(Row)
+    app.use(Col)
+    app.use(Modal)
+    app.use(Table)
+    app.use(Tabs)
+    app.use(Badge)
+    app.use(Popover)
+    app.use(Dropdown)
+    app.use(List)
+    app.use(Avatar)
+    app.use(Breadcrumb)
+    app.use(Steps)
+    app.use(Spin)
+    app.use(Menu)
+    app.use(Drawer)
+    app.use(Tooltip)
+    app.use(Alert)
+    app.use(Tag)
+    app.use(Divider)
+    app.use(DatePicker)
+    app.use(TimePicker)
+    app.use(Upload)
+    app.use(Progress)
+    app.use(Skeleton)
+    app.use(Popconfirm)
+    app.use(PageHeader)
+    app.use(Statistic)
+    app.use(Descriptions)
 
-Vue.prototype.$confirm = Modal.confirm
-Vue.prototype.$message = message
-Vue.prototype.$notification = notification
-Vue.prototype.$info = Modal.info
-Vue.prototype.$success = Modal.success
-Vue.prototype.$error = Modal.error
-Vue.prototype.$warning = Modal.warning
+    // 全局属性
+    app.config.globalProperties.$confirm = Modal.confirm
+    app.config.globalProperties.$message = message
+    app.config.globalProperties.$notification = notification
+    app.config.globalProperties.$info = Modal.info
+    app.config.globalProperties.$success = Modal.success
+    app.config.globalProperties.$error = Modal.error
+    app.config.globalProperties.$warning = Modal.warning
 
-Vue.use(Viser)
-Vue.use(Dialog) // this.$dialog func
-Vue.use(MultiTab)
-Vue.use(PageLoading)
-Vue.use(PermissionHelper)
-Vue.use(VueCropper)
-
-process.env.NODE_ENV !== 'production' && console.warn('[antd-pro] NOTICE: Antd use lazy-load.')
+    // 其他库
+    // app.use(Viser) // Vue 2 only
+    app.use(Dialog)
+    app.use(MultiTab)
+    app.use(PageLoading)
+    app.use(PermissionHelper)
+    // app.use(VueCropper) // Vue 2 only
+    
+    // 注册指令
+    app.directive('action', actionDirective)
+  }
+}

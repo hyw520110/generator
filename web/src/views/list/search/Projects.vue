@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-card :bordered="false" class="ant-pro-components-tag-select">
-      <a-form :form="form" layout="inline">
+      <a-form :model="formState" layout="inline">
         <standard-form-row title="所属类目" block style="padding-bottom: 11px;">
           <a-form-item>
             <tag-select>
@@ -27,7 +27,7 @@
                   style="max-width: 200px; width: 100%;"
                   mode="multiple"
                   placeholder="不限"
-                  v-decorator="['author']"
+                  v-model:value="formState.author"
                   @change="handleChange"
                 >
                   <a-select-option value="lisa">王昭君</a-select-option>
@@ -39,7 +39,7 @@
                 <a-select
                   style="max-width: 200px; width: 100%;"
                   placeholder="不限"
-                  v-decorator="['rate']"
+                  v-model:value="formState.rate"
                 >
                   <a-select-option value="good">优秀</a-select-option>
                   <a-select-option value="normal">普通</a-select-option>
@@ -53,35 +53,40 @@
 
     <div class="ant-pro-pages-list-projects-cardList">
       <a-list :loading="loading" :data-source="data" :grid="{ gutter: 24, xl: 4, lg: 3, md: 3, sm: 2, xs: 1 }">
-        <a-list-item slot="renderItem" slot-scope="item">
-          <a-card class="ant-pro-pages-list-projects-card" hoverable>
-            <img slot="cover" :src="item.cover" :alt="item.title" />
-            <a-card-meta :title="item.title">
-              <template slot="description">
-                <ellipsis :length="50">{{ item.description }}</ellipsis>
+        <template #renderItem="{ item }">
+          <a-list-item>
+            <a-card class="ant-pro-pages-list-projects-card" hoverable>
+              <template #cover>
+                <img :src="item.cover" :alt="item.title"/>
               </template>
-            </a-card-meta>
-            <div class="cardItemContent">
-              <span>{{ item.updatedAt | fromNow }}</span>
-              <div class="avatarList">
-                <avatar-list size="small" :max-length="2">
-                  <avatar-list-item
-                    v-for="(member, i) in item.members"
-                    :key="`${item.id}-avatar-${i}`"
-                    :src="member.avatar"
-                    :tips="member.name"
-                  />
-                </avatar-list>
+              <a-card-meta :title="item.title">
+                <template #description>
+                  <ellipsis :length="50">{{ item.description }}</ellipsis>
+                </template>
+              </a-card-meta>
+              <div class="cardItemContent">
+                <span>{{ fromNow(item.updatedAt) }}</span>
+                <div class="avatarList">
+                  <avatar-list size="small" :max-length="2">
+                    <avatar-list-item
+                      v-for="(member, i) in item.members"
+                      :key="`${item.id}-avatar-${i}`"
+                      :src="member.avatar"
+                      :tips="member.name"
+                    />
+                  </avatar-list>
+                </div>
               </div>
-            </div>
-          </a-card>
-        </a-list-item>
+            </a-card>
+          </a-list-item>
+        </template>
       </a-list>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, reactive, onMounted } from 'vue'
 import moment from 'moment'
 import { TagSelect, StandardFormRow, Ellipsis, AvatarList } from '@/components'
 const TagSelectOption = TagSelect.Option
@@ -96,31 +101,39 @@ export default {
     TagSelectOption,
     StandardFormRow
   },
-  data () {
-    return {
-      data: [],
-      form: this.$form.createForm(this),
-      loading: true
-    }
-  },
-  filters: {
-    fromNow (date) {
+  setup () {
+    const data = ref([])
+    const loading = ref(true)
+    
+    const formState = reactive({
+      author: [],
+      rate: undefined
+    })
+    
+    const fromNow = (date) => {
       return moment(date).fromNow()
     }
-  },
-  mounted () {
-    this.getList()
-  },
-  methods: {
-    handleChange (value) {
+    
+    const handleChange = (value) => {
       console.log(`selected ${value}`)
-    },
-    getList () {
-      this.$http.get('/list/article', { params: { count: 8 } }).then(res => {
-        console.log('res', res)
-        this.data = res.result
-        this.loading = false
-      })
+    }
+    
+    const getList = () => {
+      // Mock implementation
+      loading.value = false
+      data.value = []
+    }
+    
+    onMounted(() => {
+      getList()
+    })
+    
+    return {
+      formState,
+      data,
+      loading,
+      fromNow,
+      handleChange
     }
   }
 }

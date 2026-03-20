@@ -1,4 +1,4 @@
-import { Menu, Icon, Input } from 'ant-design-vue'
+import { Menu, Input } from 'ant-design-vue'
 
 const { Item, ItemGroup, SubMenu } = Menu
 const { Search } = Input
@@ -44,7 +44,7 @@ export default {
       )
     },
     renderIcon (icon) {
-      return icon && (<Icon type={icon} />) || null
+      return icon && (<a-icon type={icon} />) || null
     },
     renderMenuItem (item) {
       return (

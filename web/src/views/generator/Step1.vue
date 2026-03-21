@@ -8,7 +8,20 @@
         :wrapperCol="wrapperCol"
         help="此目录需要有写权限，最后一级子目录为项目名"
       >
-        <a-input v-model:value="formState.outputDir" placeholder="此目录需可写，最后一级子目录为项目名"/>
+        <a-input 
+          v-model:value="formState.outputDir" 
+          placeholder="此目录需可写，最后一级子目录为项目名"
+          @blur="validateOutputDir"
+        >
+          <template #suffix>
+            <loading-outlined v-if="dirValidating" style="color: #1890ff" />
+            <check-circle-outlined v-else-if="dirValid === true" style="color: #52c41a" />
+            <close-circle-outlined v-else-if="dirValid === false" style="color: #ff4d4f" />
+          </template>
+        </a-input>
+        <div v-if="dirValidMsg" :style="{ color: dirValid ? '#52c41a' : '#ff4d4f', fontSize: '12px', marginTop: '4px' }">
+          {{ dirValidMsg }}
+        </div>
       </a-form-item>
       <a-form-item
         label="项目描述"
@@ -70,26 +83,31 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
-import { step1 } from '@/api/generator'
+import { ref, reactive, onMounted } from 'vue'
+import { step1, getConfig, validateOutputDir } from '@/api/generator'
+import { LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons-vue'
 
 export default {
   name: 'Step1',
+  components: { LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined },
   emits: ['nextStep'],
   setup (props, { emit }) {
     const formRef = ref()
     const loading = ref(false)
+    const dirValidating = ref(false)
+    const dirValid = ref(null)
+    const dirValidMsg = ref('')
     
     const labelCol = { lg: { span: 5 }, sm: { span: 5 } }
     const wrapperCol = { lg: { span: 19 }, sm: { span: 19 } }
     
     const formState = reactive({
-      outputDir: '/opt/output/demo',
-      description: '代码生成器',
-      rootPackage: 'com.hyw.generator',
-      modules: 'api,app',
+      outputDir: '',
+      description: '',
+      rootPackage: '',
+      modules: '',
       delOutputDir: false,
-      fileOverride: true,
+      fileOverride: false,
       openDir: true
     })
     
@@ -99,9 +117,74 @@ export default {
       modules: [{ required: true, message: '请输入工程模块名' }]
     }
     
+    // 页面加载时获取配置
+    onMounted(async () => {
+      try {
+        const res = await getConfig()
+        if (res.status === 10000 && res.data) {
+          const global = res.data.global || {}
+          const defaults = res.data.defaults || {}
+          
+          // 使用默认值初始化，因为 global 中的值可能是配置文件的初始值
+          formState.outputDir = defaults.outputDir || ''
+          formState.description = global.description || '代码生成器'
+          formState.rootPackage = global.rootPackage || 'com.hyw.generator'
+          formState.modules = global.modules ? global.modules.join(',') : 'api,app'
+          formState.delOutputDir = global.delOutputDir || false
+          formState.fileOverride = global.fileOverride !== undefined ? global.fileOverride : true
+          formState.openDir = global.openDir !== undefined ? global.openDir : true
+        }
+      } catch (err) {
+        console.error('获取配置失败:', err)
+      }
+    })
+    
+    // 验证输出目录权限
+    const handleValidateOutputDir = async () => {
+      if (!formState.outputDir) {
+        dirValid.value = null
+        dirValidMsg.value = ''
+        return
+      }
+      
+      dirValidating.value = true
+      dirValid.value = null
+      dirValidMsg.value = ''
+      
+      try {
+        const res = await validateOutputDir({ outputDir: formState.outputDir })
+        if (res.status === 10000) {
+          dirValid.value = true
+          dirValidMsg.value = res.message || '目录验证通过'
+        } else {
+          dirValid.value = false
+          dirValidMsg.value = res.message || '验证失败'
+        }
+      } catch (err) {
+        dirValid.value = false
+        dirValidMsg.value = err.response?.data?.message || '验证失败'
+      } finally {
+        dirValidating.value = false
+      }
+    }
+    
     const nextStep = async () => {
       try {
         await formRef.value.validate()
+        
+        // 如果目录验证未通过，提示用户
+        if (dirValid.value === false) {
+          return
+        }
+        
+        // 如果还未验证，先验证
+        if (dirValid.value === null && formState.outputDir) {
+          await handleValidateOutputDir()
+          if (dirValid.value === false) {
+            return
+          }
+        }
+        
         loading.value = true
         await step1(formState)
         loading.value = false
@@ -118,6 +201,10 @@ export default {
       wrapperCol,
       loading,
       rules,
+      dirValidating,
+      dirValid,
+      dirValidMsg,
+      validateOutputDir: handleValidateOutputDir,
       nextStep
     }
   }

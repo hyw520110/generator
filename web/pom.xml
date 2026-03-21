@@ -110,6 +110,54 @@
 			</resource>
 		</resources>
 		<plugins>
+			<!-- 统一拷贝脚本到虚拟 assets 目录，由 Generator 动态解析分发 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<!-- 1. 后端脚本 -> assets/{1} -->
+					<execution>
+						<id>copy-backend-scripts-to-assets</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.basedir}/../core/src/main/resources/templates/assets/{1}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}</directory>
+									<includes>
+										<include>run.sh</include>
+										<include>stop.sh</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<!-- 2. 前端脚本 -> assets/vue -->
+					<execution>
+						<id>copy-frontend-scripts-to-assets</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.basedir}/../core/src/main/resources/templates/assets/vue</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}</directory>
+									<includes>
+										<include>startup.sh</include>
+										<include>startup.bat</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<!-- Spring Boot 运行插件 -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

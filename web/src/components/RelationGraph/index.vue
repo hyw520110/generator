@@ -1,5 +1,5 @@
 <template>
-  <div class="relation-graph">
+  <div class="relation-graph" ref="relationGraphRef">
     <div class="graph-toolbar">
       <a-input-search
         v-model:value="searchText"
@@ -21,22 +21,42 @@
         <a-button @click="resetView" title="重置">
           <template #icon><ReloadOutlined /></template>
         </a-button>
+        <a-button @click="toggleFullscreen" :title="isFullscreen ? '退出全屏' : '全屏'">
+          <template #icon>
+            <FullscreenExitOutlined v-if="isFullscreen" />
+            <FullscreenOutlined v-else />
+          </template>
+        </a-button>
       </a-button-group>
       <a-button type="primary" style="margin-left: 12px" @click="exportImage">
         <template #icon><DownloadOutlined /></template>
         导出图片
       </a-button>
     </div>
+    <!-- 统计信息 -->
     <div class="graph-stats" v-if="stats.tableCount">
       <a-tag color="blue">表: {{ stats.tableCount }}</a-tag>
       <a-tag color="green">关系: {{ stats.relationCount }}</a-tag>
+    </div>
+    <!-- 图例 -->
+    <div class="graph-legend">
+      <div class="legend-item">
+        <span class="legend-line legend-solid"></span>
+        <span class="legend-text">必选关系</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-line legend-dashed"></span>
+        <span class="legend-text">可选关系</span>
+      </div>
     </div>
     <div ref="graphContainer" class="graph-container"></div>
     <!-- Tooltip -->
     <div v-show="tooltip.visible" class="graph-tooltip" :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
       <div class="tooltip-title">{{ tooltip.title }}</div>
       <div v-if="tooltip.content" class="tooltip-content">{{ tooltip.content }}</div>
-      <div v-else class="tooltip-hint">表名: {{ tooltip.title }}</div>
+      <div v-if="tooltip.tableName && tooltip.tableName !== tooltip.title" class="tooltip-hint">
+        表名: {{ tooltip.tableName }}
+      </div>
     </div>
     <div v-if="loading" class="graph-loading">
       <a-spin size="large" tip="加载中..." />
@@ -55,7 +75,9 @@ import {
   ZoomOutOutlined,
   ExpandOutlined,
   ReloadOutlined,
-  DownloadOutlined
+  DownloadOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined
 } from '@ant-design/icons-vue'
 
 const props = defineProps({
@@ -69,13 +91,15 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['export'])
+const emit = defineEmits(['export', 'node-click'])
 
+const relationGraphRef = ref(null)
 const graphContainer = ref(null)
 const searchText = ref('')
 let graph = null
 const stats = ref({ tableCount: 0, relationCount: 0 })
-const tooltip = ref({ visible: false, x: 0, y: 0, title: '', content: '' })
+const tooltip = ref({ visible: false, x: 0, y: 0, title: '', content: '', tableName: '' })
+const isFullscreen = ref(false)
 
 // 初始化图
 const initGraph = () => {
@@ -90,6 +114,8 @@ const initGraph = () => {
     container: graphContainer.value,
     width,
     height,
+    fitCenter: true,
+    fitViewPadding: 20,
     modes: {
       default: ['drag-canvas', 'zoom-canvas', 'drag-node', 'click-select']
     },
@@ -184,13 +210,34 @@ const initGraph = () => {
         },
         shadowColor: 'rgba(250, 140, 22, 0.3)',
         shadowBlur: 8,
-        animate: true
+        // 流动动画效果
+        animate: true,
+        animateConfig: {
+          duration: 1000,
+          repeat: true
+        }
       },
       dim: {
         stroke: '#E8E8E8',
         lineWidth: 1
+      },
+      hover: {
+        stroke: '#1890FF',
+        lineWidth: 2.5,
+        endArrow: {
+          path: 'M 0,0 L 8,4 L 0,8 L 2,4 Z',
+          fill: '#1890FF'
+        },
+        shadowColor: 'rgba(24, 144, 255, 0.3)',
+        shadowBlur: 6
       }
     }
+  })
+  
+  // 布局完成后自动适应画布
+  graph.on('afterlayout', () => {
+    graph.fitView(20)
+    graph.fitCenter()
   })
   
   // 绑定事件
@@ -204,8 +251,9 @@ const initGraph = () => {
       visible: true,
       x: evt.canvasX + 15,
       y: evt.canvasY + 15,
-      title: model.tableName || model.label,
-      content: model.comment || ''
+      title: model.comment || model.label || model.tableName,
+      content: model.comment ? '' : '',
+      tableName: model.tableName || model.id
     }
     
     // 高亮相关节点和边
@@ -219,10 +267,50 @@ const initGraph = () => {
     clearHighlight()
   })
   
+  // 边悬停事件
+  graph.on('edge:mouseenter', (evt) => {
+    const edge = evt.item
+    const model = edge.getModel()
+    graph.setItemState(edge, 'hover', true)
+    
+    // 显示边 tooltip
+    const sourceNode = graph.findById(model.source)
+    const targetNode = graph.findById(model.target)
+    const sourceName = sourceNode ? sourceNode.getModel().tableName : model.source
+    const targetName = targetNode ? targetNode.getModel().tableName : model.target
+    
+    const nullableText = model.nullable === false ? '必选' : '可选'
+    
+    tooltip.value = {
+      visible: true,
+      x: evt.canvasX + 15,
+      y: evt.canvasY + 15,
+      title: `${sourceName} → ${targetName}`,
+      content: `${model.fkColumn || model.label} → ${model.pkColumn || 'id'} (${nullableText})`,
+      tableName: ''
+    }
+  })
+  
+  graph.on('edge:mouseleave', (evt) => {
+    const edge = evt.item
+    graph.setItemState(edge, 'hover', false)
+    tooltip.value.visible = false
+  })
+  
   graph.on('node:click', (evt) => {
     const node = evt.item
     const model = node.getModel()
-    // 可以在这里添加点击节点后的交互
+    
+    // 高亮该节点及其关联的节点和边
+    highlightRelated(node.getID())
+    
+    // 发送点击事件给父组件
+    emit('node-click', {
+      id: model.id,
+      tableName: model.tableName,
+      label: model.label,
+      comment: model.comment
+    })
   })
 }
 
@@ -244,15 +332,20 @@ const updateGraph = () => {
     id: node.id,
     label: node.label || node.tableName || node.id,
     tableName: node.tableName,
+    comment: node.comment,
     ...node
   }))
   
-  // 转换边数据
+  // 转换边数据 - 根据 nullable 设置实线或虚线
   const graphEdges = edges.map((edge, index) => ({
     id: `edge-${index}`,
     source: edge.source,
     target: edge.target,
     label: edge.label || '',
+    // nullable=true 表示可选关系，用虚线；nullable=false 表示必选关系，用实线
+    style: {
+      lineDash: edge.nullable === false ? [] : [5, 3]  // 非空用实线，可空用虚线
+    },
     ...edge
   }))
   
@@ -260,39 +353,34 @@ const updateGraph = () => {
   graph.data({ nodes: graphNodes, edges: graphEdges })
   graph.render()
   
-  // 添加边的动画效果
-  graph.getEdges().forEach((edge, i) => {
-    graph.updateItem(edge, {
-      style: {
-        animate: true,
-        animateConfig: {
-          duration: 2000 + i * 100,
-          repeat: true
-        }
-      }
-    })
-  })
-  
-  graph.fitView(20)
+  // 延迟调用 fitView 确保布局完成
+  setTimeout(() => {
+    if (graph) {
+      graph.fitView(20)
+      graph.fitCenter()
+    }
+  }, 300)
 }
 
-// 高亮相关节点
+// 高亮相关节点和边
 const highlightRelated = (nodeId) => {
   const edges = graph.getEdges()
   const nodes = graph.getNodes()
   
-  // 找到与当前节点相关的节点
+  // 找到与当前节点相关的节点和边
   const relatedNodes = new Set([nodeId])
+  const relatedEdges = new Set()
   
   edges.forEach(edge => {
     const model = edge.getModel()
     if (model.source === nodeId || model.target === nodeId) {
       relatedNodes.add(model.source)
       relatedNodes.add(model.target)
+      relatedEdges.add(edge)
     }
   })
   
-  // 设置状态
+  // 设置节点状态
   nodes.forEach(node => {
     const id = node.getID()
     if (relatedNodes.has(id)) {
@@ -302,10 +390,25 @@ const highlightRelated = (nodeId) => {
     }
   })
   
+  // 设置边状态并添加流动动画
   edges.forEach(edge => {
-    const model = edge.getModel()
-    if (relatedNodes.has(model.source) && relatedNodes.has(model.target)) {
+    if (relatedEdges.has(edge)) {
       graph.setItemState(edge, 'highlight', true)
+      // 流动动画效果 - 使用 lineDash 动画
+      edge.animate(
+        (ratio) => {
+          const length = 10 // 虚线段长度
+          const offset = ratio * length
+          return {
+            lineDash: [length, length],
+            lineDashOffset: -offset
+          }
+        },
+        {
+          repeat: true,
+          duration: 1000
+        }
+      )
     } else {
       graph.setItemState(edge, 'dim', true)
     }
@@ -322,6 +425,17 @@ const clearHighlight = () => {
   
   graph.getEdges().forEach(edge => {
     graph.clearItemStates(edge, ['highlight', 'dim'])
+    // 停止动画
+    edge.stopAnimate()
+    // 恢复原始的 lineDash（根据 nullable）
+    const model = edge.getModel()
+    const originalLineDash = model.nullable === false ? [] : [5, 3]
+    graph.updateItem(edge, {
+      style: {
+        lineDash: originalLineDash,
+        lineDashOffset: 0
+      }
+    })
   })
 }
 
@@ -387,12 +501,68 @@ const exportImage = () => {
   }
 }
 
+// 全屏切换
+const toggleFullscreen = () => {
+  if (!relationGraphRef.value) return
+  
+  if (!document.fullscreenElement) {
+    relationGraphRef.value.requestFullscreen().then(() => {
+      isFullscreen.value = true
+      // 全屏后重新调整图大小
+      setTimeout(() => {
+        if (graph && graphContainer.value) {
+          graph.changeSize(graphContainer.value.offsetWidth, graphContainer.value.offsetHeight)
+          graph.fitView(20)
+        }
+      }, 100)
+    }).catch(err => {
+      console.error('全屏失败:', err)
+    })
+  } else {
+    document.exitFullscreen().then(() => {
+      isFullscreen.value = false
+      // 退出全屏后重新调整图大小
+      setTimeout(() => {
+        if (graph && graphContainer.value) {
+          graph.changeSize(graphContainer.value.offsetWidth, graphContainer.value.offsetHeight)
+          graph.fitView(20)
+        }
+      }, 100)
+    })
+  }
+}
+
+// 监听全屏变化
+const handleFullscreenChange = () => {
+  isFullscreen.value = !!document.fullscreenElement
+  // 全屏状态变化后调整图大小
+  setTimeout(() => {
+    if (graph && graphContainer.value) {
+      graph.changeSize(graphContainer.value.offsetWidth, graphContainer.value.offsetHeight)
+      graph.fitView(20)
+    }
+  }, 100)
+}
+
 // 监听数据变化
 watch(() => props.graphData, (newData) => {
   if (!newData || !newData.nodes?.length) return
   
   // 如果 graph 还未初始化，等待初始化完成后再更新
-  if (!graph) return
+  if (!graph) {
+    // 尝试初始化
+    nextTick(() => {
+      setTimeout(() => {
+        if (!graph) {
+          initGraph()
+        }
+        if (graph && props.graphData && props.graphData.nodes?.length > 0) {
+          updateGraph()
+        }
+      }, 50)
+    })
+    return
+  }
   
   nextTick(() => {
     updateGraph()
@@ -419,6 +589,7 @@ onMounted(() => {
   })
   
   window.addEventListener('resize', handleResize)
+  document.addEventListener('fullscreenchange', handleFullscreenChange)
 })
 
 onUnmounted(() => {
@@ -427,6 +598,7 @@ onUnmounted(() => {
     graph = null
   }
   window.removeEventListener('resize', handleResize)
+  document.removeEventListener('fullscreenchange', handleFullscreenChange)
 })
 </script>
 
@@ -437,6 +609,16 @@ onUnmounted(() => {
   height: 100%;
   background: #fafafa;
   border-radius: 4px;
+}
+
+.relation-graph:fullscreen {
+  background: #fff;
+  padding: 0;
+}
+
+.relation-graph:-webkit-full-screen {
+  background: #fff;
+  padding: 0;
 }
 
 .graph-toolbar {
@@ -485,6 +667,51 @@ onUnmounted(() => {
   }
 }
 
+.graph-legend {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  gap: 16px;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .legend-line {
+    width: 24px;
+    height: 2px;
+    background: #1890ff;
+  }
+
+  .legend-solid {
+    // 实线
+  }
+
+  .legend-dashed {
+    background: repeating-linear-gradient(
+      90deg,
+      #1890ff,
+      #1890ff 4px,
+      transparent 4px,
+      transparent 8px
+    );
+  }
+
+  .legend-text {
+    font-size: 12px;
+    color: #666;
+  }
+}
+
 .graph-container {
   width: 100%;
   height: 100%;
@@ -512,6 +739,12 @@ onUnmounted(() => {
     font-size: 12px;
     line-height: 1.5;
     word-break: break-word;
+  }
+  
+  .tooltip-hint {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 11px;
+    margin-top: 4px;
   }
 }
 

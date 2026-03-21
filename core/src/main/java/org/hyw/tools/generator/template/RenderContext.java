@@ -21,6 +21,10 @@ public class RenderContext implements Serializable {
         return variables.get(key);
     }
 
+    public boolean containsKey(String key) {
+        return variables.containsKey(key);
+    }
+
     public RenderContext table(Table table) {
         this.model.setTable(table);
         this.variables.put("table", table);

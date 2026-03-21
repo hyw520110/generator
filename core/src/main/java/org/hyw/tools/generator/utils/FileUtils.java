@@ -148,6 +148,13 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 	 * @throws IOException IO异常
 	 */
 	public static void zipFolder(File folder, String parentPath, ZipOutputStream zos) throws IOException {
+		zipFolder(folder, parentPath, zos, new int[]{0});
+	}
+
+	/**
+	 * 递归打包文件夹（带计数器）
+	 */
+	private static void zipFolder(File folder, String parentPath, ZipOutputStream zos, int[] count) throws IOException {
 		File[] files = folder.listFiles();
 		if (files == null) {
 			return;
@@ -160,7 +167,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
 			if (file.isDirectory()) {
 				// 递归处理子目录
-				zipFolder(file, entryPath, zos);
+				zipFolder(file, entryPath, zos, count);
 			} else {
 				// 添加文件到zip
 				ZipEntry entry = new ZipEntry(entryPath);
@@ -174,7 +181,62 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 				}
 
 				zos.closeEntry();
+				count[0]++;
 			}
 		}
+	}
+
+	/**
+	 * 统计文件夹中的文件数量
+	 */
+	public static int countFiles(File folder) {
+		File[] files = folder.listFiles();
+		if (files == null) {
+			return 0;
+		}
+		int count = 0;
+		for (File file : files) {
+			if (file.isDirectory()) {
+				count += countFiles(file);
+			} else {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	/**
+	 * 判定是否为二进制文件
+	 * 通过检查文件前 1024 字节是否存在控制字符（非空白）来判定
+	 */
+	public static boolean isBinary(File file) {
+		if (file == null || !file.exists() || file.isDirectory()) {
+			return false;
+		}
+		try (FileInputStream fis = new FileInputStream(file)) {
+			byte[] buffer = new byte[1024];
+			int len = fis.read(buffer);
+			if (len == -1) return false;
+			for (int i = 0; i < len; i++) {
+				byte b = buffer[i];
+				if (b < 0x09) return true; // 存在非法控制字符
+			}
+		} catch (IOException e) {
+			logger.warn("检查二进制文件失败: {}", file.getPath());
+		}
+		return false;
+	}
+
+	/**
+	 * 判定字节数组是否为二进制内容
+	 */
+	public static boolean isBinary(byte[] bytes) {
+		if (bytes == null || bytes.length == 0) return false;
+		int len = Math.min(bytes.length, 1024);
+		for (int i = 0; i < len; i++) {
+			byte b = bytes[i];
+			if (b < 0x09) return true;
+		}
+		return false;
 	}
 }

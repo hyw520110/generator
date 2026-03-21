@@ -79,8 +79,8 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
-import { step2 } from '@/api/generator'
+import { ref, reactive, onMounted } from 'vue'
+import { step2, getConfig } from '@/api/generator'
 
 export default {
   name: 'Step2',
@@ -103,16 +103,68 @@ export default {
       springBootVersion: '2.2.5.RELEASE',
       springCloudVersion: '2.2.3.RELEASE',
       springCloudAlibabaVersion: '2.2.1.RELEASE',
-      dubboVersion: '2.7.6',
+      dubboVersion: '',
       mybatisType: 'plus',
       configCenter: 'ZOOKEEPER',
       zookeeperAddr: 'localhost:2181',
       nacosAddr: 'localhost:8848',
       redisHost: 'localhost:6379',
-      redisPassword: '123456',
-      sentinelAddr: 'localhost:7030',
-      skywalkingAddr: 'localhost:11800',
+      redisPassword: '',
+      sentinelAddr: '',
+      skywalkingAddr: '',
       secure: ['JWT', 'SHIRO']
+    })
+    
+    // 组件配置映射表：组件名 -> { 配置key: formState字段名 }
+    const componentMappings = {
+      SPRINGBOOT: { 'springboot_version': 'springBootVersion' },
+      SPRINGCLOUD: { 'springcloud_version': 'springCloudVersion', 'springcloud_alibaba_version': 'springCloudAlibabaVersion' },
+      DUBBO: { 'dubbo_version': 'dubboVersion' },
+      MYBATIS: { 'mapperType': 'mybatisType' },
+      ZOOKEEPER: { 'connect-string': 'zookeeperAddr' },
+      REDIS: { 'spring_redis_cluster_nodes': 'redisHost', 'spring_redis_password': 'redisPassword' },
+      SENTINEL: { 'dashboard.server': 'sentinelAddr' },
+      SKYWALKING: { 'skywalking.addr': 'skywalkingAddr' },
+      NACOS: { 'nacos.addr': 'nacosAddr' }
+    }
+    
+    // 页面加载时获取配置
+    onMounted(async () => {
+      try {
+        const res = await getConfig()
+        if (res.status === 10000 && res.data) {
+          const global = res.data.global || {}
+          const components = res.data.components || {}
+          
+          // 从 global 获取 view 和 projectBuilder
+          const globalComps = global.components || []
+          formState.view = globalComps.includes('VUE') ? 'VUE' : (globalComps.includes('THYMELEAF') ? 'THYMELEAF' : 'VUE')
+          formState.projectBuilder = global.projectBuilder || 'MAVEN'
+          
+          // 遍历 components，根据映射表填充 formState
+          Object.entries(componentMappings).forEach(([compName, fieldMappings]) => {
+            const compConfig = components[compName]
+            if (compConfig) {
+              // 特殊处理：NACOS 存在时设置 configCenter
+              if (compName === 'NACOS') {
+                formState.configCenter = 'NACOS'
+              }
+              Object.entries(fieldMappings).forEach(([configKey, formField]) => {
+                const value = compConfig[configKey]
+                if (value !== undefined && value !== null && value !== '') {
+                  formState[formField] = value
+                }
+              })
+            }
+          })
+          
+          // 认证组件
+          const secure = globalComps.filter(c => c === 'JWT' || c === 'SHIRO')
+          if (secure.length > 0) formState.secure = secure
+        }
+      } catch (err) {
+        console.error('获取配置失败:', err)
+      }
     })
     
     const nextStep = async () => {

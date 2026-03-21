@@ -11,7 +11,9 @@ const api = {
   genDoc: moudulePath + '/doc',
   downloads: moudulePath + '/downloads',
   download: moudulePath + '/download',
-  relations: moudulePath + '/relations'
+  relations: moudulePath + '/relations',
+  validateOutputDir: moudulePath + '/validateOutputDir',
+  config: moudulePath + '/config'
 }
 
 export function getTableList (parameter) {
@@ -52,10 +54,7 @@ export function genCode (parameter) {
   return axios({
     url: api.genCode,
     method: 'post',
-    headers: {
-      'Content-Type': 'application/json;charset=UTF-8'
-    },
-    data: parameter
+    params: parameter
   })
 }
 
@@ -84,5 +83,30 @@ export function getTableRelations (parameter) {
     method: 'get',
     params: parameter,
     timeout: 30000
+  })
+}
+
+export function deleteFile (parameter) {
+  return axios({
+    url: api.download,
+    method: 'delete',
+    params: parameter
+  })
+}
+
+export function validateOutputDir (parameter) {
+  return axios({
+    url: api.validateOutputDir,
+    method: 'get',
+    params: parameter,
+    timeout: 5000
+  })
+}
+
+export function getConfig () {
+  return axios({
+    url: api.config,
+    method: 'get',
+    timeout: 5000
   })
 }

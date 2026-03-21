@@ -22,6 +22,13 @@ set -e
 # 设置语言环境
 export LANG=en_US.UTF-8
 
+# 优先使用 mvnd（Maven Daemon）
+if command -v mvnd >/dev/null 2>&1; then
+    MVN="mvnd"
+else
+    MVN="mvn"
+fi
+
 # 脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 APP_DIR="$SCRIPT_DIR"
@@ -135,15 +142,15 @@ fi
 if [ $IS_DEV_MODE -eq 0 ]; then
     echo_info "=== 开发模式 ==="
     if [ ! -d "$CLASSES_DIR" ]; then
-     mvn clean compile 
+     $MVN clean compile 
     fi
 	rm -rf ./demo ./logs
     # 使用Maven exec插件运行，自动处理classpath和依赖
     # 将Java命令行参数转换为Maven exec插件的参数格式
     if [ ${#JAVA_CMD_ARGS[@]} -gt 0 ]; then
-        mvn exec:java -Dexec.args="${JAVA_CMD_ARGS[*]}"
+        $MVN exec:java -Dexec.args="${JAVA_CMD_ARGS[*]}"
     else
-        mvn exec:java
+        $MVN exec:java
     fi
 else
     echo_info "=== 部署模式 ==="

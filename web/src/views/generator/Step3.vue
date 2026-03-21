@@ -2,10 +2,6 @@
   <div style="position: relative;">
     <!-- 下载中心按钮（页面右上角） -->
     <div class="download-center-btn">
-      <a-button @click="showRelationGraph" :loading="graphLoading" style="margin-right: 8px;">
-        <template #icon><apartment-outlined /></template>
-        关系图
-      </a-button>
       <a-button @click="showDownloadDrawer" :loading="downloadsLoading">
         <template #icon><download-outlined /></template>
         下载中心
@@ -20,8 +16,9 @@
       :width="1200"
       :footer="null"
       :bodyStyle="{ padding: '0', height: '600px' }"
+      destroyOnClose
     >
-      <RelationGraph :graphData="graphData" :loading="graphLoading" />
+      <RelationGraph ref="relationGraphRef" :graphData="graphData" :loading="graphLoading" />
     </a-modal>
 
     <!-- 下载中心抽屉 -->
@@ -48,6 +45,14 @@
             </a-list-item-meta>
             <template #actions>
               <a @click="downloadFile(item.path)">下载</a>
+              <a-popconfirm
+                title="确定删除此文件？"
+                ok-text="确定"
+                cancel-text="取消"
+                @confirm="handleDeleteFile(item.path)"
+              >
+                <a style="color: #ff4d4f;">删除</a>
+              </a-popconfirm>
             </template>
           </a-list-item>
         </template>
@@ -116,7 +121,22 @@
 
     <a-card style="margin-top: 5px" :bordered="false">
       <div style="margin-bottom: 16px; display: flex; align-items: center;">
-        <a-button type="primary" @click="start" :disabled="!hasSelected || generating">生成代码</a-button>
+        <a-dropdown :disabled="!hasSelected || generating">
+          <a-button type="primary">
+            生成代码
+            <down-outlined />
+          </a-button>
+          <template #overlay>
+            <a-menu @click="handleGenCode">
+              <a-menu-item key="packed">
+                打包下载
+              </a-menu-item>
+              <a-menu-item key="unpacked">
+                不打包
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
         <a-dropdown :disabled="!hasSelected || generating" style="margin-left: 8px;">
           <a-button>
             生成文档
@@ -171,8 +191,14 @@
         <a-alert type="success" show-icon style="margin-bottom: 16px;">
           <template #message>
             <div>
-              <strong>{{ genResult.tables }}</strong> 的代码已生成，耗时 {{ formatDuration(genResult.duration) }}
-              <a-button type="link" @click="downloadCode" style="padding: 0 4px;">下载代码</a-button>
+              <strong>{{ genResult.tableCount }} 个表</strong> 的代码已生成
+              <template v-if="genResult.packed">
+                ，耗时 {{ formatDuration(genResult.duration) }}
+                <a-button type="link" @click="downloadCode" style="padding: 0 4px;">下载代码</a-button>
+              </template>
+              <template v-else>
+                到 <strong>{{ genResult.outputDir }}</strong>，耗时 {{ formatDuration(genResult.duration) }}
+              </template>
             </div>
           </template>
         </a-alert>
@@ -200,7 +226,7 @@
           <a-spin size="large" tip="加载中..." />
         </div>
         <div v-else-if="graphData.nodes.length > 0" class="graph-view-container">
-          <RelationGraph :graphData="graphData" />
+          <RelationGraph :graphData="graphData" @node-click="handleGraphNodeClick" />
         </div>
         <a-empty v-else description="暂无表关系数据" style="padding: 100px 0;" />
       </template>
@@ -231,7 +257,7 @@
 
 <script>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { getTableList, getDatabases, genCode, getDownloads, genDoc, getTableRelations } from '@/api/generator'
+import { getTableList, getDatabases, genCode, getDownloads, genDoc, getTableRelations, getConfig, deleteFile } from '@/api/generator'
 import { SyncOutlined, DownloadOutlined, FileWordOutlined, FilePdfOutlined, DownOutlined, ApartmentOutlined, LeftOutlined } from '@ant-design/icons-vue'
 import RelationGraph from '@/components/RelationGraph/index.vue'
 
@@ -273,10 +299,10 @@ export default {
     let timer = null
     
     const formState = reactive({
-      ipAndPort: 'localhost:3306',
+      ipAndPort: '',
       dbName: '',
-      username: 'root',
-      pwd: '123456',
+      username: '',
+      pwd: '',
       include: '',
       exclude: '',
       tablePrefix: ''
@@ -290,7 +316,11 @@ export default {
     ]
     
     const pagination = {
-      defaultPageSize: 20
+      defaultPageSize: 50,
+      showSizeChanger: true,
+      showQuickJumper: true,
+      pageSizeOptions: ['20', '50', '100', '200'],
+      showTotal: (total) => `共 ${total} 条`
     }
     
     const hasSelected = computed(() => selectedRowKeys.value.length > 0)
@@ -395,22 +425,26 @@ export default {
       }
     }
     
-    const start = async () => {
+    // 生成代码处理函数
+    const handleGenCode = async ({ key }) => {
+      const pack = key === 'packed'
       generating.value = true
       genResult.value = null
       errorMessage.value = ''
       startTimer()
       
       try {
-        const res = await genCode({ tabName: selectedRowKeys.value.join(',') })
+        const res = await genCode({ tabName: selectedRowKeys.value.join(','), pack })
         stopTimer()
         generating.value = false
         selectedRowKeys.value = []
         
         if (res.status === 10000 && res.data) {
           genResult.value = res.data
-          // 刷新下载列表
-          loadDownloads()
+          // 打包模式下刷新下载列表
+          if (res.data.packed) {
+            loadDownloads()
+          }
         } else {
           errorMessage.value = res.message || '生成失败'
           errorType.value = 'error'
@@ -516,6 +550,23 @@ export default {
       window.open('/v1/gen/download?path=' + encodeURIComponent(filePath), '_blank')
     }
 
+    // 删除指定文件
+    const handleDeleteFile = async (filePath) => {
+      try {
+        const res = await deleteFile({ path: filePath })
+        if (res.status === 10000) {
+          // 刷新列表
+          loadDownloads()
+        } else {
+          errorMessage.value = res.message || '删除失败'
+          errorType.value = 'error'
+        }
+      } catch (err) {
+        errorMessage.value = err.response?.data?.message || '删除失败'
+        errorType.value = 'error'
+      }
+    }
+
     // 显示表关系图（选中表或所有表）
     const handleShowRelationGraph = async ({ key }) => {
       // 必须有完整的数据库连接信息
@@ -559,6 +610,21 @@ export default {
     const hideGraphView = () => {
       showGraphView.value = false
       graphData.value = { nodes: [], edges: [] }
+    }
+
+    // 处理关系图节点点击 - 返回表格并选中对应行
+    const handleGraphNodeClick = (nodeData) => {
+      // 返回表格视图
+      showGraphView.value = false
+      
+      // 选中对应的表
+      if (nodeData.tableName || nodeData.id) {
+        const tableName = nodeData.tableName || nodeData.id
+        // 如果该表在当前表格数据中，选中它
+        if (data.value.some(item => item.name === tableName)) {
+          selectedRowKeys.value = [tableName]
+        }
+      }
     }
 
     // 下载文件数量
@@ -622,8 +688,20 @@ export default {
       emit('prevStep')
     }
 
-    // 页面加载时自动尝试加载数据库列表
-    onMounted(() => {
+    // 页面加载时获取配置并尝试加载数据库列表
+    onMounted(async () => {
+      try {
+        const res = await getConfig()
+        if (res.status === 10000 && res.data) {
+          const ds = res.data.dataSource || {}
+          if (ds.ipAndPort) formState.ipAndPort = ds.ipAndPort
+          if (ds.dbName) formState.dbName = ds.dbName
+          if (ds.username) formState.username = ds.username
+          if (ds.pwd) formState.pwd = ds.pwd
+        }
+      } catch (err) {
+        console.error('获取配置失败:', err)
+      }
       loadDatabases()
     })
 
@@ -662,7 +740,7 @@ export default {
       graphLoading,
       graphData,
       graphTitle,
-      start,
+      handleGenCode,
       handleGenDoc,
       handQuery,
       handleCreate,
@@ -675,8 +753,10 @@ export default {
       downloadCode,
       showDownloadDrawer,
       downloadFile,
+      handleDeleteFile,
       handleShowRelationGraph,
-      hideGraphView
+      hideGraphView,
+      handleGraphNodeClick
     }
   }
 }

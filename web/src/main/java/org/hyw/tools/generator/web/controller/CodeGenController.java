@@ -35,6 +35,7 @@ import org.hyw.tools.generator.web.model.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,6 +62,10 @@ public class CodeGenController {
 	/** 下载目录（从配置文件读取） */
 	@Value("${app.download-dir:${user.home}/Downloads/generator}")
 	private String downloadDir;
+	
+	/** 默认输出目录（从配置文件读取） */
+	@Value("${app.output-dir:${user.home}/output/demo}")
+	private String defaultOutputDir;
 	
 	/** PDF 字体配置（格式：目录路径:文件名模式，逗号分隔多项） */
 	@Value("${app.pdf.fonts.macos:}")
@@ -237,6 +242,106 @@ public class CodeGenController {
 				"dbName", "username", "pwd", "tables", "name", "comment", "createTime")));
 	}
 
+	/**
+	 * 获取当前配置（供三个步骤页面共用）
+	 * @return 当前配置信息
+	 */
+	@GetMapping("/config")
+	public Result<?> getConfig() {
+		Map<String, Object> config = new HashMap<>();
+		
+		GlobalConf global = generator.getGlobal();
+		Map<Component, Map<String, Object>> components = generator.getComponents();
+		DataSourceConf ds = generator.getDataSource();
+		
+		// 直接返回原始配置对象，由前端解析
+		config.put("global", global);
+		config.put("components", components);
+		
+		// DataSourceConf 中有些字段无法序列化，只返回需要的字段
+		Map<String, Object> dataSource = new HashMap<>();
+		dataSource.put("ipAndPort", ds.getIpAndPort());
+		dataSource.put("dbName", ds.getDbName());
+		dataSource.put("username", ds.getUsername());
+		dataSource.put("pwd", ds.getPwd());
+		dataSource.put("dbType", ds.getDBType() != null ? ds.getDBType().name() : null);
+		config.put("dataSource", dataSource);
+		
+		// 默认值（用于初始化）
+		Map<String, Object> defaults = new HashMap<>();
+		defaults.put("outputDir", defaultOutputDir);
+		defaults.put("userHome", System.getProperty("user.home"));
+		config.put("defaults", defaults);
+		
+		logger.info("[config] 输出 - 成功");
+		return Result.ok(config);
+	}
+
+	/**
+	 * 验证输出目录权限
+	 * @param outputDir 输出目录路径（可选，为空时返回默认配置）
+	 * @return 验证结果
+	 */
+	@GetMapping("/validateOutputDir")
+	public Result<?> validateOutputDir(@RequestParam(required = false) String outputDir) {
+		String userHome = System.getProperty("user.home");
+		
+		// 如果未传入目录，返回默认配置
+		if (StringUtils.isBlank(outputDir)) {
+			Map<String, Object> defaults = new HashMap<>();
+			defaults.put("outputDir", defaultOutputDir);
+			defaults.put("userHome", userHome);
+			logger.info("[validateOutputDir] 输出 - 返回默认配置, outputDir: {}, userHome: {}", defaultOutputDir, userHome);
+			return Result.ok(defaults);
+		}
+		
+		logger.info("[validateOutputDir] 输入 - outputDir: {}", outputDir);
+		
+		// 检查非法字符
+		if (outputDir.contains("..") || outputDir.contains("~")) {
+			return Result.error("目录路径包含非法字符");
+		}
+		
+		File dir = new File(outputDir);
+		
+		// 如果目录存在，检查权限
+		if (dir.exists()) {
+			if (!dir.isDirectory()) {
+				return Result.error("路径不是目录");
+			}
+			if (!dir.canRead()) {
+				return Result.error("目录无读取权限");
+			}
+			if (!dir.canWrite()) {
+				return Result.error("目录无写入权限");
+			}
+			logger.info("[validateOutputDir] 输出 - 目录存在且有读写权限");
+			return Result.ok("目录验证通过");
+		}
+		
+		// 目录不存在，检查父目录权限
+		File parent = dir.getParentFile();
+		if (parent == null) {
+			return Result.error("无法确定父目录");
+		}
+		
+		// 递归查找存在的父目录
+		while (parent != null && !parent.exists()) {
+			parent = parent.getParentFile();
+		}
+		
+		if (parent == null) {
+			return Result.error("无法找到有效的父目录");
+		}
+		
+		if (!parent.canWrite()) {
+			return Result.error("父目录无写入权限，无法创建: " + outputDir);
+		}
+		
+		logger.info("[validateOutputDir] 输出 - 父目录有写入权限，可创建目录");
+		return Result.ok("目录将自动创建");
+	}
+
 	@PostMapping("/step1")
 	public Result<Object> step1(String outputDir, String description, String rootPackage, String modules,
 			boolean delOutputDir, boolean fileOverride, boolean openDir) {
@@ -292,8 +397,8 @@ public class CodeGenController {
 
 	@PostMapping("/exec")
 	@ResponseBody
-	public Result<?> exec(String tabName) throws IOException {
-		logger.info("[exec] 输入 - tabName: {}", tabName);
+	public Result<?> exec(String tabName, Boolean pack) throws IOException {
+		logger.info("[exec] 输入 - tabName: {}, pack: {}", tabName, pack);
 		String[] tables = StringUtils.isBlank(tabName) ? null : tabName.split(",");
 		generator.getGlobal().setInclude(tables);
 		generator.getGlobal().setMatchMode(false);
@@ -305,48 +410,74 @@ public class CodeGenController {
 		String outputDir = generator.getGlobal().getOutputDir();
 		File outputFolder = new File(outputDir);
 		
+		// 检查输出目录是否存在且有内容
+		if (!outputFolder.exists()) {
+			logger.error("[exec] 输出目录不存在: {}", outputDir);
+			return Result.error("代码生成失败：输出目录不存在");
+		}
+		
+		int fileCount = FileUtils.countFiles(outputFolder);
+		if (fileCount == 0) {
+			logger.error("[exec] 输出目录为空: {}", outputDir);
+			return Result.error("代码生成失败：输出目录为空");
+		}
+		logger.info("[exec] 输出目录文件数: {}", fileCount);
+		
 		// 获取数据库连接信息
 		DataSourceConf ds = generator.getDataSource();
 		String ipAndPort = ds.getIpAndPort();
 		String dbName = StringUtils.defaultString(ds.getDbName(), "unknown");
 		int tableCount = tables != null ? tables.length : generator.getTables().size();
-		String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-		
-		// 压缩包文件名：数据库名_N表_日期时间.zip
-		String zipFileName = String.format("%s_%dt_%s.zip", dbName, tableCount, timestamp);
-		
-		// 下载子目录：ip_port/数据库名/
-		String subDir = ipAndPort.replace(":", "_") + "/" + dbName;
-		File targetDir = new File(downloadDir, subDir);
-		if (!targetDir.exists()) {
-			targetDir.mkdirs();
-		}
-		
-		File zipFile = new File(targetDir, zipFileName);
-		
-		// 打包并保存到下载目录
-		try (java.io.FileOutputStream fos = new java.io.FileOutputStream(zipFile);
-			 ZipOutputStream zos = new ZipOutputStream(fos)) {
-			FileUtils.zipFolder(outputFolder, zos);
-			zos.finish();
-		}
-		
-		// 删除生成目录
-		if (outputFolder.exists()) {
-			org.apache.commons.io.FileUtils.deleteDirectory(outputFolder);
-			logger.info("已删除生成目录: {}", outputDir);
-		}
-		
-		logger.info("代码已打包: {}/{}, 表数量: {}, 耗时: {}ms", subDir, zipFileName, tableCount, duration);
 		
 		Map<String, Object> result = new HashMap<>();
-		result.put("tables", tables != null ? String.join(", ", tables) : "全部表");
+		result.put("tableCount", tableCount);
 		result.put("outputDir", outputDir);
 		result.put("duration", duration);
-		result.put("zipFile", zipFileName);
-		result.put("zipPath", subDir + "/" + zipFileName);
 		
-		logger.info("[exec] 输出 - zipPath: {}, 表数量: {}, 耗时: {}ms", subDir + "/" + zipFileName, tableCount, duration);
+		// 默认打包（pack 为 null 或 true 时打包）
+		boolean shouldPack = pack == null || pack;
+		
+		if (shouldPack) {
+			// 打包模式
+			String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+			String zipFileName = String.format("%s_%dt_%s.zip", dbName, tableCount, timestamp);
+			
+			String subDir = ipAndPort.replace(":", "_") + "/" + dbName;
+			File targetDir = new File(downloadDir, subDir);
+			if (!targetDir.exists()) {
+				targetDir.mkdirs();
+			}
+			
+			File zipFile = new File(targetDir, zipFileName);
+			
+			try (java.io.FileOutputStream fos = new java.io.FileOutputStream(zipFile);
+				 ZipOutputStream zos = new ZipOutputStream(fos)) {
+				FileUtils.zipFolder(outputFolder, zos);
+				zos.finish();
+				fos.flush();
+			}
+			
+			if (!zipFile.exists() || zipFile.length() == 0) {
+				logger.error("[exec] zip文件创建失败: {}", zipFile.getAbsolutePath());
+				return Result.error("代码打包失败：zip文件创建失败");
+			}
+			logger.info("[exec] zip文件大小: {} bytes", zipFile.length());
+			
+			// 删除生成目录
+			org.apache.commons.io.FileUtils.deleteDirectory(outputFolder);
+			logger.info("已删除生成目录: {}", outputDir);
+			
+			result.put("zipFile", zipFileName);
+			result.put("zipPath", subDir + "/" + zipFileName);
+			result.put("packed", true);
+			logger.info("代码已打包: {}/{}, 表数量: {}, 耗时: {}ms", subDir, zipFileName, tableCount, duration);
+		} else {
+			// 不打包模式
+			result.put("packed", false);
+			logger.info("代码已生成（不打包）: {}, 表数量: {}, 文件数: {}, 耗时: {}ms", outputDir, tableCount, fileCount, duration);
+		}
+		
+		logger.info("[exec] 输出 - packed: {}, 表数量: {}, 耗时: {}ms", shouldPack, tableCount, duration);
 		return Result.ok(result);
 	}
 
@@ -566,6 +697,51 @@ public class CodeGenController {
 	}
 	
 	/**
+	 * 删除生成的文件
+	 * @param path 文件相对路径
+	 * @return 删除结果
+	 */
+	@DeleteMapping("/download")
+	public Result<?> deleteFile(@RequestParam String path) {
+		logger.info("[delete] 输入 - path: {}", path);
+		
+		if (StringUtils.isBlank(path)) {
+			return Result.error("请指定要删除的文件");
+		}
+		
+		File file = new File(downloadDir, path);
+		String fileName = file.getName().toLowerCase();
+		
+		// 安全校验：只允许删除 zip、docx、pdf 文件
+		if (!file.exists()) {
+			return Result.error("文件不存在");
+		}
+		if (!fileName.endsWith(".zip") && !fileName.endsWith(".docx") && !fileName.endsWith(".pdf")) {
+			return Result.error("不支持的文件类型");
+		}
+		
+		// 确保文件在下载目录内（防止路径遍历攻击）
+		try {
+			String canonicalPath = file.getCanonicalPath();
+			String canonicalDownloadDir = new File(downloadDir).getCanonicalPath();
+			if (!canonicalPath.startsWith(canonicalDownloadDir)) {
+				return Result.error("非法路径");
+			}
+		} catch (IOException e) {
+			return Result.error("路径解析失败");
+		}
+		
+		// 删除文件
+		if (file.delete()) {
+			logger.info("[delete] 输出 - 删除成功: {}", path);
+			return Result.ok("删除成功");
+		} else {
+			logger.warn("[delete] 输出 - 删除失败: {}", path);
+			return Result.error("删除失败");
+		}
+	}
+	
+	/**
 	 * 发送错误响应
 	 */
 	private void sendErrorResponse(HttpServletResponse response, String message) {
@@ -671,6 +847,7 @@ public class CodeGenController {
 				edge.put("fkColumn", rel.getFkColumn());
 				edge.put("pkColumn", rel.getPkColumn());
 				edge.put("fkName", rel.getFkName());
+				edge.put("nullable", rel.isNullable());
 				edges.add(edge);
 			}
 			

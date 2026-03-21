@@ -31,6 +31,9 @@ public class TableRelation {
     /** 外键约束名 */
     private String fkName;
     
+    /** 外键列是否可为空（true=可选关系，用虚线；false=必选关系，用实线） */
+    private boolean nullable = true;
+    
     public TableRelation() {
     }
     

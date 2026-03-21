@@ -357,7 +357,12 @@ public class DatabaseMetadataReader implements MetadataReader {
         
         Connection con = null;
         try {
-            con = dataSource.getCon();
+            // 使用 DriverManager 直接获取连接，避免连接池已关闭的问题
+            String url = dataSource.getDBType().buildUrl(dataSource.getIp(), dataSource.getPort(), dataSource.getDbName());
+            logger.info("获取数据库连接 - IP: {}, 端口: {}, 数据库: {}, 用户: {}", 
+                dataSource.getIp(), dataSource.getPort(), dataSource.getDbName(), dataSource.getUsername());
+            con = java.sql.DriverManager.getConnection(url, dataSource.getUsername(), dataSource.getPassword());
+            
             DatabaseMetaData metaData = con.getMetaData();
             String catalog = con.getCatalog();
             String schema = getSchema(con);
@@ -367,6 +372,9 @@ public class DatabaseMetadataReader implements MetadataReader {
             
             for (String tableName : tableNames) {
                 try {
+                    // 先获取该表所有列的可空性信息
+                    Map<String, Boolean> columnNullable = getColumnNullableMap(metaData, catalog, schema, tableName);
+                    
                     // 获取该表引用的其他表（外键关系）
                     try (ResultSet rs = metaData.getImportedKeys(catalog, schema, tableName)) {
                         while (rs.next()) {
@@ -378,6 +386,10 @@ public class DatabaseMetadataReader implements MetadataReader {
                             relation.setFkColumn(rs.getString("FKCOLUMN_NAME"));
                             relation.setPkColumn(rs.getString("PKCOLUMN_NAME"));
                             relation.setFkName(rs.getString("FK_NAME"));
+                            
+                            // 设置外键列是否可为空
+                            String fkColumn = relation.getFkColumn();
+                            relation.setNullable(columnNullable.getOrDefault(fkColumn, true));
                             
                             relations.add(relation);
                             logger.debug("发现表关系: {}", relation.getRelationDesc());
@@ -408,6 +420,24 @@ public class DatabaseMetadataReader implements MetadataReader {
         }
         
         return relations;
+    }
+    
+    /**
+     * 获取表所有列的可空性映射
+     */
+    private Map<String, Boolean> getColumnNullableMap(DatabaseMetaData metaData, String catalog, String schema, String tableName) {
+        Map<String, Boolean> nullableMap = new HashMap<>();
+        try (ResultSet rs = metaData.getColumns(catalog, schema, tableName, null)) {
+            while (rs.next()) {
+                String columnName = rs.getString("COLUMN_NAME");
+                int nullable = rs.getInt("NULLABLE");
+                // DatabaseMetaData.columnNullable = 1, DatabaseMetaData.columnNoNulls = 0
+                nullableMap.put(columnName, nullable == DatabaseMetaData.columnNullable);
+            }
+        } catch (SQLException e) {
+            logger.warn("获取表 {} 的列可空性失败: {}", tableName, e.getMessage());
+        }
+        return nullableMap;
     }
     
     /**

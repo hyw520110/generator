@@ -14,7 +14,7 @@ target
 **/package-lock.json
 ./cmd/bin/**
 ./web/bin/**
-
+**/demo/**
 # 生成的代码输出目录
 **/demo/
 **/.dep_hash

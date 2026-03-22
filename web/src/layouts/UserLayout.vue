@@ -9,7 +9,7 @@
           </a>
         </div>
         <div class="desc">
-          <a href="http://www.github.com/hyw520110/generator.git" target="_blank">最简单易用的代码生成器</a>
+          <a href="http://www.github.com/hyw520110/generator.git" target="_blank">简易代码生成器</a>
         </div>
       </div>
 

@@ -98,6 +98,7 @@ public class TemplateContextBuilder {
             .variable("entityPackage", projectPackage + ".entity")
             .variable("mapperPackage", projectPackage + ".mapper")
             .variable("servicePackage", projectPackage + ".service")
+            .variable("BaseServicePackage", projectPackage + ".service")
             .variable("controllerPackage", projectPackage + ".controller")
             .variable("aspectsPackage", projectPackage + ".aspects")
             .variable("commonsPackage", projectPackage + ".commons")
@@ -112,6 +113,12 @@ public class TemplateContextBuilder {
             
             // 全局配置对象（用于访问未提取的属性）
             .variable("global", global)
+            
+            // 构建工具类型字符串（用于模板条件判断）
+            .variable("projectBuilder", global.getProjectBuilder() != null ? global.getProjectBuilder().name() : "MAVEN")
+            
+            // 项目构建工具（字符串形式，方便模板使用）
+            .variable("projectBuilder", global.getProjectBuilder() != null ? global.getProjectBuilder().name() : "MAVEN")
             
             // 工具类
             .variable("StringUtils", new StringUtilsBean())
@@ -233,19 +240,13 @@ public class TemplateContextBuilder {
         builder.variable("superMapperClass", "");
         builder.variable("superServiceClass", "");
         builder.variable("superServiceImplClass", "");
-        builder.variable("KEYWORD", "");
-        builder.variable("dubbo_registry", "");
-        builder.variable("dubbo_version", "");
-        builder.variable("jdbc", "");
-        builder.variable("spring_redis_password", "");
+        // dubbo_registry, dubbo_version 由 DUBBO 组件配置提供
+        // jdbc 由 JDBC 组件配置提供
+        // spring_redis_password 由 REDIS 组件配置提供
         builder.variable("tables", new ArrayList<>());
         
-        // 添加 Spring Cloud 相关版本变量
-        builder.variable("springboot_version", "2.3.2.RELEASE");
-        builder.variable("springcloud_version", "2.3.1.RELEASE");
-        builder.variable("springcloud_alibaba_version", "2.2.5.RELEASE");
-        builder.variable("spring_cloud_zookeeper_version", "2.2.3.RELEASE");
-        builder.variable("curator_version", "4.0.1");
+        // 版本变量由 YAML 组件配置提供，不再硬编码默认值
+        // 组件配置加载时会设置: springboot_version, springcloud_version, springcloud_alibaba_version 等
 
         // 添加 enumsPackage 和 interceptorPackage
         builder.variable("enumsPackage", projectPackage + ".enums");

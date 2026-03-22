@@ -6,8 +6,8 @@ import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.enums.Component;
 
 /**
- * 默认路径解析实现 (修复版：完善占位符支持与模块路由)
- *
+ * 默认路径解析实现 (精简最终版：修复 Booter.java 及组件过滤逻辑)
+ * 
  * @author heyiwu
  */
 public class DefaultPathTemplateResolver implements PathTemplateResolver {
@@ -18,74 +18,134 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
     public String resolve(String path, TemplateModel model) {
         if (StringUtils.isBlank(path)) return path;
 
-        // 0. 预处理：精准剥离模板分类前缀
-        String firstDir = StringUtils.substringBefore(path, SEPARATOR);
-        boolean isVirtualDir = "modules".equals(firstDir) || "assets".equals(firstDir) 
-                || "commons".equals(firstDir) || "components".equals(firstDir);
-        
-        if (isVirtualDir) {
+        // 预处理：剥离一级分类前缀 (如 modules/, components/, assets/ 等)
+        if (path.contains(SEPARATOR)) {
             path = StringUtils.substringAfter(path, SEPARATOR);
         }
 
-        // 1. Vue 路径特判
-        if (path.startsWith(Component.VUE.name().toLowerCase() + SEPARATOR)) {
-            return path;
+        // 过滤逻辑
+        if (shouldSkip(path, model)) {
+            return null;
         }
 
-        // 2. 替换占位符 (含单模块架构自适应)
+        // 替换占位符 (必须在 Vue 特判之前)
         path = replacePlaceholders(path, model);
+
+        // Vue 路径：移除模板后缀直接返回
+        if (path.startsWith(Component.VUE.name().toLowerCase() + SEPARATOR)) {
+            return path.replaceAll("\\.(ftl|vm)$", "");
+        }
         
-        // 3. 标准化：处理 # 锚点并移除模板后缀
+        // 标准化路径：处理 # 锚点并移除模板后缀
         String cleanPath = path.replace("#", SEPARATOR).replaceAll("\\.(ftl|vm)$", "");
 
-        // 4. 核心路由判定
-        
-        // 4.1 全局根文件直通
-        if (!cleanPath.contains(SEPARATOR)) {
-            return cleanPath;
-        }
+        if (!cleanPath.contains(SEPARATOR)) return cleanPath;
 
+        // Java 源码：智能路由，注入包路径
         if (cleanPath.endsWith(".java")) {
-            // 4.2 Java 智能路由 (优先识别 src/ 锚点)
-            if (cleanPath.contains("src/")) {
+            if (cleanPath.contains("src/") && cleanPath.contains("java/")) {
                 String modulePart = StringUtils.substringBefore(cleanPath, "src/");
                 String afterSrcPart = cleanPath.substring(modulePart.length());
-                if (afterSrcPart.contains("java/")) {
-                    String baseDir = StringUtils.substringBefore(afterSrcPart, "java/") + "java";
-                    String subPath = StringUtils.substringAfter(afterSrcPart, "java" + SEPARATOR);
-                    return buildFullJavaPath(modulePart, baseDir, subPath, model);
+                String baseDir = StringUtils.substringBefore(afterSrcPart, "java/") + "java";
+                String subPath = StringUtils.substringAfter(afterSrcPart, "java" + SEPARATOR);
+                
+                subPath = skipKnownComponentInPackage(subPath);
+                
+                return buildFullJavaPath(modulePart, baseDir, subPath, model);
+            }
+        }
+
+        // 显式包含 src/ 的路径，直通返回
+        if (cleanPath.contains("src/")) {
+            return cleanPath;
+        }
+        
+        // 以模块名或 parent 开头的路径，直通返回
+        String firstPart = StringUtils.substringBefore(cleanPath, SEPARATOR);
+        if (isModule(firstPart, model.getConfig().getModules()) 
+                || "parent".equalsIgnoreCase(firstPart)) {
+            return cleanPath;
+        }
+        
+        // 兜底：补全 src/main/resources
+        return buildResourcePath(cleanPath, model);
+    }
+
+    private boolean shouldSkip(String path, TemplateModel model) {
+        String[] modules = model.getConfig().getModules();
+        boolean isMultiModule = modules != null && modules.length > 1;
+
+        // 单模块模式下，跳过 parent 目录
+        if (!isMultiModule && path.startsWith("parent" + SEPARATOR)) {
+            return true;
+        }
+
+        // 检查技术组件：路径中包含未启用的技术关键字则跳过
+        String[] parts = path.split(SEPARATOR);
+        for (String part : parts) {
+            String p = part.toLowerCase();
+            if (isKnownComponent(p)) {
+                Component comp = getComponentByName(p);
+                if (comp != null && !hasComponentOrImplicit(model, comp)) {
+                    return true;
                 }
             }
-            // 4.3 Java Legacy 路由
-            return buildJavaPath(cleanPath, model, "commons".equals(firstDir));
-        } else {
-            // 4.4 非 Java 路由
-            if (cleanPath.contains("src/")) {
-                return cleanPath;
-            }
-            
-            String firstPart = StringUtils.substringBefore(cleanPath, SEPARATOR);
-            boolean isRootModule = isModule(firstPart, model.getConfig().getModules()) 
-                    || "parent".equalsIgnoreCase(firstPart) 
-                    || "commons".equalsIgnoreCase(firstPart)
-                    || Component.VUE.name().equalsIgnoreCase(firstPart);
-
-            if (isRootModule) {
-                return cleanPath;
-            }
-            
-            // 否则视为资源，补全 src/main/resources
-            return buildResourcePath(cleanPath, model, true);
         }
+        return false;
+    }
+
+    /**
+     * 检查组件是否启用，包括隐式启用的组件
+     * 当 VUE 或 SPRINGMVC 启用时，JWT 组件自动隐式启用
+     */
+    private boolean hasComponentOrImplicit(TemplateModel model, Component comp) {
+        if (model.hasComponent(comp)) {
+            return true;
+        }
+        // JWT 组件隐式启用条件：VUE 或 SPRINGMVC 启用
+        if (comp == Component.JWT) {
+            return model.hasComponent(Component.VUE) || model.hasComponent(Component.SPRINGMVC);
+        }
+        return false;
+    }
+
+    private Component getComponentByName(String name) {
+        for (Component c : Component.values()) {
+            if (c.name().equalsIgnoreCase(name)) return c;
+        }
+        return null;
+    }
+
+    private String skipKnownComponentInPackage(String subPath) {
+        String firstPart = StringUtils.substringBefore(subPath, SEPARATOR);
+        if (isKnownComponent(firstPart)) {
+            return StringUtils.substringAfter(subPath, SEPARATOR);
+        }
+        return subPath;
+    }
+
+    private boolean isKnownComponent(String part) {
+        String p = part.toLowerCase();
+        // 动态遍历枚举，确保新增加的组件能被自动识别
+        for (Component component : Component.values()) {
+            if (component.name().equalsIgnoreCase(p)) {
+                return true;
+            }
+        }
+        // 兼容一些不是枚举但作为子路径存在的技术名
+        return p.equals("springboot") || p.equals("springmvc") || p.equals("jwt") || p.equals("parent");
     }
 
     private String buildFullJavaPath(String module, String baseDir, String subPath, TemplateModel model) {
+        if (subPath.contains("${packagePath}")) {
+            return toPath(module, baseDir, subPath);
+        }
         String rootPackage = model.getRootPackage() != null ? model.getRootPackage().replace(".", SEPARATOR) : "";
         String projectName = model.getProjectName() != null ? model.getProjectName() : "";
-        
         String moduleClean = module.endsWith(SEPARATOR) ? module.substring(0, module.length() - 1) : module;
         String currentModuleName = StringUtils.substringAfterLast(moduleClean, SEPARATOR);
         if (StringUtils.isBlank(currentModuleName)) currentModuleName = moduleClean;
+        if (StringUtils.isBlank(currentModuleName)) currentModuleName = "commons";
 
         return toPath(module, baseDir, rootPackage, projectName, currentModuleName, subPath);
     }
@@ -106,65 +166,42 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
             path = path.replaceFirst("^\\$\\{module\\[[0-9]+\\]\\}/?", "");
         }
 
-        path = replaceSemanticPlaceholders(path, model);
-        path = replaceEntityPlaceholder(path, model);
+        if (model.getTable() != null) {
+            String beanName = model.getTable().getBeanName();
+            path = path.replace("${beanName}", beanName)
+                       .replace("${EntityName}", beanName)
+                       .replace("${table.beanName}", beanName)
+                       .replace("${entityName}", StringUtils.uncapitalize(beanName))
+                       // 支持 %s 占位符格式 (如 %s.java.ftl, %sMapper.java.ftl)
+                       .replace("%s", beanName);
+        }
+        
+        if (model.getProjectName() != null) path = path.replace("${projectName}", model.getProjectName());
+        if (model.getRootPackage() != null) path = path.replace("${packagePath}", model.getRootPackage().replace(".", SEPARATOR));
 
         path = path.replace("\\", SEPARATOR).replace("//", SEPARATOR);
         if (path.startsWith(SEPARATOR)) path = path.substring(1);
         return path;
     }
 
-    private String replaceSemanticPlaceholders(String path, TemplateModel model) {
-        if (model.getModuleName() != null) path = path.replace("${moduleName}", model.getModuleName());
-        if (model.getTable() != null) {
-            String beanName = model.getTable().getBeanName();
-            path = path.replace("${beanName}", beanName);
-            path = path.replace("${EntityName}", beanName);
-            path = path.replace("${table.beanName}", beanName); // 修复：支持 ${table.beanName}
-            path = path.replace("${entityName}", StringUtils.uncapitalize(beanName));
-        }
-        if (model.getProjectName() != null) path = path.replace("${projectName}", model.getProjectName());
-        if (model.getRootPackage() != null) path = path.replace("${packagePath}", model.getRootPackage().replace(".", SEPARATOR));
-        return path;
-    }
-
-    private String buildJavaPath(String path, TemplateModel model, boolean isCommons) {
+    private String buildJavaPath(String path, TemplateModel model) {
         GlobalConf global = model.getConfig();
-        String cleanPath = path.replaceAll("\\.(ftl|vm)$", "");
-        String subPath = StringUtils.substringAfter(cleanPath, SEPARATOR);
-        String firstModule = extractFirstModule(subPath, global.getModules());
-        if (firstModule != null) subPath = StringUtils.substringAfter(subPath, firstModule + SEPARATOR);
-        boolean isTest = subPath.startsWith("test/");
-        if (isTest) subPath = StringUtils.substringAfter(subPath, "test/");
+        String subPath = path;
+        String firstModule = extractFirstModule(path, global.getModules());
+        String moduleName = firstModule != null ? firstModule : "api";
+        if (firstModule != null) subPath = StringUtils.substringAfter(path, firstModule + SEPARATOR);
 
-        String moduleName = firstModule != null ? firstModule : (isCommons ? "commons" : "api");
-        return toPath(moduleName, isTest ? global.getTestSourceDirectory() : global.getSourceDirectory(), 
+        return toPath(moduleName, global.getSourceDirectory(), 
                 global.getRootPackage().replace(".", SEPARATOR), global.getProjectName(), moduleName, subPath);
     }
     
-    private String buildResourcePath(String path, TemplateModel model, boolean isCommons) {
+    private String buildResourcePath(String path, TemplateModel model) {
         GlobalConf global = model.getConfig();
-        String cleanPath = path.replaceAll("\\.(ftl|vm)$", "");
-        String subPath = StringUtils.substringAfter(cleanPath, SEPARATOR);
-        String firstModule = extractFirstModule(subPath, global.getModules());
-        if (firstModule != null) subPath = StringUtils.substringAfter(subPath, firstModule + SEPARATOR);
-        boolean isTest = subPath.startsWith("test/");
-        if (isTest) subPath = StringUtils.substringAfter(subPath, "test/");
+        String firstModule = extractFirstModule(path, global.getModules());
+        String moduleName = firstModule != null ? firstModule : "api";
+        String subPath = firstModule != null ? StringUtils.substringAfter(path, firstModule + SEPARATOR) : path;
 
-        String moduleName = firstModule != null ? firstModule : (isCommons ? "commons" : "api");
-        return toPath(moduleName, isTest ? global.getTestResourceDirectory() : global.getResourceDirectory(), subPath);
-    }
-
-    private String replaceEntityPlaceholder(String path, TemplateModel model) {
-        if (path == null || model == null || model.getTable() == null) return path;
-        String beanName = model.getTable().getBeanName();
-        int count = StringUtils.countMatches(path, "%s");
-        if (count == 0) return path;
-        try {
-            Object[] args = new Object[count];
-            for (int i = 0; i < count; i++) args[i] = (i == 0 && count > 1) ? StringUtils.uncapitalize(beanName) : beanName;
-            return String.format(path, args);
-        } catch (Exception ignore) { return path; }
+        return toPath(moduleName, global.getResourceDirectory(), subPath);
     }
 
     private boolean isModule(String name, String[] modules) {

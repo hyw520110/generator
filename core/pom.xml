@@ -151,8 +151,9 @@
 							<mainClass>${main.class}</mainClass>
 						</manifest>
 					</archive>
+					<!-- 只排除模板目录中的 XML 文件，保留 logback-spring.xml 等配置文件 -->
 					<excludes>
-						<exclude>*.xml</exclude>
+						<exclude>templates/**/*.xml</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

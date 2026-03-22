@@ -29,6 +29,20 @@ else
     MVN="mvn"
 fi
 
+# 动态检测CPU核心数（用于并行编译）
+get_cpu_cores() {
+    if command -v nproc >/dev/null 2>&1; then
+        nproc
+    elif [ -f /proc/cpuinfo ]; then
+        grep -c ^processor /proc/cpuinfo
+    elif command -v sysctl >/dev/null 2>&1; then
+        sysctl -n hw.ncpu 2>/dev/null || echo 2
+    else
+        echo 2
+    fi
+}
+CPU_CORES=$(get_cpu_cores)
+
 # 脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 APP_DIR="$SCRIPT_DIR"
@@ -142,7 +156,7 @@ fi
 if [ $IS_DEV_MODE -eq 0 ]; then
     echo_info "=== 开发模式 ==="
     if [ ! -d "$CLASSES_DIR" ]; then
-     $MVN clean compile 
+     $MVN clean compile -T ${CPU_CORES}C
     fi
 	rm -rf ./demo ./logs
     # 使用Maven exec插件运行，自动处理classpath和依赖

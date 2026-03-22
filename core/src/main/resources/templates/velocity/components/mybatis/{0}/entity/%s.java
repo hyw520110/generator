@@ -8,7 +8,7 @@ import ${pkg};
 import #if($StringUtils.indexOf("$superEntityClass",'.')==-1)${entityPackage}.#end$superEntityClass;
 #else
 import java.io.Serializable;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 #end
 #if("plus"=="$mapperType")
@@ -17,7 +17,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 #end
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 

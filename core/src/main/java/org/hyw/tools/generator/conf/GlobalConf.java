@@ -122,7 +122,7 @@ public class GlobalConf extends BaseBean {
 	/**
 	 * 工程构建工具
 	 */
-	private ProjectBuilder projectBuilder;
+	private ProjectBuilder projectBuilder = ProjectBuilder.MAVEN;
 	/**
 	 * 工程默认版本号
 	 */

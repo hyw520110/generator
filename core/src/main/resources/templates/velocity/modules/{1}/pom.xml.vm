@@ -1,4 +1,4 @@
-#if("MAVEN"=="${global.projectBuilder}")
+#if($projectBuilder == "MAVEN")
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -89,24 +89,18 @@
 			<artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
 		</dependency>
 #end
-#if($!{DUBBO})		
-		<!-- Dubbo Spring Cloud Starter -->
-		<dependency>
-			<groupId>com.alibaba.cloud</groupId>
-			<artifactId>spring-cloud-starter-dubbo</artifactId>
-		</dependency>
-		<!-- <dependency> <groupId>org.apache.dubbo</groupId> <artifactId>dubbo-spring-boot-starter</artifactId> 
-			</dependency> 
+#if($!{DUBBO})
+		<!-- Dubbo Spring Boot Starter (Apache Dubbo 原生 starter，版本由 dubbo-bom 管理) -->
 		<dependency>
 			<groupId>org.apache.dubbo</groupId>
-			<artifactId>dubbo</artifactId>
-		</dependency> -->
+			<artifactId>dubbo-spring-boot-starter</artifactId>
+		</dependency>
 #end
 #if("plus"=="$mapperType")
 		<!-- mybatis-plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
     	<!-- mybatis plus generator -->
 		<dependency>
@@ -316,7 +310,7 @@
 			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
-		  <groupId>javax.servlet</groupId>
+		  <groupId>jakarta.servlet</groupId>
 		  <artifactId>servlet-api</artifactId>
 		  <version>3.0-alpha-1</version>
 		  <scope>provided</scope>
@@ -335,6 +329,27 @@
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-spring</artifactId>
+			<classifier>jakarta</classifier>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.shiro</groupId>
+					<artifactId>shiro-web</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.shiro</groupId>
+					<artifactId>shiro-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-core</artifactId>
+			<classifier>jakarta</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-web</artifactId>
+			<classifier>jakarta</classifier>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

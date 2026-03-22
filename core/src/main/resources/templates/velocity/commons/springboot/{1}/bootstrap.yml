@@ -3,35 +3,43 @@ server:
 spring:
   application:
     name: ${projectName}
-  #会去/config/application,dev和/config/${projectName},dev(等同application-dev.yml)节点下读取配置  
   profiles:
       active: dev
-#if($ZOOKEEPER)      
+#if($NACOS)      
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+        server-addr: ${nacos-server}
+      config:
+        enabled: true
+        server-addr: ${nacos-server}
+  config:
+    import: optional:nacos:
+#elseif($ZOOKEEPER)      
   cloud:
     zookeeper:
-      # true:开启zookeeper外部化配置, false:读取本地配置; 需要将config.enabled,config.watcher.enabled同时设置
       enabled: true
       connect-string: ${connect-string}
       config:
         enabled: true
         watcher:
-          #监控配置变更后是否自动更新，需依賴spring-boot-starter-actuator
           enabled: true
+  config:
+    import: optional:zookeeper:
 #end
 #if($DUBBO)
 dubbo: 
-  registry: 
-      address: spring-cloud://localhost
+  application:
+    name: ${projectName}
+    qos-enable: false
   protocol: 
     name: dubbo
-    port: '-1'
-  cloud: 
-    subscribed-services: ''
-  application: 
-    qos:
-      enable: false
-      port: '-1'
-      accept:
-        foreign:
-          ip: false
+    port: -1
+  registry:
+#if($NACOS)
+    address: nacos://${spring.cloud.nacos.discovery.server-addr}
+#elseif($ZOOKEEPER)
+    address: zookeeper://${spring.cloud.zookeeper.connect-string}
+#end
 #end

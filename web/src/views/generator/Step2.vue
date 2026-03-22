@@ -14,25 +14,32 @@
           <a-radio-button value="">不生成</a-radio-button>
         </a-radio-group>
       </a-form-item>
+      <a-form-item label="Java版本" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+        <a-radio-group button-style="solid" v-model:value="formState.javaVersion" @change="onJavaVersionChange">
+          <a-radio-button value="8">Java 8</a-radio-button>
+          <a-radio-button value="11">Java 11</a-radio-button>
+          <a-radio-button value="17">Java 17</a-radio-button>
+          <a-radio-button value="21">Java 21</a-radio-button>
+        </a-radio-group>
+      </a-form-item>
       <a-form-item label="SpringBoot版本" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <a-radio-group button-style="solid" v-model:value="formState.springBootVersion">
-          <a-radio-button value="2.2.5.RELEASE">2.2.5.RELEASE</a-radio-button>
+          <a-radio-button v-for="v in versionOptions.springBoot" :key="v" :value="v">{{ v }}</a-radio-button>
         </a-radio-group>
       </a-form-item>
       <a-form-item label="SpringCloud版本" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <a-radio-group button-style="solid" v-model:value="formState.springCloudVersion">
-          <a-radio-button value="2.2.3.RELEASE">2.2.3.RELEASE</a-radio-button>
+          <a-radio-button v-for="v in versionOptions.springCloud" :key="v" :value="v">{{ v }}</a-radio-button>
         </a-radio-group>
       </a-form-item>
       <a-form-item label="SpringCloudAlibaba版本" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <a-radio-group button-style="solid" v-model:value="formState.springCloudAlibabaVersion">
-          <a-radio-button value="2.2.1.RELEASE">2.2.1.RELEASE</a-radio-button>
+          <a-radio-button v-for="v in versionOptions.springCloudAlibaba" :key="v" :value="v">{{ v }}</a-radio-button>
         </a-radio-group>
       </a-form-item>
       <a-form-item label="dubbo" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
-        <a-radio-group button-style="solid" v-model:value="formState.dubboVersion">
-          <a-radio-button value="2.7.6">2.7.6</a-radio-button>
-          <a-radio-button value="">不需要</a-radio-button>
+        <a-radio-group button-style="solid" v-model:value="formState.dubboVersion" @change="onDubboVersionChange">
+          <a-radio-button v-for="v in versionOptions.dubbo" :key="v" :value="v">{{ v || '不需要' }}</a-radio-button>
         </a-radio-group>
       </a-form-item>
       <a-form-item label="mybatis(SQL类型)" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
@@ -42,17 +49,24 @@
           <a-radio-button value="annotation">annotation</a-radio-button>
         </a-radio-group>
       </a-form-item>
-      <a-form-item label="分布式配置" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
-        <a-radio-group button-style="solid" v-model:value="formState.configCenter">
-          <a-radio-button value="ZOOKEEPER">zookeeper</a-radio-button>
-          <a-radio-button value="NACOS">nacos</a-radio-button>
+      <a-form-item label="注册中心/配置中心" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+        <a-radio-group button-style="solid" v-model:value="formState.registryCenter">
+          <a-radio-button value="nacos">nacos</a-radio-button>
+          <a-radio-button value="zookeeper">zookeeper</a-radio-button>
+          <a-radio-button value="">不需要</a-radio-button>
         </a-radio-group>
       </a-form-item>
-      <a-form-item v-if="formState.configCenter === 'ZOOKEEPER'" label="zookeeper地址" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+      <a-form-item v-if="formState.registryCenter === 'zookeeper'" label="zookeeper地址" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <a-input v-model:value="formState.zookeeperAddr" placeholder="zookeeper连接地址,如:localhost:2181"/>
       </a-form-item>
-      <a-form-item v-if="formState.configCenter === 'NACOS'" label="nacos地址" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+      <a-form-item v-if="formState.registryCenter === 'nacos'" label="nacos地址" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <a-input v-model:value="formState.nacosAddr" placeholder="nacos连接地址,如:localhost:8848"/>
+      </a-form-item>
+      <a-form-item v-if="formState.registryCenter === 'nacos'" label="nacos用户名" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+        <a-input v-model:value="formState.nacosUsername" placeholder="nacos用户名,默认:nacos"/>
+      </a-form-item>
+      <a-form-item v-if="formState.registryCenter === 'nacos'" label="nacos密码" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+        <a-input v-model:value="formState.nacosPassword" placeholder="nacos密码,默认:nacos"/>
       </a-form-item>
       <a-form-item label="redis地址" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <a-input v-model:value="formState.redisHost" placeholder="redis单机或集群地址"/>
@@ -60,7 +74,13 @@
       <a-form-item label="redis密码" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <a-input v-model:value="formState.redisPassword" placeholder="redis密码"/>
       </a-form-item>
-      <a-form-item label="流量哨兵" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+      <a-form-item label="Sentinel版本" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+        <a-radio-group button-style="solid" v-model:value="formState.sentinelVersion">
+          <a-radio-button value="1.8.6">1.8.6</a-radio-button>
+          <a-radio-button value="1.8.8">1.8.8</a-radio-button>
+        </a-radio-group>
+      </a-form-item>
+      <a-form-item label="Sentinel地址" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <a-input v-model:value="formState.sentinelAddr" placeholder="请输入SENTINEL地址，不需要则置空"/>
       </a-form-item>
       <a-form-item label="链路监控" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
@@ -79,8 +99,60 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { step2, getConfig } from '@/api/generator'
+
+// Java版本对应的组件版本组合
+const JAVA_VERSION_PRESETS = {
+  '8': {
+    springBoot: ['2.3.12.RELEASE', '2.7.18'],
+    springCloud: ['Hoxton.SR12', '2021.0.8'],
+    springCloudAlibaba: ['2.2.7.RELEASE', '2021.0.5.0'],
+    dubbo: ['2.7.23', ''],
+    defaults: {
+      springBoot: '2.7.18',
+      springCloud: '2021.0.8',
+      springCloudAlibaba: '2021.0.5.0',
+      dubbo: '2.7.23'
+    }
+  },
+  '11': {
+    springBoot: ['2.7.18', '3.0.13'],
+    springCloud: ['2021.0.8', '2022.0.4'],
+    springCloudAlibaba: ['2021.0.5.0', '2022.0.0.0'],
+    dubbo: ['2.7.23', '3.2.10', '3.3.0', ''],
+    defaults: {
+      springBoot: '2.7.18',
+      springCloud: '2021.0.8',
+      springCloudAlibaba: '2021.0.5.0',
+      dubbo: '3.2.10'
+    }
+  },
+  '17': {
+    springBoot: ['3.0.13', '3.2.12', '3.4.0'],
+    springCloud: ['2022.0.4', '2023.0.0', '2024.0.0'],
+    springCloudAlibaba: ['2022.0.0.0', '2023.0.1.0', '2023.0.3.2'],
+    dubbo: ['3.2.10', '3.3.0', ''],
+    defaults: {
+      springBoot: '3.2.12',
+      springCloud: '2023.0.0',
+      springCloudAlibaba: '2023.0.1.0',
+      dubbo: '3.3.0'
+    }
+  },
+  '21': {
+    springBoot: ['3.2.12', '3.4.0'],
+    springCloud: ['2023.0.0', '2024.0.0'],
+    springCloudAlibaba: ['2023.0.1.0', '2023.0.3.2'],
+    dubbo: ['3.3.0', ''],
+    defaults: {
+      springBoot: '3.4.0',
+      springCloud: '2024.0.0',
+      springCloudAlibaba: '2023.0.3.2',
+      dubbo: ''
+    }
+  }
+}
 
 export default {
   name: 'Step2',
@@ -98,22 +170,65 @@ export default {
     ]
     
     const formState = reactive({
+      javaVersion: '17',
       view: 'VUE',
       projectBuilder: 'MAVEN',
-      springBootVersion: '2.2.5.RELEASE',
-      springCloudVersion: '2.2.3.RELEASE',
-      springCloudAlibabaVersion: '2.2.1.RELEASE',
+      springBootVersion: '3.2.12',
+      springCloudVersion: '2023.0.0',
+      springCloudAlibabaVersion: '2023.0.1.0',
       dubboVersion: '',
+      registryCenter: '',
       mybatisType: 'plus',
-      configCenter: 'ZOOKEEPER',
       zookeeperAddr: 'localhost:2181',
       nacosAddr: 'localhost:8848',
+      nacosUsername: 'nacos',
+      nacosPassword: 'nacos',
       redisHost: 'localhost:6379',
       redisPassword: '',
+      sentinelVersion: '1.8.6',
       sentinelAddr: '',
       skywalkingAddr: '',
       secure: ['JWT', 'SHIRO']
     })
+    
+    // 根据Java版本计算可选版本
+    const versionOptions = computed(() => {
+      const preset = JAVA_VERSION_PRESETS[formState.javaVersion] || JAVA_VERSION_PRESETS['17']
+      return {
+        springBoot: preset.springBoot,
+        springCloud: preset.springCloud,
+        springCloudAlibaba: preset.springCloudAlibaba,
+        dubbo: preset.dubbo
+      }
+    })
+    
+    // Java版本变化时自动更新组件版本
+    const onJavaVersionChange = () => {
+      const preset = JAVA_VERSION_PRESETS[formState.javaVersion]
+      if (preset) {
+        // 自动设置为该Java版本的默认值
+        formState.springBootVersion = preset.defaults.springBoot
+        formState.springCloudVersion = preset.defaults.springCloud
+        formState.springCloudAlibabaVersion = preset.defaults.springCloudAlibaba
+        formState.dubboVersion = preset.defaults.dubbo
+        // 默认使用 nacos 作为注册中心/配置中心
+        if (formState.dubboVersion) {
+          formState.registryCenter = 'nacos'
+        }
+      }
+    }
+    
+    // Dubbo版本变化时的联动逻辑
+    const onDubboVersionChange = () => {
+      if (!formState.dubboVersion) {
+        // 选择"不需要"dubbo，注册中心也清空
+        formState.registryCenter = ''
+      } else if (!formState.registryCenter) {
+        // 选择了dubbo版本，但注册中心是"不需要"，自动选择nacos
+        formState.registryCenter = 'nacos'
+      }
+      // 如果已经是nacos或zookeeper，保持不变
+    }
     
     // 组件配置映射表：组件名 -> { 配置key: formState字段名 }
     const componentMappings = {
@@ -123,9 +238,24 @@ export default {
       MYBATIS: { 'mapperType': 'mybatisType' },
       ZOOKEEPER: { 'connect-string': 'zookeeperAddr' },
       REDIS: { 'spring_redis_cluster_nodes': 'redisHost', 'spring_redis_password': 'redisPassword' },
-      SENTINEL: { 'dashboard.server': 'sentinelAddr' },
+      SENTINEL: { 'sentinel_version': 'sentinelVersion', 'dashboard.server': 'sentinelAddr' },
       SKYWALKING: { 'skywalking.addr': 'skywalkingAddr' },
       NACOS: { 'nacos.addr': 'nacosAddr' }
+    }
+    
+    // 根据版本推断Java版本
+    const inferJavaVersion = (springBootVersion) => {
+      if (!springBootVersion) return '17'
+      if (springBootVersion.startsWith('3.2') || springBootVersion.startsWith('3.3') || springBootVersion.startsWith('3.4')) {
+        return '17'
+      }
+      if (springBootVersion.startsWith('3.0') || springBootVersion.startsWith('3.1')) {
+        return '17'
+      }
+      if (springBootVersion === '2.7.18') {
+        return '11'  // 2.7.18 支持 Java 8-21，默认使用 11 作为中间版本
+      }
+      return '8'
     }
     
     // 页面加载时获取配置
@@ -141,13 +271,25 @@ export default {
           formState.view = globalComps.includes('VUE') ? 'VUE' : (globalComps.includes('THYMELEAF') ? 'THYMELEAF' : 'VUE')
           formState.projectBuilder = global.projectBuilder || 'MAVEN'
           
+          // 从 global 获取 javaVersion（仅当配置了有效值时才覆盖默认值）
+          // 默认使用 Java 17，不再根据 YAML 配置自动覆盖
+          // if (global.javaVersion) {
+          //   const javaVer = String(global.javaVersion).replace('1.', '')
+          //   if (['8', '11', '17', '21'].includes(javaVer)) {
+          //     formState.javaVersion = javaVer
+          //   }
+          // }
+          
           // 遍历 components，根据映射表填充 formState
           Object.entries(componentMappings).forEach(([compName, fieldMappings]) => {
             const compConfig = components[compName]
             if (compConfig) {
-              // 特殊处理：NACOS 存在时设置 configCenter
+              // 特殊处理：NACOS 或 ZOOKEEPER 存在时设置 registryCenter
               if (compName === 'NACOS') {
-                formState.configCenter = 'NACOS'
+                formState.registryCenter = 'nacos'
+              }
+              if (compName === 'ZOOKEEPER') {
+                formState.registryCenter = 'zookeeper'
               }
               Object.entries(fieldMappings).forEach(([configKey, formField]) => {
                 const value = compConfig[configKey]
@@ -157,6 +299,11 @@ export default {
               })
             }
           })
+          
+          // 默认使用 Java 17，不再根据 SpringBoot 版本推断
+          // if (!global.javaVersion) {
+          //   formState.javaVersion = inferJavaVersion(formState.springBootVersion)
+          // }
           
           // 认证组件
           const secure = globalComps.filter(c => c === 'JWT' || c === 'SHIRO')
@@ -189,6 +336,9 @@ export default {
       wrapperCol,
       loading,
       secureOptions,
+      versionOptions,
+      onJavaVersionChange,
+      onDubboVersionChange,
       nextStep,
       prevStep
     }

@@ -85,18 +85,15 @@ public class DataSourceConf extends DruidDataSource {
 		if (super.isInited()) {
 			logger.info("连接池已初始化，关闭连接池后重新设置URL");
 			super.close();
-			this.jdbcUrl = jdbcUrl;
-		} else {
-			// 未初始化，直接设置
-			super.setUrl(jdbcUrl);
 		}
+		// 设置新的 jdbcUrl
+		this.jdbcUrl = jdbcUrl;
 		// 从 URL 中解析数据库名并同步到 currentDbName
 		String dbNameFromUrl = StringUtils.substringBetween(jdbcUrl, getPort() + "/", "?");
 		if (StringUtils.isNotBlank(dbNameFromUrl)) {
 			this.currentDbName = dbNameFromUrl;
 			logger.info("从URL解析数据库名: {}", dbNameFromUrl);
 		}
-		
 		logger.info("数据库URL设置成功 - URL: {}", jdbcUrl);
 	}
 
@@ -330,6 +327,25 @@ public class DataSourceConf extends DruidDataSource {
 			: getDBType().buildUrl(getIp(), getPort(), trimmedDbName);
 		logger.info("设置数据库URL - 新URL: {}", newUrl);
 		this.jdbcUrl = newUrl;
+	}
+	
+	/**
+	 * 重写 getConnection 方法，确保连接池在关闭后能重新初始化
+	 */
+	@Override
+	public com.alibaba.druid.pool.DruidPooledConnection getConnection() throws SQLException {
+		// 如果连接池已关闭但需要重新使用，先重置状态
+		if (super.isClosed()) {
+			logger.info("连接池已关闭，重新初始化连接池");
+			// 重置内部状态，允许重新初始化
+			synchronized (this) {
+				if (super.isClosed()) {
+					// DruidDataSource 的 restart 方法可以重新启动已关闭的连接池
+					super.restart();
+				}
+			}
+		}
+		return super.getConnection();
 	}
 	
 	/**

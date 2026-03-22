@@ -1,0 +1,45 @@
+server: 
+  port: ${server_port}
+spring:
+  application:
+    name: ${projectName}
+  profiles:
+      active: dev
+#if($NACOS)      
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+        server-addr: ${nacos-server}
+      config:
+        enabled: true
+        server-addr: ${nacos-server}
+  config:
+    import: optional:nacos:
+#elseif($ZOOKEEPER)      
+  cloud:
+    zookeeper:
+      enabled: true
+      connect-string: ${connect-string}
+      config:
+        enabled: true
+        watcher:
+          enabled: true
+  config:
+    import: optional:zookeeper:
+#end
+#if($DUBBO)
+dubbo: 
+  application:
+    name: ${projectName}
+    qos-enable: false
+  protocol: 
+    name: dubbo
+    port: -1
+  registry:
+#if($NACOS)
+    address: nacos://${spring.cloud.nacos.discovery.server-addr}
+#elseif($ZOOKEEPER)
+    address: zookeeper://${spring.cloud.zookeeper.connect-string}
+#end
+#end

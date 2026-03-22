@@ -40,6 +40,92 @@ done
 # 默认只停止后端
 [ "$STOP_BACKEND" = false ] && [ "$STOP_FRONTEND" = false ] && STOP_BACKEND=true
 
+# 从 properties 文件提取 server.port
+extract_port_from_properties() {
+    local file="$1"
+    grep -E "^[^#]*server\.port\s*=" "$file" 2>/dev/null | \
+        sed 's/.*server\.port\s*=\s*//' | \
+        tr -d '[:space:]' | \
+        grep -E '^[0-9]+$'
+}
+
+# 从 yml/yaml 文件提取 server.port
+extract_port_from_yaml() {
+    local file="$1"
+    # 使用 awk 解析 YAML，查找 server 下的 port
+    awk '
+        /^server:/ { in_server=1; next }
+        in_server && /^[^[:space:]]/ { in_server=0 }
+        in_server && /^[[:space:]]+port:[[:space:]]*[0-9]+/ {
+            match($0, /[0-9]+/)
+            print substr($0, RSTART, RLENGTH)
+            exit
+        }
+    ' "$file" 2>/dev/null
+}
+
+# 动态查找所有配置文件并提取端口号
+# 返回: 空格分隔的端口号列表 (优先返回 application.properties 中的端口)
+discover_backend_ports() {
+    local ports=""
+    local primary_port=""
+    
+    # 1. 查找 application.properties (Spring Boot 主配置，优先级最高)
+    # 排除 target、bin、node_modules 目录
+    local app_props=$(find "$SCRIPT_DIR" \
+        \( -type d -name "target" -o -type d -name "bin" -o -type d -name "node_modules" \) -prune \
+        -o -name "application.properties" -type f -print 2>/dev/null | head -n 1)
+    
+    if [ -n "$app_props" ] && [ -f "$app_props" ]; then
+        primary_port=$(extract_port_from_properties "$app_props")
+    fi
+    
+    # 2. 查找所有 properties 文件 (排除 target、bin、node_modules)
+    while IFS= read -r file; do
+        [ -z "$file" ] && continue
+        local port=$(extract_port_from_properties "$file")
+        if [ -n "$port" ]; then
+            case " $ports " in
+                *" $port "*) ;; # 已存在，跳过
+                *) ports="$ports $port" ;;
+            esac
+        fi
+    done <<EOF
+$(find "$SCRIPT_DIR" \
+    \( -type d -name "target" -o -type d -name "bin" -o -type d -name "node_modules" \) -prune \
+    -o -name "*.properties" -type f -print 2>/dev/null)
+EOF
+    
+    # 3. 查找所有 yml/yaml 文件 (排除 target、bin、node_modules)
+    while IFS= read -r file; do
+        [ -z "$file" ] && continue
+        local port=$(extract_port_from_yaml "$file")
+        if [ -n "$port" ]; then
+            case " $ports " in
+                *" $port "*) ;; # 已存在，跳过
+                *) ports="$ports $port" ;;
+            esac
+        fi
+    done <<EOF
+$(find "$SCRIPT_DIR" \
+    \( -type d -name "target" -o -type d -name "bin" -o -type d -name "node_modules" \) -prune \
+    -o \( -name "*.yml" -o -name "*.yaml" \) -type f -print 2>/dev/null)
+EOF
+    
+    # 清理并输出
+    ports=$(echo $ports | tr -s ' ' | sed 's/^ //;s/ $//')
+    
+    # 如果有主配置端口，放在最前面
+    if [ -n "$primary_port" ]; then
+        # 移除主端口后重新添加到前面
+        ports=$(echo " $ports " | sed "s/ $primary_port / /" | tr -s ' ' | sed 's/^ //;s/ $//')
+        ports="$primary_port $ports"
+        ports=$(echo $ports | tr -s ' ' | sed 's/^ //;s/ $//')
+    fi
+    
+    echo "$ports"
+}
+
 # 提取前端端口
 get_frontend_port() {
     local port=$(grep "port:" "$SCRIPT_DIR/vite.config.js" 2>/dev/null | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
@@ -62,12 +148,39 @@ stop_backend() {
     
     # 如果 PID 文件不存在，通过进程名查找
     if [ -z "$PID" ]; then
-        # 提取 ArtifactID (匹配 Maven 占位符或默认值)
-        ARTIFACT_ID="@project.artifactId@"
-        [ "$ARTIFACT_ID" = "@project.artifactId@" ] && ARTIFACT_ID="generator-web"
+        # 提取主类名 (匹配实际运行的 Java 主类)
+        MAIN_CLASS="WebGenerator"
 
-        # 查找 PID (同时匹配 mvn 进程和 java -jar 进程)
-        PID=$(ps -ef | grep -E "java.*$ARTIFACT_ID|spring-boot:run" | grep -v grep | awk '{print $2}')
+        # 查找 PID (同时匹配 mvn 进程、java -jar 进程和主类名)
+        PID=$(ps -ef | grep -E "java.*$MAIN_CLASS|spring-boot:run|mvn.*spring-boot" | grep -v grep | awk '{print $2}')
+    fi
+    
+    # 最后通过端口号查找 (最可靠的方式)
+    if [ -z "$PID" ]; then
+        # 动态发现所有配置的端口
+        PORTS=$(discover_backend_ports)
+        
+        if [ -n "$PORTS" ]; then
+            # 遍历所有发现的端口，查找占用端口的进程
+            for PORT in $PORTS; do
+                PID=$(lsof -ti :$PORT 2>/dev/null | head -n 1)
+                if [ -n "$PID" ]; then
+                    echo_info "在端口 $PORT 发现进程 (PID: $PID)"
+                    break
+                fi
+            done
+        fi
+        
+        # 如果仍未找到，尝试默认端口
+        if [ -z "$PID" ]; then
+            for DEFAULT_PORT in 8080 8081 8082 8083; do
+                PID=$(lsof -ti :$DEFAULT_PORT 2>/dev/null | head -n 1)
+                if [ -n "$PID" ]; then
+                    echo_info "在默认端口 $DEFAULT_PORT 发现进程 (PID: $PID)"
+                    break
+                fi
+            done
+        fi
     fi
 
     if [ -z "$PID" ]; then

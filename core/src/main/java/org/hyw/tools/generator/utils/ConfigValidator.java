@@ -75,7 +75,7 @@ public class ConfigValidator {
         // 验证 Java 版本
         if (StringUtils.isNotBlank(config.getJavaVersion())) {
             if (!isValidJavaVersion(config.getJavaVersion())) {
-                errors.add("Java 版本格式不正确：" + config.getJavaVersion());
+                errors.add("Java 版本不正确：" + config.getJavaVersion() + "，只支持 1.8、8、11、17、21");
             }
         }
 
@@ -142,7 +142,7 @@ public class ConfigValidator {
         // 验证 Java 版本
         if (StringUtils.isNotBlank(config.getJavaVersion())) {
             if (!isValidJavaVersion(config.getJavaVersion())) {
-                result.addError("Java 版本格式不正确：" + config.getJavaVersion());
+                result.addError("Java 版本不正确：" + config.getJavaVersion() + "，只支持 1.8、8、11、17、21");
             }
         }
 
@@ -175,6 +175,7 @@ public class ConfigValidator {
 
     /**
      * 验证 Java 版本
+     * 只允许配置：1.8、8、11、17、21
      *
      * @param version Java 版本号
      * @return 是否有效
@@ -183,8 +184,9 @@ public class ConfigValidator {
         if (version == null) {
             return false;
         }
-        // 支持格式：1.8, 8, 11, 17, 21 等
-        return version.matches("^(1\\.)?[0-9]+$");
+        // 只允许 1.8、8、11、17、21
+        return "1.8".equals(version) || "8".equals(version) 
+            || "11".equals(version) || "17".equals(version) || "21".equals(version);
     }
 
     /**

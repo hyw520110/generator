@@ -251,12 +251,23 @@ public class CodeGenController {
 		Map<String, Object> config = new HashMap<>();
 		
 		GlobalConf global = generator.getGlobal();
-		Map<Component, Map<String, Object>> components = generator.getComponents();
+		Map<Component, Map<String, Object>> allComponents = generator.getComponents();
 		DataSourceConf ds = generator.getDataSource();
 		
-		// 直接返回原始配置对象，由前端解析
+		// 只返回 global.components 中启用的组件配置
+		Map<String, Map<String, Object>> enabledComponents = new HashMap<>();
+		Component[] enabledArray = global.getComponents();
+		if (enabledArray != null) {
+			for (Component comp : enabledArray) {
+				Map<String, Object> compConfig = allComponents.get(comp);
+				if (compConfig != null) {
+					enabledComponents.put(comp.name(), compConfig);
+				}
+			}
+		}
+		
 		config.put("global", global);
-		config.put("components", components);
+		config.put("components", enabledComponents);
 		
 		// DataSourceConf 中有些字段无法序列化，只返回需要的字段
 		Map<String, Object> dataSource = new HashMap<>();
@@ -362,10 +373,11 @@ public class CodeGenController {
 
 	@PostMapping("/step2")
 	public Result<Object> step2(String view, String projectBuilder, String springBootVersion, String springCloudVersion,
-			String springCloudAlibabaVersion, String dubboVersion, String mybatisType, String connectString,
-			String redisHost, String redisPassword, String sentinelAddr, String skywalkingAddr, String secure) {
-		logger.info("[step2] 输入 - view: {}, projectBuilder: {}, springBootVersion: {}, mybatisType: {}", 
-				view, projectBuilder, springBootVersion, mybatisType);
+			String springCloudAlibabaVersion, String dubboVersion, String mybatisType, 
+			String registryCenter, String zookeeperAddr, String nacosAddr, String nacosUsername, String nacosPassword,
+			String redisHost, String redisPassword, String sentinelVersion, String sentinelAddr, String skywalkingAddr, String secure) {
+		logger.info("[step2] 输入 - view: {}, projectBuilder: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}", 
+				view, projectBuilder, springBootVersion, dubboVersion, mybatisType, registryCenter);
 		GlobalConf global = generator.getGlobal();
 		ArrayUtils.removeElement(global.getComponents(), Component.VUE);
 		ArrayUtils.removeElement(global.getComponents(), Component.THYMELEAF);
@@ -380,18 +392,36 @@ public class CodeGenController {
 		map.get(Component.SPRINGBOOT).put(Component.SPRINGBOOT.name().toLowerCase()+"_version", springBootVersion);
 		map.get(Component.SPRINGCLOUD).put(Component.SPRINGCLOUD.name().toLowerCase()+"_version", springCloudVersion);
 		map.get(Component.SPRINGCLOUD).put("springcloud_alibaba_version", springCloudAlibabaVersion);
+		
+		// 处理 Dubbo
 		if (StringUtils.isBlank(dubboVersion)) {
 			ArrayUtils.removeElement(global.getComponents(), Component.DUBBO);
 		} else {
 			map.get(Component.DUBBO).put(Component.DUBBO.name().toLowerCase() + "_version", dubboVersion);
 		}
+		
+		// 处理注册中心/配置中心
+		if ("nacos".equals(registryCenter)) {
+			map.get(Component.NACOS).put("nacos.addr", nacosAddr);
+			map.get(Component.NACOS).put("nacos.username", nacosUsername);
+			map.get(Component.NACOS).put("nacos.password", nacosPassword);
+			ArrayUtils.removeElement(global.getComponents(), Component.ZOOKEEPER);
+		} else if ("zookeeper".equals(registryCenter)) {
+			map.get(Component.ZOOKEEPER).put("connect-string", zookeeperAddr);
+			ArrayUtils.removeElement(global.getComponents(), Component.NACOS);
+		} else {
+			// 不需要注册中心
+			ArrayUtils.removeElement(global.getComponents(), Component.NACOS);
+			ArrayUtils.removeElement(global.getComponents(), Component.ZOOKEEPER);
+		}
+		
 		map.get(Component.MYBATIS).put("mapperType", mybatisType);
-		map.get(Component.ZOOKEEPER).put("connect-string", connectString);
 		map.get(Component.REDIS).put("spring_redis_cluster_nodes", redisHost);
 		map.get(Component.REDIS).put("spring_redis_password", redisPassword);
+		map.get(Component.SENTINEL).put("sentinel_version", sentinelVersion);
 		map.get(Component.SENTINEL).put("dashboard.server", sentinelAddr);
 		map.get(Component.SKYWALKING).put("skywalking.addr", skywalkingAddr);
-		logger.info("[step2] 输出 - 成功, viewComponent: {}", viewComponent);
+		logger.info("[step2] 输出 - 成功, viewComponent: {}, registryCenter: {}", viewComponent, registryCenter);
 		return Result.ok();
 	}
 

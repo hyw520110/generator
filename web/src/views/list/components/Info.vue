@@ -27,7 +27,11 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import "ant-design-vue/es/style/themes/default.less";
+// Ant Design Vue 4.x 使用 CSS-in-JS，定义需要的变量
+@text-color-secondary: rgba(0, 0, 0, 0.45);
+@heading-color: rgba(0, 0, 0, 0.85);
+@font-size-base: 14px;
+@border-color-split: rgba(0, 0, 0, 0.06);
 
 .header-info {
   position: relative;

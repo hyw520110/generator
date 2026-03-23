@@ -24,15 +24,32 @@ export default defineConfig({
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
   },
   esbuild: {
+    jsx: 'automatic',
     loader: 'jsx',
-    include: /\.(jsx?|vue)$/,
   },
   optimizeDeps: {
-    esbuildOptions: {
-      loader: {
-        '.js': 'jsx',
-      },
-    },
+    include: [
+      'vue',
+      'vue-router',
+      'pinia',
+      'ant-design-vue',
+      '@ant-design/icons-vue',
+      'axios',
+      'lodash-es',
+      'dayjs',
+      'dayjs/plugin/advancedFormat > dayjs',
+      'dayjs/plugin/customParseFormat > dayjs',
+      'dayjs/plugin/localeData > dayjs',
+      'dayjs/plugin/quarterOfYear > dayjs',
+      'dayjs/plugin/weekOfYear > dayjs',
+      'dayjs/plugin/weekYear > dayjs',
+      'dayjs/plugin/weekday > dayjs',
+      'moment',
+      'nprogress',
+      'vue-i18n',
+      'md5',
+      'mockjs2',
+    ],
     exclude: ['webpack-theme-color-replacer'],
   },
   css: {
@@ -43,7 +60,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 8000,
+    port: 9000,
     proxy: {
       '/v1': {
         target: 'http://localhost:8081',

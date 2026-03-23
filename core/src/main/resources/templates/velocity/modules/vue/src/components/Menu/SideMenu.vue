@@ -3,7 +3,8 @@
     :class="['sider', isDesktop() ? null : 'shadow', theme, fixSiderbar ? 'ant-fixed-sidemenu' : null ]"
     width="256px"
     :collapsible="collapsible"
-    v-model="collapsed"
+    :collapsed="collapsed"
+    @update:collapsed="$emit('update:collapsed', $event)"
     :trigger="null">
     <logo
       :title="'Generator'"

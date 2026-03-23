@@ -12,6 +12,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import #if($StringUtils.indexOf("$superMapperClass",'.')==-1)${mapperPackage}.#end${superMapperClass};
 #end
 #end
+#if($table.isCompositePrimaryKey())
+import ${entityPackage}.key.${table.beanName}Key;
+#end
 #if($!{REDIS}&&"${mapperType}"!="plus")
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheConfig;

@@ -29,16 +29,27 @@
 </template>
 
 <script>
-import { deviceMixin } from '@/store/device-mixin'
+import { onMounted, onUnmounted, computed } from 'vue'
+import { useStore } from 'vuex'
 
 export default {
   name: 'UserLayout',
-  mixins: [deviceMixin],
-  mounted () {
-    document.body.classList.add('userLayout')
-  },
-  beforeDestroy () {
-    document.body.classList.remove('userLayout')
+  setup () {
+    const store = useStore()
+
+    const isMobile = computed(() => store.state.app.isMobile)
+
+    onMounted(() => {
+      document.body.classList.add('userLayout')
+    })
+
+    onUnmounted(() => {
+      document.body.classList.remove('userLayout')
+    })
+
+    return {
+      isMobile
+    }
   }
 }
 </script>
@@ -49,7 +60,7 @@ export default {
 
     &.mobile {
       .container {
-        .main {
+        :deep(.main) {
           max-width: 368px;
           width: 98%;
         }
@@ -108,7 +119,7 @@ export default {
         }
       }
 
-      .main {
+      :deep(.main) {
         min-width: 260px;
         width: 368px;
         margin: 0 auto;

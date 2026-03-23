@@ -120,7 +120,7 @@ import { Radar } from '@/components'
 
 import { getServiceList } from '@/api/manage'
 
-const DataSet = require('@antv/data-set')
+import * as DataSet from '@antv/data-set'
 
 export default {
   name: 'Workplace',

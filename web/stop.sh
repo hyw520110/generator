@@ -3,6 +3,7 @@
 # =============================================================================
 # 服务停止脚本 (前后端)
 # 支持优雅停止 (SIGTERM) -> 超时/强制模式下自动转为强制停止 (SIGKILL)
+# 根据脚本目录查找进程，防止误杀其他项目进程
 # =============================================================================
 # 用法:
 #   ./stop.sh              # 停止后端服务
@@ -52,7 +53,6 @@ extract_port_from_properties() {
 # 从 yml/yaml 文件提取 server.port
 extract_port_from_yaml() {
     local file="$1"
-    # 使用 awk 解析 YAML，查找 server 下的 port
     awk '
         /^server:/ { in_server=1; next }
         in_server && /^[^[:space:]]/ { in_server=0 }
@@ -65,13 +65,11 @@ extract_port_from_yaml() {
 }
 
 # 动态查找所有配置文件并提取端口号
-# 返回: 空格分隔的端口号列表 (优先返回 application.properties 中的端口)
 discover_backend_ports() {
     local ports=""
     local primary_port=""
     
-    # 1. 查找 application.properties (Spring Boot 主配置，优先级最高)
-    # 排除 target、bin、node_modules 目录
+    # 查找 application.properties (排除 target、bin、node_modules)
     local app_props=$(find "$SCRIPT_DIR" \
         \( -type d -name "target" -o -type d -name "bin" -o -type d -name "node_modules" \) -prune \
         -o -name "application.properties" -type f -print 2>/dev/null | head -n 1)
@@ -80,13 +78,13 @@ discover_backend_ports() {
         primary_port=$(extract_port_from_properties "$app_props")
     fi
     
-    # 2. 查找所有 properties 文件 (排除 target、bin、node_modules)
+    # 查找所有 properties 文件
     while IFS= read -r file; do
         [ -z "$file" ] && continue
         local port=$(extract_port_from_properties "$file")
         if [ -n "$port" ]; then
             case " $ports " in
-                *" $port "*) ;; # 已存在，跳过
+                *" $port "*) ;;
                 *) ports="$ports $port" ;;
             esac
         fi
@@ -96,13 +94,13 @@ $(find "$SCRIPT_DIR" \
     -o -name "*.properties" -type f -print 2>/dev/null)
 EOF
     
-    # 3. 查找所有 yml/yaml 文件 (排除 target、bin、node_modules)
+    # 查找所有 yml/yaml 文件
     while IFS= read -r file; do
         [ -z "$file" ] && continue
         local port=$(extract_port_from_yaml "$file")
         if [ -n "$port" ]; then
             case " $ports " in
-                *" $port "*) ;; # 已存在，跳过
+                *" $port "*) ;;
                 *) ports="$ports $port" ;;
             esac
         fi
@@ -112,12 +110,9 @@ $(find "$SCRIPT_DIR" \
     -o \( -name "*.yml" -o -name "*.yaml" \) -type f -print 2>/dev/null)
 EOF
     
-    # 清理并输出
     ports=$(echo $ports | tr -s ' ' | sed 's/^ //;s/ $//')
     
-    # 如果有主配置端口，放在最前面
     if [ -n "$primary_port" ]; then
-        # 移除主端口后重新添加到前面
         ports=$(echo " $ports " | sed "s/ $primary_port / /" | tr -s ' ' | sed 's/^ //;s/ $//')
         ports="$primary_port $ports"
         ports=$(echo $ports | tr -s ' ' | sed 's/^ //;s/ $//')
@@ -132,6 +127,39 @@ get_frontend_port() {
     echo "${port:-8000}"
 }
 
+# 根据脚本目录查找 Java 进程 PID
+find_java_pid_by_dir() {
+    local search_dir="$1"
+    search_dir="${search_dir%/}"
+    
+    # 查找 Java 进程，匹配 classpath 包含当前脚本目录
+    # 排除 grep 自身和 mvnd daemon 进程
+    ps -ef | grep -E "java.*$search_dir" | grep -v "grep" | grep -v "mvnd-daemon" | grep -v "mvnd.agent" | awk '{print $2}' | head -n 1
+}
+
+# 根据端口查找进程 PID（仅查找属于当前目录的进程）
+find_pid_by_port() {
+    local port="$1"
+    local search_dir="$SCRIPT_DIR"
+    
+    local pids=$(lsof -ti :$port 2>/dev/null)
+    
+    if [ -z "$pids" ]; then
+        echo ""
+        return
+    fi
+    
+    for pid in $pids; do
+        local cmdline=$(ps -p $pid -o command= 2>/dev/null)
+        if echo "$cmdline" | grep -q "$search_dir"; then
+            echo "$pid"
+            return
+        fi
+    done
+    
+    echo ""
+}
+
 # 停止后端服务
 stop_backend() {
     local PID=""
@@ -139,31 +167,30 @@ stop_backend() {
     # 优先从 PID 文件读取
     if [ -f "$SCRIPT_DIR/logs/backend.pid" ]; then
         PID=$(cat "$SCRIPT_DIR/logs/backend.pid")
-        # 验证 PID 是否有效
-        if ! ps -p $PID > /dev/null 2>&1; then
-            PID=""
-            rm -f "$SCRIPT_DIR/logs/backend.pid"
+        if [ -n "$PID" ]; then
+            local cmdline=$(ps -p $PID -o command= 2>/dev/null)
+            if [ -z "$cmdline" ] || ! echo "$cmdline" | grep -q "$SCRIPT_DIR"; then
+                PID=""
+                rm -f "$SCRIPT_DIR/logs/backend.pid"
+            fi
         fi
     fi
     
-    # 如果 PID 文件不存在，通过进程名查找
+    # 方法2：根据脚本目录查找 Java 进程（最精确的方式）
     if [ -z "$PID" ]; then
-        # 提取主类名 (匹配实际运行的 Java 主类)
-        MAIN_CLASS="WebGenerator"
-
-        # 查找 PID (同时匹配 mvn 进程、java -jar 进程和主类名)
-        PID=$(ps -ef | grep -E "java.*$MAIN_CLASS|spring-boot:run|mvn.*spring-boot" | grep -v grep | awk '{print $2}')
+        PID=$(find_java_pid_by_dir "$SCRIPT_DIR")
+        if [ -n "$PID" ]; then
+            echo_info "通过目录匹配发现进程 (PID: $PID)"
+        fi
     fi
     
-    # 最后通过端口号查找 (最可靠的方式)
+    # 方法3：通过端口号查找（需要验证属于当前目录）
     if [ -z "$PID" ]; then
-        # 动态发现所有配置的端口
         PORTS=$(discover_backend_ports)
         
         if [ -n "$PORTS" ]; then
-            # 遍历所有发现的端口，查找占用端口的进程
             for PORT in $PORTS; do
-                PID=$(lsof -ti :$PORT 2>/dev/null | head -n 1)
+                PID=$(find_pid_by_port $PORT)
                 if [ -n "$PID" ]; then
                     echo_info "在端口 $PORT 发现进程 (PID: $PID)"
                     break
@@ -171,10 +198,9 @@ stop_backend() {
             done
         fi
         
-        # 如果仍未找到，尝试默认端口
         if [ -z "$PID" ]; then
             for DEFAULT_PORT in 8080 8081 8082 8083; do
-                PID=$(lsof -ti :$DEFAULT_PORT 2>/dev/null | head -n 1)
+                PID=$(find_pid_by_port $DEFAULT_PORT)
                 if [ -n "$PID" ]; then
                     echo_info "在默认端口 $DEFAULT_PORT 发现进程 (PID: $PID)"
                     break
@@ -191,7 +217,6 @@ stop_backend() {
     echo_info "检测到后端服务 (PID: $PID)，正在尝试优雅停止..."
     kill -15 $PID 2>/dev/null
 
-    # 等待停止 (最多 10 秒)
     local count=0
     while ps -p $PID > /dev/null 2>&1; do
         sleep 1
@@ -222,7 +247,6 @@ stop_backend() {
 stop_frontend() {
     local port=$(get_frontend_port)
     
-    # 查找占用端口的进程
     PID=$(lsof -ti :$port 2>/dev/null | head -n 1)
 
     if [ -z "$PID" ]; then
@@ -233,7 +257,6 @@ stop_frontend() {
     echo_info "检测到前端服务 (PID: $PID, 端口: $port)，正在尝试停止..."
     kill -15 $PID 2>/dev/null
 
-    # 等待停止 (最多 5 秒)
     local count=0
     while ps -p $PID > /dev/null 2>&1; do
         sleep 1

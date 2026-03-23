@@ -3,9 +3,16 @@ import { UserLayout } from '@/layouts'
 
 /**
  * 基础路由
+ * Vue Router 4 使用 pathMatch(.*)* 代替 *
  * @type { *[] }
  */
 export const constantRouterMap = [
+  {
+    path: '/',
+    redirect: '/user/login',
+    hidden: true
+  },
+
   {
     path: '/user',
     component: UserLayout,
@@ -15,7 +22,7 @@ export const constantRouterMap = [
       {
         path: 'login',
         name: 'login',
-        component: () => import(/* webpackChunkName: "user" */ '@/views/user/Login')
+        component: () => import('@/views/user/Login.vue')
       }
     ]
   },
@@ -23,7 +30,13 @@ export const constantRouterMap = [
   {
     path: '/404',
     hidden: true,
-    component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/404')
-  }
+    component: () => import('@/views/exception/404.vue')
+  },
 
+  // Vue Router 4 catch-all route
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/404',
+    hidden: true
+  }
 ]

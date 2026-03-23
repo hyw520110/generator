@@ -1,7 +1,18 @@
-import { Menu, Icon, Input } from 'ant-design-vue'
+import { Menu, Input } from 'ant-design-vue'
+import * as icons from '@ant-design/icons-vue'
+import { createVNode } from 'vue'
 
 const { Item, ItemGroup, SubMenu } = Menu
 const { Search } = Input
+
+// 动态图标组件
+const Icon = {
+  props: ['type'],
+  render () {
+    const iconComponent = icons[this.type]
+    return iconComponent ? createVNode(iconComponent) : null
+  }
+}
 
 export default {
   name: 'Tree',

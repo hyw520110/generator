@@ -4,12 +4,12 @@
       <div class="top">
         <div class="header">
           <a href="/">
-            <img src="~@/assets/logo.svg" class="logo" alt="logo">
-            <span class="title">${global.description!}</span>
+            <img src="@/assets/logo.svg" class="logo" alt="logo">
+            <span class="title">${projectName!"demo"}</span>
           </a>
         </div>
         <div class="desc">
-          ${global.description!}
+          ${projectName!"demo"}
         </div>
       </div>
 
@@ -17,7 +17,7 @@
 
       <div class="footer">
         <div class="copyright">
-          ${global.copyright!} ${global.author!}
+          Copyright © 2026 heyw
         </div>
       </div>
     </div>
@@ -25,21 +25,28 @@
 </template>
 
 <script>
-import RouteView from './RouteView'
-import { mixinDevice } from '@/utils/mixin'
+import RouteView from './RouteView.vue'
+import { useStore } from 'vuex'
+import { computed, onMounted, onUnmounted } from 'vue'
 
 export default {
   name: 'UserLayout',
   components: { RouteView },
-  mixins: [mixinDevice],
-  data () {
-    return {}
-  },
-  mounted () {
-    document.body.classList.add('userLayout')
-  },
-  beforeDestroy () {
-    document.body.classList.remove('userLayout')
+  setup () {
+    const store = useStore()
+    const device = computed(() => store.getters.device)
+
+    onMounted(() => {
+      document.body.classList.add('userLayout')
+    })
+
+    onUnmounted(() => {
+      document.body.classList.remove('userLayout')
+    })
+
+    return {
+      device
+    }
   }
 }
 </script>
@@ -60,7 +67,7 @@ export default {
     .container {
       width: 100%;
       min-height: 100%;
-      background: #f0f2f5 url(~@/assets/background.svg) no-repeat 50%;
+      background: #f0f2f5 url(@/assets/background.svg) no-repeat 50%;
       background-size: 100%;
       padding: 110px 0 144px;
       position: relative;

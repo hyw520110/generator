@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiModel;
  * 接口返回数据格式
  * 
  * @author ${author!}
- * @since ${date!}
  * @copyright: ${copyright!}
  */
 @ApiModel(value = "接口返回对象", description = "接口返回对象")

@@ -1,10 +1,9 @@
 import antdEnUS from 'ant-design-vue/es/locale/en_US'
-import momentEU from 'moment/locale/eu'
 
 const components = {
   antLocale: antdEnUS,
   momentName: 'eu',
-  momentLocale: momentEU
+  momentLocale: null
 }
 
 const locale = {

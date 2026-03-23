@@ -32,6 +32,7 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
 
     private static final long serialVersionUID = 1L;
 
+#set($firstPrimaryKey = true)
 #foreach($field in ${table.fields})
 #if("$!field.comment" != "")
     /**
@@ -40,7 +41,12 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
 #end
 #if("plus"=="$mapperType")
 #if($field.isPrimarykey)
+#if($firstPrimaryKey)
 	@TableId(value = "${field.name}", type = IdType.AUTO)
+#set($firstPrimaryKey = false)
+#else
+	@TableField(value = "${field.name}")
+#end
 #else
 	@TableField(value = "${field.name}")
 #end
@@ -102,7 +108,7 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
 #if("plus"=="$mapperType")
 #if($table.hasPrimarykeys())
 	@Override
-	protected $table.primaryKeyField.propertyType pkVal() {
+	public $table.primaryKeyField.propertyType pkVal() {
 	    return this.$table.primaryKeyField.propertyName;
 	}
 #end

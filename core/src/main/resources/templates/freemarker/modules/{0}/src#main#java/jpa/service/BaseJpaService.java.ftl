@@ -5,7 +5,6 @@ import java.util.Map;
 
 /**
  * @author ${author!}
- * @since ${date!}
  * @copyright: ${copyright!}
  */
 public interface BaseJpaService<T,PK> {

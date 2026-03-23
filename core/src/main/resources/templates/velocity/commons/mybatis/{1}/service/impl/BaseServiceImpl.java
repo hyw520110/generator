@@ -21,20 +21,20 @@ import org.springframework.transaction.annotation.Transactional;
 #parse('/templates/comments/comment.vm')
 #if("plus"=="$mapperType")
 public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<BaseMapper<T>, T> implements BaseService<T> {
-#else	
-public class BaseServiceImpl<T,PK> implements BaseService<T,PK>{
+#else
+public class BaseServiceImpl<T, PK> implements BaseService<T, PK>{
 
 	@Autowired
-    private BaseMapper<T,PK> baseMapper;
-	
+    private BaseMapper<T, PK> baseMapper;
+
 	@Override
 	public T getById(PK id) {
 		return baseMapper.findById(id);
 	}
-	
+
     /**
-     * 根据指定条件查询一条记录 
-     * @author:  heyiwu 
+     * 根据指定条件查询一条记录
+     * @author:  heyiwu
      * @param map
      * @return
      */
@@ -42,34 +42,34 @@ public class BaseServiceImpl<T,PK> implements BaseService<T,PK>{
     public T findOne(Map<String, Object> map) {
         return baseMapper.findOne(map);
     }
-	
+
     /**
     * 查询全部
-    * @return List<E> 返回数据集合   
+    * @return List<E> 返回数据集合
     */
 	@Override
     public List<T> findAll(Map<String, Object> map) {
         return baseMapper.findAll(map);
     }
-	
+
     /**
     * 分页查询--总条数
-    * @return Integer 总条数   
+    * @return Integer 总条数
     */
 	@Override
     public Integer count(Map<String, Object> map) {
         return baseMapper.count(map);
     }
-    
+
     /**
     * 分页查询列表，使用此方法的dto需要继承pageList
-    * @return List<E> 返回数据集合   
+    * @return List<E> 返回数据集合
     */
 	@Override
     public List<T> findPage(Map<String, Object> map) {
         return baseMapper.findPage(map);
     }
-    
+
     /**
      * <p>
      * 插入一条记录（选择字段，策略插入）
@@ -86,19 +86,19 @@ public class BaseServiceImpl<T,PK> implements BaseService<T,PK>{
     }
 
     /**
-    * 更新对象信息 
+    * 更新对象信息
     * @param entity 实体类
-    *     
+    *
     */
 	@Override
     public Integer update(T entity) {
         return baseMapper.update(entity);
     }
-    
+
 	@Override
 	public void deleteById(PK id) {
 		 baseMapper.deleteById(id);
 	}
-#end 
+#end
 }
 #end

@@ -1,19 +1,19 @@
 import Mock from 'mockjs2'
 
-// 判断环境不是 prod 或者 preview 是 true 时，加载 mock 服务
-if (process.env.NODE_ENV !== 'production' || process.env.VUE_APP_PREVIEW === 'true') {
-  // 使用同步加载依赖
-  // 防止 vuex 中的 GetInfo 早于 mock 运行，导致无法 mock 请求返回结果
-  console.log('mock mounting')
-  require('./services/auth')
-  require('./services/user')
-  require('./services/manage')
-  require('./services/other')
-  require('./services/tagCloud')
-  require('./services/article')
+// Mock 服务 - 仅在开发环境有效
+// 导入所有 mock 服务（立即注册 Mock 拦截器）
+import './services/auth'
+import './services/user'
+import './services/manage'
+import './services/other'
+import './services/tagCloud'
+import './services/article'
+import './services/resource'
 
+// 开发环境下设置 Mock 延迟
+if (import.meta.env.DEV) {
   Mock.setup({
-    timeout: 800 // setter delay time
+    timeout: 200
   })
-  console.log('mock mounted')
+  console.log('[Mock] 服务已启动')
 }

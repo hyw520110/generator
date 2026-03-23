@@ -1,6 +1,9 @@
 ## 复合主键类模板
 ## 使用场景：当表有 2 个或以上主键字段时生成此类
-
+## 如果不是复合主键，输出空内容，文件将被跳过
+#if(!$table || !$table.isCompositePrimaryKey())
+#end
+#if($table && $table.isCompositePrimaryKey())
 package ${rootPackage}.key;
 
 import java.io.Serializable;
@@ -68,3 +71,4 @@ public class ${table.beanName}Key implements Serializable {
     }
 #end
 }
+#end

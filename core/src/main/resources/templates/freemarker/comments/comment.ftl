@@ -11,6 +11,5 @@
 </#if>
  *
  * @author ${author!}
- * @since ${date!}
  * @copyright ${copyright!}
  */

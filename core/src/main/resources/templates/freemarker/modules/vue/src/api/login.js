@@ -16,7 +16,7 @@ export function login (parameter) {
   return axios({
     url: api.Login,
     method: 'put',
-    params: parameter
+    data: parameter  // 改用 data 发送 JSON body
   })
 }
 
@@ -30,8 +30,8 @@ export function getSmsCaptcha (parameter) {
 
 export function getInfo (userId) {
   return axios({
-    url: api.UserInfo,
-    method: 'get' + userId,
+    url: api.UserInfo + '/' + userId,
+    method: 'get',
     headers: {
       'Content-Type': 'application/json;charset=UTF-8'
     }

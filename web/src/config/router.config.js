@@ -1,10 +1,11 @@
 import { h } from 'vue'
+import { RouterView } from 'vue-router'
 import { UserLayout, BasicLayout, BlankLayout } from '@/layouts'
 import { bxAnaalyse } from '@/core/icons'
 
 const RouteView = {
   name: 'RouteView',
-  render: () => h('router-view')
+  render: () => h(RouterView)
 }
 
 export const asyncRouterMap = [

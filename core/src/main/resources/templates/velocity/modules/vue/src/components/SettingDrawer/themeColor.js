@@ -1,23 +1,22 @@
-import client from 'webpack-theme-color-replacer/client'
 import generate from '@ant-design/colors/lib/generate'
 
 export default {
   getAntdSerials (color) {
-    // 淡化（即less的tint）
-    const lightens = new Array(9).fill().map((t, i) => {
-      return client.varyColor.lighten(color, i / 10)
-    })
     // colorPalette变换得到颜色值
     const colorPalettes = generate(color)
-    return lightens.concat(colorPalettes)
+    return colorPalettes
   },
   changeColor (newColor) {
-    var options = {
-      newColors: this.getAntdSerials(newColor), // new colors array, one-to-one corresponde with `matchColors`
-      changeUrl (cssUrl) {
-        return `/${cssUrl}` // while router is not `hash` mode, it needs absolute path
-      }
-    }
-    return client.changer.changeColor(options, Promise)
+    // Vite 不支持 webpack-theme-color-replacer 动态换肤
+    // 简化实现：仅更新 CSS 变量
+    return new Promise((resolve) => {
+      const colors = this.getAntdSerials(newColor)
+      document.documentElement.style.setProperty('--primary-color', newColor)
+      colors.forEach((c, i) => {
+        document.documentElement.style.setProperty(`--primary-${i + 1}`, c)
+      })
+      console.log('主题色已更改为:', newColor)
+      resolve()
+    })
   }
 }

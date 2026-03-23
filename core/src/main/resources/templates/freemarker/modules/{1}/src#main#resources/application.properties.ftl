@@ -13,7 +13,7 @@ knife4j.enable=true
 
 <#if THYMELEAF!false>
 spring.thymeleaf.prefix=classpath:/templates/
-spring.thymeleaf.suffix=${suffix}
+spring.thymeleaf.suffix=${suffix!".html"}
 spring.thymeleaf.cache=false
 spring.thymeleaf.mode=HTML
 spring.thymeleaf.encoding=UTF-8
@@ -34,13 +34,20 @@ spring.redis.host=localhost
 #spring.redis.cluster.nodes=${spring_redis_cluster_nodes}
 #spring.redis.cluster.maxRedirects=3
 </#if>
-#spring.dubbo.appname=${projectName}
-#spring.dubbo.registry=${dubbo_registry}
-#spring.dubbo.port=${dubbo_port}
+<#if DUBBO?? && DUBBO>
+spring.dubbo.appname=${projectName!'app'}
+<#if NACOS?? && NACOS>
+spring.dubbo.registry=nacos://${nacos-server!'localhost:8848'}
+<#elseif ZOOKEEPER?? && ZOOKEEPER>
+spring.dubbo.registry=zookeeper://${connect-string!'localhost:2181'}
+<#else>
+spring.dubbo.registry=${dubbo_registry!'N/A'}
+</#if>
+spring.dubbo.port=${dubbo_port!'20880'}
 spring.dubbo.version=1.0.0
-spring.dubbo.protocol=${dubbo_protocol}
+spring.dubbo.protocol=${dubbo_protocol!'dubbo'}
+</#if>
 mybatis.mapperLocations=classpath:mybatis/mappers/*.xml
-server.port=8081
 #server.tomcat.access_log_enabled=true
 #server.tomcat.basedir=target/tomcat
 server.undertow.accesslog.enabled=true
@@ -56,7 +63,6 @@ server.undertow.io-threads=4
 server.undertow.max-http-post-size=80920
 server.undertow.worker-threads=20
 
-#[[management.port=${random.int[9901,9990]}]]#
 management.context-path=/manage
 management.security.enabled=false
 info.app.name=@project.name@
@@ -65,12 +71,12 @@ info.app.version=@project.version@
 context.slow-time=800
 context.userName=user_name
 <#if ROCKETMQ!false>
-rocketmq.name-server-address=${name_server_address}
+rocketmq.name-server-address=${name_server_address!'localhost:9876'}
 rocketmq.producer-group=${projectName}_producer
 </#if>
-<#if ZIPKIN??>
+<#if ZIPKIN?has_content>
 dubbo.trace.enabled=true
-spring.zipkin.baseUrl=${zipkin_baseUrl}
+spring.zipkin.baseUrl=${zipkin_baseUrl!'http://localhost:9411'}
 </#if>
 
 #spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
@@ -128,11 +134,11 @@ spring.datasource.druid.filter.slf4j.statement-executable-sqlLog-enable=false
 <#if dataSource.isEncrypt()!false>
 spring.datasource.druid.filter.config.enabled=true
 </#if>
-<#if dataSource.propertiesStr?? && dataSource.propertiesStr?has_content>
+<#if dataSource.propertiesStr?has_content>
 spring.datasource.druid.connection-properties=${dataSource.propertiesStr}
 </#if>
 
-<#if mapperType!"plus" == "plus">
+<#if (mapperType!'plus') == 'plus'>
 mybatis-plus.mapper-locations=classpath:mybatis/mappers/*.xml
 mybatis-plus.type-aliases-package=${entityPackage}
 mybatis-plus.configuration.log-impl=org.apache.ibatis.logging.log4j2.Log4j2Impl

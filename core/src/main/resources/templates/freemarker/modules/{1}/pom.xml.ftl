@@ -340,6 +340,21 @@
 </#if>
 			<scope>test</scope>
 		</dependency>
+<#if SPRINGBOOT?? && SPRINGBOOT>
+<#if javaVersion?? && (javaVersion?starts_with("17") || javaVersion?starts_with("21"))>
+		<!-- JAXB API for Java 17+ compatibility -->
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>4.0.2</version>
+		</dependency>
+</#if>
+</#if>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId!}</finalName>

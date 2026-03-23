@@ -32,15 +32,20 @@
     </template>
     <span @click="fetchNotice" class="header-notice" ref="noticeRef">
       <a-badge count="2">
-        <a-icon style="font-size: 16px; padding: 4px" type="bell" />
+        <BellOutlined style="font-size: 16px; padding: 4px" />
       </a-badge>
     </span>
   </a-popover>
 </template>
 
 <script>
+import { BellOutlined } from '@ant-design/icons-vue'
+
 export default {
   name: 'HeaderNotice',
+  components: {
+    BellOutlined
+  },
   data () {
     return {
       loadding: false,

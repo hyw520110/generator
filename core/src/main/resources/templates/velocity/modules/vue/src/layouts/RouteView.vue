@@ -1,4 +1,17 @@
+<template>
+  <router-view v-slot="{ Component }">
+    <keep-alive v-if="shouldKeepAlive">
+      <component :is="Component" />
+    </keep-alive>
+    <component :is="Component" v-else />
+  </router-view>
+</template>
+
 <script>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useStore } from 'vuex'
+
 export default {
   name: 'RouteView',
   props: {
@@ -7,26 +20,21 @@ export default {
       default: true
     }
   },
-  data () {
-    return {}
-  },
-  render () {
-    const { $route: { meta }, $store: { getters } } = this
-    const inKeep = (
-      <keep-alive>
-        <router-view />
-      </keep-alive>
-    )
-    const notKeep = (
-      <router-view />
-    )
-    // 这里增加了 multiTab 的判断，当开启了 multiTab 时
-    // 应当全部组件皆缓存，否则会导致切换页面后页面还原成原始状态
-    // 若确实不需要，可改为 return meta.keepAlive ? inKeep : notKeep
-    if (!getters.multiTab && meta.keepAlive === false) {
-      return notKeep
+  setup (props) {
+    const route = useRoute()
+    const store = useStore()
+    
+    const shouldKeepAlive = computed(() => {
+      const meta = route.meta
+      const getters = store.getters
+      // 这里增加了 multiTab 的判断，当开启了 multiTab 时
+      // 应当全部组件皆缓存，否则会导致切换页面后页面还原成原始状态
+      return props.keepAlive || getters.multiTab || meta.keepAlive
+    })
+    
+    return {
+      shouldKeepAlive
     }
-    return this.keepAlive || getters.multiTab || meta.keepAlive ? inKeep : notKeep
   }
 }
 </script>

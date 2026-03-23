@@ -1,10 +1,9 @@
 import antd from 'ant-design-vue/es/locale/zh_CN'
-import momentCN from 'moment/locale/zh-cn'
 
 const components = {
   antLocale: antd,
   momentName: 'zh-cn',
-  momentLocale: momentCN
+  momentLocale: null
 }
 
 const locale = {

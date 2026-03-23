@@ -82,11 +82,15 @@ public class Table extends BaseBean {
 	
 	public String getPrimaryKeyClass() {
 		List<TabField> list = getPrimarykeyFields();
-		if (null != list && list.size()>=1) {
+		if (null == list || list.isEmpty()) {
+			return "Long"; // 默认主键类型
+		}
+		if (list.size() == 1) {
+			// 单主键：返回主键字段类型
 			return list.get(0).getFieldType().getType();
 		}
-		//TODO 复合主键处理
-		return null;
+		// 复合主键：返回复合主键类名
+		return getBeanName() + "Key";
 	}
 	/**
 	 * 是否有主键

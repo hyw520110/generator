@@ -78,8 +78,7 @@
 					"resourceUri": "/${table.lowercaseBeanName}",
 					"resourceView": "${table.lowercaseBeanName}/${table.beanName}List",
 					"sort": 0
-			 }#end],
-			"parentResourceId": 1,
+									}#if($velocityHasNext),#end#end],			"parentResourceId": 1,
 			"resourceIcon": "deployment-unit",
 			"resourceId": 5,
 			"resourceKey": "sys_modules",

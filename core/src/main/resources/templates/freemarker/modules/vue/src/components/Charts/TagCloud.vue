@@ -1,41 +1,27 @@
 <template>
-  <v-chart :width="width" :height="height" :padding="[0]" :data="data" :scale="scale">
-    <v-tooltip :show-title="false" />
-    <v-coord type="rect" direction="TL" />
-    <v-point position="x*y" color="category" shape="cloud" tooltip="value*category" />
-  </v-chart>
+  <div class="tag-cloud" :style="{ width: width + 'px', height: height + 'px' }">
+    <div v-if="data.length === 0" class="empty">暂无数据</div>
+    <div v-else class="tag-cloud-content">
+      <span
+        v-for="(item, index) in displayTags"
+        :key="index"
+        class="tag-item"
+        :style="{
+          fontSize: item.size + 'px',
+          color: colors[index % colors.length],
+          transform: `rotate(${item.rotate}deg)`
+        }"
+      >
+        {{ item.name }}
+      </span>
+    </div>
+  </div>
 </template>
 
 <script>
-import { registerShape } from 'viser-vue'
-const DataSet = require('@antv/data-set')
+import * as DataSet from '@antv/data-set'
 
-const imgUrl = 'https://gw.alipayobjects.com/zos/rmsportal/gWyeGLCdFFRavBGIDzWk.png'
-
-const scale = [
-  { dataKey: 'x', nice: false },
-  { dataKey: 'y', nice: false }
-]
-
-registerShape('point', 'cloud', {
-  draw (cfg, container) {
-    return container.addShape('text', {
-      attrs: {
-        fillOpacity: cfg.opacity,
-        fontSize: cfg.origin._origin.size,
-        rotate: cfg.origin._origin.rotate,
-        text: cfg.origin._origin.text,
-        textAlign: 'center',
-        fontFamily: cfg.origin._origin.font,
-        fill: cfg.color,
-        textBaseline: 'Alphabetic',
-        ...cfg.style,
-        x: cfg.x,
-        y: cfg.y
-      }
-    })
-  }
-})
+const colors = ['#1890ff', '#2fc25b', '#facc14', '#223273', '#8543e0', '#13c2c2', '#3436c7', '#f04864']
 
 export default {
   name: 'TagCloud',
@@ -56,7 +42,16 @@ export default {
   data () {
     return {
       data: [],
-      scale
+      colors
+    }
+  },
+  computed: {
+    displayTags () {
+      return this.data.map((item, index) => ({
+        ...item,
+        size: Math.max(12, Math.min(32, item.size || 16)),
+        rotate: Math.random() > 0.5 ? 0 : 90
+      }))
     }
   },
   watch: {
@@ -73,41 +68,52 @@ export default {
   },
   methods: {
     initTagCloud (dataSource) {
-      const { height, width } = this
-
-      const dv = new DataSet.View().source(dataSource)
-      const range = dv.range('value')
-      const min = range[0]
-      const max = range[1]
-      const imageMask = new Image()
-      imageMask.crossOrigin = ''
-      imageMask.src = imgUrl
-      imageMask.onload = () => {
-        dv.transform({
-          type: 'tag-cloud',
-          fields: ['name', 'value'],
-          size: [width, height],
-          imageMask,
-          font: 'Verdana',
-          padding: 0,
-          timeInterval: 5000, // max execute time
-          rotate () {
-            let random = ~~(Math.random() * 4) % 4
-            if (random === 2) {
-              random = 0
-            }
-            return random * 90 // 0, 90, 270
-          },
-          fontSize (d) {
-            if (d.value) {
-              return ((d.value - min) / (max - min)) * (32 - 8) + 8
-            }
-            return 0
-          }
-        })
-        this.data = dv.rows
-      }
+      // 简化版词云，直接处理数据
+      const values = dataSource.map(d => d.value || 0)
+      const min = Math.min(...values)
+      const max = Math.max(...values)
+      
+      this.data = dataSource.map(item => ({
+        name: item.name,
+        value: item.value,
+        size: min === max ? 20 : ((item.value - min) / (max - min)) * (32 - 12) + 12
+      }))
     }
   }
 }
 </script>
+
+<style lang="less" scoped>
+.tag-cloud {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .empty {
+    color: #999;
+    font-size: 14px;
+  }
+  
+  .tag-cloud-content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    
+    .tag-item {
+      display: inline-block;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      
+      &:hover {
+        transform: scale(1.2) !important;
+        opacity: 0.8;
+      }
+    }
+  }
+}
+</style>

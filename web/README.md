@@ -1,29 +1,16 @@
-Install dependencies 
+安装环境
+nodejs安装
+安装yarn: npm i yarn -g
+
+安装依赖
 
 	yarn install
+开发模式运行
 
-Compiles and hot-reloads for development 
-	
 	yarn run serve
-
-Compiles and minifies for production
-
-	yarn run build
-
-Lints and fixes files
+编译项目
+	
+	yarn run build 
+Lints and fixes files 
 
 	yarn run lint
-	
-	
-### QA
-
-错误：
-
-```
-1 error potentially fixable with the `--fix` option.
-```
-执行：
-
-```
-yarn run lint --fix
-```

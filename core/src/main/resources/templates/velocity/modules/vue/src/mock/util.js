@@ -34,5 +34,14 @@ export const getQueryParameters = (options) => {
 }
 
 export const getBody = (options) => {
-  return options.body && JSON.parse(options.body)
+  console.log('[Mock] getBody options:', options)
+  if (!options.body) {
+    return {}
+  }
+  try {
+    return typeof options.body === 'string' ? JSON.parse(options.body) : options.body
+  } catch (e) {
+    console.error('[Mock] Failed to parse body:', options.body)
+    return {}
+  }
 }

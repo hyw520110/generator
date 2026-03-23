@@ -78,7 +78,7 @@
 					"resourceUri": "/${table.lowercaseBeanName!}",
 					"resourceView": "${table.lowercaseBeanName!}/${table.beanName!}List",
 					"sort": 0
-			 }</#list>],
+			 }<#if table?has_next>,</#if></#list>],
 			"parentResourceId": 1,
 			"resourceIcon": "deployment-unit",
 			"resourceId": 5,

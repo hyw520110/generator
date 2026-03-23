@@ -32,6 +32,7 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
 
     private static final long serialVersionUID = 1L;
 
+<#assign firstPrimaryKey = true>
 <#list table.fields as field>
 
 <#if field.comment?has_content>
@@ -48,8 +49,9 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
 
 <#if mapperType?? && mapperType == "plus">
 <#if field.primarykey>
-<#if field?is_first>
+<#if firstPrimaryKey>
 	@TableId(value = "${field.name!}", type = IdType.AUTO)
+	<#assign firstPrimaryKey = false>
 <#else>
 	@TableField(value = "${field.name!}")
 </#if>

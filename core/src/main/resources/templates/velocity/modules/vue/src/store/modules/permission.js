@@ -1,6 +1,12 @@
 import { constantRouterMap } from '@/config/router.config'
 // eslint-disable-next-line
-import { BasicLayout, RouteView, BlankLayout, PageView, IframeView } from '@/layouts'
+import { BasicLayout, RouteView, BlankLayout, PageView } from '@/layouts'
+
+// 动态组件加载映射 - Vite 的 import.meta.glob 返回的 key 格式为相对路径
+const modules = import.meta.glob('/src/views/**/*.vue')
+
+// 调试：打印可用的组件路径
+console.log('[permission] 可用组件:', Object.keys(modules))
 
 // 前端路由表
 const constantRouterComponents = {
@@ -8,15 +14,13 @@ const constantRouterComponents = {
   BasicLayout: BasicLayout,
   BlankLayout: BlankLayout,
   RouteView: RouteView,
-  PageView: PageView,
-  IframeView: IframeView
-
+  PageView: PageView
   // ...more
 }
 
-// 前端未找到页面路由（固定不用改）
+// 前端未找到页面路由（Vue Router 4 语法）
 const notFoundRouter = {
-  path: '*', redirect: '/404', hidden: true
+  path: '/:pathMatch(.*)*', redirect: '/404', hidden: true
 }
 
 export const routerFilter = (routerMap) => {
@@ -44,13 +48,34 @@ export const generator = (routerMap, parent) => {
       } else {
         path = `${parent && parent.resourceUri || ''}/${item.resourceUri}`
 
-        // 为了防止出现后端返回结果不规范，处理有可能出现拼接出两个 反斜杠
-        path = path.replace('//', '/')
+        // 为了防止出现后端返回结果不规范，处理有可能出现拼接出多个反斜杠
+        path = path.replace(/\/+/g, '/')
       }
 
       let routerComponent = constantRouterComponents[item.resourceView]
       if (!routerComponent && item.resourceView) {
-        routerComponent = () => import('@/views/' + item.resourceView)
+        // Vite 动态导入 - 使用绝对路径格式
+        const viewPath = `/src/views/${item.resourceView}.vue`
+        const indexPath = `/src/views/${item.resourceView}/index.vue`
+        
+        // 直接匹配
+        routerComponent = modules[viewPath] || modules[indexPath]
+        
+        // 如果没找到，尝试大小写不敏感匹配
+        if (!routerComponent) {
+          const viewPathLower = viewPath.toLowerCase()
+          const indexPathLower = indexPath.toLowerCase()
+          const key = Object.keys(modules).find(k => 
+            k.toLowerCase() === viewPathLower || k.toLowerCase() === indexPathLower
+          )
+          if (key) {
+            routerComponent = modules[key]
+          }
+        }
+
+        if (!routerComponent) {
+          console.error(`组件不存在: ${item.resourceView}，尝试路径: ${viewPath}`)
+        }
       }
 
       const currentRouter = {
@@ -67,7 +92,7 @@ export const generator = (routerMap, parent) => {
       item.resourceRedirect && !reURL.test(item.resourceRedirect) && (currentRouter.redirect = item.resourceRedirect)
       // 是否有子菜单，并递归处理
       if (item.childResources && item.childResources.length > 0) {
-      // Recursion
+        // Recursion
         currentRouter.children = generator(item.childResources, item)
       }
       return currentRouter
@@ -90,8 +115,6 @@ const permission = {
       return new Promise(resolve => {
         const resources = res.data
         if (resources != null && resources.length > 0) {
-          // const filterResources = routerFilter(resources)
-          // const routers = generator(filterResources)
           const assign = JSON.parse(JSON.stringify(resources))
           const routers = generator(assign)
           routers.push(notFoundRouter)

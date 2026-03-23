@@ -1,29 +1,37 @@
 <template>
-  <a-locale-provider :locale="locale">
+  <a-config-provider :locale="locale">
     <div id="app">
       <router-view/>
     </div>
-  </a-locale-provider>
+  </a-config-provider>
 </template>
 
 <script>
-import zhCN from 'ant-design-vue/lib/locale-provider/zh_CN'
-import { AppDeviceEnquire } from '@/utils/mixin'
+import { domTitle, setDocumentTitle } from '@/utils/domUtil'
+import { i18nRender } from '@/locales'
+import { useI18n } from 'vue-i18n'
+import { useStore } from 'vuex'
 
 export default {
-  mixins: [AppDeviceEnquire],
-  data () {
+  setup () {
+    const { getLocaleMessage } = useI18n()
+    const store = useStore()
+    
     return {
-      locale: zhCN
+      getLocaleMessage,
+      store
     }
   },
-  mounted () {
+  computed: {
+    locale () {
+      // 只是为了切换语言时，更新标题
+      const { title } = this.$route.meta
+      title && (setDocumentTitle(`${'$'}{i18nRender(title)} - ${'$'}{domTitle}`))
 
+      const lang = this.store?.getters?.lang || 'en-US'
+      const messages = this.getLocaleMessage(lang)
+      return messages?.antLocale
+    }
   }
 }
 </script>
-<style>
-  #app {
-    height: 100%;
-  }
-</style>

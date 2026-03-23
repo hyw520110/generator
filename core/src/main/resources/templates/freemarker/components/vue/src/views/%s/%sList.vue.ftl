@@ -7,15 +7,15 @@
 <#if field?index < 3>
           <a-col :md="8" :sm="24">
             <a-form-item label="${field.comment?default(field.name)}">
-              <a-input v-model="queryParam.${field.propertyName}" placeholder="" />
+              <a-input v-model:value="queryParam.${field.propertyName}" placeholder="" />
             </a-form-item>
           </a-col>
 </#if>
 </#list>
           <a-col :md="8" :sm="24">
             <span class="table-page-search-submitButtons">
-              <a-button type="primary" @click="\$refs.table.refresh(true)">查询</a-button>
-              <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+              <a-button type="primary" @click="tableRef.refresh(true)">查询</a-button>
+              <a-button style="margin-left: 8px" @click="resetQueryParam">重置</a-button>
             </span>
           </a-col>
         </a-row>
@@ -23,19 +23,27 @@
     </div>
 
     <div class="table-operator">
-      <a-button type="primary" icon="plus" @click="\$refs.createModal.add()">新建</a-button>
+      <a-button type="primary" @click="handleAdd">
+        <template #icon><plus-outlined /></template>
+        新建
+      </a-button>
       <a-dropdown v-if="selectedRowKeys.length > 0">
-        <a-menu slot="overlay">
-          <a-menu-item key="1" @click="\$refs.createModal.batchDelete()"><a-icon type="delete" />删除</a-menu-item>
-        </a-menu>
+        <template #overlay>
+          <a-menu>
+            <a-menu-item key="1" @click="handleBatchDelete">
+              <delete-outlined />
+              删除
+            </a-menu-item>
+          </a-menu>
+        </template>
         <a-button style="margin-left: 8px">
-          批量操作 <a-icon type="down" />
+          批量操作 <down-outlined />
         </a-button>
       </a-dropdown>
     </div>
 
     <s-table
-      ref="table"
+      ref="tableRef"
       size="default"
       :columns="columns"
       :data="loadData"
@@ -43,117 +51,150 @@
       :rowSelection="options.rowSelection"
       showPagination="auto"
     >
-      <span slot="serial" slot-scope="text, record, index">
-        {{ index + 1 }}
-      </span>
+      <template #bodyCell="{ column, text, record, index }">
+        <template v-if="column.dataIndex === 'serial'">
+          {{ index + 1 }}
+        </template>
 <#list table.fields as field>
-      <span slot="${field.propertyName}" slot-scope="text">
-        {{ text }}
-      </span>
+        <template v-else-if="column.dataIndex === '${field.propertyName}'">
+          {{ text }}
+        </template>
 </#list>
-      <span slot="action" slot-scope="text, record">
-        <template>
-          <a @click="\$refs.createModal.edit(record.id)">编辑</a>
+        <template v-else-if="column.dataIndex === 'action'">
+          <a @click="handleEdit(record.id)">编辑</a>
           <a-divider type="vertical" />
           <a @click="handleDelete(record.id)">删除</a>
         </template>
-      </span>
+      </template>
     </s-table>
 
-    <create-form ref="createModal" @ok="handleOk" />
+    <create-form ref="createModalRef" @ok="handleOk" />
   </a-card>
 </template>
 
 <script>
+import { ref, reactive } from 'vue'
+import { message, Modal } from 'ant-design-vue'
+import { PlusOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { STable } from '@/components'
 import { getList, del${table.beanName?cap_first} } from '@/api/${table.beanName}'
-import CreateForm from './modules/${table.beanName}Form'
-
-const columns = [
-  {
-    title: '#',
-    scopedSlots: { customRender: 'serial' }
-  },
-<#list table.fields as field>
-  {
-    title: '${field.comment?default(field.name)}',
-    dataIndex: '${field.propertyName}',
-    scopedSlots: { customRender: '${field.propertyName}' }
-  },
-</#list>
-  {
-    title: '操作',
-    dataIndex: 'action',
-    width: '150px',
-    scopedSlots: { customRender: 'action' }
-  }
-]
+import CreateForm from './modules/${table.beanName}Form.vue'
 
 export default {
   name: '${table.beanName?cap_first}List',
   components: {
     STable,
-    CreateForm
+    CreateForm,
+    PlusOutlined,
+    DeleteOutlined,
+    DownOutlined
   },
-  data () {
-    this.columns = columns
-    return {
-      visible: false,
-      confirmLoading: false,
-      // 创建表单
-      form: this.\$form.createForm(this),
-      // 查询条件参数
-      queryParam: {},
-      // 加载数据方法 必须为 Promise 对象
-      loadData: parameter => {
-        return getList(Object.assign(parameter, this.queryParam))
-          .then(res => {
-            return res.data
-          })
+  setup () {
+    const tableRef = ref()
+    const createModalRef = ref()
+    const selectedRowKeys = ref([])
+    const selectedRows = ref([])
+    const queryParam = reactive({})
+
+    const columns = [
+      {
+        title: '#',
+        dataIndex: 'serial'
       },
-      selectedRowKeys: [],
-      selectedRows: [],
-      options: {
-        alert: { show: true, clear: () => { this.selectedRowKeys = [] } },
-        rowSelection: { selectedRowKeys: this.selectedRowKeys, onChange: this.onSelectChange }
+<#list table.fields as field>
+      {
+        title: '${field.comment?default(field.name)}',
+        dataIndex: '${field.propertyName}'
+      },
+</#list>
+      {
+        title: '操作',
+        dataIndex: 'action',
+        width: '150px'
+      }
+    ]
+
+    const loadData = (parameter) => {
+      return getList(Object.assign(parameter, queryParam))
+        .then(res => {
+          return res.data
+        })
+    }
+
+    const options = {
+      alert: {
+        show: true,
+        clear: () => { selectedRowKeys.value = [] }
+      },
+      rowSelection: {
+        selectedRowKeys: selectedRowKeys,
+        onChange: (keys, rows) => {
+          selectedRowKeys.value = keys
+          selectedRows.value = rows
+        }
       }
     }
-  },
-  methods: {
-    handleAdd () {
-      this.visible = true
-    },
-    handleEdit (record) {
-      this.visible = true
-      this.\$nextTick(() => {
-        this.form.setFieldsValue(record)
-      })
-    },
-    handleDelete (id) {
-      this.\$confirm({
+
+    const handleAdd = () => {
+      createModalRef.value.add()
+    }
+
+    const handleEdit = (id) => {
+      createModalRef.value.edit(id)
+    }
+
+    const handleDelete = (id) => {
+      Modal.confirm({
         title: '确认删除',
         content: '确定要删除这条记录吗？',
         onOk: () => {
-          del${table.beanName?cap_first}(id).then(res => {
-            this.\$message.info('删除成功')
-            this.\$refs.table.refresh()
+          del${table.beanName?cap_first}(id).then(() => {
+            message.info('删除成功')
+            tableRef.value.refresh()
           })
         }
       })
-    },
-    handleOk () {
-      this.\$refs.table.refresh()
-    },
-    onSelectChange (selectedRowKeys, selectedRows) {
-      this.selectedRowKeys = selectedRowKeys
-      this.selectedRows = selectedRows
-    },
-    toggleAdvanced () {
-      this.advanced = !this.advanced
-    },
-    resetSearchForm () {
-      this.queryParam = {}
-      this.\$refs.table.refresh(true)
+    }
+
+    const handleBatchDelete = () => {
+      Modal.confirm({
+        title: '确认删除',
+        content: '确定要删除选中的记录吗？',
+        onOk: () => {
+          // 批量删除逻辑
+          message.info('删除成功')
+          selectedRowKeys.value = []
+          tableRef.value.refresh()
+        }
+      })
+    }
+
+    const handleOk = () => {
+      tableRef.value.refresh()
+    }
+
+    const resetQueryParam = () => {
+      Object.keys(queryParam).forEach(key => {
+        queryParam[key] = ''
+      })
+      tableRef.value.refresh(true)
+    }
+
+    return {
+      tableRef,
+      createModalRef,
+      columns,
+      queryParam,
+      loadData,
+      selectedRowKeys,
+      selectedRows,
+      options,
+      handleAdd,
+      handleEdit,
+      handleDelete,
+      handleBatchDelete,
+      handleOk,
+      resetQueryParam
     }
   }
 }

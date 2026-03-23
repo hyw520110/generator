@@ -6,6 +6,9 @@ import ${servicePackage}.${serviceName};
 #if(${superServiceImplClass})
 import #if($StringUtils.indexOf("$superServiceImplClass",'.')==-1)${implPackage}.#end${superServiceImplClass};
 #end
+#if($table.isCompositePrimaryKey())
+import ${entityPackage}.key.${table.beanName}Key;
+#end
 import org.springframework.beans.factory.annotation.Autowired;
 
 #parse('/templates/comments/comment.vm')

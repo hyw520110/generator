@@ -16,7 +16,6 @@
 #end
  *
  * @author ${author}
- * @since ${date}
  * @copyright ${copyright}
  */
 #end
@@ -30,7 +29,6 @@
  * ${description}
  *
  * @author ${author}
- * @since ${date}
  * @copyright ${copyright}
  */
 #end

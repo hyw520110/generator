@@ -1,5 +1,6 @@
 <script>
-import { h } from 'vue'
+import { h, KeepAlive } from 'vue'
+import { RouterView } from 'vue-router'
 
 export default {
   name: 'RouteView',
@@ -17,15 +18,15 @@ export default {
     const showKeepAlive = this.keepAlive || getters.multiTab || meta.keepAlive
     
     if (!getters.multiTab && !meta.keepAlive) {
-      return h('router-view')
+      return h(RouterView)
     }
     
     if (showKeepAlive) {
-      return h('keep-alive', {}, [
-        h('router-view')
+      return h(KeepAlive, {}, [
+        h(RouterView)
       ])
     }
-    return h('router-view')
+    return h(RouterView)
   }
 }
 </script>

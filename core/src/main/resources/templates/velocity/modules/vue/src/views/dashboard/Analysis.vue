@@ -3,59 +3,67 @@
     <a-row :gutter="24">
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '24px' }">
         <chart-card :loading="loading" title="总销售额" total="￥126,560">
-          <a-tooltip title="指标说明" slot="action">
-            <a-icon type="info-circle-o" />
-          </a-tooltip>
+          <template #action>
+            <a-tooltip title="指标说明">
+              <a-icon type="info-circle-o" />
+            </a-tooltip>
+          </template>
           <div>
             <trend flag="up" style="margin-right: 16px;">
-              <span slot="term">周同比</span>
+              <template #term>周同比</template>
               12%
             </trend>
             <trend flag="down">
-              <span slot="term">日同比</span>
+              <template #term>日同比</template>
               11%
             </trend>
           </div>
-          <template slot="footer">日均销售额<span>￥ 234.56</span></template>
+          <template #footer>日均销售额<span>￥ 234.56</span></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '24px' }">
-        <chart-card :loading="loading" title="访问量" :total="8846 | NumberFormat">
-          <a-tooltip title="指标说明" slot="action">
-            <a-icon type="info-circle-o" />
-          </a-tooltip>
+        <chart-card :loading="loading" title="访问量" :total="$filters.NumberFormat(8846)">
+          <template #action>
+            <a-tooltip title="指标说明">
+              <a-icon type="info-circle-o" />
+            </a-tooltip>
+          </template>
           <div>
             <mini-area />
           </div>
-          <template slot="footer">日访问量<span> {{ '1234' | NumberFormat }}</span></template>
+          <template #footer>日访问量<span> {{ $filters.NumberFormat('1234') }}</span></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '24px' }">
-        <chart-card :loading="loading" title="支付笔数" :total="6560 | NumberFormat">
-          <a-tooltip title="指标说明" slot="action">
-            <a-icon type="info-circle-o" />
-          </a-tooltip>
+        <chart-card :loading="loading" title="支付笔数" :total="$filters.NumberFormat(6560)">
+          <template #action>
+            <a-tooltip title="指标说明">
+              <a-icon type="info-circle-o" />
+            </a-tooltip>
+          </template>
           <div>
             <mini-bar />
           </div>
-          <template slot="footer">转化率 <span>60%</span></template>
+          <template #footer>转化率 <span>60%</span></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '24px' }">
         <chart-card :loading="loading" title="运营活动效果" total="78%">
-          <a-tooltip title="指标说明" slot="action">
-            <a-icon type="info-circle-o" />
-          </a-tooltip>
+          <template #action>
+            <a-tooltip title="指标说明">
+              <a-icon type="info-circle-o" />
+            </a-tooltip>
+          </template>
           <div>
             <mini-progress color="rgb(19, 194, 194)" :target="80" :percentage="78" height="8px" />
           </div>
-          <template slot="footer">
+          <template #footer>
             <trend flag="down" style="margin-right: 16px;">
-              <span slot="term">同周比</span>
+              <template #term>同周比</template>
               12%
             </trend>
             <trend flag="up">
-              <span slot="term">日环比</span>
+              <template #term>日环比</template>
               80%
             </trend>
           </template>
@@ -66,15 +74,17 @@
     <a-card :loading="loading" :bordered="false" :body-style="{padding: '0'}">
       <div class="salesCard">
         <a-tabs default-active-key="1" size="large" :tab-bar-style="{marginBottom: '24px', paddingLeft: '16px'}">
-          <div class="extra-wrapper" slot="tabBarExtraContent">
-            <div class="extra-item">
-              <a>今日</a>
-              <a>本周</a>
-              <a>本月</a>
-              <a>本年</a>
+          <template #tabBarExtraContent>
+            <div class="extra-wrapper">
+              <div class="extra-item">
+                <a>今日</a>
+                <a>本周</a>
+                <a>本月</a>
+                <a>本年</a>
+              </div>
+              <a-range-picker :style="{width: '256px'}" />
             </div>
-            <a-range-picker :style="{width: '256px'}" />
-          </div>
+          </template>
           <a-tab-pane loading="true" tab="销售额" key="1">
             <a-row>
               <a-col :xl="16" :lg="12" :md="12" :sm="24" :xs="24">
@@ -191,18 +201,15 @@
             </div>
             <h4>销售额</h4>
             <div>
-              <!-- style="width: calc(100% - 240px);" -->
-              <div>
-                <v-chart :force-fit="true" :height="405" :data="pieData" :scale="pieScale">
-                  <v-tooltip :showTitle="false" dataKey="item*percent" />
-                  <v-axis />
-                  <!-- position="right" :offsetX="-140" -->
-                  <v-legend dataKey="item"/>
-                  <v-pie position="percent" color="item" :vStyle="pieStyle" />
-                  <v-coord type="theta" :radius="0.75" :innerRadius="0.6" />
-                </v-chart>
+              <!-- 简化饼图替代 viser-vue (Vue 3 不兼容) -->
+              <div class="pie-chart-container" style="height: 405px; display: flex; align-items: center; justify-content: center;">
+                <div class="pie-chart">
+                  <div v-for="(item, index) in pieData" :key="index" class="pie-legend-item">
+                    <span class="legend-color" :style="{ backgroundColor: pieColors[index] }"></span>
+                    <span class="legend-text">{{ item.item }}: {{ (item.percent * 100).toFixed(1) }}%</span>
+                  </div>
+                </div>
               </div>
-
             </div>
           </a-card>
         </a-col>
@@ -289,7 +296,7 @@ for (let i = 0; i < 50; i += 1) {
   })
 }
 
-const DataSet = require('@antv/data-set')
+import * as DataSet from '@antv/data-set'
 
 const sourceData = [
   { item: '家用电器', count: 32.2 },
@@ -350,7 +357,8 @@ export default {
       pieStyle: {
         stroke: '#fff',
         lineWidth: 1
-      }
+      },
+      pieColors: ['#1890ff', '#2fc25b', '#facc14', '#223273', '#8543e0', '#13c2c2']
     }
   },
   created () {
@@ -409,5 +417,32 @@ export default {
     position: absolute;
     right: 54px;
     bottom: 12px;
+  }
+  
+  .pie-chart-container {
+    .pie-chart {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 20px;
+      
+      .pie-legend-item {
+        display: flex;
+        align-items: center;
+        min-width: 120px;
+        
+        .legend-color {
+          width: 12px;
+          height: 12px;
+          border-radius: 2px;
+          margin-right: 8px;
+        }
+        
+        .legend-text {
+          font-size: 14px;
+          color: rgba(0, 0, 0, 0.65);
+        }
+      }
+    }
   }
 </style>

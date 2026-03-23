@@ -85,7 +85,7 @@ public class LoginController {
 	}
 
 	private static <T> String loadTestData(String fileName) throws IOException {
-		URL url = LoginController.class.getResource("/data/" + fileName + ".json");
+		URL url = LoginController.class.getResource("/springboot/data/" + fileName + ".json");
 		if (null == url) {
 			return null;
 		}

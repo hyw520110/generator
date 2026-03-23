@@ -23,8 +23,8 @@ public abstract class BaseEntity#if("plus"=="$mapperType")<T extends BaseEntity<
     }
 #if("plus"=="$mapperType")
 	@Override
-	protected Serializable pkVal() {
-		return super.pkVal();
+	public Serializable pkVal() {
+		return null;
 	}
 #end    	
 }

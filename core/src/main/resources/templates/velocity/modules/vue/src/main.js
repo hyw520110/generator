@@ -1,36 +1,36 @@
-// ie polyfill
-import '@babel/polyfill'
-
-import Vue from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store/'
-import { VueAxios } from './utils/request'
-// import vueRouter from 'vue-router'
-// mock
-// import './mock'
+import i18n from './locales'
+import Antd from 'ant-design-vue'
+import * as Icons from '@ant-design/icons-vue'
+import { VueAxios } from '@/utils/request'
 
-import bootstrap from './core/bootstrap'
-import './core/use'
+// mock - 开发环境启用 mock
+import './mock'
+
 import './permission' // permission control
-import './utils/filter' // global filter
+import './global.less'
 
-Vue.config.productionTip = false
+import filters from '@/utils/filter'
 
-// mount axios Vue.$http and this.$http
-Vue.use(VueAxios)
+const app = createApp(App)
 
-new Vue({
-  router,
-  store,
-  created () {
-    bootstrap()
-  },
-  render: h => h(App)
-}).$mount('#app')
+// 注册全局过滤器为全局属性
+app.config.globalProperties.$filters = filters
 
-// const originalPush = vueRouter.prototype.push
-// vueRouter.prototype.push = function push (location, onResolve, onReject) {
-//  if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
-//  return originalPush.call(this, location).catch(err => console.log('catch error ', err))
-// }
+// 注册所有图标
+Object.keys(Icons).forEach((key) => {
+  if (key !== 'default') {
+    app.component(key, Icons[key])
+  }
+})
+
+app.use(Antd)
+app.use(store)
+app.use(router)
+app.use(i18n)
+app.use(VueAxios) // 安装 axios 插件，使 $http 全局可用
+
+app.mount('#app')

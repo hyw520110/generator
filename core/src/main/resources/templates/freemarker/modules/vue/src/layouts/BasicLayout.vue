@@ -2,11 +2,11 @@
   <a-layout :class="['layout', device]">
     <!-- SideMenu -->
     <a-drawer
-      v-if="isMobile()"
+      v-if="isMobile"
       placement="left"
       :wrapClassName="`drawer-sider ${navTheme}`"
       :closable="false"
-      :visible="collapsed"
+      :open="collapsed"
       @close="drawerClose"
     >
       <side-menu
@@ -20,7 +20,7 @@
     </a-drawer>
 
     <side-menu
-      v-else-if="isSideMenu()"
+      v-else-if="isSideMenu"
       mode="inline"
       :menus="menus"
       :theme="navTheme"
@@ -60,21 +60,21 @@
 </template>
 
 <script>
+import { defineComponent, ref, computed, watch, onMounted, nextTick } from 'vue'
+import { useStore } from 'vuex'
 import { triggerWindowResizeEvent } from '@/utils/util'
-import { mapState, mapActions } from 'vuex'
-import { mixin, mixinDevice } from '@/utils/mixin'
+import { useAppMixin, useDeviceMixin } from '@/utils/mixin'
 import config from '@/config/defaultSettings'
 
-import RouteView from './RouteView'
+import RouteView from './RouteView.vue'
 import MultiTab from '@/components/MultiTab'
 import SideMenu from '@/components/Menu/SideMenu'
 import GlobalHeader from '@/components/GlobalHeader'
 import GlobalFooter from '@/components/GlobalFooter'
 import SettingDrawer from '@/components/SettingDrawer'
 
-export default {
+export default defineComponent({
   name: 'BasicLayout',
-  mixins: [mixin, mixinDevice],
   components: {
     RouteView,
     MultiTab,
@@ -83,74 +83,85 @@ export default {
     GlobalFooter,
     SettingDrawer
   },
-  data () {
-    return {
-      production: config.production,
-      collapsed: false,
-      menus: []
-    }
-  },
-  computed: {
-    ...mapState({
-      // 动态主路由
-      mainMenu: state => state.permission.addRouters
-    }),
-    contentPaddingLeft () {
-      if (!this.fixSidebar || this.isMobile()) {
+  setup () {
+    const store = useStore()
+    const { isMobile, isSideMenu, device, sidebarOpened, fixSidebar, layoutMode, contentWidth, navTheme, fixedHeader, multiTab } = useAppMixin()
+
+    const production = config.production
+    const collapsed = ref(false)
+
+    const mainMenu = computed(() => store.state.permission.addRouters)
+    
+    const menus = computed(() => {
+      const rootRoute = mainMenu.value.find(item => item.path === '/')
+      return rootRoute?.children || []
+    })
+
+    const contentPaddingLeft = computed(() => {
+      if (!fixSidebar.value || isMobile.value) {
         return '0'
       }
-      if (this.sidebarOpened) {
+      if (sidebarOpened.value) {
         return '256px'
       }
       return '80px'
-    }
-  },
-  watch: {
-    sidebarOpened (val) {
-      this.collapsed = !val
-    }
-  },
-  created () {
-    this.menus = this.mainMenu.find(item => item.path === '/').children
-    this.collapsed = !this.sidebarOpened
-  },
-  mounted () {
-    const userAgent = navigator.userAgent
-    if (userAgent.indexOf('Edge') > -1) {
-      this.$nextTick(() => {
-        this.collapsed = !this.collapsed
-        setTimeout(() => {
-          this.collapsed = !this.collapsed
-        }, 16)
-      })
-    }
-  },
-  methods: {
-    ...mapActions(['setSidebar']),
-    toggle () {
-      this.collapsed = !this.collapsed
-      this.setSidebar(!this.collapsed)
+    })
+
+    watch(sidebarOpened, (val) => {
+      collapsed.value = !val
+    })
+
+    onMounted(() => {
+      collapsed.value = !sidebarOpened.value
+      
+      const userAgent = navigator.userAgent
+      if (userAgent.indexOf('Edge') > -1) {
+        nextTick(() => {
+          collapsed.value = !collapsed.value
+          setTimeout(() => {
+            collapsed.value = !collapsed.value
+          }, 16)
+        })
+      }
+    })
+
+    const toggle = () => {
+      collapsed.value = !collapsed.value
+      store.dispatch('setSidebar', !collapsed.value)
       triggerWindowResizeEvent()
-    },
-    paddingCalc () {
-      let left = ''
-      if (this.sidebarOpened) {
-        left = this.isDesktop() ? '256px' : '80px'
-      } else {
-        left = (this.isMobile() && '0') || ((this.fixSidebar && '80px') || '0')
+    }
+
+    const menuSelect = () => {
+      if (device.value !== 'desktop') {
+        collapsed.value = false
       }
-      return left
-    },
-    menuSelect () {
-      if (!this.isDesktop()) {
-        this.collapsed = false
-      }
-    },
-    drawerClose () {
-      this.collapsed = false
+    }
+
+    const drawerClose = () => {
+      collapsed.value = false
+    }
+
+    return {
+      production,
+      collapsed,
+      menus,
+      contentPaddingLeft,
+      isMobile,
+      isSideMenu,
+      device,
+      sidebarOpened,
+      fixSidebar,
+      layoutMode,
+      contentWidth,
+      navTheme,
+      fixedHeader,
+      multiTab,
+      toggle,
+      menuSelect,
+      drawerClose
     }
   }
-}
+})
 </script>
 
 <style lang="less">

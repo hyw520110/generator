@@ -30,6 +30,71 @@ echo_info() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
 echo_warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
 echo_error() { printf "${RED}[ERROR]${NC} %s\n" "$1"; }
 
+# =============================================================================
+# 代理检测与修复
+# =============================================================================
+check_and_fix_proxy() {
+    local proxy_host=""
+    local proxy_port=""
+    local proxy_url=""
+    
+    # 检查 npm 代理配置
+    local npm_proxy=$(npm config get proxy 2>/dev/null)
+    local npm_https_proxy=$(npm config get https-proxy 2>/dev/null)
+    
+    if [ -n "$npm_proxy" ] && [ "$npm_proxy" != "null" ]; then
+        proxy_url="$npm_proxy"
+    elif [ -n "$npm_https_proxy" ] && [ "$npm_https_proxy" != "null" ]; then
+        proxy_url="$npm_https_proxy"
+    fi
+    
+    # 检查环境变量代理
+    if [ -z "$proxy_url" ]; then
+        if [ -n "$HTTP_PROXY" ]; then
+            proxy_url="$HTTP_PROXY"
+        elif [ -n "$HTTPS_PROXY" ]; then
+            proxy_url="$HTTPS_PROXY"
+        elif [ -n "$http_proxy" ]; then
+            proxy_url="$http_proxy"
+        elif [ -n "$https_proxy" ]; then
+            proxy_url="$https_proxy"
+        fi
+    fi
+    
+    # 如果检测到代理，检查是否可用
+    if [ -n "$proxy_url" ]; then
+        # 解析代理地址 (支持 http://host:port 格式)
+        proxy_url=$(echo "$proxy_url" | sed 's|^http://||' | sed 's|^https://||' | sed 's|/$||')
+        proxy_host=$(echo "$proxy_url" | cut -d: -f1)
+        proxy_port=$(echo "$proxy_url" | cut -d: -f2)
+        
+        if [ -n "$proxy_host" ] && [ -n "$proxy_port" ]; then
+            echo_info "检测到代理配置: $proxy_host:$proxy_port"
+            
+            # 测试代理是否可用 (超时2秒)
+            if nc -z -w 2 "$proxy_host" "$proxy_port" 2>/dev/null; then
+                echo_info "代理连接正常"
+            else
+                echo_warn "代理 $proxy_host:$proxy_port 不可达，正在清除代理配置..."
+                
+                # 清除 npm/yarn 代理配置
+                npm config delete proxy 2>/dev/null || true
+                npm config delete https-proxy 2>/dev/null || true
+                
+                if command -v yarn > /dev/null 2>&1; then
+                    yarn config delete proxy 2>/dev/null || true
+                    yarn config delete https-proxy 2>/dev/null || true
+                fi
+                
+                # 清除环境变量
+                unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy
+                
+                echo_info "代理配置已清除"
+            fi
+        fi
+    fi
+}
+
 show_help() {
     echo "用法: ./startup.sh [选项]"
     echo ""
@@ -88,6 +153,12 @@ fi
 # =============================================================================
 start_backend() {
     echo_info ">>> 正在启动后端服务..."
+    
+    # 检查 run.sh 是否存在
+    if [ ! -f "./run.sh" ]; then
+        return 0
+    fi
+    
     chmod +x ./run.sh
     
     local run_args="--daemon"
@@ -104,6 +175,9 @@ start_backend() {
 start_frontend() {
     echo_info ">>> 正在启动前端服务 (终端模式)..."
     if [ $IS_DEV_MODE -eq 0 ]; then
+        # 检测并修复代理配置
+        check_and_fix_proxy
+        
         # 仅监测 package.json 的变更 (意图变更)
         local files_to_hash="package.json"
 
@@ -154,18 +228,38 @@ start_frontend() {
             fi
         fi
 
-        local port=$(grep "port:" vite.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
+        # 检测端口配置 (支持 vite.config.js 和 vue.config.js)
+        local port=""
+        if [ -f "vite.config.js" ]; then
+            port=$(grep "port:" vite.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
+        elif [ -f "vue.config.js" ]; then
+            port=$(grep "port:" vue.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
+        fi
         [ -z "$port" ] && port="8000"
         
         echo_info "启动前端并监听端口: $port"
         echo_info "访问地址: http://localhost:$port"
         
+        # 检测启动命令 (支持 serve 和 dev)
+        local start_cmd=""
+        if [ -f "package.json" ]; then
+            if grep -q '"serve"' package.json; then
+                start_cmd="serve"
+            elif grep -q '"dev"' package.json; then
+                start_cmd="dev"
+            fi
+        fi
+        
+        if [ -z "$start_cmd" ]; then
+            start_cmd="serve"  # 默认使用 serve
+        fi
+        
         if command -v yarn > /dev/null 2>&1; then
-            echo_info "执行: yarn dev"
-            yarn dev --open
+            echo_info "执行: yarn $start_cmd"
+            yarn $start_cmd --open
         else
-            echo_info "执行: npm run dev"
-            npm run dev -- --open
+            echo_info "执行: npm run $start_cmd"
+            npm run $start_cmd -- --open
         fi
     else
         echo_info "模式：部署模式 (静态资源) 已由后端托管。"
@@ -177,7 +271,7 @@ start_frontend() {
 [ "$START_FRONTEND" = true ] && start_frontend
 
 # 捕获退出信号，调用 stop.sh 停止服务
-trap "echo_info '正在停止服务...'; chmod +x ./stop.sh; ./stop.sh --all 2>/dev/null; echo_info '服务已停止';" EXIT
+trap "echo_info '正在停止服务...'; if [ -f ./stop.sh ]; then chmod +x ./stop.sh; ./stop.sh --all 2>/dev/null; fi; echo_info '服务已停止';" EXIT
 
 # 保持脚本运行
 wait

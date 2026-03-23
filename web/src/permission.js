@@ -11,7 +11,6 @@ import { i18nRender } from '@/locales'
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['login', 'register', 'registerResult', 'code'] // no redirect whitelist
-// const loginRoutePath = '/user/login'
 const generatorPath = '/generator/code'
 const defaultRoutePath = '/dashboard/workplace'
 

@@ -1,5 +1,5 @@
 import moment from 'moment'
-import 'moment/locale/zh-cn'
+import 'moment/dist/locale/zh-cn'
 moment.locale('zh-cn')
 
 export const NumberFormat = (value) => {

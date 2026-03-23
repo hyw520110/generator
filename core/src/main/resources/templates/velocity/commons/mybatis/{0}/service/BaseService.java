@@ -16,13 +16,13 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 #if("plus"=="$mapperType")
 public interface BaseService<T> extends com.baomidou.mybatisplus.extension.service.IService<T>{
 #else
-public interface BaseService<T> {
+public interface BaseService<T, PK> {
 	/**
 	 * <p>
 	 * 根据 ID 查询
 	 * </p>
 	 *
-	 * @param id 主键ID
+	 * @param id 主键ID（单主键为基本类型，复合主键为Key对象）
 	 */
 	T getById(PK id);
 
@@ -74,7 +74,7 @@ public interface BaseService<T> {
 	 */
 	boolean save(T entity);
 	
-	void deleteById(PK Id);
+	void deleteById(PK id);
 #end
 
 }#end

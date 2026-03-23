@@ -4,7 +4,7 @@
   </a-card>
 </template>
 
-<script>
+<script jsx>
 import IconSelector from '@/components/IconSelector'
 
 export default {

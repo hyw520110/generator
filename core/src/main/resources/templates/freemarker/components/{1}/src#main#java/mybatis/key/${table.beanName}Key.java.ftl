@@ -1,6 +1,9 @@
 <#--  复合主键类模板 -->
 <#--  使用场景：当表有 2 个或以上主键字段时生成此类 -->
-
+<#--  如果不是复合主键，输出空内容，文件将被跳过 -->
+<#if !table?? || !table.isCompositePrimaryKey()>
+</#if>
+<#if table?? && table.isCompositePrimaryKey()>
 package ${rootPackage}.key;
 
 import java.io.Serializable;
@@ -17,7 +20,6 @@ import lombok.AllArgsConstructor;
  * 主键字段：${table.primaryKeyInfo.fieldNames}
  *
  * @author ${author}
- * @date ${date}
  */
 <#if lombok?? && lombok>
 @Data
@@ -66,3 +68,4 @@ public class ${table.beanName}Key implements Serializable {
     }
 </#if>
 }
+</#if>

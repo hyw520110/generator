@@ -278,7 +278,12 @@ public class Generator extends AbstractGenerator {
 		} else if (isTemplateFile && render && !isExcluded) {
 			try {
 				data = templateRenderer.render(data, context, global.getEngineType());
-				writeToFile(outputPath, data, false);
+				// 渲染结果为空白内容则跳过写入（模板可输出空内容来跳过生成）
+				if (StringUtils.isNotBlank(data) && StringUtils.isNotBlank(data.trim())) {
+					writeToFile(outputPath, data, false);
+				} else {
+					log.debug("模板渲染结果为空，跳过写入: {}", outputPath);
+				}
 			} catch (Exception e) {
 				log.error("渲染失败: {}, 错误: {}", path, e.getMessage());
 			}

@@ -1,7 +1,7 @@
 const VueAxios = {
   vm: {},
   // eslint-disable-next-line no-unused-vars
-  install (Vue, instance) {
+  install (app, instance) {
     if (this.installed) {
       return
     }
@@ -13,20 +13,8 @@ const VueAxios = {
       return
     }
 
-    Vue.axios = instance
-
-    Object.defineProperties(Vue.prototype, {
-      axios: {
-        get: function get () {
-          return instance
-        }
-      },
-      $http: {
-        get: function get () {
-          return instance
-        }
-      }
-    })
+    app.config.globalProperties.axios = instance
+    app.config.globalProperties.$http = instance
   }
 }
 

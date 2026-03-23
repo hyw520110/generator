@@ -16,7 +16,6 @@
 </#if>
  *
  * @author ${author!}
- * @since ${date!}
  * @copyright ${copyright!}
  */
 </#macro>
@@ -30,7 +29,6 @@
  * ${description!}
  *
  * @author ${author!}
- * @since ${date!}
  * @copyright ${copyright!}
  */
 </#macro>

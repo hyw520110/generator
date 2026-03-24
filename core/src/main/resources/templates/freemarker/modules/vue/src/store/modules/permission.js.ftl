@@ -1,20 +1,30 @@
+import { markRaw, defineAsyncComponent } from 'vue'
 import { constantRouterMap } from '@/config/router.config'
 // eslint-disable-next-line
 import { BasicLayout, RouteView, BlankLayout, PageView } from '@/layouts'
 
 // 动态组件加载映射 - Vite 的 import.meta.glob 返回的 key 格式为相对路径
+// 使用 eager: false 保持懒加载特性
 const modules = import.meta.glob('/src/views/**/*.vue')
 
-// 调试：打印可用的组件路径
-console.log('[permission] 可用组件:', Object.keys(modules))
+// 包装动态组件，确保 Vue Router 能正确处理
+const wrapDynamicComponent = (importFn) => {
+  // 返回一个异步组件定义，并使用 markRaw 防止被 Vuex 响应式包装
+  return markRaw(defineAsyncComponent({
+    loader: importFn,
+    loadingComponent: null,
+    errorComponent: null,
+    delay: 0
+  }))
+}
 
-// 前端路由表
+// 前端路由表 - 使用 markRaw 防止组件被 Vuex 的响应式系统包装
 const constantRouterComponents = {
   // 基础页面 layout 必须引入
-  BasicLayout: BasicLayout,
-  BlankLayout: BlankLayout,
-  RouteView: RouteView,
-  PageView: PageView
+  BasicLayout: markRaw(BasicLayout),
+  BlankLayout: markRaw(BlankLayout),
+  RouteView: markRaw(RouteView),
+  PageView: markRaw(PageView)
   // ...more
 }
 
@@ -37,7 +47,7 @@ export const routerFilter = (routerMap) => {
     })
 }
 
-export const generator = (routerMap, parent) => {
+export const generator = (routerMap, parentPath = '') => {
   return routerFilter(routerMap)
     .map(item => {
       let path
@@ -46,7 +56,8 @@ export const generator = (routerMap, parent) => {
       if (reURL.test(item.resourceUri)) {
         path = item.resourceUri
       } else {
-        path = `${'$'}{parent && parent.resourceUri || ''}/${'$'}{item.resourceUri}`
+        // 使用传入的 parentPath（已生成的完整路径）而不是原始数据的 resourceUri
+        path = `${'$'}{parentPath}/${'$'}{item.resourceUri}`
 
         // 为了防止出现后端返回结果不规范，处理有可能出现拼接出多个反斜杠
         path = path.replace(/\/+/g, '/')
@@ -54,27 +65,42 @@ export const generator = (routerMap, parent) => {
 
       let routerComponent = constantRouterComponents[item.resourceView]
       if (!routerComponent && item.resourceView) {
-        // Vite 动态导入 - 使用绝对路径格式
-        const viewPath = `/src/views/${'$'}{item.resourceView}.vue`
-        const indexPath = `/src/views/${'$'}{item.resourceView}/index.vue`
-        
-        // 直接匹配
-        routerComponent = modules[viewPath] || modules[indexPath]
-        
-        // 如果没找到，尝试大小写不敏感匹配
-        if (!routerComponent) {
-          const viewPathLower = viewPath.toLowerCase()
-          const indexPathLower = indexPath.toLowerCase()
-          const key = Object.keys(modules).find(k => 
-            k.toLowerCase() === viewPathLower || k.toLowerCase() === indexPathLower
-          )
-          if (key) {
-            routerComponent = modules[key]
+        // Vite 动态导入 - 尝试多种可能的路径格式
+        const possiblePaths = [
+          `/src/views/${'$'}{item.resourceView}.vue`,
+          `/src/views/${'$'}{item.resourceView}/index.vue`,
+          `/src/views/${'$'}{item.resourceView.toLowerCase()}.vue`,
+          `/src/views/${'$'}{item.resourceView.toLowerCase()}/index.vue`
+        ]
+
+        // 直接匹配 - 获取动态导入函数
+        let importFn = null
+        for (const p of possiblePaths) {
+          if (modules[p]) {
+            importFn = modules[p]
+            break
           }
         }
 
-        if (!routerComponent) {
-          console.error(`组件不存在: ${'$'}{item.resourceView}，尝试路径: ${'$'}{viewPath}`)
+        // 如果没找到，尝试模糊匹配
+        if (!importFn) {
+          const resourceViewLower = item.resourceView.toLowerCase()
+          const key = Object.keys(modules).find(k =>
+            k.toLowerCase().includes(resourceViewLower)
+          )
+          if (key) {
+            importFn = modules[key]
+          }
+        }
+
+        if (importFn) {
+          // 使用 defineAsyncComponent 包装动态组件
+          routerComponent = wrapDynamicComponent(importFn)
+        } else {
+          console.error(`组件不存在：${'$'}{item.resourceView}`, {
+            possiblePaths,
+            availableModules: Object.keys(modules).filter(k => k.toLowerCase().includes(item.resourceKey?.toLowerCase())).slice(0, 5)
+          })
         }
       }
 
@@ -85,15 +111,15 @@ export const generator = (routerMap, parent) => {
         name: item.resourceKey,
         // 该路由对应页面的 组件
         component: routerComponent,
-        // meta: 页面标题, 菜单图标, 页面权限(供指令权限用，可去掉)
+        // meta: 页面标题，菜单图标，页面权限 (供指令权限用，可去掉)
         meta: { title: item.resourceName, icon: item.resourceIcon || undefined, permission: item.resourceKey && [ item.resourceKey ] || null, url: reURL.test(item.resourceRedirect) ? item.resourceRedirect : undefined }
       }
       // 重定向
       item.resourceRedirect && !reURL.test(item.resourceRedirect) && (currentRouter.redirect = item.resourceRedirect)
       // 是否有子菜单，并递归处理
       if (item.childResources && item.childResources.length > 0) {
-        // Recursion
-        currentRouter.children = generator(item.childResources, item)
+        // Recursion - 传递当前生成的完整路径给子路由
+        currentRouter.children = generator(item.childResources, path)
       }
       return currentRouter
     })
@@ -117,7 +143,11 @@ const permission = {
         if (resources != null && resources.length > 0) {
           const assign = JSON.parse(JSON.stringify(resources))
           const routers = generator(assign)
+
+          // 添加 404 路由
           routers.push(notFoundRouter)
+
+          // 提交时保存动态路由列表
           commit('SET_ROUTERS', routers)
         }
 

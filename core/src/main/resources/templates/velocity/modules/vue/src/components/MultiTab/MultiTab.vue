@@ -103,21 +103,33 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      pages.value.push(route)
-      fullPathList.value.push(route.fullPath)
-      selectedLastPath()
+      addPage(route)
     })
 
-    watch(() => route, (newVal) => {
-      activeKey.value = newVal.fullPath
-      if (fullPathList.value.indexOf(newVal.fullPath) < 0) {
-        fullPathList.value.push(newVal.fullPath)
-        pages.value.push(newVal)
+    // 添加页面到标签列表
+    const addPage = (newRoute) => {
+      const path = newRoute.fullPath
+      activeKey.value = path
+      if (fullPathList.value.indexOf(path) < 0) {
+        fullPathList.value.push(path)
+        pages.value.push(newRoute)
       }
-    }, { deep: true })
+    }
 
-    watch(activeKey, (newPathKey) => {
-      router.push({ path: newPathKey })
+    // 使用 immediate 选项确保初始化时也能正确处理
+    watch(() => route.fullPath, (newPath, oldPath) => {
+      // 只有路径真正变化时才处理
+      if (newPath !== oldPath) {
+        addPage(route)
+      }
+    })
+
+    // 当用户点击标签时触发路由跳转
+    watch(activeKey, (newPathKey, oldPathKey) => {
+      // 只有当用户手动点击标签时才跳转（不是路由变化导致的）
+      if (newPathKey !== route.fullPath) {
+        router.push({ path: newPathKey })
+      }
     })
 
     return {

@@ -16,8 +16,8 @@ export function useAppMixin () {
   const primaryColor = computed(() => store.state.app.color)
   const colorWeak = computed(() => store.state.app.weak)
   const fixedHeader = computed(() => store.state.app.fixedHeader)
-  const fixSiderbar = computed(() => store.state.app.fixSiderbar)
-  const fixSidebar = computed(() => store.state.app.fixSiderbar)
+  const fixSiderbar = computed(() => store.state.app.fixedSidebar)
+  const fixSidebar = computed(() => store.state.app.fixedSidebar)
   const contentWidth = computed(() => store.state.app.contentWidth)
   const autoHideHeader = computed(() => store.state.app.autoHideHeader)
   const sidebarOpened = computed(() => store.state.app.sidebar)
@@ -77,8 +77,8 @@ const mixin = {
       primaryColor: state => state.app.color,
       colorWeak: state => state.app.weak,
       fixedHeader: state => state.app.fixedHeader,
-      fixSiderbar: state => state.app.fixSiderbar,
-      fixSidebar: state => state.app.fixSiderbar,
+      fixSiderbar: state => state.app.fixedSidebar,
+      fixSidebar: state => state.app.fixedSidebar,
       contentWidth: state => state.app.contentWidth,
       autoHideHeader: state => state.app.autoHideHeader,
       sidebarOpened: state => state.app.sidebar,

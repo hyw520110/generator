@@ -7,7 +7,7 @@ import { ACCESS_TOKEN, USER_ID } from '@/store/mutation-types'
 // 从环境变量读取后端服务器配置，动态拼接
 const apiHost = import.meta.env.VITE_API_HOST || 'localhost'
 const apiPort = import.meta.env.VITE_API_PORT || '8082'
-const baseHost =  `http://${apiHost}:${apiPort}`
+const baseHost = import.meta.env.DEV ? '' : `http://${'$'}{apiHost}:${'$'}{apiPort}`
 const uploadUrl = baseHost + '/v1/common/upload'
 
 // 创建axios实例，设置请求超时时间(正式环境时长根据实际调整)

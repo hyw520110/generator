@@ -128,11 +128,11 @@
           </a-button>
           <template #overlay>
             <a-menu @click="handleGenCode">
+              <a-menu-item key="unpacked">
+                生成代码
+              </a-menu-item>
               <a-menu-item key="packed">
                 打包下载
-              </a-menu-item>
-              <a-menu-item key="unpacked">
-                不打包
               </a-menu-item>
             </a-menu>
           </template>
@@ -213,20 +213,11 @@
 
       <!-- 关系图视图 -->
       <template v-if="showGraphView">
-        <div class="graph-view-header">
-          <a-button @click="hideGraphView">
-            <left-outlined />
-            返回表格
-          </a-button>
-          <span class="graph-info">
-            {{ graphTitle }}（{{ graphData.nodes.length }} 个表，{{ graphData.edges.length }} 个关系）
-          </span>
-        </div>
         <div v-if="graphLoading" class="graph-loading-wrapper">
           <a-spin size="large" tip="加载中..." />
         </div>
         <div v-else-if="graphData.nodes.length > 0" class="graph-view-container">
-          <RelationGraph :graphData="graphData" @node-click="handleGraphNodeClick" />
+          <RelationGraph :graphData="graphData" @node-click="handleGraphNodeClick" @switch-view="hideGraphView" />
         </div>
         <a-empty v-else description="暂无表关系数据" style="padding: 100px 0;" />
       </template>
@@ -258,12 +249,12 @@
 <script>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { getTableList, getDatabases, genCode, getDownloads, genDoc, getTableRelations, getConfig, deleteFile } from '@/api/generator'
-import { SyncOutlined, DownloadOutlined, FileWordOutlined, FilePdfOutlined, DownOutlined, ApartmentOutlined, LeftOutlined } from '@ant-design/icons-vue'
+import { SyncOutlined, DownloadOutlined, FileWordOutlined, FilePdfOutlined, DownOutlined, ApartmentOutlined } from '@ant-design/icons-vue'
 import RelationGraph from '@/components/RelationGraph/index.vue'
 
 export default {
   name: 'GenCodeView',
-  components: { SyncOutlined, DownloadOutlined, FileWordOutlined, FilePdfOutlined, DownOutlined, ApartmentOutlined, LeftOutlined, RelationGraph },
+  components: { SyncOutlined, DownloadOutlined, FileWordOutlined, FilePdfOutlined, DownOutlined, ApartmentOutlined, RelationGraph },
   emits: ['prevStep'],
   setup (props, { emit }) {
     const formRef = ref()
@@ -294,7 +285,6 @@ export default {
     const showGraphView = ref(false)
     const graphLoading = ref(false)
     const graphData = ref({ nodes: [], edges: [] })
-    const graphTitle = ref('')
     
     let timer = null
     
@@ -577,7 +567,6 @@ export default {
       }
       
       const isAll = key === 'all'
-      graphTitle.value = isAll ? '所有表关系图' : '选中表关系图'
       showGraphView.value = true
       graphLoading.value = true
       graphData.value = { nodes: [], edges: [] }
@@ -612,19 +601,18 @@ export default {
       graphData.value = { nodes: [], edges: [] }
     }
 
-    // 处理关系图节点点击 - 返回表格并选中对应行
+    // 处理关系图节点点击 - 保持关系图视图，在右侧面板显示表详情
+    // 注：RelationGraph 组件内部已实现右侧详情面板，这里只做选中状态的同步
     const handleGraphNodeClick = (nodeData) => {
-      // 返回表格视图
-      showGraphView.value = false
-      
-      // 选中对应的表
+      // 同步选中对应的表（用于后续操作）
       if (nodeData.tableName || nodeData.id) {
         const tableName = nodeData.tableName || nodeData.id
-        // 如果该表在当前表格数据中，选中它
+        // 如果该表在当前表格数据中，同步选中状态
         if (data.value.some(item => item.name === tableName)) {
           selectedRowKeys.value = [tableName]
         }
       }
+      // 保持关系图视图，不在点击节点时返回表格
     }
 
     // 下载文件数量
@@ -739,7 +727,6 @@ export default {
       showGraphView,
       graphLoading,
       graphData,
-      graphTitle,
       handleGenCode,
       handleGenDoc,
       handQuery,
@@ -791,26 +778,6 @@ export default {
 }
 .db-auto-complete :deep(.ant-select) {
   width: 100% !important;
-}
-
-.graph-view-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-  
-  :deep(.ant-btn) {
-    border-radius: 4px;
-  }
-  
-  .graph-info {
-    margin-left: 16px;
-    color: #666;
-    font-size: 14px;
-    background: #f0f5ff;
-    padding: 6px 16px;
-    border-radius: 4px;
-    border: 1px solid #adc6ff;
-  }
 }
 
 .graph-loading-wrapper {

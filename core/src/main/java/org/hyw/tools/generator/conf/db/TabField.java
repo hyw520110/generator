@@ -88,7 +88,7 @@ public class TabField extends BaseBean {
 	}
 
 	public String getPropertyName() {
-		return getCapitalName();
+		return propertyName;
 	}
 
 	public void setPropertyName(String propertyName) {

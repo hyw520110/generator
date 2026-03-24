@@ -125,9 +125,15 @@ public class Table extends BaseBean {
 		StringBuilder builder=new StringBuilder();
 		List<TabField> list = getPrimarykeyFields();
 		for (TabField tabField : list) {
-			builder.append(tabField.getName()+",");
+			// 使用 propertyName 而不是 name，确保使用 Java 属性名（首字母小写）
+			String propName = tabField.getPropertyName();
+			// 如果 propertyName 首字母是大写，转为小写
+			if (propName.length() > 0 && Character.isUpperCase(propName.charAt(0))) {
+				propName = Character.toLowerCase(propName.charAt(0)) + propName.substring(1);
+			}
+			builder.append(propName).append(",");
 		}
-		return builder.deleteCharAt(builder.length()-1).toString();
+		return builder.length() > 0 ? builder.deleteCharAt(builder.length()-1).toString() : "";
 	}
 
 	/**

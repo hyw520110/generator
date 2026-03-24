@@ -16,9 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;import javax.annotation.PostConstruct;
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -883,92 +881,12 @@ public class CodeGenController {
 				edges.add(edge);
 			}
 			
-			// 获取所有表的字段信息（用于右侧详情面板）
-                        // 使用 DriverManager 获取独立连接，避免占用连接池
-                        Map<String, List<Map<String, Object>>> tableColumnsMap = new HashMap<>();
-                        Map<String, List<Map<String, Object>>> tableForeignKeysMap = new HashMap<>();
-                        
-                        java.sql.Connection directConn = null;
-                        try {
-                                String jdbcUrl = ds.getDBType().buildUrl(ds.getIp(), ds.getPort(), dbName);
-                                directConn = java.sql.DriverManager.getConnection(jdbcUrl, username, pwd);
-                                logger.info("[relations] 直连数据库获取元数据 - URL: {}", jdbcUrl);
-                                
-                                DatabaseMetaData metaData = directConn.getMetaData();
-                                String catalog = dbName;
-                                String schema = null;
-
-                                for (String tableName : addedTables.keySet()) {
-                                        // 获取列信息
-                                        List<Map<String, Object>> columns = new ArrayList<>();
-                                        try (ResultSet rs = metaData.getColumns(catalog, schema, tableName, null)) {
-                                                while (rs.next()) {
-                                                        Map<String, Object> column = new HashMap<>();
-                                                        String columnName = rs.getString("COLUMN_NAME");
-                                                        String dataType = rs.getString("TYPE_NAME");
-                                                        int columnSize = rs.getInt("COLUMN_SIZE");
-                                                        int nullable = rs.getInt("NULLABLE");
-                                                        String defaultValue = rs.getString("COLUMN_DEF");
-                                                        String remark = rs.getString("REMARKS");
-                                                        boolean isPrimaryKey = false;
-
-                                                        // 检查是否是主键
-                                                        try (ResultSet pkRs = metaData.getPrimaryKeys(catalog, schema, tableName)) {
-                                                                while (pkRs.next()) {
-                                                                        if (columnName.equals(pkRs.getString("COLUMN_NAME"))) {
-                                                                                isPrimaryKey = true;
-                                                                                break;
-                                                                        }
-                                                                }
-                                                        }
-
-                                                        column.put("columnName", columnName);
-                                                        column.put("dataType", dataType + (columnSize > 0 ? "(" + columnSize + ")" : ""));
-                                                        column.put("isPrimary", isPrimaryKey);
-                                                        column.put("isForeignKey", false);
-                                                        column.put("isNullable", nullable == DatabaseMetaData.columnNullable);
-                                                        column.put("comment", StringUtils.defaultString(remark, ""));
-                                                        column.put("defaultValue", defaultValue);
-
-                                                        columns.add(column);
-                                                }
-                                        }
-                                        tableColumnsMap.put(tableName, columns);
-
-                                        // 获取外键关系
-                                        List<Map<String, Object>> foreignKeys = new ArrayList<>();
-                                        try (ResultSet rs = metaData.getImportedKeys(catalog, schema, tableName)) {
-                                                while (rs.next()) {
-                                                        Map<String, Object> fk = new HashMap<>();
-                                                        fk.put("column", rs.getString("FKCOLUMN_NAME"));
-                                                        fk.put("referenceTable", rs.getString("PKTABLE_NAME"));
-                                                        fk.put("referenceColumn", rs.getString("PKCOLUMN_NAME"));
-                                                        fk.put("fkName", rs.getString("FK_NAME"));
-                                                        foreignKeys.add(fk);
-                                                }
-                                        }
-                                        tableForeignKeysMap.put(tableName, foreignKeys);
-                                }
-                        } finally {
-                                // 关闭独立连接
-                                if (directConn != null && !directConn.isClosed()) {
-                                        try {
-                                                directConn.close();
-                                        } catch (SQLException e) {
-                                                logger.warn("关闭直连连接失败", e);
-                                        }
-                                }
-                        }
-
-                        // 返回结果
+			// 返回结果
 			Map<String, Object> result = new HashMap<>();
 			result.put("nodes", nodes);
 			result.put("edges", edges);
 			result.put("tableCount", tableNames.size());
 			result.put("relationCount", relations.size());
-                        // 添加表详情数据（字段列表和外键关系）
-                        result.put("tableDetails", tableColumnsMap);
-                        result.put("tableForeignKeys", tableForeignKeysMap);
 			
 			long duration = System.currentTimeMillis() - startTime;
 			logger.info("[relations] 输出 - 节点数: {}, 边数: {}, 耗时: {}ms", nodes.size(), edges.size(), duration);

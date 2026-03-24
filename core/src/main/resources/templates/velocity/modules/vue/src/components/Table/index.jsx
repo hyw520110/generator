@@ -59,7 +59,7 @@ export default {
       default: false
     },
     showPagination: {
-      type: String | Boolean,
+      type: [String, Boolean],
       default: 'auto'
     },
     /**
@@ -253,15 +253,17 @@ export default {
         this.renderClear(this.alert.clear)
       ) : null
 
-      // 绘制 alert 组件
+      // 绘制 alert 组件 - Vue 3 兼容写法
+      const messageSlot = () => (
+        <span>
+          <span style="margin-right: 12px">已选择: <a style="font-weight: 600">{this.selectedRows.length}</a></span>
+          {needTotalItems}
+          {clearItem}
+        </span>
+      )
+
       return (
-        <a-alert showIcon={true} style="margin-bottom: 16px">
-          <template slot="message">
-            <span style="margin-right: 12px">已选择: <a style="font-weight: 600">{this.selectedRows.length}</a></span>
-            {needTotalItems}
-            {clearItem}
-          </template>
-        </a-alert>
+        <a-alert showIcon={true} style="margin-bottom: 16px" v-slots={{ message: messageSlot }} />
       )
     }
   },
@@ -300,10 +302,15 @@ export default {
       this[k] && (props[k] = this[k])
       return props[k]
     })
+    
+    // Vue 3 兼容的插槽处理
+    const slots = {}
+    for (const name in this.$slots) {
+      slots[name] = this.$slots[name]
+    }
+
     const table = (
-      <a-table {...{ props, scopedSlots: { ...this.$scopedSlots } }} onChange={this.loadData}>
-        { Object.keys(this.$slots).map(name => (<template slot={name}>{this.$slots[name]}</template>)) }
-      </a-table>
+      <a-table {...props} v-slots={slots} onChange={this.loadData} />
     )
 
     return (

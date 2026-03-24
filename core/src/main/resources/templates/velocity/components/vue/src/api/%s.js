@@ -20,7 +20,7 @@ export function getList (parameter) {
 
 export function getInfo (#if(""=="${table.getPrimarykeyFieldsNames()}")id#else${table.getPrimarykeyFieldsNames()}#end) {
   return axios({
-    url: moudulePath + '/' + #foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}) + "," + #end#end,
+    url: moudulePath + '/' + #if(""=="${table.getPrimarykeyFieldsNames()}")id#else${table.getPrimarykeyFieldsNames()}#end,
     method: 'get'
   })
 }
@@ -42,7 +42,7 @@ export function edit${table.beanName} (parameter) {
 export function del${table.beanName} (#if(""=="${table.getPrimarykeyFieldsNames()}")id#else${table.getPrimarykeyFieldsNames()}#end) {
   console.log('parameter', #if(""=="${table.getPrimarykeyFieldsNames()}")id#else${table.getPrimarykeyFieldsNames()}#end)
   return axios({
-    url: moudulePath + '/' + #foreach($field in ${table.primarykeyFields})${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}) + "," + #end#end,
+    url: moudulePath + '/' + #if(""=="${table.getPrimarykeyFieldsNames()}")id#else${table.getPrimarykeyFieldsNames()}#end,
     method: 'delete'
   })
 }

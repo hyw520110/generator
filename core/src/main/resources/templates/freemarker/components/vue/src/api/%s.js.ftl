@@ -20,7 +20,7 @@ export function getList (parameter) {
 
 export function getInfo (<#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>) {
   return axios({
-    url: moudulePath + '/' + <#list table.primarykeyFields as field>${field.propertyName}<#if field?has_next> + "," + </#if></#list>,
+    url: moudulePath + '/' + <#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>,
     method: 'get'
   })
 }
@@ -42,7 +42,7 @@ export function edit${table.beanName!} (parameter) {
 export function del${table.beanName!} (<#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>) {
   console.log('parameter', <#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>)
   return axios({
-    url: moudulePath + '/' + <#list table.primarykeyFields as field>${field.propertyName}<#if field?has_next> + "," + </#if></#list>,
+    url: moudulePath + '/' + <#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>,
     method: 'delete'
   })
 }

@@ -6,8 +6,7 @@
         :class="[fixedHeader && 'ant-header-fixedHeader', sidebarOpened ? 'ant-header-side-opened' : 'ant-header-side-closed', ]"
         :style="{ padding: '0' }">
         <div v-if="mode === 'sidemenu'" class="header">
-          <MenuUnfoldOutlined v-if="device==='mobile'" class="trigger" @click="toggle"/>
-          <MenuFoldOutlined v-else class="trigger" @click="toggle"/>
+          <component :is="menuIcon" class="trigger" @click="toggle"/>
           <user-menu></user-menu>
         </div>
         <div v-else :class="['top-nav-header-index', theme]">
@@ -15,7 +14,7 @@
             <div class="header-index-left">
               <logo class="top-nav-header" :show-title="device !== 'mobile'"/>
               <s-menu v-if="device !== 'mobile'" mode="horizontal" :menu="menus" :theme="theme" />
-              <MenuUnfoldOutlined v-else class="trigger" @click="toggle" />
+              <component :is="menuIcon" v-else class="trigger" @click="toggle" />
             </div>
             <user-menu class="header-index-right"></user-menu>
           </div>
@@ -35,11 +34,11 @@ import { mixin } from '@/utils/mixin'
 export default {
   name: 'GlobalHeader',
   components: {
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
     UserMenu,
     SMenu,
-    Logo
+    Logo,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined
   },
   mixins: [mixin],
   props: {
@@ -72,6 +71,16 @@ export default {
     return {
       visible: true,
       oldScrollTop: 0
+    }
+  },
+  computed: {
+    menuIcon () {
+      // 桌面端: collapsed 时显示展开图标, 否则显示折叠图标
+      // 移动端: 逻辑相反
+      if (this.device === 'mobile') {
+        return this.collapsed ? 'MenuFoldOutlined' : 'MenuUnfoldOutlined'
+      }
+      return this.collapsed ? 'MenuUnfoldOutlined' : 'MenuFoldOutlined'
     }
   },
   mounted () {

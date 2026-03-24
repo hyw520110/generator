@@ -17,33 +17,25 @@ export const asyncRouterMap = [
     meta: { title: 'menu.home' },
     redirect: '/dashboard/workplace',
     children: [
-      // dashboard
+      // dashboard - 分析页
       {
-        path: '/dashboard',
-        name: 'dashboard',
-        redirect: '/dashboard/workplace',
-        component: RouteView,
-        meta: { title: 'menu.dashboard', keepAlive: true, icon: bxAnaalyse, permission: [ 'dashboard' ] },
-        children: [
-          {
-            path: '/dashboard/analysis/:pageNo([1-9]\\d*)?',
-            name: 'Analysis',
-            component: () => import('@/views/dashboard/Analysis.vue'),
-            meta: { title: 'menu.dashboard.analysis', keepAlive: false, permission: [ 'dashboard' ] }
-          },
-          // 外部链接
-          {
-            path: 'https://www.baidu.com/',
-            name: 'Monitor',
-            meta: { title: 'menu.dashboard.monitor', target: '_blank' }
-          },
-          {
-            path: '/dashboard/workplace',
-            name: 'Workplace',
-            component: () => import('@/views/dashboard/Workplace.vue'),
-            meta: { title: 'menu.dashboard.workplace', keepAlive: true, permission: [ 'dashboard' ] }
-          }
-        ]
+        path: '/dashboard/analysis/:pageNo([1-9]\\d*)?',
+        name: 'Analysis',
+        component: () => import('@/views/dashboard/Analysis.vue'),
+        meta: { title: 'menu.dashboard.analysis', keepAlive: false, icon: bxAnaalyse, permission: [ 'dashboard' ] }
+      },
+      // dashboard - 监控页（外部链接）
+      {
+        path: 'https://www.baidu.com/',
+        name: 'Monitor',
+        meta: { title: 'menu.dashboard.monitor', target: '_blank', icon: bxAnaalyse, permission: [ 'dashboard' ] }
+      },
+      // dashboard - 工作台
+      {
+        path: '/dashboard/workplace',
+        name: 'Workplace',
+        component: () => import('@/views/dashboard/Workplace.vue'),
+        meta: { title: 'menu.dashboard.workplace', keepAlive: true, icon: bxAnaalyse, permission: [ 'dashboard' ] }
       },
 
       // forms

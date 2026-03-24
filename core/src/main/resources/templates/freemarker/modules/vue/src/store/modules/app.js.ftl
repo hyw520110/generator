@@ -21,17 +21,19 @@ const storage = storageModule.default || storageModule
 const app = {
   state: {
     sideCollapsed: false,
+    sidebar: true,  // 侧边栏展开状态
     isMobile: false,
+    device: 'desktop',  // 设备类型
     theme: 'dark',
-    layout: '',
-    contentWidth: '',
+    layout: 'sidemenu',
+    contentWidth: 'Fluid',
     fixedHeader: false,
-    fixedSidebar: false,
+    fixedSidebar: true,
     autoHideHeader: false,
-    color: '',
+    color: '#1890FF',
     weak: false,
     multiTab: true,
-    lang: 'en-US',
+    lang: 'zh-CN',
     _antLocale: {}
   },
   mutations: {
@@ -82,9 +84,19 @@ const app = {
     [TOGGLE_MULTI_TAB]: (state, bool) => {
       storage.set(TOGGLE_MULTI_TAB, bool)
       state.multiTab = bool
+    },
+    TOGGLE_DEVICE: (state, device) => {
+      state.device = device
+    },
+    SET_SIDEBAR: (state, sidebar) => {
+      state.sidebar = sidebar
+      state.sideCollapsed = !sidebar
     }
   },
   actions: {
+    setSidebar ({ commit }, sidebar) {
+      commit('SET_SIDEBAR', sidebar)
+    },
     setLang ({ commit }, lang) {
       return new Promise((resolve, reject) => {
         commit(APP_LANGUAGE, lang)

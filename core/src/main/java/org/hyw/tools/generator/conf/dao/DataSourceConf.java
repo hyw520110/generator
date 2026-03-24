@@ -308,6 +308,7 @@ public class DataSourceConf extends DruidDataSource {
 		// 值没有变化则不处理
 		if ((trimmedDbName == null && this.currentDbName == null) 
 				|| (trimmedDbName != null && trimmedDbName.equals(this.currentDbName))) {
+			logger.debug("数据库未变化，无需切换 - 当前库：{}", this.currentDbName);
 			return;
 		}
 		

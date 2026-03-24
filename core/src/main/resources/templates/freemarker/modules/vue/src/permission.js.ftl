@@ -29,8 +29,10 @@ router.beforeEach(async (to, from, next) => {
         const res = await store.dispatch('GetUserResources', userId)
         await store.dispatch('GeneratorDynamicRouter', res)
         // 动态添加可访问路由表 (Vue Router 4 使用 addRoute)
-        store.getters.addRouters.forEach(route => {
-          router.addRoute(route)
+        // 将动态路由逐个添加到 "/" 路由下
+        const routes = store.getters.addRouters
+        routes.forEach(route => {
+          router.addRoute('index', route)
         })
         // 刷新用户权限相关缓存
         refreshUserAuthCache(userId)

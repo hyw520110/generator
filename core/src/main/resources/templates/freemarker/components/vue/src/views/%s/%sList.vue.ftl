@@ -78,7 +78,7 @@ import { message, Modal } from 'ant-design-vue'
 import { PlusOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { STable } from '@/components'
 import { getList, del${table.beanName?cap_first} } from '@/api/${table.beanName}'
-import CreateForm from './modules/${table.beanName}Form.vue'
+import CreateForm from './${table.beanName}Form.vue'
 
 export default {
   name: '${table.beanName?cap_first}List',

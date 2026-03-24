@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import { UserLayout, BasicLayout } from '@/layouts'
+import { UserLayout, BasicLayout, RouteView } from '@/layouts'
 
 /**
  * 基础路由
@@ -9,8 +9,11 @@ import { UserLayout, BasicLayout } from '@/layouts'
 export const constantRouterMap = [
   {
     path: '/',
-    redirect: '/user/login',
-    hidden: true
+    name: 'index',
+    component: BasicLayout,
+    redirect: '/dashboard/workplace',
+    hidden: true,
+    children: [] // 动态路由将在这里添加
   },
   {
     path: '/user',
@@ -22,19 +25,6 @@ export const constantRouterMap = [
         path: 'login',
         name: 'login',
         component: () => import('@/views/user/Login.vue')
-      }
-    ]
-  },
-  {
-    path: '/dashboard',
-    component: BasicLayout,
-    redirect: '/dashboard/workplace',
-    children: [
-      {
-        path: 'workplace',
-        name: 'Workplace',
-        component: () => import('@/views/dashboard/Workplace.vue'),
-        meta: { title: '工作台' }
       }
     ]
   },

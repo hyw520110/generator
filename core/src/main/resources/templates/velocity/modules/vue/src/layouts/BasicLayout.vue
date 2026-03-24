@@ -42,9 +42,7 @@
       <!-- layout content -->
       <a-layout-content :style="{ height: '100%', margin: '24px 24px 0', paddingTop: fixedHeader ? '64px' : '0' }">
         <multi-tab v-if="multiTab"></multi-tab>
-        <transition name="page-transition">
-          <route-view />
-        </transition>
+        <route-view />
       </a-layout-content>
 
       <!-- layout footer -->
@@ -91,10 +89,10 @@ export default defineComponent({
     const collapsed = ref(false)
 
     const mainMenu = computed(() => store.state.permission.addRouters)
-    
+
+    // 直接使用 addRouters 作为菜单
     const menus = computed(() => {
-      const rootRoute = mainMenu.value.find(item => item.path === '/')
-      return rootRoute?.children || []
+      return mainMenu.value || []
     })
 
     const contentPaddingLeft = computed(() => {

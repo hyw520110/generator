@@ -6,7 +6,7 @@ import { VueAxios } from './axios'
 import { ACCESS_TOKEN } from '@/store/mutation-types'
 
 // 开发环境使用代理，生产环境使用绝对路径
-const baseHost = import.meta.env.DEV ? '' : 'http://localhost:8081'
+const baseHost = import.meta.env.DEV ? '' : 'http://localhost:8080'
 
 // 创建 axios 实例
 const request = axios.create({

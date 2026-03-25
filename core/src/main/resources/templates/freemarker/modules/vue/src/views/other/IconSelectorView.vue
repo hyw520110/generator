@@ -4,7 +4,7 @@
   </a-card>
 </template>
 
-<script jsx>
+<script>
 import IconSelector from '@/components/IconSelector'
 
 export default {
@@ -20,7 +20,7 @@ export default {
   methods: {
     handleIconChange (icon) {
       console.log('change Icon', icon)
-      this.$message.info(<span>选中图标 <code>{icon}</code></span>)
+      this.$message.info(`选中图标 ${icon}`)
     }
   }
 }

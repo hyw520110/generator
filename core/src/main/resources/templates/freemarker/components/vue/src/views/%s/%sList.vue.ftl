@@ -99,18 +99,23 @@ export default {
     const columns = [
       {
         title: '#',
-        dataIndex: 'serial'
+        dataIndex: 'serial',
+        width: 80,
+        fixed: 'left'
       },
 <#list table.fields as field>
       {
         title: '${field.comment?default(field.name)}',
-        dataIndex: '${field.propertyName}'
+        dataIndex: '${field.propertyName}'<#if table.getFieldWidthConfig(field) != "">,
+        ${table.getFieldWidthConfig(field)}</#if><#if table.getFieldFixedConfig(field, field?index) != "">,
+        ${table.getFieldFixedConfig(field, field?index)}</#if>
       },
 </#list>
       {
         title: '操作',
         dataIndex: 'action',
-        width: '150px'
+        width: '150px',
+        fixed: 'right'
       }
     ]
 

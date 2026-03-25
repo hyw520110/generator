@@ -363,7 +363,14 @@ public class Generator extends AbstractGenerator {
 					}
 				}
 			} else {
-				File templatesRootDir = new File(rootUri);
+				// 修复：处理URI可能不是绝对路径的情况
+				File templatesRootDir;
+				if (rootUri.isAbsolute()) {
+					templatesRootDir = new File(rootUri);
+				} else {
+					// 如果是相对路径，使用URL的path创建File
+					templatesRootDir = new File(rootUrl.getPath());
+				}
 				File assetsDir = new File(templatesRootDir, "assets");
 				if (assetsDir.exists() && assetsDir.isDirectory()) {
 					java.util.Collection<File> files = org.apache.commons.io.FileUtils.listFiles(assetsDir, null, true);

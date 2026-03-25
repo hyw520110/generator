@@ -1,7 +1,11 @@
 import T from 'ant-design-vue/es/table/Table'
 import get from 'lodash.get'
+import { SettingOutlined } from '@ant-design/icons-vue'
 
 export default {
+  components: {
+    SettingOutlined
+  },
   data () {
     return {
       needTotalList: [],
@@ -11,7 +15,11 @@ export default {
 
       localLoading: false,
       localDataSource: [],
-      localPagination: Object.assign({}, this.pagination)
+      localPagination: Object.assign({}, this.pagination),
+      
+      // 列选择器相关
+      columnSettingsVisible: false,
+      visibleColumns: []
     }
   },
   props: Object.assign({}, T.props, {
@@ -74,6 +82,16 @@ export default {
     pageURI: {
       type: Boolean,
       default: false
+    },
+    // 是否显示列选择器
+    showColumnSettings: {
+      type: Boolean,
+      default: true
+    },
+    // 是否启用横向滚动
+    scroll: {
+      type: Object,
+      default: () => ({ x: 'max-content' })
     }
   }),
   watch: {
@@ -112,9 +130,39 @@ export default {
     }) || false
     console.log('this.localPagination', this.localPagination)
     this.needTotalList = this.initTotalList(this.columns)
+    // 初始化可见列
+    this.initVisibleColumns()
     this.loadData()
   },
   methods: {
+    /**
+     * 初始化可见列
+     */
+    initVisibleColumns () {
+      if (this.columns && this.columns.length > 0) {
+        this.visibleColumns = this.columns.map(col => ({
+          ...col,
+          visible: col.visible !== false // 默认可见
+        }))
+      }
+    },
+    /**
+     * 切换列的可见性
+     */
+    toggleColumnVisible (dataIndex) {
+      const col = this.visibleColumns.find(c => c.dataIndex === dataIndex)
+      if (col) {
+        col.visible = !col.visible
+      }
+    },
+    /**
+     * 重置列显示
+     */
+    resetColumnSettings () {
+      this.visibleColumns.forEach(col => {
+        col.visible = true
+      })
+    },
     /**
      * 表格重新加载方法
      * 如果参数为 true, 则强制刷新到第一页
@@ -308,14 +356,79 @@ export default {
     for (const name in this.$slots) {
       slots[name] = this.$slots[name]
     }
+    
+    // 处理列配置
+    const processedColumns = this.visibleColumns.filter(col => col.visible).map(col => {
+      const columnConfig = { ...col }
+      // 为长标题添加tooltip
+      if (col.title && col.title.length > 8) {
+        const originalTitle = col.title
+        const shortTitle = col.title.substring(0, 8) + '...'
+        columnConfig.title = () => (
+          <a-tooltip title={originalTitle} placement="top">
+            {shortTitle}
+          </a-tooltip>
+        )
+      }
+      // 添加文本省略和最大宽度
+      if (!col.width && col.dataIndex !== 'serial' && col.dataIndex !== 'action') {
+        columnConfig.ellipsis = {
+          showTitle: false
+        }
+        columnConfig.customRender = ({ text }) => (
+          <a-tooltip title={text} placement="top">
+            {text}
+          </a-tooltip>
+        )
+      }
+      return columnConfig
+    })
+    
+    // 添加横向滚动
+    if (this.scroll && !props.scroll) {
+      props.scroll = this.scroll
+    }
 
     const table = (
-      <a-table {...props} v-slots={slots} onChange={this.loadData} />
+      <a-table {...props} columns={processedColumns} v-slots={slots} onChange={this.loadData} />
     )
+    
+    // 列选择器组件
+    const columnSettingsMenu = (
+      <a-menu>
+        <a-menu-item-group title="列设置">
+          {this.visibleColumns.map(col => (
+            <a-menu-item key={col.dataIndex}>
+              <a-checkbox 
+                checked={col.visible} 
+                onChange={() => this.toggleColumnVisible(col.dataIndex)}
+              >
+                {typeof col.title === 'function' ? col.title() : col.title}
+              </a-checkbox>
+            </a-menu-item>
+          ))}
+        </a-menu-item-group>
+        <a-menu-divider />
+        <a-menu-item onClick={this.resetColumnSettings}>
+          重置
+        </a-menu-item>
+      </a-menu>
+    )
+    
+    const columnSettings = this.showColumnSettings ? (
+      <a-dropdown trigger={['click']} visible={this.columnSettingsVisible} onVisibleChange={(visible) => { this.columnSettingsVisible = visible }} overlay={columnSettingsMenu}>
+        <a-button style="margin-left: 8px" size="small" icon={<setting-outlined />}>
+          列设置
+        </a-button>
+      </a-dropdown>
+    ) : null
 
     return (
       <div class="table-wrapper">
         { showAlert ? this.renderAlert() : null }
+        <div style="margin-bottom: 8px; display: flex; justify-content: flex-end;">
+          {columnSettings}
+        </div>
         { table }
       </div>
     )

@@ -19,6 +19,9 @@ export LANG=en_US.UTF-8
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 APP_DIR="$SCRIPT_DIR"
 LOG_DIR="$APP_DIR/logs"
+DEP_HASH_FILE="$APP_DIR/.dep_hash"
+STOP_SCRIPT="$APP_DIR/stop.sh"
+RUN_SCRIPT="$APP_DIR/run.sh"
 
 # 颜色输出
 RED='\033[0;31m'
@@ -37,17 +40,17 @@ check_and_fix_proxy() {
     local proxy_host=""
     local proxy_port=""
     local proxy_url=""
-    
+
     # 检查 npm 代理配置
     local npm_proxy=$(npm config get proxy 2>/dev/null)
     local npm_https_proxy=$(npm config get https-proxy 2>/dev/null)
-    
+
     if [ -n "$npm_proxy" ] && [ "$npm_proxy" != "null" ]; then
         proxy_url="$npm_proxy"
     elif [ -n "$npm_https_proxy" ] && [ "$npm_https_proxy" != "null" ]; then
         proxy_url="$npm_https_proxy"
     fi
-    
+
     # 检查环境变量代理
     if [ -z "$proxy_url" ]; then
         if [ -n "$HTTP_PROXY" ]; then
@@ -60,48 +63,143 @@ check_and_fix_proxy() {
             proxy_url="$https_proxy"
         fi
     fi
-    
+
     # 如果检测到代理，检查是否可用
     if [ -n "$proxy_url" ]; then
+        # 解析代理地址 (支持 http://host:port 格式)
         proxy_url=$(echo "$proxy_url" | sed 's|^http://||' | sed 's|^https://||' | sed 's|/$||')
         proxy_host=$(echo "$proxy_url" | cut -d: -f1)
         proxy_port=$(echo "$proxy_url" | cut -d: -f2)
-        
+
         if [ -n "$proxy_host" ] && [ -n "$proxy_port" ]; then
-            echo_info "检测到代理配置: $proxy_host:$proxy_port"
-            
+            echo_info "检测到代理配置：$proxy_host:$proxy_port"
+
+            # 测试代理是否可用 (超时 2 秒)
             if nc -z -w 2 "$proxy_host" "$proxy_port" 2>/dev/null; then
                 echo_info "代理连接正常"
             else
                 echo_warn "代理 $proxy_host:$proxy_port 不可达，正在清除代理配置..."
-                
+
+                # 清除 npm/yarn 代理配置
                 npm config delete proxy 2>/dev/null || true
                 npm config delete https-proxy 2>/dev/null || true
-                
+
                 if command -v yarn > /dev/null 2>&1; then
                     yarn config delete proxy 2>/dev/null || true
                     yarn config delete https-proxy 2>/dev/null || true
                 fi
-                
+
+                # 清除环境变量
                 unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy
-                
+
                 echo_info "代理配置已清除"
             fi
         fi
     fi
 }
 
+# 清理函数 - 用于信号处理
+cleanup() {
+    echo_info '正在停止服务...'
+    if [ -f "$STOP_SCRIPT" ]; then
+        chmod +x "$STOP_SCRIPT"
+        "$STOP_SCRIPT" --all 2>/dev/null || true
+    fi
+    echo_info '服务已停止'
+    exit 0
+}
+
+# 从配置文件中提取端口号
+extract_ports_from_config() {
+    local port_list=""
+    
+    # 查找脚本目录下所有 .properties, .yaml, .yml 文件
+    local config_files=$(find "$SCRIPT_DIR" -maxdepth 1 -type f \( -name "*.properties" -o -name "*.yaml" -o -name "*.yml" \) 2>/dev/null)
+    
+    if [ -n "$config_files" ]; then
+        for file in $config_files; do
+            # 从 properties 文件中提取端口 (server.port=8080 或 port=8080)
+            local props_ports=$(grep -E "^[[:space:]]*(server\.port|port)[[:space:]]*=" "$file" 2>/dev/null | \
+                sed 's/.*=[[:space:]]*//' | tr -d '[:space:]' | grep -E '^[0-9]+$')
+            
+            # 从 yaml/yml 文件中提取端口 (port: 8080 或 server.port: 8080)
+            local yaml_ports=$(grep -E "^[[:space:]]*(server\.port|port)[[:space:]]*:" "$file" 2>/dev/null | \
+                sed 's/.*:[[:space:]]*//' | tr -d '[:space:]' | grep -E '^[0-9]+$')
+            
+            if [ -n "$props_ports" ]; then
+                port_list="$port_list $props_ports"
+            fi
+            if [ -n "$yaml_ports" ]; then
+                port_list="$port_list $yaml_ports"
+            fi
+        done
+    fi
+    
+    # 去重并返回
+    echo "$port_list" | tr ' ' '\n' | sort -u | tr '\n' ' ' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
+# 检测进程使用的端口号
+detect_ports_from_processes() {
+    local port_list=""
+    
+    # 检测 Java 进程端口 (后端)
+    if command -v lsof > /dev/null 2>&1; then
+        local java_ports=$(lsof -i -P -n 2>/dev/null | grep -i "listen" | grep -i "java" | \
+            awk '{print $9}' | cut -d: -f2 | grep -E '^[0-9]+$' | sort -u)
+        if [ -n "$java_ports" ]; then
+            port_list="$port_list $java_ports"
+        fi
+    fi
+    
+    # 检测 Node 进程端口 (前端)
+    if command -v lsof > /dev/null 2>&1; then
+        local node_ports=$(lsof -i -P -n 2>/dev/null | grep -i "listen" | grep -i "node" | \
+            awk '{print $9}' | cut -d: -f2 | grep -E '^[0-9]+$' | sort -u)
+        if [ -n "$node_ports" ]; then
+            port_list="$port_list $node_ports"
+        fi
+    fi
+    
+    # 去重并返回
+    echo "$port_list" | tr ' ' '\n' | sort -u | tr '\n' ' ' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
+# 获取所有端口号
+get_all_ports() {
+    local config_ports=$(extract_ports_from_config)
+    local process_ports=$(detect_ports_from_processes)
+    
+    local all_ports="$config_ports $process_ports"
+    
+    # 去重并返回
+    echo "$all_ports" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
 show_help() {
-    echo "用法: ./startup.sh [选项]"
+    echo "用法：$0 [选项]"
     echo ""
     echo "选项:"
     echo "  --backend        仅启动后端服务"
     echo "  --frontend       仅启动前端服务"
-    echo "  --debug-port     设置后端调试端口 (例如: 5005)"
+    echo "  --debug-port     设置后端调试端口 (例如：5005)"
     echo "  -f, --force      启动前停止已存在的进程 (前后端)"
     echo "  -h, --help       显示此帮助信息"
     echo ""
-    echo "默认行为: 同时在后台启动前后端服务。"
+    echo "默认行为：同时在后台启动前后端服务。"
+    echo ""
+    echo "当前配置:"
+    echo "  脚本目录：$SCRIPT_DIR"
+    echo "  日志目录：$LOG_DIR"
+    echo "  运行脚本：$RUN_SCRIPT"
+    echo "  停止脚本：$STOP_SCRIPT"
+    
+    # 显示检测到的端口
+    local ports=$(get_all_ports)
+    if [ -n "$ports" ]; then
+        echo "  检测到的端口：$ports"
+    fi
+    
     exit 0
 }
 
@@ -134,13 +232,13 @@ cd "$APP_DIR"
 
 # 如果指定了强制启动，调用停止脚本
 if [ "$FORCE_RESTART" = true ]; then
-    chmod +x ./stop.sh
+    chmod +x "$STOP_SCRIPT"
     if [ "$START_BACKEND" = true ] && [ "$START_FRONTEND" = true ]; then
-        ./stop.sh --all -f
+        "$STOP_SCRIPT" --all -f
     elif [ "$START_BACKEND" = true ]; then
-        ./stop.sh --backend -f
+        "$STOP_SCRIPT" --backend -f
     elif [ "$START_FRONTEND" = true ]; then
-        ./stop.sh --frontend -f
+        "$STOP_SCRIPT" --frontend -f
     fi
 fi
 
@@ -149,19 +247,21 @@ fi
 # =============================================================================
 start_backend() {
     echo_info ">>> 正在启动后端服务..."
-    
-    if [ ! -f "./run.sh" ]; then
+
+    # 检查 run.sh 是否存在
+    if [ ! -f "$RUN_SCRIPT" ]; then
         return 0
     fi
-    
-    chmod +x ./run.sh
-    
+
+    chmod +x "$RUN_SCRIPT"
+
     local run_args="--daemon"
     if [ -n "$DEBUG_PORT" ]; then
         run_args="$run_args --debug-port $DEBUG_PORT"
     fi
-    
-    ./run.sh $run_args
+
+    # 执行 run.sh 并等待后端启动完成
+    "$RUN_SCRIPT" $run_args
 }
 
 # =============================================================================
@@ -170,28 +270,34 @@ start_backend() {
 start_frontend() {
     echo_info ">>> 正在启动前端服务 (终端模式)..."
     if [ $IS_DEV_MODE -eq 0 ]; then
+        # 检测并修复代理配置
         check_and_fix_proxy
-        
+
+        # 仅监测 package.json 的变更 (意图变更)
         local files_to_hash="package.json"
-        local current_hash=$(cat $files_to_hash 2>/dev/null | (md5sum 2>/dev/null || md5) | awk '{print $1}')
-        local stored_hash=$(cat .dep_hash 2>/dev/null || echo "")
+
+        # 跨平台计算 MD5
+        local current_hash=$(cat "$files_to_hash" 2>/dev/null | (md5sum 2>/dev/null || md5) | awk '{print $1}')
+        local stored_hash=$(cat "$DEP_HASH_FILE" 2>/dev/null || echo "")
 
         if [ ! -d "node_modules" ] || [ "$current_hash" != "$stored_hash" ]; then
             echo_warn "检测到依赖变更，正在安装前端依赖..."
-            
+
+            # 解决证书过期问题
             export NODE_TLS_REJECT_UNAUTHORIZED=0
-            
+
+            # 定义可用镜像列表
             local registries=("https://registry.npmmirror.com" "https://registry.npmjs.org" "https://registry.yarnpkg.com")
             local success=false
 
             for reg in "${registries[@]}"; do
-                echo_info "尝试使用镜像源: $reg"
-                
+                echo_info "尝试使用镜像源：$reg"
+
                 if command -v yarn > /dev/null 2>&1; then
                     yarn config set strict-ssl false
                     if yarn install --registry "$reg"; then
                         success=true
-                        echo "$current_hash" > .dep_hash
+                        echo "$current_hash" > "$DEP_HASH_FILE"
                         break
                     else
                         echo_warn "镜像 $reg 安装失败，清理缓存并尝试下一个..."
@@ -202,7 +308,7 @@ start_frontend() {
                     npm config set strict-ssl false
                     if npm install --registry "$reg"; then
                         success=true
-                        echo "$current_hash" > .dep_hash
+                        echo "$current_hash" > "$DEP_HASH_FILE"
                         break
                     else
                         echo_warn "镜像 $reg 安装失败，尝试下一个..."
@@ -217,6 +323,7 @@ start_frontend() {
             fi
         fi
 
+        # 检测端口配置 (支持 vite.config.js 和 vue.config.js)
         local port=""
         if [ -f "vite.config.js" ]; then
             port=$(grep "port:" vite.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
@@ -224,10 +331,11 @@ start_frontend() {
             port=$(grep "port:" vue.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
         fi
         [ -z "$port" ] && port="8000"
-        
-        echo_info "启动前端并监听端口: $port"
-        echo_info "访问地址: http://localhost:$port"
-        
+
+        echo_info "启动前端并监听端口：$port"
+        echo_info "访问地址：http://localhost:$port"
+
+        # 检测启动命令 (支持 serve 和 dev)
         local start_cmd=""
         if [ -f "package.json" ]; then
             if grep -q '"serve"' package.json; then
@@ -236,16 +344,16 @@ start_frontend() {
                 start_cmd="dev"
             fi
         fi
-        
+
         if [ -z "$start_cmd" ]; then
-            start_cmd="serve"
+            start_cmd="serve"  # 默认使用 serve
         fi
-        
+
         if command -v yarn > /dev/null 2>&1; then
-            echo_info "执行: yarn $start_cmd"
+            echo_info "执行：yarn $start_cmd"
             yarn $start_cmd --open
         else
-            echo_info "执行: npm run $start_cmd"
+            echo_info "执行：npm run $start_cmd"
             npm run $start_cmd -- --open
         fi
     else
@@ -253,12 +361,14 @@ start_frontend() {
     fi
 }
 
+# 设置信号处理
+trap cleanup INT TERM
+
 # 执行启动
 [ "$START_BACKEND" = true ] && start_backend
 [ "$START_FRONTEND" = true ] && start_frontend
 
-# 捕获退出信号，调用 stop.sh 停止服务
-trap "echo_info '正在停止服务...'; if [ -f ./stop.sh ]; then chmod +x ./stop.sh; ./stop.sh --all 2>/dev/null; fi; echo_info '服务已停止';" EXIT
+echo_info "服务已启动，按 Ctrl+C 停止"
 
-# 保持脚本运行
+# 保持脚本运行 (等待所有后台进程)
 wait

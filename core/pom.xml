@@ -121,22 +121,9 @@
 
 	<build>
 		<finalName>${project.name}</finalName>
-		<resources>
-			<resource>
-				<directory>${project.basedir}/src/main/resources</directory>
-				<includes>
-					<include>bin/*.bat</include>
-					<include>bin/*.sh</include>
-				</includes>
-				<filtering>true</filtering>
-			</resource>
-			<resource>
-				<directory>${project.basedir}/src/main/resources</directory>
-				<filtering>false</filtering>
-			</resource>
-		</resources>
 		<plugins>
-			<plugin>
+			<!-- 
+				<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
@@ -151,12 +138,13 @@
 							<mainClass>${main.class}</mainClass>
 						</manifest>
 					</archive>
-					<!-- 只排除模板目录中的 XML 文件，保留 logback-spring.xml 等配置文件 -->
 					<excludes>
 						<exclude>templates/**/*.xml</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
+				
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>

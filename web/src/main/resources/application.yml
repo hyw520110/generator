@@ -4,8 +4,6 @@ server:
 spring:
   application:
     name: generator-web
-  profiles:
-    active: dev
 
 app:
   # 自动打开浏览器 (默认关闭，由前端 Vite --open 控制)

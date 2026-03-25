@@ -12,6 +12,8 @@ export default defineConfig(({ mode }) => {
   const apiBaseUrl = `http://${'$'}{apiHost}:${'$'}{apiPort}`
 
   return {
+    root: path.resolve(__dirname),
+    publicDir: 'public',
     plugins: [
       vue(),
       vueJsx(),

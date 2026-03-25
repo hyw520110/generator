@@ -1,18 +1,16 @@
-<script jsx>
+<script>
+import { h } from 'vue'
 import { colorList } from '@/components/SettingDrawer/settingConfig'
 import ASwitch from 'ant-design-vue/es/switch'
 import AList from 'ant-design-vue/es/list'
 import AListItem from 'ant-design-vue/es/list/Item'
 import { mixin } from '@/utils/mixin'
 
-const Meta = AListItem.Meta
-
 export default {
   components: {
     AListItem,
     AList,
-    ASwitch,
-    Meta
+    ASwitch
   },
   mixins: [mixin],
   data () {
@@ -43,29 +41,37 @@ export default {
     }
   },
   render () {
-    return (
-      <AList itemLayout="horizontal">
-        <AListItem>
-          <Meta>
-            <a slot="title">风格配色</a>
-            <span slot="description">
-                整体风格配色设置
-            </span>
-          </Meta>
-          <div slot="actions">
-            <ASwitch checkedChildren="暗色" unCheckedChildren="白色" defaultChecked={this.navTheme === 'dark' && true || false} onChange={this.onChange} />
-          </div>
-        </AListItem>
-        <AListItem>
-          <Meta>
-            <a slot="title">主题色</a>
-            <span slot="description">
-                页面风格配色： <a domPropsInnerHTML={ this.colorFilter(this.primaryColor) }/>
-            </span>
-          </Meta>
-        </AListItem>
-      </AList>
-    )
+    return h('div', [
+      h(AList, { itemLayout: 'horizontal' }, () => [
+        h(AListItem, null, {
+          actions: () => [
+            h(ASwitch, {
+              checkedChildren: '暗色',
+              unCheckedChildren: '白色',
+              checked: this.navTheme === 'dark',
+              onChange: this.onChange
+            })
+          ],
+          default: () => [
+            h(AListItem.Meta, null, {
+              title: () => h('a', '风格配色'),
+              description: () => h('span', '整体风格配色设置')
+            })
+          ]
+        }),
+        h(AListItem, null, {
+          default: () => [
+            h(AListItem.Meta, null, {
+              title: () => h('a', '主题色'),
+              description: () => h('span', [
+                '页面风格配色： ',
+                h('a', { innerHTML: this.colorFilter(this.primaryColor) })
+              ])
+            })
+          ]
+        })
+      ])
+    ])
   }
 }
 </script>

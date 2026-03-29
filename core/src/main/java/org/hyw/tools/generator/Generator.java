@@ -215,17 +215,44 @@ public class Generator extends AbstractGenerator {
 				return Integer.compare(componentOrdinal1, componentOrdinal2);
 			}
 			
-			// 3. 组件和模块都相同，按路径字符串排序
+			// 3. 文件类型优先级排序（确保 .java 在 .xml 之前渲染，以便先注册包名变量）
+			int typePriority1 = getFileTypePriority(r1.getPath());
+			int typePriority2 = getFileTypePriority(r2.getPath());
+			if (typePriority1 != typePriority2) {
+				return Integer.compare(typePriority1, typePriority2);
+			}
+			
+			// 4. 组件和模块都相同，按路径字符串排序
 			int pathCompare = r1.getPath().compareTo(r2.getPath());
 			if (pathCompare != 0) {
 				return pathCompare;
 			}
 			
-			// 4. 路径相等时，按文件名排序
+			// 5. 路径相等时，按文件名排序
 			String fileName1 = StringUtils.substringAfterLast(r1.getPath(), SEPARATOR);
 			String fileName2 = StringUtils.substringAfterLast(r2.getPath(), SEPARATOR);
 			return fileName1.compareTo(fileName2);
 		}).collect(Collectors.toList());
+	}
+	
+	/**
+	 * 获取文件类型优先级（数值越小优先级越高）
+	 * 确保 Java 源码先于资源文件渲染，以便包名变量先被注册
+	 * @param path 文件路径
+	 * @return 优先级数值（1=Java源码, 2=XML资源, 3=其他）
+	 */
+	private int getFileTypePriority(String path) {
+		if (path == null) return 3;
+		String lower = path.toLowerCase();
+		// Java 源码优先级最高
+		if (lower.endsWith(".java") || lower.endsWith(".java.ftl") || lower.endsWith(".java.vm")) {
+			return 1;
+		}
+		// XML 资源文件次之
+		if (lower.endsWith(".xml") || lower.endsWith(".xml.ftl") || lower.endsWith(".xml.vm")) {
+			return 2;
+		}
+		return 3;
 	}
 	
 	/**
@@ -306,7 +333,21 @@ public class Generator extends AbstractGenerator {
 			return resources.stream().filter(res -> {
 				String rel = res.getPath().substring(Consts.DIR_COMPONENTS.length() + Consts.PATH_SEPARATOR.length());
 				String first = StringUtils.substringBefore(rel, SEPARATOR);
-				return list.contains(first) || first.startsWith(Consts.PATH_PLACEHOLDER_START);
+				
+				// 1. 模块占位符格式：{0}, {1}
+				if (first.startsWith(Consts.PATH_PLACEHOLDER_START)) {
+					return true;
+				}
+				
+				// 2. 组件标记格式：#vue#, #mybatis# - 提取别名检查组件是否启用
+				if (first.startsWith("#") && first.endsWith("#")) {
+					String alias = first.substring(1, first.length() - 1);
+					Component c = Component.getComponent(alias);
+					return c != null && isComponentEnabled(c);
+				}
+				
+				// 3. 普通组件名
+				return list.contains(first);
 			}).collect(Collectors.toList());
 		}
 		return resources;

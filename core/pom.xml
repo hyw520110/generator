@@ -121,6 +121,15 @@
 
 	<build>
 		<finalName>${project.name}</finalName>
+			<resources>
+			<resource>
+				<directory>${project.basedir}/src/main/resources</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 			<!-- 
 				<plugin>

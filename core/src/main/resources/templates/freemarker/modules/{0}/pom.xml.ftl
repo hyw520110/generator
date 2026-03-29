@@ -25,11 +25,14 @@
 		  	<version>2.4</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.hibernate</groupId>
-		    <artifactId>hibernate-validator</artifactId>
-		    <#if springboot?has_content><version>6.0.17.Final</version></#if>
-		</dependency>
-<#if springboot && !jpa?has_content>		
+			    <groupId>org.hibernate</groupId>
+			    <artifactId>hibernate-validator</artifactId>
+			    <#if springboot?has_content><version>8.0.1.Final</version></#if>
+			</dependency>
+			<dependency>
+			    <groupId>jakarta.validation</groupId>
+			    <artifactId>jakarta.validation-api</artifactId>
+			</dependency><#if springboot && !jpa?has_content>		
 		<dependency>
 		  <groupId>org.springframework.boot</groupId>
 		  <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -64,9 +67,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.3</version>
 				<configuration>
-					<source>${maven.compiler.source!}</source>
-					<target>${maven.compiler.target!}</target>
-					<encoding>${project.build.sourceEncoding!}</encoding>
+					<source><#noparse>${maven.compiler.source}</#noparse></source>
+					<target><#noparse>${maven.compiler.target}</#noparse></target>
+					<encoding><#noparse>${project.build.sourceEncoding}</#noparse></encoding>
 				</configuration>
 			</plugin>
 			<!-- 源码jar插件 -->

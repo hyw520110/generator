@@ -1,6 +1,8 @@
 package org.hyw.tools.generator.web;
 
 import org.hyw.tools.generator.web.filter.JsonFormContentFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -14,13 +16,17 @@ import org.springframework.web.filter.FormContentFilter;
 @SpringBootApplication
 @EnableAsync
 public class WebGenerator {
+	private static final Logger logger = LoggerFactory.getLogger(WebGenerator.class);
 
 	public static void main(String[] args) {
+		logger.info("正在启动代码生成器 Web 应用...");
 		SpringApplication.run(WebGenerator.class, args);
+		logger.info("代码生成器 Web 应用启动完成");
 	}
 
 	@Bean
 	public FilterRegistrationBean<CorsFilter> corsFilter() {
+		logger.debug("配置 CORS 跨域过滤器");
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration config = new CorsConfiguration();
 		// 允cookies跨域
@@ -39,12 +45,16 @@ public class WebGenerator {
 		source.registerCorsConfiguration("/**", config);
 		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(new CorsFilter(source));
 		bean.setOrder(0);
+		logger.debug("CORS 跨域过滤器配置完成");
 		return bean;
 	}
 
 	@Bean
 	public FormContentFilter formContentFilter() {
-		return new JsonFormContentFilter();
+		logger.debug("配置 JSON 表单内容过滤器");
+		JsonFormContentFilter filter = new JsonFormContentFilter();
+		logger.debug("JSON 表单内容过滤器配置完成");
+		return filter;
 	}
 
 }

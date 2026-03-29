@@ -11,10 +11,11 @@ import java.util.jar.JarFile;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.Naming;
 import org.hyw.tools.generator.enums.ProjectBuilder;
-import org.hyw.tools.generator.template.EngineType;
+import org.hyw.tools.generator.enums.EngineType;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,7 +137,7 @@ public class GlobalConf extends BaseBean {
 	/**
 	 * 生成文件的编码
 	 */
-	private String encoding = "UTF-8";
+	private String encoding = Consts.DEFAULT_ENCODING;
 
 	/**
 	 * 是否为模拟模式（不生成文件，仅打印日志）
@@ -166,7 +167,22 @@ public class GlobalConf extends BaseBean {
 	/**
 	 * 模板引擎类型
 	 */
-	private String templateEngine = "freemarker";
+	private String templateEngine = EngineType.FREEMARKER.getName();
+
+	/**
+	 * PDF 字体配置 (macOS)
+	 */
+	private String fontConfigsMacOS;
+
+	/**
+	 * PDF 字体配置 (Windows)
+	 */
+	private String fontConfigsWindows;
+
+	/**
+	 * PDF 字体配置 (Linux)
+	 */
+	private String fontConfigsLinux;
 	
 	public String[] getExcludeDir() {
 		return excludeDir;
@@ -347,12 +363,33 @@ public class GlobalConf extends BaseBean {
 	 * @return 模板目录路径（包含引擎子目录）
 	 */
 	public URL getEngineTemplateDirPath() {
+		logger.info("========== 开始获取模板目录 ==========");
+		logger.info("当前配置的模板引擎类型: {}", getEngineType().getName());
+		logger.info("基础模板目录: {}", templateDir);
+		
 		String engineDir = templateDir + "/" + getEngineType().getName();
-		URL url = GlobalConf.class.getResource(engineDir);
+		// 确保使用前导斜杠来查找类路径根目录下的资源
+		String normalizedEngineDir = engineDir.startsWith("/") ? engineDir : "/" + engineDir;
+		String normalizedTemplateDir = templateDir.startsWith("/") ? templateDir : "/" + templateDir;
+		
+		logger.info("尝试加载引擎专用目录: {}", normalizedEngineDir);
+		URL url = GlobalConf.class.getResource(normalizedEngineDir);
+		
 		if (null == url) {
-			logger.warn("模板引擎目录不存在: {}，使用默认模板目录: {}", engineDir, templateDir);
-			url = GlobalConf.class.getResource(templateDir);
+			logger.warn("模板引擎目录不存在: {}，尝试使用默认模板目录: {}", engineDir, templateDir);
+			url = GlobalConf.class.getResource(normalizedTemplateDir);
+			if (url != null) {
+				logger.warn("警告: 正在使用默认模板目录，可能会扫描到其他引擎的模板文件！");
+				logger.warn("警告: 建议创建 {} 目录以避免加载错误的模板", engineDir);
+			} else {
+				logger.error("错误: 默认模板目录也不存在: {}", normalizedTemplateDir);
+			}
+		} else {
+			logger.info("成功加载引擎专用目录: {}", normalizedEngineDir);
 		}
+		
+		logger.info("最终使用的模板目录: {}", url);
+		logger.info("========== 模板目录获取完成 ==========");
 		return url;
 	}
 
@@ -497,7 +534,12 @@ public class GlobalConf extends BaseBean {
 	}
 	
 	private boolean isValidTemplateEngine(String engine) {
-		return "freemarker".equalsIgnoreCase(engine) || "velocity".equalsIgnoreCase(engine);
+		try {
+			EngineType.fromName(engine);
+			return true;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
 	}
 
 	/**
@@ -514,5 +556,36 @@ public class GlobalConf extends BaseBean {
 
 	public void setMatchMode(boolean matchMode) {
 		this.matchMode = matchMode;
+	}
+
+	public String getFontConfigsMacOS() {
+		return fontConfigsMacOS;
+	}
+
+	public void setFontConfigsMacOS(String fontConfigsMacOS) {
+		this.fontConfigsMacOS = fontConfigsMacOS;
+	}
+
+	public String getFontConfigsWindows() {
+		return fontConfigsWindows;
+	}
+
+	public void setFontConfigsWindows(String fontConfigsWindows) {
+		this.fontConfigsWindows = fontConfigsWindows;
+	}
+
+	public String getFontConfigsLinux() {
+		return fontConfigsLinux;
+	}
+
+	public void setFontConfigsLinux(String fontConfigsLinux) {
+		this.fontConfigsLinux = fontConfigsLinux;
+	}
+
+	/**
+	 * 获取当前系统的 PDF 字体配置
+	 */
+	public String getOSFontConfig() {
+		return org.hyw.tools.generator.utils.FontUtils.getOSFontConfig(fontConfigsMacOS, fontConfigsWindows, fontConfigsLinux);
 	}
 }

@@ -1,20 +1,21 @@
 package org.hyw.tools.generator.template.impl;
 
-import freemarker.cache.ClassTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
-import freemarker.core.TemplateClassResolver;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Map;
 
+import org.hyw.tools.generator.constants.Consts;
+import org.hyw.tools.generator.enums.EngineType;
 import org.hyw.tools.generator.template.TemplateEngine;
 import org.hyw.tools.generator.template.TemplateUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.core.TemplateClassResolver;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * FreeMarker 模板引擎实现
@@ -27,10 +28,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author heyiwu
  */
+@Slf4j
 public class FreeMarkerEngineImpl implements TemplateEngine {
 
-    private static final Logger logger = LoggerFactory.getLogger(FreeMarkerEngineImpl.class);
-    private static final String ENGINE_NAME = "FreeMarker";
+    private static final String ENGINE_NAME = EngineType.FREEMARKER.getName();
 
     /**
      * FreeMarker 配置
@@ -50,12 +51,12 @@ public class FreeMarkerEngineImpl implements TemplateEngine {
         // 设置模板加载器 (支持 classpath 加载，支持<#import>和<#include>)
         cfg.setTemplateLoader(new ClassTemplateLoader(
             FreeMarkerEngineImpl.class.getClassLoader(), 
-            "templates/freemarker"
+            Consts.TEMPLATE_DIR_FREEMARKER
         ));
         
         // 编码设置
-        cfg.setDefaultEncoding("UTF-8");
-        cfg.setOutputEncoding("UTF-8");
+        cfg.setDefaultEncoding(Consts.DEFAULT_ENCODING);
+        cfg.setOutputEncoding(Consts.DEFAULT_ENCODING);
         
         // 异常处理
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
@@ -76,10 +77,10 @@ public class FreeMarkerEngineImpl implements TemplateEngine {
             freemarker.template.TemplateHashModel fileStatics = (freemarker.template.TemplateHashModel) staticModels.get(TemplateUtils.class.getName());
             cfg.setSharedVariable("T", fileStatics);
         } catch (Exception e) {
-            logger.warn("设置共享变量失败：{}", e.getMessage());
+            log.warn("设置共享变量失败：{}", e.getMessage());
         }
         
-        logger.info("{} 模板引擎初始化成功", ENGINE_NAME);
+        log.info("{} 模板引擎初始化成功", ENGINE_NAME);
         return cfg;
     }
 
@@ -119,7 +120,7 @@ public class FreeMarkerEngineImpl implements TemplateEngine {
             return writer.toString();
 
         } catch (IOException | TemplateException e) {
-            logger.error("{} 模板渲染失败：{}", ENGINE_NAME, e.getMessage());
+            log.error("{} 模板渲染失败：{}", ENGINE_NAME, e.getMessage());
             throw new RuntimeException("FreeMarker 模板渲染失败：" + e.getMessage(), e);
         }
     }
@@ -127,9 +128,8 @@ public class FreeMarkerEngineImpl implements TemplateEngine {
     @Override
     public boolean supports(String templatePath) {
         return templatePath != null && (
-            templatePath.endsWith(".ftl") ||
-            templatePath.endsWith(".ftlh") ||
-            templatePath.contains("/freemarker/")
+            templatePath.endsWith(EngineType.FREEMARKER.getExtension()) ||
+            templatePath.contains("/" + EngineType.FREEMARKER.getName() + "/")
         );
     }
 

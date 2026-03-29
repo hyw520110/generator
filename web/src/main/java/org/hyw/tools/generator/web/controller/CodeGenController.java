@@ -18,7 +18,8 @@ import java.util.zip.ZipOutputStream;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.SQLException;import javax.annotation.PostConstruct;
+import java.sql.SQLException;
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -29,6 +30,7 @@ import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.conf.db.TableRelation;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.ExportFormat;
 import org.hyw.tools.generator.metadata.DatabaseMetadataReader;
 import org.hyw.tools.generator.enums.ProjectBuilder;
 import org.hyw.tools.generator.utils.FileUtils;
@@ -60,35 +62,39 @@ import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 public class CodeGenController {
 
 	private static final Logger logger = LoggerFactory.getLogger(CodeGenController.class);
-	
+
 	/** 下载目录（从配置文件读取） */
 	@Value("${app.download-dir:${user.home}/Downloads/generator}")
 	private String downloadDir;
-	
+
 	/** 默认输出目录（从配置文件读取） */
 	@Value("${app.output-dir:${user.home}/output/demo}")
 	private String defaultOutputDir;
-	
+
 	/** PDF 字体配置（格式：目录路径:文件名模式，逗号分隔多项） */
 	@Value("${app.pdf.fonts.macos:}")
 	private String fontConfigsMacOS;
-	
+
 	@Value("${app.pdf.fonts.windows:}")
 	private String fontConfigsWindows;
-	
+
 	@Value("${app.pdf.fonts.linux:}")
 	private String fontConfigsLinux;
-	
+
 	private Generator generator;
-	
+
+	@PostConstruct
+	public void init() {
+		generator = Generator.getInstance();
+	}
+
 	/**
-	 * 获取当前操作系统的 PDF 字体路径列表
-	 * 配置格式：目录路径:文件名模式（支持 * 通配符）
+	 * 获取当前操作系统的 PDF 字体路径列表 配置格式：目录路径:文件名模式（支持 * 通配符）
 	 */
 	private List<String> getPdfFontPaths() {
 		List<String> fontPaths = new ArrayList<>();
 		String osName = System.getProperty("os.name", "").toLowerCase();
-		
+
 		// 根据操作系统选择配置
 		String fontConfigs;
 		if (osName.contains("mac")) {
@@ -104,7 +110,7 @@ public class CodeGenController {
 			logger.warn("未知操作系统: {}", osName);
 			return fontPaths;
 		}
-		
+
 		// 解析配置项列表（逗号分隔）
 		if (StringUtils.isNotBlank(fontConfigs)) {
 			logger.debug("解析字体配置，配置项: {}", fontConfigs);
@@ -113,16 +119,16 @@ public class CodeGenController {
 				if (StringUtils.isBlank(trimmed)) {
 					continue;
 				}
-				
+
 				// 解析 目录:文件名模式
 				String[] parts = trimmed.split(":", 2);
 				if (parts.length != 2) {
 					continue;
 				}
-				
+
 				String dir = parts[0].trim();
 				String pattern = parts[1].trim();
-				
+
 				File fontFile = findFontFile(new File(dir), pattern);
 				if (fontFile != null) {
 					String path = fontFile.getAbsolutePath();
@@ -133,14 +139,15 @@ public class CodeGenController {
 				}
 			}
 		}
-		
+
 		logger.info("PDF 字体配置: 找到 {} 个字体", fontPaths.size());
 		return fontPaths;
 	}
-	
+
 	/**
 	 * 在目录中查找匹配模式的字体文件
-	 * @param dir 字体目录
+	 * 
+	 * @param dir     字体目录
 	 * @param pattern 文件名匹配模式（支持 * 通配符）
 	 * @return 匹配的字体文件，未找到返回 null
 	 */
@@ -148,40 +155,35 @@ public class CodeGenController {
 		if (!dir.exists() || !dir.isDirectory()) {
 			return null;
 		}
-		
+
 		// 先尝试精确匹配
 		File exactMatch = new File(dir, pattern);
 		if (exactMatch.exists()) {
 			return exactMatch;
 		}
-		
+
 		// 将通配符模式转换为正则表达式
 		String regex = pattern.replace(".", "\\.").replace("*", ".*");
-		
+
 		File[] files = dir.listFiles();
 		if (files == null) {
 			return null;
 		}
-		
+
 		// 尝试通配符匹配
 		for (File file : files) {
 			if (file.isFile() && file.getName().matches(regex)) {
 				return file;
 			}
 		}
-		
-		return null;
-	}
 
-	@PostConstruct
-	public void init() {
-		generator = Generator.getInstance();
+		return null;
 	}
 
 	@PostMapping("/tables")
 	public Result<String> getTables(String ipAndPort, String dbName, String username, String pwd, String include,
 			String exclude, String tablePrefix) {
-		logger.info("[tables] 输入 - ipAndPort: {}, dbName: {}, username: {}, include: {}, exclude: {}, tablePrefix: {}", 
+		logger.info("[tables] 输入 - ipAndPort: {}, dbName: {}, username: {}, include: {}, exclude: {}, tablePrefix: {}",
 				ipAndPort, dbName, username, include, exclude, tablePrefix);
 		if (StringUtils.isNotBlank(tablePrefix)) {
 			generator.getGlobal().setTablePrefix(StringUtils.split(tablePrefix, ","));
@@ -206,9 +208,10 @@ public class CodeGenController {
 
 	/**
 	 * 获取数据库列表
+	 * 
 	 * @param ipAndPort 数据库IP和端口
-	 * @param username 用户名
-	 * @param pwd 密码
+	 * @param username  用户名
+	 * @param pwd       密码
 	 * @return 数据库列表
 	 */
 	@PostMapping("/databases")
@@ -246,16 +249,17 @@ public class CodeGenController {
 
 	/**
 	 * 获取当前配置（供三个步骤页面共用）
+	 * 
 	 * @return 当前配置信息
 	 */
 	@GetMapping("/config")
 	public Result<?> getConfig() {
 		Map<String, Object> config = new HashMap<>();
-		
+
 		GlobalConf global = generator.getGlobal();
 		Map<Component, Map<String, Object>> allComponents = generator.getComponents();
 		DataSourceConf ds = generator.getDataSource();
-		
+
 		// 只返回 global.components 中启用的组件配置
 		Map<String, Map<String, Object>> enabledComponents = new HashMap<>();
 		Component[] enabledArray = global.getComponents();
@@ -267,10 +271,10 @@ public class CodeGenController {
 				}
 			}
 		}
-		
+
 		config.put("global", global);
 		config.put("components", enabledComponents);
-		
+
 		// DataSourceConf 中有些字段无法序列化，只返回需要的字段
 		Map<String, Object> dataSource = new HashMap<>();
 		dataSource.put("ipAndPort", ds.getIpAndPort());
@@ -279,26 +283,27 @@ public class CodeGenController {
 		dataSource.put("pwd", ds.getPwd());
 		dataSource.put("dbType", ds.getDBType() != null ? ds.getDBType().name() : null);
 		config.put("dataSource", dataSource);
-		
+
 		// 默认值（用于初始化）
 		Map<String, Object> defaults = new HashMap<>();
 		defaults.put("outputDir", defaultOutputDir);
 		defaults.put("userHome", System.getProperty("user.home"));
 		config.put("defaults", defaults);
-		
+
 		logger.info("[config] 输出 - 成功");
 		return Result.ok(config);
 	}
 
 	/**
 	 * 验证输出目录权限
+	 * 
 	 * @param outputDir 输出目录路径（可选，为空时返回默认配置）
 	 * @return 验证结果
 	 */
 	@GetMapping("/validateOutputDir")
 	public Result<?> validateOutputDir(@RequestParam(required = false) String outputDir) {
 		String userHome = System.getProperty("user.home");
-		
+
 		// 如果未传入目录，返回默认配置
 		if (StringUtils.isBlank(outputDir)) {
 			Map<String, Object> defaults = new HashMap<>();
@@ -307,16 +312,16 @@ public class CodeGenController {
 			logger.info("[validateOutputDir] 输出 - 返回默认配置, outputDir: {}, userHome: {}", defaultOutputDir, userHome);
 			return Result.ok(defaults);
 		}
-		
+
 		logger.info("[validateOutputDir] 输入 - outputDir: {}", outputDir);
-		
+
 		// 检查非法字符
 		if (outputDir.contains("..") || outputDir.contains("~")) {
 			return Result.error("目录路径包含非法字符");
 		}
-		
+
 		File dir = new File(outputDir);
-		
+
 		// 如果目录存在，检查权限
 		if (dir.exists()) {
 			if (!dir.isDirectory()) {
@@ -331,26 +336,26 @@ public class CodeGenController {
 			logger.info("[validateOutputDir] 输出 - 目录存在且有读写权限");
 			return Result.ok("目录验证通过");
 		}
-		
+
 		// 目录不存在，检查父目录权限
 		File parent = dir.getParentFile();
 		if (parent == null) {
 			return Result.error("无法确定父目录");
 		}
-		
+
 		// 递归查找存在的父目录
 		while (parent != null && !parent.exists()) {
 			parent = parent.getParentFile();
 		}
-		
+
 		if (parent == null) {
 			return Result.error("无法找到有效的父目录");
 		}
-		
+
 		if (!parent.canWrite()) {
 			return Result.error("父目录无写入权限，无法创建: " + outputDir);
 		}
-		
+
 		logger.info("[validateOutputDir] 输出 - 父目录有写入权限，可创建目录");
 		return Result.ok("目录将自动创建");
 	}
@@ -358,7 +363,8 @@ public class CodeGenController {
 	@PostMapping("/step1")
 	public Result<Object> step1(String outputDir, String description, String rootPackage, String modules,
 			boolean delOutputDir, boolean fileOverride, boolean openDir) {
-		logger.info("[step1] 输入 - outputDir: {}, description: {}, rootPackage: {}, modules: {}, delOutputDir: {}, fileOverride: {}, openDir: {}", 
+		logger.info(
+				"[step1] 输入 - outputDir: {}, description: {}, rootPackage: {}, modules: {}, delOutputDir: {}, fileOverride: {}, openDir: {}",
 				outputDir, description, rootPackage, modules, delOutputDir, fileOverride, openDir);
 		GlobalConf global = generator.getGlobal();
 		global.setOutputDir(outputDir);
@@ -369,16 +375,18 @@ public class CodeGenController {
 		global.setDelOutputDir(delOutputDir);
 		global.setFileOverride(fileOverride);
 		global.setOpenDir(openDir);
+		generator.save(); // 持久化配置
 		logger.info("[step1] 输出 - 成功");
 		return Result.ok();
 	}
 
 	@PostMapping("/step2")
 	public Result<Object> step2(String view, String projectBuilder, String springBootVersion, String springCloudVersion,
-			String springCloudAlibabaVersion, String dubboVersion, String mybatisType, 
-			String registryCenter, String zookeeperAddr, String nacosAddr, String nacosUsername, String nacosPassword,
-			String redisHost, String redisPassword, String sentinelVersion, String sentinelAddr, String skywalkingAddr, String secure) {
-		logger.info("[step2] 输入 - view: {}, projectBuilder: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}", 
+			String springCloudAlibabaVersion, String dubboVersion, String mybatisType, String registryCenter,
+			String zookeeperAddr, String nacosAddr, String nacosUsername, String nacosPassword, String redisHost,
+			String redisPassword, String sentinelVersion, String sentinelAddr, String skywalkingAddr, String secure) {
+		logger.info(
+				"[step2] 输入 - view: {}, projectBuilder: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}",
 				view, projectBuilder, springBootVersion, dubboVersion, mybatisType, registryCenter);
 		GlobalConf global = generator.getGlobal();
 		ArrayUtils.removeElement(global.getComponents(), Component.VUE);
@@ -391,17 +399,17 @@ public class CodeGenController {
 		}
 		global.setProjectBuilder(ProjectBuilder.valueOf(projectBuilder));
 		Map<Component, Map<String, Object>> map = generator.getComponents();
-		map.get(Component.SPRINGBOOT).put(Component.SPRINGBOOT.name().toLowerCase()+"_version", springBootVersion);
-		map.get(Component.SPRINGCLOUD).put(Component.SPRINGCLOUD.name().toLowerCase()+"_version", springCloudVersion);
+		map.get(Component.SPRINGBOOT).put(Component.SPRINGBOOT.name().toLowerCase() + "_version", springBootVersion);
+		map.get(Component.SPRINGCLOUD).put(Component.SPRINGCLOUD.name().toLowerCase() + "_version", springCloudVersion);
 		map.get(Component.SPRINGCLOUD).put("springcloud_alibaba_version", springCloudAlibabaVersion);
-		
+
 		// 处理 Dubbo
 		if (StringUtils.isBlank(dubboVersion)) {
 			ArrayUtils.removeElement(global.getComponents(), Component.DUBBO);
 		} else {
 			map.get(Component.DUBBO).put(Component.DUBBO.name().toLowerCase() + "_version", dubboVersion);
 		}
-		
+
 		// 处理注册中心/配置中心
 		if ("nacos".equals(registryCenter)) {
 			map.get(Component.NACOS).put("nacos.addr", nacosAddr);
@@ -416,13 +424,14 @@ public class CodeGenController {
 			ArrayUtils.removeElement(global.getComponents(), Component.NACOS);
 			ArrayUtils.removeElement(global.getComponents(), Component.ZOOKEEPER);
 		}
-		
+
 		map.get(Component.MYBATIS).put("mapperType", mybatisType);
 		map.get(Component.REDIS).put("spring_redis_cluster_nodes", redisHost);
 		map.get(Component.REDIS).put("spring_redis_password", redisPassword);
 		map.get(Component.SENTINEL).put("sentinel_version", sentinelVersion);
 		map.get(Component.SENTINEL).put("dashboard.server", sentinelAddr);
 		map.get(Component.SKYWALKING).put("skywalking.addr", skywalkingAddr);
+		generator.save(); // 持久化配置
 		logger.info("[step2] 输出 - 成功, viewComponent: {}, registryCenter: {}", viewComponent, registryCenter);
 		return Result.ok();
 	}
@@ -434,71 +443,72 @@ public class CodeGenController {
 		String[] tables = StringUtils.isBlank(tabName) ? null : tabName.split(",");
 		generator.getGlobal().setInclude(tables);
 		generator.getGlobal().setMatchMode(false);
-		
+		generator.save(); // 持久化配置
+
 		long startTime = System.currentTimeMillis();
 		generator.execute();
 		long duration = System.currentTimeMillis() - startTime;
-		
+
 		String outputDir = generator.getGlobal().getOutputDir();
 		File outputFolder = new File(outputDir);
-		
+
 		// 检查输出目录是否存在且有内容
 		if (!outputFolder.exists()) {
 			logger.error("[exec] 输出目录不存在: {}", outputDir);
 			return Result.error("代码生成失败：输出目录不存在");
 		}
-		
+
 		int fileCount = FileUtils.countFiles(outputFolder);
 		if (fileCount == 0) {
 			logger.error("[exec] 输出目录为空: {}", outputDir);
 			return Result.error("代码生成失败：输出目录为空");
 		}
 		logger.info("[exec] 输出目录文件数: {}", fileCount);
-		
+
 		// 获取数据库连接信息
 		DataSourceConf ds = generator.getDataSource();
 		String ipAndPort = ds.getIpAndPort();
 		String dbName = StringUtils.defaultString(ds.getDbName(), "unknown");
 		int tableCount = tables != null ? tables.length : generator.getTables().size();
-		
+
 		Map<String, Object> result = new HashMap<>();
 		result.put("tableCount", tableCount);
 		result.put("outputDir", outputDir);
 		result.put("duration", duration);
-		
+
 		// 默认打包（pack 为 null 或 true 时打包）
 		boolean shouldPack = pack == null || pack;
-		
+
 		if (shouldPack) {
 			// 打包模式
 			String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 			String zipFileName = String.format("%s_%dt_%s.zip", dbName, tableCount, timestamp);
-			
+
 			String subDir = ipAndPort.replace(":", "_") + "/" + dbName;
 			File targetDir = new File(downloadDir, subDir);
 			if (!targetDir.exists()) {
 				targetDir.mkdirs();
 			}
-			
+
 			File zipFile = new File(targetDir, zipFileName);
-			
+
 			try (java.io.FileOutputStream fos = new java.io.FileOutputStream(zipFile);
-				 ZipOutputStream zos = new ZipOutputStream(fos)) {
+					ZipOutputStream zos = new ZipOutputStream(fos)) {
 				FileUtils.zipFolder(outputFolder, zos);
 				zos.finish();
 				fos.flush();
 			}
-			
+
 			if (!zipFile.exists() || zipFile.length() == 0) {
 				logger.error("[exec] zip文件创建失败: {}", zipFile.getAbsolutePath());
 				return Result.error("代码打包失败：zip文件创建失败");
 			}
 			logger.info("[exec] zip文件大小: {} bytes", zipFile.length());
-			
+
 			// 删除生成目录
 			org.apache.commons.io.FileUtils.deleteDirectory(outputFolder);
 			logger.info("已删除生成目录: {}", outputDir);
-			
+
 			result.put("zipFile", zipFileName);
 			result.put("zipPath", subDir + "/" + zipFileName);
 			result.put("packed", true);
@@ -508,36 +518,39 @@ public class CodeGenController {
 			result.put("packed", false);
 			logger.info("代码已生成（不打包）: {}, 表数量: {}, 文件数: {}, 耗时: {}ms", outputDir, tableCount, fileCount, duration);
 		}
-		
+
 		logger.info("[exec] 输出 - packed: {}, 表数量: {}, 耗时: {}ms", shouldPack, tableCount, duration);
 		return Result.ok(result);
 	}
 
 	/**
 	 * 生成数据库表文档（Word/PDF）
+	 * 
 	 * @param tabName 表名，多个用逗号分隔
-	 * @param format 文档格式：word 或 pdf
+	 * @param format  文档格式：word 或 pdf
 	 * @return 文档下载路径
 	 */
 	@PostMapping("/doc")
 	@ResponseBody
 	public Result<?> genDoc(String tabName, String format) {
 		logger.info("[doc] 输入 - tabName: {}, format: {}", tabName, format);
-		
+
 		// 参数校验
 		if (StringUtils.isBlank(tabName)) {
 			logger.warn("[doc] 输出 - 错误: 请选择要生成文档的表");
 			return Result.error("请选择要生成文档的表");
 		}
-		
+
 		String[] tables = tabName.split(",");
 		String docFormat = (StringUtils.isBlank(format) ? "word" : format).toLowerCase();
-		if (!"word".equals(docFormat) && !"pdf".equals(docFormat)) {
-			docFormat = "word";
+		ExportFormat exportFormat = ExportFormat.fromExtension(docFormat);
+		if (exportFormat == null) {
+			exportFormat = ExportFormat.WORD;
+			docFormat = exportFormat.getExtension();
 		}
-		
+
 		long startTime = System.currentTimeMillis();
-		
+
 		try {
 			// 获取数据库连接信息
 			DataSourceConf ds = generator.getDataSource();
@@ -545,71 +558,71 @@ public class CodeGenController {
 			String dbName = StringUtils.defaultString(ds.getDbName(), "unknown");
 			int tableCount = tables.length;
 			String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-			
+
 			// 下载子目录：ip_port/数据库名/
 			String subDir = ipAndPort.replace(":", "_") + "/" + dbName;
 			File targetDir = new File(downloadDir, subDir);
 			if (!targetDir.exists()) {
 				targetDir.mkdirs();
 			}
-			
+
 			// 文档文件名：与 zip 文件命名前缀一致（数据库名_N表_日期时间）
-			String extension = "word".equals(docFormat) ? "docx" : "pdf";
-			String docFileName = String.format("%s_%dt_%s.%s", dbName, tableCount, timestamp, extension);
+			String docFileName = String.format("%s_%dt_%s.%s", dbName, tableCount, timestamp,
+					exportFormat.getExtension());
 			File docFile = new File(targetDir, docFileName);
-			
+
 			// 设置要生成文档的表
 			generator.getGlobal().setInclude(tables);
 			generator.getGlobal().setMatchMode(false);
-			
+
 			// 生成文档
 			generator.generateDoc(docFile, docFormat, getPdfFontPaths());
-			
+
 			long duration = System.currentTimeMillis() - startTime;
-			
+
 			Map<String, Object> result = new HashMap<>();
 			result.put("tables", String.join(", ", tables));
 			result.put("format", docFormat);
 			result.put("duration", duration);
 			result.put("docFile", docFileName);
 			result.put("docPath", subDir + "/" + docFileName);
-			
+
 			logger.info("[doc] 输出 - docPath: {}, 表数量: {}, 耗时: {}ms", subDir + "/" + docFileName, tableCount, duration);
 			return Result.ok(result);
-			
+
 		} catch (Exception e) {
 			logger.error("[doc] 生成文档失败", e);
 			return Result.error("生成文档失败: " + e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * 获取下载文件列表（需要验证数据库连接）
+	 * 
 	 * @param ipAndPort 数据库IP和端口
-	 * @param dbName 数据库名
-	 * @param username 用户名
-	 * @param pwd 密码
+	 * @param dbName    数据库名
+	 * @param username  用户名
+	 * @param pwd       密码
 	 * @return 压缩包列表
 	 */
 	@GetMapping("/downloads")
-	public Result<List<Map<String, Object>>> getDownloads(
-			String ipAndPort, String dbName, String username, String pwd) {
+	public Result<List<Map<String, Object>>> getDownloads(String ipAndPort, String dbName, String username,
+			String pwd) {
 		logger.info("[downloads] 输入 - ipAndPort: {}, dbName: {}, username: {}", ipAndPort, dbName, username);
-		
+
 		// 参数校验
-		if (StringUtils.isBlank(ipAndPort) || StringUtils.isBlank(dbName) 
-				|| StringUtils.isBlank(username)) {
+		if (StringUtils.isBlank(ipAndPort) || StringUtils.isBlank(dbName) || StringUtils.isBlank(username)) {
 			logger.warn("[downloads] 输出 - 错误: 请填写完整的数据库连接信息");
 			return Result.error("请填写完整的数据库连接信息");
 		}
-		
+
 		// 验证数据库连接
 		DataSourceConf ds = generator.getDataSource();
 		String originalIpAndPort = ds.getIpAndPort();
 		String originalDbName = ds.getDbName();
 		String originalUsername = ds.getUsername();
 		String originalPwd = ds.getPwd();
-		
+
 		try {
 			ds.setIpAndPort(ipAndPort);
 			ds.setUsername(username);
@@ -626,28 +639,28 @@ public class CodeGenController {
 			logger.error("[downloads] 输出 - 数据库连接失败: {}", e.getMessage());
 			return Result.error("数据库连接失败: " + e.getMessage());
 		}
-		
+
 		// 构建子目录路径：ip_port/数据库名/
 		String subDir = ipAndPort.replace(":", "_") + "/" + dbName;
 		File targetDir = new File(downloadDir, subDir);
-		
+
 		if (!targetDir.exists() || !targetDir.isDirectory()) {
 			return Result.ok(new ArrayList<>());
 		}
-		
-		File[] files = targetDir.listFiles((dir, name) -> 
-				name.endsWith(".zip") || name.endsWith(".docx") || name.endsWith(".pdf"));
+
+		File[] files = targetDir
+				.listFiles((dir, name) -> name.endsWith(".zip") || name.endsWith(".docx") || name.endsWith(".pdf"));
 		if (files == null || files.length == 0) {
 			return Result.ok(new ArrayList<>());
 		}
-		
+
 		// 按修改时间倒序排列
 		List<File> fileList = Arrays.asList(files);
 		fileList.sort((f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
-		
+
 		List<Map<String, Object>> result = new ArrayList<>();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		
+
 		for (File file : fileList) {
 			Map<String, Object> item = new HashMap<>();
 			item.put("name", file.getName());
@@ -656,35 +669,39 @@ public class CodeGenController {
 			item.put("path", subDir + "/" + file.getName());
 			result.add(item);
 		}
-		
+
 		logger.info("[downloads] 输出 - 文件数量: {}", result.size());
 		return Result.ok(result);
 	}
-	
+
 	/**
 	 * 格式化文件大小
 	 */
 	private String formatFileSize(long bytes) {
-		if (bytes < 1024) return bytes + " B";
-		if (bytes < 1024 * 1024) return String.format("%.1f KB", bytes / 1024.0);
+		if (bytes < 1024)
+			return bytes + " B";
+		if (bytes < 1024 * 1024)
+			return String.format("%.1f KB", bytes / 1024.0);
 		return String.format("%.1f MB", bytes / (1024.0 * 1024));
 	}
 
 	/**
 	 * 下载生成的代码（打包为zip）
-	 * @param path 文件相对路径（如 localhost_3306/dbuser/dbuser_3t_20260320.zip）
+	 * 
+	 * @param path     文件相对路径（如 localhost_3306/dbuser/dbuser_3t_20260320.zip）
 	 * @param response HTTP响应
 	 */
 	@GetMapping("/download")
 	public void download(@RequestParam(required = false) String path, HttpServletResponse response) {
 		logger.info("[download] 输入 - path: {}", path);
 		File zipFile = null;
-		
+
 		if (StringUtils.isNotBlank(path)) {
 			// 下载指定文件（路径已包含 ip_port/dbname/）
 			zipFile = new File(downloadDir, path);
 			String fileName = zipFile.getName().toLowerCase();
-			if (!zipFile.exists() || (!fileName.endsWith(".zip") && !fileName.endsWith(".docx") && !fileName.endsWith(".pdf"))) {
+			if (!zipFile.exists()
+					|| (!fileName.endsWith(".zip") && !fileName.endsWith(".docx") && !fileName.endsWith(".pdf"))) {
 				logger.warn("[download] 输出 - 文件不存在: {}", path);
 				sendErrorResponse(response, "文件不存在");
 				return;
@@ -694,7 +711,7 @@ public class CodeGenController {
 			sendErrorResponse(response, "请指定要下载的文件");
 			return;
 		}
-		
+
 		try {
 			// 根据文件扩展名设置 Content-Type
 			String fileName = zipFile.getName().toLowerCase();
@@ -706,44 +723,45 @@ public class CodeGenController {
 			} else {
 				contentType = "application/zip";
 			}
-			
+
 			// 设置响应头
 			response.setContentType(contentType);
-			response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(zipFile.getName(), "UTF-8"));
+			response.setHeader("Content-Disposition",
+					"attachment; filename=" + URLEncoder.encode(zipFile.getName(), "UTF-8"));
 			response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-			
-			try (FileInputStream fis = new FileInputStream(zipFile);
-				 OutputStream os = response.getOutputStream()) {
+
+			try (FileInputStream fis = new FileInputStream(zipFile); OutputStream os = response.getOutputStream()) {
 				byte[] buffer = new byte[8192];
 				int len;
 				while ((len = fis.read(buffer)) > 0) {
 					os.write(buffer, 0, len);
 				}
 			}
-			
+
 			logger.info("文件下载完成: {}", zipFile.getAbsolutePath());
 		} catch (IOException e) {
 			logger.error("下载失败", e);
 			sendErrorResponse(response, "下载失败: " + e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * 删除生成的文件
+	 * 
 	 * @param path 文件相对路径
 	 * @return 删除结果
 	 */
 	@DeleteMapping("/download")
 	public Result<?> deleteFile(@RequestParam String path) {
 		logger.info("[delete] 输入 - path: {}", path);
-		
+
 		if (StringUtils.isBlank(path)) {
 			return Result.error("请指定要删除的文件");
 		}
-		
+
 		File file = new File(downloadDir, path);
 		String fileName = file.getName().toLowerCase();
-		
+
 		// 安全校验：只允许删除 zip、docx、pdf 文件
 		if (!file.exists()) {
 			return Result.error("文件不存在");
@@ -751,7 +769,7 @@ public class CodeGenController {
 		if (!fileName.endsWith(".zip") && !fileName.endsWith(".docx") && !fileName.endsWith(".pdf")) {
 			return Result.error("不支持的文件类型");
 		}
-		
+
 		// 确保文件在下载目录内（防止路径遍历攻击）
 		try {
 			String canonicalPath = file.getCanonicalPath();
@@ -762,7 +780,7 @@ public class CodeGenController {
 		} catch (IOException e) {
 			return Result.error("路径解析失败");
 		}
-		
+
 		// 删除文件
 		if (file.delete()) {
 			logger.info("[delete] 输出 - 删除成功: {}", path);
@@ -772,7 +790,7 @@ public class CodeGenController {
 			return Result.error("删除失败");
 		}
 	}
-	
+
 	/**
 	 * 发送错误响应
 	 */
@@ -784,29 +802,29 @@ public class CodeGenController {
 			logger.error("写入错误响应失败", e);
 		}
 	}
-	
+
 	/**
 	 * 获取表关系图数据
+	 * 
 	 * @param ipAndPort 数据库IP和端口
-	 * @param dbName 数据库名
-	 * @param username 用户名
-	 * @param pwd 密码
-	 * @param tabNames 表名列表（逗号分隔，可选）
+	 * @param dbName    数据库名
+	 * @param username  用户名
+	 * @param pwd       密码
+	 * @param tabNames  表名列表（逗号分隔，可选）
 	 * @return 表关系数据（nodes 和 edges）
 	 */
 	@GetMapping("/relations")
-	public Result<Map<String, Object>> getTableRelations(
-			String ipAndPort, String dbName, String username, String pwd, String tabNames) {
+	public Result<Map<String, Object>> getTableRelations(String ipAndPort, String dbName, String username, String pwd,
+			String tabNames) {
 		logger.info("[relations] 输入 - ipAndPort: {}, dbName: {}, tabNames: {}", ipAndPort, dbName, tabNames);
 		long startTime = System.currentTimeMillis();
-		
+
 		// 参数校验
-		if (StringUtils.isBlank(ipAndPort) || StringUtils.isBlank(dbName) 
-				|| StringUtils.isBlank(username)) {
+		if (StringUtils.isBlank(ipAndPort) || StringUtils.isBlank(dbName) || StringUtils.isBlank(username)) {
 			logger.warn("[relations] 输出 - 错误: 请填写完整的数据库连接信息");
 			return Result.error("请填写完整的数据库连接信息");
 		}
-		
+
 		try {
 			// 设置数据源连接参数
 			DataSourceConf ds = generator.getDataSource();
@@ -814,10 +832,10 @@ public class CodeGenController {
 			ds.setDbName(dbName);
 			ds.setUsername(username);
 			ds.setPwd(pwd);
-			
+
 			// 创建 DatabaseMetadataReader
 			DatabaseMetadataReader metadataReader = new DatabaseMetadataReader(ds, generator.getGlobal());
-			
+
 			// 确定要查询关系的表
 			List<String> tableNames;
 			if (StringUtils.isNotBlank(tabNames)) {
@@ -826,20 +844,20 @@ public class CodeGenController {
 				// 获取所有表名
 				tableNames = generator.getAllTableNames();
 			}
-			
+
 			// 获取表关系
 			List<TableRelation> relations = metadataReader.getTableRelations(tableNames);
-			
+
 			// 构建节点数据
 			List<Map<String, Object>> nodes = new ArrayList<>();
 			Map<String, Boolean> addedTables = new HashMap<>();
-			
+
 			// 获取所有表信息用于显示注释
 			Map<String, Table> tableMap = new HashMap<>();
 			for (Table table : generator.getTables(true)) {
 				tableMap.put(table.getName(), table);
 			}
-			
+
 			for (String tableName : tableNames) {
 				if (!addedTables.containsKey(tableName)) {
 					Map<String, Object> node = new HashMap<>();
@@ -853,7 +871,7 @@ public class CodeGenController {
 					addedTables.put(tableName, true);
 				}
 			}
-			
+
 			// 添加关系中的表（如果有不在列表中的表）
 			for (TableRelation rel : relations) {
 				if (!addedTables.containsKey(rel.getTargetTable())) {
@@ -868,7 +886,7 @@ public class CodeGenController {
 					addedTables.put(rel.getTargetTable(), true);
 				}
 			}
-			
+
 			// 构建边数据
 			List<Map<String, Object>> edges = new ArrayList<>();
 			for (TableRelation rel : relations) {
@@ -882,99 +900,99 @@ public class CodeGenController {
 				edge.put("nullable", rel.isNullable());
 				edges.add(edge);
 			}
-			
+
 			// 获取所有表的字段信息（用于右侧详情面板）
-                        // 使用 DriverManager 获取独立连接，避免占用连接池
-                        Map<String, List<Map<String, Object>>> tableColumnsMap = new HashMap<>();
-                        Map<String, List<Map<String, Object>>> tableForeignKeysMap = new HashMap<>();
-                        
-                        java.sql.Connection directConn = null;
-                        try {
-                                String jdbcUrl = ds.getDBType().buildUrl(ds.getIp(), ds.getPort(), dbName);
-                                directConn = java.sql.DriverManager.getConnection(jdbcUrl, username, pwd);
-                                logger.info("[relations] 直连数据库获取元数据 - URL: {}", jdbcUrl);
-                                
-                                DatabaseMetaData metaData = directConn.getMetaData();
-                                String catalog = dbName;
-                                String schema = null;
+			// 使用 DriverManager 获取独立连接，避免占用连接池
+			Map<String, List<Map<String, Object>>> tableColumnsMap = new HashMap<>();
+			Map<String, List<Map<String, Object>>> tableForeignKeysMap = new HashMap<>();
 
-                                for (String tableName : addedTables.keySet()) {
-                                        // 获取列信息
-                                        List<Map<String, Object>> columns = new ArrayList<>();
-                                        try (ResultSet rs = metaData.getColumns(catalog, schema, tableName, null)) {
-                                                while (rs.next()) {
-                                                        Map<String, Object> column = new HashMap<>();
-                                                        String columnName = rs.getString("COLUMN_NAME");
-                                                        String dataType = rs.getString("TYPE_NAME");
-                                                        int columnSize = rs.getInt("COLUMN_SIZE");
-                                                        int nullable = rs.getInt("NULLABLE");
-                                                        String defaultValue = rs.getString("COLUMN_DEF");
-                                                        String remark = rs.getString("REMARKS");
-                                                        boolean isPrimaryKey = false;
+			java.sql.Connection directConn = null;
+			try {
+				String jdbcUrl = ds.getDBType().buildUrl(ds.getIp(), ds.getPort(), dbName);
+				directConn = java.sql.DriverManager.getConnection(jdbcUrl, username, pwd);
+				logger.info("[relations] 直连数据库获取元数据 - URL: {}", jdbcUrl);
 
-                                                        // 检查是否是主键
-                                                        try (ResultSet pkRs = metaData.getPrimaryKeys(catalog, schema, tableName)) {
-                                                                while (pkRs.next()) {
-                                                                        if (columnName.equals(pkRs.getString("COLUMN_NAME"))) {
-                                                                                isPrimaryKey = true;
-                                                                                break;
-                                                                        }
-                                                                }
-                                                        }
+				DatabaseMetaData metaData = directConn.getMetaData();
+				String catalog = dbName;
+				String schema = null;
 
-                                                        column.put("columnName", columnName);
-                                                        column.put("dataType", dataType + (columnSize > 0 ? "(" + columnSize + ")" : ""));
-                                                        column.put("isPrimary", isPrimaryKey);
-                                                        column.put("isForeignKey", false);
-                                                        column.put("isNullable", nullable == DatabaseMetaData.columnNullable);
-                                                        column.put("comment", StringUtils.defaultString(remark, ""));
-                                                        column.put("defaultValue", defaultValue);
+				for (String tableName : addedTables.keySet()) {
+					// 获取列信息
+					List<Map<String, Object>> columns = new ArrayList<>();
+					try (ResultSet rs = metaData.getColumns(catalog, schema, tableName, null)) {
+						while (rs.next()) {
+							Map<String, Object> column = new HashMap<>();
+							String columnName = rs.getString("COLUMN_NAME");
+							String dataType = rs.getString("TYPE_NAME");
+							int columnSize = rs.getInt("COLUMN_SIZE");
+							int nullable = rs.getInt("NULLABLE");
+							String defaultValue = rs.getString("COLUMN_DEF");
+							String remark = rs.getString("REMARKS");
+							boolean isPrimaryKey = false;
 
-                                                        columns.add(column);
-                                                }
-                                        }
-                                        tableColumnsMap.put(tableName, columns);
+							// 检查是否是主键
+							try (ResultSet pkRs = metaData.getPrimaryKeys(catalog, schema, tableName)) {
+								while (pkRs.next()) {
+									if (columnName.equals(pkRs.getString("COLUMN_NAME"))) {
+										isPrimaryKey = true;
+										break;
+									}
+								}
+							}
 
-                                        // 获取外键关系
-                                        List<Map<String, Object>> foreignKeys = new ArrayList<>();
-                                        try (ResultSet rs = metaData.getImportedKeys(catalog, schema, tableName)) {
-                                                while (rs.next()) {
-                                                        Map<String, Object> fk = new HashMap<>();
-                                                        fk.put("column", rs.getString("FKCOLUMN_NAME"));
-                                                        fk.put("referenceTable", rs.getString("PKTABLE_NAME"));
-                                                        fk.put("referenceColumn", rs.getString("PKCOLUMN_NAME"));
-                                                        fk.put("fkName", rs.getString("FK_NAME"));
-                                                        foreignKeys.add(fk);
-                                                }
-                                        }
-                                        tableForeignKeysMap.put(tableName, foreignKeys);
-                                }
-                        } finally {
-                                // 关闭独立连接
-                                if (directConn != null && !directConn.isClosed()) {
-                                        try {
-                                                directConn.close();
-                                        } catch (SQLException e) {
-                                                logger.warn("关闭直连连接失败", e);
-                                        }
-                                }
-                        }
+							column.put("columnName", columnName);
+							column.put("dataType", dataType + (columnSize > 0 ? "(" + columnSize + ")" : ""));
+							column.put("isPrimary", isPrimaryKey);
+							column.put("isForeignKey", false);
+							column.put("isNullable", nullable == DatabaseMetaData.columnNullable);
+							column.put("comment", StringUtils.defaultString(remark, ""));
+							column.put("defaultValue", defaultValue);
 
-                        // 返回结果
+							columns.add(column);
+						}
+					}
+					tableColumnsMap.put(tableName, columns);
+
+					// 获取外键关系
+					List<Map<String, Object>> foreignKeys = new ArrayList<>();
+					try (ResultSet rs = metaData.getImportedKeys(catalog, schema, tableName)) {
+						while (rs.next()) {
+							Map<String, Object> fk = new HashMap<>();
+							fk.put("column", rs.getString("FKCOLUMN_NAME"));
+							fk.put("referenceTable", rs.getString("PKTABLE_NAME"));
+							fk.put("referenceColumn", rs.getString("PKCOLUMN_NAME"));
+							fk.put("fkName", rs.getString("FK_NAME"));
+							foreignKeys.add(fk);
+						}
+					}
+					tableForeignKeysMap.put(tableName, foreignKeys);
+				}
+			} finally {
+				// 关闭独立连接
+				if (directConn != null && !directConn.isClosed()) {
+					try {
+						directConn.close();
+					} catch (SQLException e) {
+						logger.warn("关闭直连连接失败", e);
+					}
+				}
+			}
+
+			// 返回结果
 			Map<String, Object> result = new HashMap<>();
 			result.put("nodes", nodes);
 			result.put("edges", edges);
 			result.put("tableCount", tableNames.size());
 			result.put("relationCount", relations.size());
-                        // 添加表详情数据（字段列表和外键关系）
-                        result.put("tableDetails", tableColumnsMap);
-                        result.put("tableForeignKeys", tableForeignKeysMap);
-			
+			// 添加表详情数据（字段列表和外键关系）
+			result.put("tableDetails", tableColumnsMap);
+			result.put("tableForeignKeys", tableForeignKeysMap);
+
 			long duration = System.currentTimeMillis() - startTime;
 			logger.info("[relations] 输出 - 节点数: {}, 边数: {}, 耗时: {}ms", nodes.size(), edges.size(), duration);
-			
+
 			return Result.ok(result);
-			
+
 		} catch (Exception e) {
 			logger.error("[relations] 获取表关系失败", e);
 			return Result.error("获取表关系失败: " + e.getMessage());

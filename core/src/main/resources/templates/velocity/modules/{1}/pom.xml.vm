@@ -297,17 +297,17 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>${spring.version}</version>
+			<version>${spring_version}</version>
 		</dependency>
 		<dependency>
 		  <groupId>org.springframework</groupId>
 		  <artifactId>spring-jdbc</artifactId>
-		  <version>${spring.version}</version>
+		  <version>${spring_version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>${spring.version}</version>
+			<version>${spring_version}</version>
 		</dependency>
 		<dependency>
 		  <groupId>jakarta.servlet</groupId>

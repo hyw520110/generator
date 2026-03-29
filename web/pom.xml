@@ -71,6 +71,12 @@
 				<groupId>com.github.ben-manes.caffeine</groupId>
 				<artifactId>caffeine</artifactId>
 		</dependency>
+		<!-- lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<!-- 单元测试 -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -95,7 +101,9 @@
 				<filtering>true</filtering>
 				<includes>
 					<include>*.properties</include>
+					<include>*.yml</include>
 					<include>*.yaml</include>
+					<include>**/*</include>
 				</includes>
 			</resource>
 		</resources>
@@ -118,7 +126,7 @@
 								<resource>
 									<directory>${project.basedir}</directory>
 									<includes>
-										<include>run.sh</include>
+										<include>start.sh</include>
 										<include>stop.sh</include>
 									</includes>
 								</resource>
@@ -133,10 +141,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.basedir}/../core/src/main/resources/templates/assets/vue</outputDirectory>
+							<outputDirectory>${project.basedir}/../core/src/main/resources/templates/assets/web</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${project.basedir}</directory>
+									<directory>${project.basedir}/antd</directory>
 									<includes>
 										<include>startup.sh</include>
 										<include>startup.bat</include>

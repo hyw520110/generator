@@ -26,3 +26,33 @@ fieldNull: 'Null'
 extraKeyValue: 
   key: extra
   value: auto_increment
+
+# 类型映射 (覆盖 common-types.yml)
+mappings:
+  bigint: Long
+  int: Integer
+  tinyint: Integer
+  smallint: Integer
+  mediumint: Integer
+  integer: Integer
+  varchar: String
+  char: String
+  text: String
+  longtext: String
+  mediumtext: String
+  tinytext: String
+  datetime: Timestamp
+  date: Date
+  timestamp: Timestamp
+  time: Time
+  decimal: BigDecimal
+  float: Float
+  double: Double
+  bit: Boolean
+  blob: byte[]
+  longblob: byte[]
+  mediumblob: byte[]
+  tinyblob: byte[]
+  binary: byte[]
+  varbinary: byte[]
+

@@ -3,10 +3,7 @@ package org.hyw.tools.generator.conf.converts;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.hyw.tools.generator.conf.converts.impl.MySqlTypeConvert;
-import org.hyw.tools.generator.conf.converts.impl.OracleTypeConvert;
-import org.hyw.tools.generator.conf.converts.impl.PostgreSqlTypeConvert;
-import org.hyw.tools.generator.conf.converts.impl.SqlServerTypeConvert;
+import org.hyw.tools.generator.conf.converts.impl.YamlTypeConvertor;
 import org.hyw.tools.generator.enums.db.DBType;
 import org.hyw.tools.generator.exception.ConfigurationException;
 
@@ -24,11 +21,10 @@ public class TypeConvertStrategyFactory {
     private static final Map<String, TypeConvertor> STRATEGY_CACHE = new ConcurrentHashMap<>();
     
     static {
-        // 注册默认策略
-        register(DBType.MYSQL.getName(), new MySqlTypeConvert());
-        register(DBType.ORACLE.getName(), new OracleTypeConvert());
-        register(DBType.POSTGRE_SQL.getName(), new PostgreSqlTypeConvert());
-        register(DBType.SQL_SERVER.getName(), new SqlServerTypeConvert());
+        // 统一使用基于 YAML 的动态转换器实现模块化配置
+        for (DBType dbType : DBType.values()) {
+            register(dbType.getName(), new YamlTypeConvertor(dbType));
+        }
     }
     
     /**

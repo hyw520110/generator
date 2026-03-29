@@ -31,35 +31,42 @@ public class StartupRunner implements CommandLineRunner {
 
 	@Override
 	public void run(String... arg0) throws Exception {
-		logger.info("服务启动完成! 服务端口:{}", port);
+		logger.info("服务启动完成! 服务端口: {}", port);
+		logger.info("自动打开浏览器: {}, 自动启动前端: {}", autoOpenBrowser, autoStartFrontend);
 		if (autoStartFrontend) {
+			logger.info("开始启动前端开发服务...");
 			runNode();
 		}
 		if (autoOpenBrowser) {
+			logger.info("开始打开浏览器...");
 			openBrowser();
 		}
 	}
 
 	@Async
 	public void runNode() {
+		logger.debug("执行前端启动脚本: start-dev.sh");
 		execScriptFile("start-dev.sh", true);
 	}
 
 	@Async
 	public void openBrowser() {
-		// 启动前端开发服务
+		logger.debug("执行浏览器打开脚本: open-brower.sh");
 		execScriptFile("open-brower.sh", false);
 	}
 
 	private void execScriptFile(String shell, boolean async) {
 		File sh = new File(shell).getAbsoluteFile();
 		if (!sh.exists()) {
+			logger.warn("脚本文件不存在: {}", sh.getAbsolutePath());
 			return;
 		}
+		logger.info("开始执行脚本: {}, 异步: {}", sh.getAbsolutePath(), async);
 		try {
 			ProcessBuilder pb = new ProcessBuilder(sh.getAbsolutePath());
 			Process process = pb.start();
 			if (!async) {
+				logger.debug("脚本 {} 执行完成（同步）", shell);
 				return;
 			}
 			// 异步处理输出流
@@ -84,9 +91,9 @@ public class StartupRunner implements CommandLineRunner {
 
 			// 等待脚本执行完成
 			int exitCode = process.waitFor();
-			logger.info("{} exited with code: {}", shell, exitCode);
+			logger.info("{} 退出，退出码: {}", shell, exitCode);
 		} catch (IOException | InterruptedException e) {
-			logger.warn("exec {} Failed: {}", shell, e.getLocalizedMessage());
+			logger.error("执行脚本失败: {}, 错误: {}", shell, e.getLocalizedMessage(), e);
 		}
 	}
 }

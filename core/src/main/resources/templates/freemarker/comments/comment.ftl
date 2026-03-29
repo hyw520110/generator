@@ -4,7 +4,9 @@
 <#--  ============================================ -->
 
 /**
-<#if table??>
+<#if comment?? && comment?has_content>
+ * ${comment!}
+<#elseif table??>
  * ${(table.comment!'')!}
 <#else>
  * ${comment!}

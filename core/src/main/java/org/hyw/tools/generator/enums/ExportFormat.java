@@ -6,7 +6,7 @@ package org.hyw.tools.generator.enums;
 public enum ExportFormat {
 
     PDF("pdf", "PDF 文档"),
-    DOCX("docx", "Word 文档"),
+    WORD("docx", "Word 文档"),
     EXCEL("xlsx", "Excel 表格"),
     HTML("html", "HTML 页面"),
     MARKDOWN("md", "Markdown 文本");

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.hyw.tools.generator.utils.ConfigValidator;
 import org.hyw.tools.generator.utils.ConfigValidator.ValidationResult;
 
 /**
@@ -20,14 +19,12 @@ import org.hyw.tools.generator.utils.ConfigValidator.ValidationResult;
  */
 public enum ComponentGroup {
     
-    // ==================== 必选组（必须选择一个）====================
     
     /**
      * ORM 框架组 - 持久层框架，必选且只能选一个
      */
     ORM("ORM 框架", true, Component.MYBATIS, Component.JPA),
     
-    // ==================== 可选组（最多选择一个）====================
     
     /**
      * 视图技术组 - 前端方案，可选但最多选一个

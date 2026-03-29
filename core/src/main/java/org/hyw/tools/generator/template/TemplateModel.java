@@ -25,6 +25,18 @@ public class TemplateModel {
     private String entityPackage;
     private Set<Component> components;
     private Map<String, Object> extra;
+    private Map<String, String> naming;
+
+    public Map<String, String> getNaming() {
+        if (naming == null && table != null) {
+            naming = org.hyw.tools.generator.utils.NamingStrategy.buildNamingMap(table.getBeanName());
+        }
+        return naming;
+    }
+
+    public void setNaming(Map<String, String> naming) {
+        this.naming = naming;
+    }
 
     public GlobalConf getConfig() { return config; }
     public void setConfig(GlobalConf config) { this.config = config; }
@@ -63,6 +75,25 @@ public class TemplateModel {
 
     public boolean isMybatis() { return hasComponent(Component.MYBATIS); }
     public boolean isJpa() { return hasComponent(Component.JPA); }
+
+    public TemplateModel copy() {
+        TemplateModel copy = new TemplateModel();
+        copy.config = this.config;
+        copy.dataSource = this.dataSource;
+        copy.table = this.table;
+        copy.allTables = this.allTables;
+        copy.author = this.author;
+        copy.date = this.date;
+        copy.copyright = this.copyright;
+        copy.projectName = this.projectName;
+        copy.rootPackage = this.rootPackage;
+        copy.moduleName = this.moduleName;
+        copy.entityPackage = this.entityPackage;
+        copy.components = this.components;
+        copy.extra = this.extra;
+        copy.naming = this.naming;
+        return copy;
+    }
 
     public static Builder builder() { return new Builder(); }
 

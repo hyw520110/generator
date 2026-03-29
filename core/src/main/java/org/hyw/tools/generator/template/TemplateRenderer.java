@@ -1,9 +1,7 @@
 package org.hyw.tools.generator.template;
 
-import org.hyw.tools.generator.template.impl.FreeMarkerEngineImpl;
-import org.hyw.tools.generator.template.impl.VelocityEngineImpl;
+import org.hyw.tools.generator.enums.EngineType;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**

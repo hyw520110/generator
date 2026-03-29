@@ -273,6 +273,11 @@ public class DatabaseMetadataReader implements MetadataReader {
                     global.getSeparators());
         }
 
+        if (global.getNaming() == Naming.TOPASCAL) {
+            return StringUtils.removePrefixAndPascal(name, tablePrefix,
+                    global.getSeparators());
+        }
+
         return name;
     }
 

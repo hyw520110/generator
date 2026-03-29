@@ -9,7 +9,9 @@
 #end
 
 /**
-#if("$!{table.comment}" != "" && "$!{table.comment}" != "null")
+#if("$!{comment}" != "" && "$!{comment}" != "null")
+ * ${comment}
+#elseif("$!{table.comment}" != "" && "$!{table.comment}" != "null")
  * ${table.comment}
 #else
  * ${comment}

@@ -7,5 +7,6 @@
       "mcp__playwright__browser_run_code",
       "mcp__playwright__browser_click"
     ]
-  }
+  },
+  "$version": 3
 }

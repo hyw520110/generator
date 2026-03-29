@@ -72,6 +72,7 @@ public class ProjectConfig implements Serializable {
     /**
      * 工程目录配置
      */
+    @Builder.Default
     private DirectoryConfig directory = new DirectoryConfig();
 
     /**

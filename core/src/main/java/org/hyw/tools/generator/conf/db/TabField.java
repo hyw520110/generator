@@ -167,6 +167,23 @@ public class TabField extends BaseBean {
 		this.isCommonField = isCommonField;
 	}
 
+	/**
+	 * 是否为敏感字段（如密码等）
+	 * @return true-敏感字段，不应在查询条件和列表中显示
+	 */
+	public boolean isSensitive() {
+		if (StringUtils.isBlank(propertyName)) {
+			return false;
+		}
+		String name = propertyName.toLowerCase();
+		return name.contains("password") ||
+			   name.contains("passwd") ||
+			   name.endsWith("pwd") ||
+			   name.endsWith("pass") ||
+			   name.contains("secret") ||
+			   name.contains("credential");
+	}
+
 	@Override
 	public boolean equals(Object arg) {
 		if (null == arg) {

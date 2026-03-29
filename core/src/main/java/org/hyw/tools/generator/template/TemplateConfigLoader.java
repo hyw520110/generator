@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.EngineType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -218,10 +219,11 @@ public class TemplateConfigLoader {
      */
     private TemplateConfig createDefaultConfig() {
         TemplateConfig config = new TemplateConfig();
-        config.setDefaultEngine("velocity");
+        config.setDefaultEngine(EngineType.VELOCITY.getName());
         List<String> support = new ArrayList<>();
-        support.add("velocity");
-        support.add("freemarker");
+        for (EngineType type : EngineType.values()) {
+            support.add(type.getName());
+        }
         config.setSupportedEngines(support);
         return config;
     }

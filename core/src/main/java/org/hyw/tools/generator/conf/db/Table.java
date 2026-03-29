@@ -245,7 +245,9 @@ public class Table extends BaseBean {
 	}
 
 	public void addImportPackages(String pkg) {
-		importPackages.add(pkg);
+		if (pkg != null && !importPackages.contains(pkg)) {
+			importPackages.add(pkg);
+		}
 	}
 
 	public void setFields(List<TabField> fields) {

@@ -278,17 +278,17 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>${spring.version!}</version>
+			<version>${spring_version!}</version>
 		</dependency>
 		<dependency>
 		  <groupId>org.springframework</groupId>
 		  <artifactId>spring-jdbc</artifactId>
-		  <version>${spring.version!}</version>
+		  <version>${spring_version!}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>${spring.version!}</version>
+			<version>${spring_version!}</version>
 		</dependency>
 		<dependency>
 		  <groupId>jakarta.servlet</groupId>
@@ -357,7 +357,7 @@
 </#if>
 	</dependencies>
 	<build>
-		<finalName>${project.artifactId!}</finalName>
+		<finalName>${r'${project.artifactId}'}</finalName>
 		<resources>
 			 <resource>
 			    <directory>src/main/resources</directory>
@@ -392,9 +392,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 <#if SPRINGBOOT?? && SPRINGBOOT><version>3.3</version></#if>
 				<configuration>
-					<source>${maven.compiler.source!}</source>
-					<target>${maven.compiler.target!}</target>
-					<encoding>${project.build.sourceEncoding!}</encoding>
+					<source>${r'${maven.compiler.source}'}</source>
+					<target>${r'${maven.compiler.target}'}</target>
+					<encoding>${r'${project.build.sourceEncoding}'}</encoding>
 				</configuration>
 			</plugin>
 <#if SPRINGBOOT?? && SPRINGBOOT>

@@ -1,0 +1,29 @@
+# 公共类型映射 (DB Column Type -> Java Type)
+# 优先级：数据库特定配置 > 公共配置 > Java Enum 兜底
+
+mappings:
+  varchar: String
+  char: String
+  text: String
+  longtext: String
+  tinytext: String
+  mediumtext: String
+  int: Integer
+  integer: Integer
+  bigint: Long
+  tinyint: Integer
+  smallint: Integer
+  mediumint: Integer
+  float: Float
+  double: Double
+  decimal: BigDecimal
+  numeric: BigDecimal
+  bit: Boolean
+  boolean: Boolean
+  date: Date
+  time: Time
+  datetime: Timestamp
+  timestamp: Timestamp
+  blob: byte[]
+  binary: byte[]
+  varbinary: byte[]

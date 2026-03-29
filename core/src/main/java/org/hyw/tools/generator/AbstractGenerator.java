@@ -27,6 +27,7 @@ import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.conf.dao.QuerySQL;
 import org.hyw.tools.generator.conf.db.TabField;
 import org.hyw.tools.generator.conf.db.Table;
+import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.exception.GeneratorException;
 import org.hyw.tools.generator.enums.FieldType;
@@ -71,12 +72,13 @@ public abstract class AbstractGenerator extends BaseBean {
 	}
 
 	public List<Table> getTables(boolean all) {
+		logger.debug("获取表列表，全部表: {}, 数据库: {}", all, dataSource.getDbName());
 		String cacheKey = buildCacheKey(all);
 		
 		// 先尝试从缓存获取
 		List<Table> cachedTables = tableCache.getIfPresent(cacheKey);
 		if (cachedTables != null) {
-			logger.debug("从缓存获取表元数据，缓存命中: {}", cacheKey);
+			logger.debug("从缓存获取表元数据，缓存命中: {}, 表数量: {}", cacheKey, cachedTables.size());
 			return cachedTables;
 		}
 		
@@ -86,9 +88,10 @@ public abstract class AbstractGenerator extends BaseBean {
 		// 存入缓存
 		if (!tables.isEmpty()) {
 			tableCache.put(cacheKey, tables);
-			logger.debug("表元数据已缓存: {}", cacheKey);
+			logger.debug("表元数据已缓存: {}, 表数量: {}", cacheKey, tables.size());
 		}
 		
+		logger.debug("获取表列表完成，返回 {} 个表", tables.size());
 		return tables;
 	}
 	
@@ -113,7 +116,10 @@ public abstract class AbstractGenerator extends BaseBean {
 		ArrayList<Table> tables = new ArrayList<>();
 		QuerySQL sql = dataSource.getQuerySQL();
 		String dbName = dataSource.getDbName();
-		logger.debug("开始从数据库读取表元数据... 数据库: {}", dbName);
+		logger.debug("开始从数据库读取表元数据... 数据库: {}, 包含表: {}, 排除表: {}", 
+				dbName, 
+				all ? "ALL" : Arrays.toString(global.getInclude()),
+				all ? "NONE" : Arrays.toString(global.getExclude()));
 		
 		try (Connection con = dataSource.getConnection(dbName);
 			 PreparedStatement pst = con.prepareStatement(sql.getTabComments());
@@ -136,6 +142,7 @@ public abstract class AbstractGenerator extends BaseBean {
 					tables.add(this.setTableFields(table, st));
 				}
 			}
+			logger.debug("从数据库读取表元数据完成，共读取 {} 个表", tables.size());
 		} catch (Exception e) {
 			logger.error("查询数据库表失败: {}", dataSource.getDbName(), e);
 			throw new GeneratorException("查询数据库表失败", e);
@@ -156,13 +163,16 @@ public abstract class AbstractGenerator extends BaseBean {
 		return false;
 	}
 	public List<String> getAllTableNames() {
+		logger.debug("获取所有表名");
 		List<String> list = new ArrayList<>();
 		try {
 			List<Table> tables = getTables(true);
 			for (Table table : tables) {
 				list.add(table.getName());
 			}
+			logger.debug("获取所有表名完成，共 {} 个表", list.size());
 		} catch (Exception e) {
+			logger.error("获取所有表名失败", e);
 			e.printStackTrace();
 		}
 		return list;
@@ -177,6 +187,7 @@ public abstract class AbstractGenerator extends BaseBean {
 	 * @throws SQLException
 	 */
 	private Table setTableFields(Table table, Statement st) throws SQLException {
+//		logger.debug("开始读取表字段信息: {}", table.getName());
 		QuerySQL sql = dataSource.getQuerySQL();
 		try (ResultSet results = st.executeQuery(String.format(sql.getTbFields(), table.getName()))) {
 			while (results.next()) {
@@ -204,6 +215,7 @@ public abstract class AbstractGenerator extends BaseBean {
 					field.setPropertyName(StringUtils.toCamelCase(field.getName(), global.getSeparators(), false));
 				}
 			}
+//			logger.debug("读取表字段信息完成: {}, 字段数量: {}", table.getName(), table.getFields().size());
 		} catch (SQLException e) {
 			logger.error("SQL Exception：{}", e.getMessage());
 		}
@@ -232,10 +244,15 @@ public abstract class AbstractGenerator extends BaseBean {
 			// 删除前缀、下划线转驼峰
 			return StringUtils.removePrefixAndCamel(name, tablePrefix, global.getSeparators());
 		}
+		if (global.getNaming() == Naming.TOPASCAL) {
+			// 删除前缀、下划线转帕斯卡（首字母大写的驼峰）
+			return StringUtils.removePrefixAndPascal(name, tablePrefix, global.getSeparators());
+		}
 		return name;
 	}
 
 	public void mkDirs() {
+		logger.debug("开始创建目录结构，输出目录: {}", global.getOutputDir());
 		// 生成路径信息
 		String[] modules = global.getModules();
 		if (null == modules || modules.length == 0) {
@@ -248,6 +265,7 @@ public abstract class AbstractGenerator extends BaseBean {
 			mkdirs(dir, global.getSourceDirectory(), global.getResourceDirectory(), global.getTestSourceDirectory(),
 					global.getTestResourceDirectory());
 		}
+		logger.debug("目录结构创建完成");
 	}
 
 	public void delDir() {
@@ -256,9 +274,11 @@ public abstract class AbstractGenerator extends BaseBean {
 			return;
 		}
 		try {
-			logger.info("删除目录:{}", outputDir);
+			logger.info("删除目录: {}", outputDir);
 			FileUtils.deleteDirectory(outputDir);
-		} catch (IOException ignore) {
+			logger.info("目录删除完成: {}", outputDir);
+		} catch (IOException e) {
+			logger.error("删除目录失败: {}", outputDir, e);
 		}
 	}
 
@@ -285,28 +305,15 @@ public abstract class AbstractGenerator extends BaseBean {
 				return;
 			}
 			// 打开windows or Mac的输出目录
-			Runtime.getRuntime().exec((osName.contains("Windows") ? "cmd /c start " : "open ") + dir);
+			Runtime.getRuntime().exec((osName.contains(Consts.OS_NAME_WINDOWS) ? 
+				Consts.OS_COMMAND_WINDOWS : Consts.OS_COMMAND_UNIX) + dir);
 		} catch (IOException e) {
 			logger.error("打开目录:{},发生异常:{}", dir, e.getLocalizedMessage());
 		}
 	}
 
-	/**
-	 * 设置模版引擎，主要指向获取模版路径
-	 */
-	protected VelocityEngine getVelocityEngine() {
-		Properties p = new Properties();
-		String conf = "/conf/velocity.properties";
-		try {
-			p.load(Generator.class.getResourceAsStream(conf));
-		} catch (IOException e) {
-			logger.error("load {} {}", conf, e.getClass(), e);
-		}
-		return new VelocityEngine(p);
-	}
-
 	public static boolean isWin() {
-		return getOsName().toLowerCase().startsWith("win");
+		return getOsName().toLowerCase().startsWith(Consts.OS_NAME_PREFIX_WIN);
 	}
 
 	public static String getOsName() {

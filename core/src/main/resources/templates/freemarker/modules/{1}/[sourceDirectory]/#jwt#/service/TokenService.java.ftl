@@ -1,7 +1,7 @@
 package ${servicePackage!};
 
 
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.TokenVo;
+import ${rootPackage!}.${projectName!}.${moduleName!}.dto.TokenDto;
 
 
 public interface TokenService {
@@ -10,7 +10,7 @@ public interface TokenService {
 
     String createToken(String content, Long timeout);
 
-    TokenVo parseToken(String token);
+    TokenDto parseToken(String token);
 
     String refreshToken(String userId, String type);
 

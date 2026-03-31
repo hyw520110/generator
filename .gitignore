@@ -1,6 +1,8 @@
 target
 .idea
-.playwright-mcp/**
+**/.qwen/**
+**/.gemini/**
+**/.playwright-mcp/**
 *.iml
 **/.settings
 **/.project

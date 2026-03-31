@@ -198,6 +198,23 @@ cd "$APP_DIR"
 if [ "$FORCE_RESTART" = true ]; then
     echo_info "正在停止已有前端进程..."
     pkill -f "node.*vite\|node.*vue-cli-service\|npm run dev\|yarn serve" 2>/dev/null || true
+    
+    # 精确停止配置端口的进程
+    config_port=""
+    if [ -f "vite.config.js" ]; then
+        config_port=$(grep "port:" vite.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
+    elif [ -f "vue.config.js" ]; then
+        config_port=$(grep "port:" vue.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
+    fi
+    [ -z "$config_port" ] && config_port="8000"
+    
+    if command -v lsof > /dev/null 2>&1; then
+        port_pids=$(lsof -ti :$config_port 2>/dev/null)
+        if [ -n "$port_pids" ]; then
+            echo_info "正在停止占用端口 $config_port 的进程..."
+            echo "$port_pids" | xargs kill -9 2>/dev/null || true
+        fi
+    fi
     sleep 2
 fi
 
@@ -217,7 +234,16 @@ start_frontend() {
         local current_hash=$(cat "$files_to_hash" 2>/dev/null | (md5sum 2>/dev/null || md5) | awk '{print $1}')
         local stored_hash=$(cat "$DEP_HASH_FILE" 2>/dev/null || echo "")
 
-        if [ ! -d "node_modules" ] || [ "$current_hash" != "$stored_hash" ]; then
+        # 检测 node_modules 是否需要重新安装
+        # 条件：目录不存在 或 hash不匹配 或 node_modules为空
+        local node_modules_empty=false
+        if [ -d "node_modules" ]; then
+            if [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
+                node_modules_empty=true
+            fi
+        fi
+
+        if [ ! -d "node_modules" ] || [ "$node_modules_empty" = true ] || [ "$current_hash" != "$stored_hash" ]; then
             echo_warn "检测到依赖变更，正在安装前端依赖..."
 
             # 解决证书过期问题
@@ -268,6 +294,16 @@ start_frontend() {
             port=$(grep "port:" vue.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
         fi
         [ -z "$port" ] && port="8000"
+
+        # 启动前检测端口是否被占用，如果被占用则先停止
+        if command -v lsof > /dev/null 2>&1; then
+            local port_pids=$(lsof -ti :$port 2>/dev/null)
+            if [ -n "$port_pids" ]; then
+                echo_warn "端口 $port 已被占用，正在停止占用进程..."
+                echo "$port_pids" | xargs kill -9 2>/dev/null || true
+                sleep 1
+            fi
+        fi
 
         echo_info "启动前端并监听端口：$port"
         echo_info "访问地址：http://localhost:$port"

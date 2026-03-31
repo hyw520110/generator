@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import { cutStrByFullLength, getStrFullLength } from '@/components/_util/util'
+import { cutStrByFullLength, getStrFullLength } from '@/components/util/util'
 
 export default {
   name: 'Ellipsis',

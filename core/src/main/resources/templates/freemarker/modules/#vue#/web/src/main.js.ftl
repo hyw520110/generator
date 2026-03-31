@@ -8,7 +8,7 @@ import * as Icons from '@ant-design/icons-vue'
 import { VueAxios } from '@/utils/request'
 
 // mock - 开发环境启用 mock
-import './mock'
+// import './mock'
 
 import './permission' // permission control
 import './global.less'

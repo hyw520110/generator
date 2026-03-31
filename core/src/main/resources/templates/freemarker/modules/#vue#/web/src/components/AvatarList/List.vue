@@ -2,7 +2,7 @@
 import { defineComponent } from 'vue'
 import Avatar from 'ant-design-vue/es/avatar'
 import AvatarItem from './Item'
-import { filterEmpty } from '@/components/_util/util'
+import { filterEmpty } from '@/components/util/util'
 
 export default defineComponent({
   name: 'AvatarList',

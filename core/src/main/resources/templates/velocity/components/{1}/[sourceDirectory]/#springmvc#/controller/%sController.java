@@ -32,6 +32,7 @@ import ${dtoPackage}.Result;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ${dtoPackage}.${dtoName};
 import ${servicePackage}.${serviceName};
+import ${entityPackage}.${entityName};
 
 #if(${superControllerClass})
 import #if(${StringUtils.indexOf("$superControllerClass", '.')}==-1)${controllerPackage}.commons.#end${superControllerClass};
@@ -46,7 +47,7 @@ import #if(${StringUtils.indexOf("$superControllerClass", '.')}==-1)${controller
 @Controller
 #end
 @RequestMapping("/${table.beanName}")
-public class ${controllerName} #if(${superControllerClass})extends ${superControllerClass}<${serviceName},${dtoName}>#end {
+public class ${controllerName} #if(${superControllerClass})extends ${superControllerClass}<${serviceName},${entityName}>#end {
 #if("plus"!="$mapperType")
 #set($sName=${StringUtils.lowercaseFirst($serviceName)})
 	

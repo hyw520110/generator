@@ -5,7 +5,11 @@
       "mcp__playwright__browser_fill_form",
       "mcp__playwright__browser_evaluate",
       "mcp__playwright__browser_run_code",
-      "mcp__playwright__browser_click"
+      "mcp__playwright__browser_click",
+      "Bash(tail *)",
+      "Bash(lsof *)",
+      "Bash(ls *)",
+      "Bash(yarn install)"
     ]
   },
   "$version": 3

@@ -1,16 +1,16 @@
-package ${dtoPackage!};
+package ${dtoPackage};
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value = "登录成功用户信息")
-public class LoginResponseVo {
+public class LoginResponseDto {
 	@ApiModelProperty(value = "用户身份令牌")
 	private String userToken;
 	@ApiModelProperty(value = "用户信息")
 	private UserInfo userInfo;
 
-	public LoginResponseVo(String token, UserInfo user) {
+	public LoginResponseDto(String token, UserInfo user) {
 		this.userToken = token;
 		this.userInfo = user;
 	}

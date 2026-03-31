@@ -11,7 +11,11 @@
       "Bash(pkill *)",
       "Bash(sleep *)",
       "Bash(xargs *)",
-      "Bash(mvn *)"
+      "Bash(mvn *)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_click"
     ]
-  }
+  },
+  "$version": 3
 }

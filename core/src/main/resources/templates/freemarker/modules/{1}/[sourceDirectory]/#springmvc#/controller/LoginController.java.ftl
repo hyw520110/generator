@@ -20,13 +20,22 @@ import jakarta.validation.Valid;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSON;
-import ${rootPackage!}.${projectName!}.api.enums.StatusCode;
-import ${rootPackage!}.${projectName!}.api.vo.Result;
-import ${rootPackage!}.${projectName!}.${moduleName!}.service.TokenService;
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.LoginResponseVo;
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.LoginVo;
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.ResourceResponseVo;
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.UserInfo;
+<#if global.modules?? && global.modules?size gt 1>
+import ${api_dtoPackage!}.StatusCode;
+import ${api_dtoPackage!}.Result;
+import ${api_dtoPackage!}.LoginResponseDto;
+import ${api_dtoPackage!}.LoginDto;
+import ${api_dtoPackage!}.ResourceResponseDto;
+import ${api_dtoPackage!}.UserInfo;
+<#else>
+import ${dtoPackage!}.StatusCode;
+import ${dtoPackage!}.Result;
+import ${dtoPackage!}.LoginResponseDto;
+import ${dtoPackage!}.LoginDto;
+import ${dtoPackage!}.ResourceResponseDto;
+import ${dtoPackage!}.UserInfo;
+</#if>
+import ${servicePackage!}.TokenService;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -55,7 +64,7 @@ public class LoginController {
 	@Autowired
 	private TokenService tokenService;
 	private static UserInfo user;
-	private static List<ResourceResponseVo> userResources;
+	private static List<ResourceResponseDto> userResources;
 	
 	static{init();}
 	public static void init() {
@@ -65,7 +74,7 @@ public class LoginController {
 	}
 	public static void load() {
 		user = loadTestData(UserInfo.class);
-		userResources = (List<ResourceResponseVo>) loadTestListData(ResourceResponseVo.class);
+		userResources = (List<ResourceResponseDto>) loadTestListData(ResourceResponseDto.class);
 	}
 	// TODO 测试方法
 	public static <T> T loadTestData(Class<T> t) {
@@ -95,13 +104,13 @@ public class LoginController {
 	}
 
 	@RequestMapping(value ="/auth/login", method = { RequestMethod.POST, RequestMethod.PUT })
-	public Result<Object> login(@Valid LoginVo login, HttpServletRequest req, HttpServletResponse resp) {
+	public Result<Object> login(@Valid LoginDto login, HttpServletRequest req, HttpServletResponse resp) {
 		init();
 		if (!user.getUserName().equals(login.getUserName()) || !user.getPassword().equals(login.getPassword())) {
 			return Result.error(401, "账户或密码错误");
 		}
 		String toke = tokenService.refreshToken(String.valueOf(user.getUserId()), AUTH_TYPE_WEB);
-		return Result.ok(new LoginResponseVo(toke, user));
+		return Result.ok(new LoginResponseDto(toke, user));
 	}
 
 	@ApiOperation(value = "用户注销", notes = "用户注销")
@@ -134,14 +143,14 @@ public class LoginController {
 
 	@RequestMapping(value = "/resource/{userId}/list", method = RequestMethod.GET)
 	@ApiOperation(value = "获取指定用户的树状结构资源列表", notes = "获取指定用户的树状结构资源列表")
-	public Result<List<ResourceResponseVo>> getUserResources(@PathVariable("userId") Long userId) {
+	public Result<List<ResourceResponseDto>> getUserResources(@PathVariable("userId") Long userId) {
 		init();
 		return new Result<>(userResources);
 	}
 
-	@RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
+	@RequestMapping(value = "/user/detail/{userId}", method = RequestMethod.GET)
 	@ApiOperation(value = "获取用户信息", notes = "获取用户信息")
-	public Result<UserInfo> getUser(@ApiParam(value = "用户ID", required = true) @PathVariable("userId") Long userId) {
+	public Result<UserInfo> getUserDetail(@ApiParam(value = "用户ID", required = true) @PathVariable("userId") Long userId) {
 		return new Result<>(user);
 	}
 

@@ -24,7 +24,7 @@ import ${dtoPackage}.StatusCode;
 import ${dtoPackage}.Result;
 import ${rootPackage}.${projectName}.${moduleName}.service.TokenService;
 import ${rootPackage}.${projectName}.${moduleName}.utils.SpringUtils;
-import ${rootPackage}.${projectName}.${moduleName}.vo.TokenVo;
+import ${rootPackage}.${projectName}.${moduleName}.dto.TokenDto;
 
 public class JWTFilter extends BasicHttpAuthenticationFilter {
 
@@ -33,7 +33,7 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 	private AntPathMatcher pathMatcher = new AntPathMatcher();
 
 	private String[] excludes = { "/webjars/**", "/swagger-resources/**", "/swagger-ui.html", "/error", "/v2/api-docs",
-			"/auth/login", "/auth/logout/**","/druid/**"};
+			"/auth/login", "/auth/logout/**","/druid/**", "/resource/**", "/user/**"};
 	private String HEADER_TOKEN = "X-USER-TOKEN";
 	private String CHARSET = "UTF-8";
 
@@ -41,9 +41,9 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 	protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue)
 			throws UnauthorizedException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-		// 如果请求头不存在 Token，则可能是执行登陆操作或者是游客状态访问，无需检查 token，直接返回 true
-		if (isLoginAttempt(request, response)) {
-			return executeLogin(request, response);
+		// 跨域时,option请求直接返回正常状态
+		if (httpServletRequest.getMethod().equals(RequestMethod.OPTIONS.name())) {
+			return true;
 		}
 		String uri = httpServletRequest.getRequestURI();
 		// 读取白名单路由列表
@@ -51,6 +51,10 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 			if (pathMatcher.match(url, uri)) {
 				return true;
 			}
+		}
+		// 如果请求头不存在 Token，则可能是执行登陆操作或者是游客状态访问，无需检查 token，直接返回 true
+		if (isLoginAttempt(request, response)) {
+			return executeLogin(request, response);
 		}
 		log.warn("not allow uri:{}", uri);
 		return false;
@@ -69,7 +73,7 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 		String token = httpServletRequest.getHeader(HEADER_TOKEN);
 		try {
-			TokenVo tokenVo = tokenService.parseToken(token);
+			TokenDto tokenVo = tokenService.parseToken(token);
 			// 因为登录时未将令牌放入,所以此时需要将令牌放入以便后续Realm进行用户认证
 			tokenVo.setToken(token);
 			getSubject(request, response).login(tokenVo);

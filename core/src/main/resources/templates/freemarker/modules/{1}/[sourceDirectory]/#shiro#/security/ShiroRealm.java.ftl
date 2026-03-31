@@ -1,14 +1,12 @@
 <#if VUE>
 package ${securityPackage!};
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -20,16 +18,24 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.alibaba.fastjson.JSON;
+<#if global.modules?? && global.modules?size gt 1>
 import ${api_dtoPackage!}.StatusCode;
-import ${rootPackage!}.${projectName!}.${moduleName!}.service.TokenService;
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.Resource;
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.Role;
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.TokenVo;
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.UserAuthCache;
+import ${api_dtoPackage!}.ResourceResponseDto;
+import ${api_dtoPackage!}.Role;
+import ${api_dtoPackage!}.UserAuthCache;
+<#else>
+import ${dtoPackage!}.StatusCode;
+import ${dtoPackage!}.ResourceResponseDto;
+import ${dtoPackage!}.Role;
+import ${dtoPackage!}.UserAuthCache;
+</#if>
+import ${servicePackage!}.TokenService;
+import ${dtoPackage!}.TokenDto;
 
 public class ShiroRealm extends AuthorizingRealm {
 
@@ -37,65 +43,64 @@ public class ShiroRealm extends AuthorizingRealm {
 
 	@Autowired
 	private TokenService tokenService;
-	private UserAuthCache userAuthCache;
+	private List<ResourceResponseDto> resources;
 
 	@Override
 	public boolean supports(AuthenticationToken token) {
-		return token instanceof TokenVo;
+	        return token instanceof TokenDto;
 	}
 
-	public UserAuthCache loadTestData() {
-		if (userAuthCache != null) {
-			return userAuthCache;
+		public void loadTestData() {
+		        if (resources != null) {
+		                return;
+		        }
+		        try {
+		                ClassPathResource resource = new ClassPathResource("data/ResourceResponseDto.json");
+		                if (resource.exists()) {
+		                        try (InputStream is = resource.getInputStream()) {
+		                                byte[] bytes = is.readAllBytes();
+		                                resources = JSON.parseArray(new String(bytes), ResourceResponseDto.class);
+		                        }
+		                }
+		        } catch (IOException ignore) {
+		                log.error("loadTestData error", ignore);
+		        }
 		}
-		try {
-			URL url = ShiroRealm.class.getResource("/data/Resource.json");
-			if (null == url) {
-				return null;
-			}
-			List<Resource> resource = JSON.parseArray(FileUtils.readFileToString(new File(url.getPath())), Resource.class);
-			userAuthCache=new UserAuthCache(resource);
-		} catch (IOException ignore) {
-		}
-		return userAuthCache;
+	
+		/**
+		 * 授权模块，获取用户角色和权限
+		 *
+		 * @param principals 身份
+		 * @return AuthorizationInfo 权限信息
+		 */
+		@Override
+		protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+	        Set<String> roleSet = new HashSet<>();
+	        Set<String> permissionSet = new HashSet<>();
+	        SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
+	        loadTestData();
+	        if (CollectionUtils.isEmpty(resources)) {
+	                return simpleAuthorizationInfo;
+	        }
 
+	        collectPermissions(resources, permissionSet);
+
+	        simpleAuthorizationInfo.setRoles(roleSet);
+	        simpleAuthorizationInfo.setStringPermissions(permissionSet);
+	        return simpleAuthorizationInfo;
 	}
 
-	/**
-	 * 授权模块，获取用户角色和权限
-	 *
-	 * @param principals 身份
-	 * @return AuthorizationInfo 权限信息
-	 */
-	@Override
-	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-		String userId = (String) principals.getPrimaryPrincipal();
-		Set<String> roleSet = new HashSet<>();
-		Set<String> permissionSet = new HashSet<>();
-		SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
-		if (loadTestData() == null) {
-			return simpleAuthorizationInfo;
-		}
-		List<Role> userRoles = userAuthCache.getUserRoles();
-		List<Resource> userResources = userAuthCache.getUserResources();
-		if (!CollectionUtils.isEmpty(userRoles)) {
-			for (Role userRole : userRoles) {
-				roleSet.add(userRole.getRoleKey());
-			}
-		}
-		simpleAuthorizationInfo.setRoles(roleSet);
-		if (!CollectionUtils.isEmpty(userResources)) {
-			for (Resource userResource : userResources) {
-				String resourcePerms = userResource.getResourcePerms();
-				if (!StringUtils.isEmpty(resourcePerms)) {
-					permissionSet.add(resourcePerms);
-				}
-			}
-		}
-		simpleAuthorizationInfo.setStringPermissions(permissionSet);
-		return simpleAuthorizationInfo;
+	private void collectPermissions(List<ResourceResponseDto> resourceList, Set<String> permissionSet) {
+	        if (CollectionUtils.isEmpty(resourceList)) {
+	                return;
+	        }
+	        for (ResourceResponseDto resource : resourceList) {
+	                if (!StringUtils.isEmpty(resource.getResourcePerms())) {
+	                        permissionSet.add(resource.getResourcePerms());
+	                }
+	                collectPermissions(resource.getChildResources(), permissionSet);
+	        }
 	}
-
 	/**
 	 * 用户认证
 	 *
@@ -113,7 +118,7 @@ public class ShiroRealm extends AuthorizingRealm {
 			throw new RuntimeException(StatusCode.TOKEN_ERROR.getDesc());
 		}
 
-		TokenVo tokenVo = tokenService.parseToken(token);
+		TokenDto tokenVo = tokenService.parseToken(token);
 		String userId = tokenVo.getUserId();
 		String type = tokenVo.getType();
 

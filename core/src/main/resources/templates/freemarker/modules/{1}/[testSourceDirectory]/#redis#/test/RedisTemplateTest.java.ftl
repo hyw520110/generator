@@ -1,5 +1,5 @@
 <#if REDIS?? && REDIS> 
-package ${redisPackage!};
+package ${testPackage!};
 
 import org.junit.Assert;
 import org.junit.Test;

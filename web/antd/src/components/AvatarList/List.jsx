@@ -3,7 +3,7 @@ import './index.less'
 import PropTypes from 'ant-design-vue/es/_util/vue-types'
 import Avatar from 'ant-design-vue/es/avatar'
 import Item from './Item.jsx'
-import { filterEmpty } from '@/components/_util/util'
+import { filterEmpty } from '@/components/util/util'
 
 /**
  * size: `number`、 `large`、`small`、`default` 默认值: default

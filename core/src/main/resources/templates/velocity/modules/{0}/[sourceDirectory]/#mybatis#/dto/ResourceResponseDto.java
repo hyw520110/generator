@@ -1,4 +1,4 @@
-package ${dtoPackage!};
+package ${dtoPackage};
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -7,7 +7,17 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-public class ResourceResponseVo {
+/*
+ * FIXME: 示例数据实体类
+ * 此文件为本地测试使用的示例资源数据
+ * 生成的 jar 部署时，需要在 classpath (src/main/resources/data/) 中放置实际的 ResourceResponseDto.json 文件
+ * 否则 ShiroRealm 读取权限会为空
+ * 
+ * 字段说明:
+ * - resourceType: G(菜单组), M(菜单), O(按钮)
+ * - resourceView: 对应前端组件名称，如 BasicLayout, RouteView, IframeView, 或具体页面组件
+ */
+public class ResourceResponseDto {
 	@ApiModelProperty(value = "资源ID")
 	private Long resourceId;
 	@ApiModelProperty(value = "资源名称")
@@ -33,7 +43,7 @@ public class ResourceResponseVo {
 	@ApiModelProperty(value = "排序")
 	private Integer sort;
 	@ApiModelProperty(value = "子级资源列表")
-	private List<ResourceResponseVo> childResources;
+	private List<ResourceResponseDto> childResources;
 
 	public Long getResourceId() {
 		return resourceId;
@@ -131,11 +141,11 @@ public class ResourceResponseVo {
 		this.sort = sort;
 	}
 
-	public List<ResourceResponseVo> getChildResources() {
+	public List<ResourceResponseDto> getChildResources() {
 		return childResources;
 	}
 
-	public void setChildResources(List<ResourceResponseVo> childResources) {
+	public void setChildResources(List<ResourceResponseDto> childResources) {
 		this.childResources = childResources;
 	}
 

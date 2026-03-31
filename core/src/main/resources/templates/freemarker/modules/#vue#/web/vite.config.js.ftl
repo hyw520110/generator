@@ -85,7 +85,7 @@ export default defineConfig(({ mode }) => {
           target: apiBaseUrl,
           changeOrigin: true
         },
-        '/user': {
+        '^/user(?!/login)': {
           target: apiBaseUrl,
           changeOrigin: true
         },

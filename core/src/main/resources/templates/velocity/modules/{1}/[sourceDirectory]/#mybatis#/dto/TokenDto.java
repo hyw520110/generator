@@ -1,18 +1,18 @@
-package ${dtoPackage!};
+package ${dtoPackage};
 
 import org.apache.shiro.authc.AuthenticationToken;
 
-public class TokenVo implements AuthenticationToken {
+public class TokenDto implements AuthenticationToken {
 
 	private static final long serialVersionUID = 3078816579864008822L;
 	private String userId;
 	private String type;
 	private String token;
 
-	public TokenVo() {
+	public TokenDto() {
 	}
 
-	public TokenVo(String userId, String token) {
+	public TokenDto(String userId, String token) {
 		this.userId = userId;
 		this.token = token;
 	}

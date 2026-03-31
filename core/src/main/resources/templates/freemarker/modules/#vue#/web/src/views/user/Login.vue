@@ -60,13 +60,14 @@
 </template>
 
 <script>
-import { defineComponent, ref, reactive } from 'vue'
+import { defineComponent, ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { notification } from 'ant-design-vue'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
 import * as md5Module from 'md5'
 import { timeFix } from '@/utils/util'
+import storage from 'store'
 
 const md5 = md5Module.default || md5Module
 
@@ -79,6 +80,11 @@ export default defineComponent({
   setup () {
     const router = useRouter()
     const store = useStore()
+
+    // 登录页面加载时清除旧的 token
+    onMounted(() => {
+      storage.remove('Access-Token')
+    })
 
     const customActiveKey = ref('tab1')
     const loginBtn = ref(false)
@@ -104,7 +110,8 @@ export default defineComponent({
 
         await store.dispatch('Login', loginParams)
 
-        router.push({ path: '/dashboard/workplace' }).catch(err => console.log('catch error:', err))
+        // 跳转到根路径，让路由守卫处理正确的跳转
+        router.push({ path: '/' }).catch(err => console.log('catch error:', err))
 
         setTimeout(() => {
           notification.success({

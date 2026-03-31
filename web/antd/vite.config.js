@@ -60,7 +60,8 @@ export default defineConfig({
     }
   },
   server: {
-    port: 9000,
+    port: 8000,
+    strictPort: true,
     proxy: {
       '/v1': {
         target: 'http://localhost:8081',

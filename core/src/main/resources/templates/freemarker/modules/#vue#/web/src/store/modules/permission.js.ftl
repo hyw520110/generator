@@ -1,7 +1,7 @@
 import { markRaw, defineAsyncComponent } from 'vue'
 import { constantRouterMap } from '@/config/router.config'
 // eslint-disable-next-line
-import { BasicLayout, RouteView, BlankLayout, PageView } from '@/layouts'
+import { BasicLayout, RouteView, BlankLayout, PageView, IframeView } from '@/layouts'
 
 // 动态组件加载映射 - Vite 的 import.meta.glob 返回的 key 格式为相对路径
 // 使用 eager: false 保持懒加载特性
@@ -24,7 +24,8 @@ const constantRouterComponents = {
   BasicLayout: markRaw(BasicLayout),
   BlankLayout: markRaw(BlankLayout),
   RouteView: markRaw(RouteView),
-  PageView: markRaw(PageView)
+  PageView: markRaw(PageView),
+  IframeView: markRaw(IframeView)
   // ...more
 }
 
@@ -56,21 +57,46 @@ export const generator = (routerMap, parentPath = '') => {
       if (reURL.test(item.resourceUri)) {
         path = item.resourceUri
       } else {
-        // 使用传入的 parentPath（已生成的完整路径）而不是原始数据的 resourceUri
-        path = `${'$'}{parentPath}/${'$'}{item.resourceUri}`
-
-        // 为了防止出现后端返回结果不规范，处理有可能出现拼接出多个反斜杠
-        path = path.replace(/\/+/g, '/')
+        // 构建完整路径用于重定向和子路由递归
+        const fullPath = `${'$'}{parentPath}/${'$'}{item.resourceUri}`.replace(/\/+/g, '/')
+        
+        // Vue Router 4: 子路由的 path 不应该以 / 开头
+        // 如果有父路径，使用相对路径；否则使用绝对路径
+        if (parentPath) {
+          // 提取 resourceUri 中的最后一段作为相对路径
+          path = item.resourceUri.replace(/^\//, '')
+        } else {
+          path = fullPath
+        }
       }
 
-      let routerComponent = constantRouterComponents[item.resourceView]
-      if (!routerComponent && item.resourceView) {
+      // 特殊处理：IframeView 可能因后端数据空格或大小写问题导致匹配失败
+      const resourceView = item.resourceView ? item.resourceView.trim() : null
+      
+      let routerComponent = constantRouterComponents[resourceView]
+      // 特殊处理：IframeView 可能因后端数据空格或大小写问题导致匹配失败
+      if (!routerComponent && resourceView) {
+        // 先尝试精确匹配
+        routerComponent = constantRouterComponents[resourceView]
+        
+        // 如果精确匹配失败，尝试大小写不敏感匹配
+        if (!routerComponent) {
+          const viewKey = Object.keys(constantRouterComponents).find(key => 
+            key.toLowerCase() === resourceView.toLowerCase()
+          )
+          if (viewKey) {
+            routerComponent = constantRouterComponents[viewKey]
+          }
+        }
+      }
+      
+      if (!routerComponent && resourceView) {
         // Vite 动态导入 - 尝试多种可能的路径格式
         const possiblePaths = [
-          `/src/views/${'$'}{item.resourceView}.vue`,
-          `/src/views/${'$'}{item.resourceView}/index.vue`,
-          `/src/views/${'$'}{item.resourceView.toLowerCase()}.vue`,
-          `/src/views/${'$'}{item.resourceView.toLowerCase()}/index.vue`
+          `/src/views/${'$'}{resourceView}.vue`,
+          `/src/views/${'$'}{resourceView}/index.vue`,
+          `/src/views/${'$'}{resourceView.toLowerCase()}.vue`,
+          `/src/views/${'$'}{resourceView.toLowerCase()}/index.vue`
         ]
 
         // 直接匹配 - 获取动态导入函数
@@ -104,6 +130,9 @@ export const generator = (routerMap, parentPath = '') => {
         }
       }
 
+      // 计算完整路径用于重定向和子路由递归
+      const fullPath = `${'$'}{parentPath}/${'$'}{item.resourceUri}`.replace(/\/+/g, '/')
+      
       const currentRouter = {
         // 路由地址 动态拼接生成
         path: path,
@@ -119,7 +148,7 @@ export const generator = (routerMap, parentPath = '') => {
       // 是否有子菜单，并递归处理
       if (item.childResources && item.childResources.length > 0) {
         // Recursion - 传递当前生成的完整路径给子路由
-        currentRouter.children = generator(item.childResources, path)
+        currentRouter.children = generator(item.childResources, fullPath)
       }
       return currentRouter
     })

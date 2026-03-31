@@ -25,9 +25,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import ${entityPackage}.BaseEntity;
+#if($global.modules && $global.modules.size() > 1)
+import ${api_servicePackage}.BaseService;
+#else
 import ${servicePackage}.BaseService;
+#end
 #if($VUE)
-import ${rootPackage}.${projectName}.api.vo.Result;
+#if($global.modules && $global.modules.size() > 1)
+import ${api_dtoPackage}.Result;
+#else
+import ${dtoPackage}.Result;
+#end
 #end
 import io.swagger.annotations.ApiOperation;
 #set($comment="公共接口实现")

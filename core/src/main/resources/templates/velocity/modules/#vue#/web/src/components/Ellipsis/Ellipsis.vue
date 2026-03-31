@@ -1,7 +1,7 @@
 <script lang="jsx">
 import { defineComponent } from 'vue'
 import Tooltip from 'ant-design-vue/es/tooltip'
-import { cutStrByFullLength, getStrFullLength } from '@/components/_util/util'
+import { cutStrByFullLength, getStrFullLength } from '@/components/util/util'
 
 export default defineComponent({
   name: 'Ellipsis',

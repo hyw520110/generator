@@ -1,11 +1,11 @@
 package ${servicePackage!};
 
-import ${dtoPackage!}.${dtoName!};
+import ${entityPackage!}.${entityName!};
 <#if table.primaryKeyField.fieldType.claz> 
 import ${table.primaryKeyField.fieldType.claz!};	
 </#if>	
 
 <#include 'comments/comment.ftl'>
-public interface ${serviceName!} extends BaseJpaService<${dtoName!},${table.primaryKeyField.fieldType.type!}> {
+public interface ${serviceName!} extends BaseJpaService<${entityName!},${table.primaryKeyField.fieldType.type!}> {
 	
 }

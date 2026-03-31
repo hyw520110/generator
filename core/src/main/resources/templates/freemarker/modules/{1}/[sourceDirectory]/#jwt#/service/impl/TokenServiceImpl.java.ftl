@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import ${servicePackage!}.TokenService;
 import ${rootPackage!}.${projectName!}.${moduleName!}.utils.JWTUtil;
-import ${rootPackage!}.${projectName!}.${moduleName!}.vo.TokenVo;
+import ${rootPackage!}.${projectName!}.${moduleName!}.dto.TokenDto;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -24,7 +24,7 @@ public class TokenServiceImpl implements TokenService {
     private Map<String, Object> cacheMap=new HashMap<String, Object>();
     @Value("${r"${jwt.token.redis.key:user_%s_token_%s}"}")
     private String tokenRedisKey;
-	@Value("${r"${jwt.key:SuperMan1234+-*%!^}"}")
+	@Value("${r"${jwt.key:U3VwZXJNYW4xMjM0Ky0qJSFe}"}")
     private String key;
 	@Value("${r"${jwt.timeout:86400000}"}")
     private Long timeout;
@@ -41,20 +41,20 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public TokenVo parseToken(String token) {
+    public TokenDto parseToken(String token) {
         JWTUtil.init(key);
         Claims claims = null;
         claims = JWTUtil.parseJWT(token);
         if (claims != null) {
             String subject = claims.getSubject();
-            return JSON.parseObject(subject, TokenVo.class);
+            return JSON.parseObject(subject, TokenDto.class);
         }
         return null;
     }
 
     @Override
     public String refreshToken(String userId, String type) {
-        TokenVo tokenVo = new TokenVo();
+        TokenDto tokenVo = new TokenDto();
         tokenVo.setUserId(userId);
         tokenVo.setType(type);
 

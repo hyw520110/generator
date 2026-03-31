@@ -76,7 +76,7 @@
 					"resourcePerms": "${table.lowercaseBeanName!}:view",
 					"resourceType": "M",
 					"resourceUri": "/${table.lowercaseBeanName!}",
-					"resourceView": "${table.lowercaseBeanName!}/${table.beanName!}List",
+					"resourceView": "${table.beanName!?cap_first}/${table.beanName!}List",
 					"sort": 0
 			 }<#if table?has_next>,</#if></#list>],
 			"parentResourceId": 1,

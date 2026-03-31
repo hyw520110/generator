@@ -1,4 +1,4 @@
-package ${dtoPackage};
+package ${dtoPackage!};
 
 import jakarta.validation.constraints.NotNull;
 
@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel("登录请求实体")
-public class LoginVo {
+public class LoginDto {
     @ApiModelProperty("登录方式:1:用户名密码登录;2:手机验证码登录")
     @NotNull(message = "登录方式必填")
     private String loginType;

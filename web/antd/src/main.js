@@ -7,7 +7,7 @@ import Antd from 'ant-design-vue'
 import * as Icons from '@ant-design/icons-vue'
 
 // mock
-import './mock'
+// import './mock'
 
 import './permission' // permission control
 import './global.less'

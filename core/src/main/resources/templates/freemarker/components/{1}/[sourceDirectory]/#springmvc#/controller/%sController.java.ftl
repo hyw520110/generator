@@ -26,12 +26,17 @@ import ${pkg!};
 </#list>
 
 <#if VUE??>
+<#if global.modules?? && global.modules?size gt 1>
+import ${api_dtoPackage!}.Result;
+<#else>
 import ${dtoPackage!}.Result;
+</#if>
 </#if>
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import ${dtoPackage!}.${dtoName!};
 import ${servicePackage!}.${serviceName!};
+import ${entityPackage!}.${entityName!};
 
 <#if superControllerClass?? && !superControllerClass?contains('.')>
 import ${controllerPackage!}.commons.${superControllerClass!};
@@ -46,7 +51,7 @@ import ${controllerPackage!}.commons.${superControllerClass!};
 @Controller
 </#if>
 @RequestMapping("/${table.beanName!}")
-public class ${controllerName!} <#if superControllerClass??>extends ${superControllerClass!}<${serviceName!},${dtoName!}></#if> {
+public class ${controllerName!} <#if superControllerClass??>extends ${superControllerClass!}<${serviceName!},${entityName!}></#if> {
 <#if "plus"!=mapperType>
 <#assign sName = StringUtils.lowercaseFirst(serviceName)!>
 	

@@ -11,7 +11,7 @@ export const constantRouterMap = [
     path: '/',
     name: 'index',
     component: BasicLayout,
-    redirect: '/dashboard/workplace',
+    redirect: '/index/dashboard',
     hidden: true,
     children: [] // 动态路由将在这里添加
   },

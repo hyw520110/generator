@@ -6,24 +6,26 @@
 set -euo pipefail  # 严格模式：遇到错误立即退出，未定义变量报错，管道错误传播
 
 # --- 公共变量定义 ---
+# 优先级：环境变量 > 配置文件 > 默认值
 #获取当前IP忽略的网卡
-NETWORK_IGNORED=uengine0,xdroid0,br*,ve*
+NETWORK_IGNORED="${NETWORK_IGNORED:-uengine0,xdroid0,br*,ve*}"
 #当前内网网卡
-NETWORK_PREFERRED=eth0
+NETWORK_PREFERRED="${NETWORK_PREFERRED:-eth0}"
 
 # --- 全局变量定义 ---
+# 优先级：环境变量 > 配置文件 > 默认值
 readonly CURRENT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly BASE_DIR="${CURRENT_DIR%/*}"
-readonly SERVICES_BASE_DIR="$HOME/webapps"
+readonly SERVICES_BASE_DIR="${SERVICES_BASE_DIR:-$HOME/webapps}"
 readonly APP_NAME="$(basename "${BASE_DIR}")"
 readonly LOG_DIR="$HOME/logs"
 readonly LOG_FILE="${LOG_DIR}/${APP_NAME}.log"
 readonly PID_FILE="${BASE_DIR}/${APP_NAME}.pid"
-readonly DEFAULT_STARTUP_TIMEOUT=30
-readonly DEFAULT_JVM_OPTS="-Xms512m -Xmx1024m"
-readonly DEFAULT_DEBUG_PORT=5005
-readonly DEFAULT_LOG_CONTEXT=50
-readonly DEFAULT_SERVICE_DEPENDENCY_ORDER=("order-service" "recommend-service" "logistics-service" "payment-service" "product-service" "user-service" "web-service" "message-service" "gateway-service" "task-scheduling-service" "admin-service")
+readonly DEFAULT_STARTUP_TIMEOUT="${DEFAULT_STARTUP_TIMEOUT:-30}"
+readonly DEFAULT_JVM_OPTS="${DEFAULT_JVM_OPTS:--Xms512m -Xmx1024m}"
+readonly DEFAULT_DEBUG_PORT="${DEFAULT_DEBUG_PORT:-5005}"
+readonly DEFAULT_LOG_CONTEXT="${DEFAULT_LOG_CONTEXT:-50}"
+# SERVICE_DEPENDENCY_ORDER 必须由配置文件或环境变量提供，无默认值
 
 # --- 跨平台工具函数 ---
 # 检测操作系统类型
@@ -73,8 +75,9 @@ detect_mode() {
 APP_MODE=""
 # 端口排除模式（默认排除以222开头的5位端口，即22200-22299）
 PORT_EXCLUDE_PATTERN="${PORT_EXCLUDE_PATTERN:-^222[0-9]{2}$}"
-success_keywords="Started .*Application in|Tomcat started on port|Application startup completed|Started .*Application[.]kt|Netty started on port|已启动|应用已启动|服务已启动|Application running|started successfully|服务已运行"
-error_keywords="Failed to start|Error starting ApplicationContext|Application startup failed|java[.]lang[.]OutOfMemoryError|Caused by:.*Exception|BindException|BeanCreationException|failed to load|Injection of autowired dependencies failed|UnsatisfiedDependencyException"
+# 日志检测关键词，优先级：环境变量 > 配置文件 > 默认值
+success_keywords="${SUCCESS_KEYWORDS:-Started .*Application in|Tomcat started on port|Application startup completed|Started .*Application[.]kt|Netty started on port|已启动|应用已启动|服务已启动|Application running|started successfully|服务已运行}"
+error_keywords="${ERROR_KEYWORDS:-Failed to start|Error starting ApplicationContext|Application startup failed|java[.]lang[.]OutOfMemoryError|Caused by:.*Exception|BindException|BeanCreationException|failed to load|Injection of autowired dependencies failed|UnsatisfiedDependencyException}"
 # 通用日志函数
 log_message() {
     local level=$1
@@ -105,6 +108,80 @@ die() {
     log_error "$*"
     exit 1
 }
+
+# 计算路径哈希（用于生成和查找唯一的配置文件名）
+# 参数：$1 路径
+# 返回：路径的 MD5 哈希值（前8位）
+get_path_hash() {
+    local path="$1"
+    if command -v md5sum >/dev/null 2>&1; then
+        echo -n "$path" | md5sum | cut -d' ' -f1 | cut -c1-8
+    elif command -v md5 >/dev/null 2>&1; then
+        echo -n "$path" | md5 | cut -c1-8
+    else
+        # 如果没有 md5 工具，使用简单字符串替换
+        echo "$path" | tr '/' '_' | tr ' ' '_' | cut -c1-16
+    fi
+}
+
+# --- 配置文件加载 ---
+# 加载顺序：环境变量 > 命令行参数 > 配置文件 > 默认值
+#
+# 配置文件命名规则（基于路径哈希）：
+#   <hash>.conf  其中 <hash> 是项目路径的 MD5 哈希值前8位
+#
+# 配置文件优先级：
+#   1. ${CURRENT_DIR}/<hash>.conf   (构建目录，由 package.sh 生成)
+#   2. ${BASE_DIR}/<hash>.conf      (部署目录，由部署脚本拷贝)
+#   3. ~/.config/<hash>.conf        (全局配置，支持多项目)
+#
+# 多项目支持：
+#   每个项目（基于其路径的哈希值）都有独立的配置文件
+#   无需手动指定项目标识，路径即唯一标识
+
+load_config() {
+    local loaded_file=""
+
+    # 计算当前项目路径的哈希值
+    local project_path=""
+    if [ -d "${BASE_DIR}" ]; then
+        project_path="$(cd "${BASE_DIR}" && pwd)"
+    else
+        project_path="$(pwd)"
+    fi
+    local path_hash=$(get_path_hash "$project_path")
+    local config_name="${path_hash}.conf"
+
+    log_info "项目路径: $project_path"
+    log_info "路径哈希: $path_hash"
+
+    # 尝试加载配置文件（按优先级顺序）
+    local config_files=(
+        "${CURRENT_DIR}/${config_name}"           # 构建目录
+        "${BASE_DIR}/${config_name}"              # 部署目录
+        "$HOME/.config/${config_name}"            # 全局配置（项目特定）
+    )
+
+    for config_file in "${config_files[@]}"; do
+        if [ -f "$config_file" ] && [ -r "$config_file" ]; then
+            log_info "加载配置文件: $config_file"
+            source "$config_file"
+            loaded_file="$config_file"
+            break
+        fi
+    done
+
+    if [ -n "$loaded_file" ]; then
+        return 0
+    fi
+
+    log_warn "未找到配置文件 ${config_name}，将使用脚本内置默认值"
+    log_warn "可创建以下位置的配置文件："
+    log_warn "  1. ${CURRENT_DIR}/${config_name}  (构建目录，由 package.sh 自动生成)"
+    log_warn "  2. ${BASE_DIR}/${config_name}     (部署目录，由部署脚本拷贝)"
+    log_warn "  3. ~/.config/${config_name}       (全局配置，支持多项目)"
+    return 1
+}
 # 显示帮助信息
 show_help() {
     cat << EOF
@@ -113,26 +190,58 @@ show_help() {
 用法: $0 [选项]
 
 选项:
-  -f, --force                 强制重启（如果应用已在运行，则先停止再启动）
-  -c, --console               控制台模式（前台启动，日志直接输出到终端）
-  -j, --jvm-opts <opts>        指定JVM选项，默认"$DEFAULT_JVM_OPTS"
-  -t, --timeout <秒>           启动超时时间，默认为${DEFAULT_STARTUP_TIMEOUT}秒
-  -p, --debug-port <端口>      调试端口，默认为$DEFAULT_DEBUG_PORT
-  --skywalking-opts <opts>    SkyWalking代理选项
-  --no-startup-log            启动过程中不输出应用日志，只显示等待进度条，但启动失败时仍会输出异常日志
-  --log-context <行数>         指定异常日志输出的上下文行数，默认为${DEFAULT_LOG_CONTEXT}
-  --debug                     启用调试模式
-  -h, --help                  显示此帮助信息
-  --all                       (批量) 按依赖顺序启动 '$SERVICES_BASE_DIR' 目录下的所有服务
+  -f, --force                    强制重启（如果应用已在运行，则先停止再启动）
+  -c, --console                  控制台模式（前台启动，日志直接输出到终端）
+  -j, --jvm-opts <opts>          指定JVM选项，默认"$DEFAULT_JVM_OPTS"
+  -t, --timeout <秒>             启动超时时间，默认为${DEFAULT_STARTUP_TIMEOUT}秒
+  -p, --debug-port <端口>        调试端口，默认为$DEFAULT_DEBUG_PORT
+  --network-ignored <网卡列表>    获取IP时忽略的网卡（逗号分隔，支持通配符*）
+                               默认：$NETWORK_IGNORED
+  --network-preferred <网卡名>    首选内网网卡名
+                               默认：$NETWORK_PREFERRED
+  --services-base-dir <路径>      服务基础目录（批量启动时使用）
+                               默认：$SERVICES_BASE_DIR
+  --skywalking-opts <opts>       SkyWalking代理选项
+  --no-startup-log               启动过程中不输出应用日志，只显示等待进度条，但启动失败时仍会输出异常日志
+  --log-context <行数>           指定异常日志输出的上下文行数，默认为${DEFAULT_LOG_CONTEXT}
+  --debug                        启用调试模式
+  -h, --help                     显示此帮助信息
 
 运行模式（自动检测）:
-  开发模式                    当目录包含 pom.xml 或 src/ 目录时自动启用，使用 mvn spring-boot:run
-  部署模式                    当目录包含 lib/*.jar 时自动启用，使用 java -jar
+  开发模式                       当目录包含 pom.xml 或 src/ 目录时自动启用，使用 mvn spring-boot:run
+  部署模式                       当目录包含 lib/*.jar 时自动启用，使用 java -jar
 
-环境变量:
-  PORT_EXCLUDE_PATTERN        端口排除正则表达式，默认排除以222开头的5位端口（22200-22299）
-                              例如：export PORT_EXCLUDE_PATTERN="^222[0-9]{2}$"
-  MVN                         Maven 命令，默认自动检测 mvnd 或 mvn
+配置文件（基于路径哈希的隐藏文件）:
+  配置文件名格式: .start.conf.<hash>
+  其中 <hash> 是项目路径的 MD5 哈希值前8位
+
+  脚本将按以下顺序查找并加载配置（优先级递减）：
+    1. \${CURRENT_DIR}/.start.conf.<hash>  (构建目录，由 package.sh 自动生成)
+    2. \${BASE_DIR}/.start.conf.<hash>     (部署目录，由部署脚本拷贝)
+    3. ~/.config/.start.conf.<hash>        (全局配置，支持多项目)
+
+  多项目支持：
+    每个项目（基于其部署路径的哈希值）都有独立的配置文件
+    路径即唯一标识，无需手动配置项目标识
+
+  示例：
+    项目路径: /home/user/webapps/my-project
+    路径哈希: a1b2c3d4
+    配置文件: a1b2c3d4.conf
+
+环境变量（最高优先级，会覆盖配置文件和默认值）:
+  NETWORK_IGNORED              忽略的网卡列表，默认：uengine0,xdroid0,br*,ve*
+  NETWORK_PREFERRED            首选网卡，默认：eth0
+  SERVICES_BASE_DIR            服务基础目录，默认：$HOME/webapps
+  SUCCESS_KEYWORDS             启动成功检测关键词（正则）
+  ERROR_KEYWORDS               启动失败检测关键词（正则）
+  DEFAULT_JVM_OPTS             默认JVM参数
+  DEFAULT_STARTUP_TIMEOUT      默认启动超时时间
+  DEFAULT_DEBUG_PORT           默认调试端口
+  DEFAULT_LOG_CONTEXT          默认日志上下文行数
+  PORT_EXCLUDE_PATTERN         端口排除正则表达式，默认排除22200-22299
+  MVN                          Maven 命令，默认自动检测 mvnd 或 mvn
+  SERVICE_DEPENDENCY_ORDER     服务启动顺序数组
 
 EOF
 }
@@ -759,16 +868,27 @@ extract_error_log() {
 }
 
 # 批量启动所有服务
+# 根据配置文件中的 SERVICE_DEPENDENCY_ORDER 顺序启动
 batch_start_all_services() {
     local passthrough_args=("$@")
-    log_info "开始按依赖顺序批量启动位于 ${SERVICES_BASE_DIR} 下的所有服务..."
+    local service_order=()
+    
+    # 检查 SERVICE_DEPENDENCY_ORDER 是否已定义（来自配置文件或环境变量）
+    if [[ -z "${SERVICE_DEPENDENCY_ORDER+x}" ]] || [ ${#SERVICE_DEPENDENCY_ORDER[@]} -eq 0 ]; then
+        die "未配置 SERVICE_DEPENDENCY_ORDER\n\n请确保以下之一：\n1. 构建阶段运行 package.sh 生成 .start.conf\n2. 部署脚本将 .start.conf 拷贝到部署目录\n3. 在 ~/.config/.start.conf 中配置 SERVICE_DEPENDENCY_ORDER"
+    fi
+    
+    service_order=("${SERVICE_DEPENDENCY_ORDER[@]}")
+    
+    log_info "开始批量启动位于 ${SERVICES_BASE_DIR} 下的服务..."
+    log_info "启动顺序: ${service_order[*]}"
     
     if [ ! -d "$SERVICES_BASE_DIR" ]; then
         die "服务基础目录 ${SERVICES_BASE_DIR} 不存在。"
     fi
 
     local overall_status=0
-    for service_name in "${SERVICE_DEPENDENCY_ORDER[@]}"; do
+    for service_name in "${service_order[@]}"; do
         local service_dir="${SERVICES_BASE_DIR}/${service_name}"
         
         # 使用 ps 和 grep 检查服务是否已在运行
@@ -819,57 +939,30 @@ batch_start_all_services() {
 
 # 主函数
 main() {
-    # --- 0. 参数预处理 ---
-    local all_args=("$@")
-    local has_all_flag=false
-    for arg in "${all_args[@]+${all_args[@]}}"; do
-        if [[ "$arg" == "--all" ]]; then
-            has_all_flag=true
-            break
-        fi
-    done
-    
-    # --- 1. 前置检测：运行模式 ---
-    # 先检测运行模式，开发模式下跳过某些多模块功能
+    # --- 0. 检测运行模式 ---
+    # 先检测运行模式，开发模式下跳过配置文件检查
     APP_MODE=$(detect_mode "$CURRENT_DIR")
     
-    # --- 2. 多模块功能检查 ---
-    # 仅在部署模式或批量模式下加载依赖顺序配置
-    if [ "$APP_MODE" = "deploy" ] || [ "$has_all_flag" = true ]; then
-        # 仅当 SERVICE_DEPENDENCY_ORDER 未定义时才加载它
-        if [[ -z ${SERVICE_DEPENDENCY_ORDER+x} ]]; then
-            # 从位于应用根目录的共享配置文件中加载服务依赖顺序
-            if [ -f "${BASE_DIR}/.service-order.conf" ]; then
-                source "${BASE_DIR}/.service-order.conf"
-            else
-                log_warn "未找到依赖顺序文件: ${BASE_DIR}/.service-order.conf"
-                log_warn "将使用默认的硬编码顺序。请运行 package.sh 并重新部署以更新此文件。"
-                SERVICE_DEPENDENCY_ORDER=$DEFAULT_SERVICE_DEPENDENCY_ORDER
-            fi
-        fi
+    # --- 1. 加载配置文件 ---
+    # 开发模式下跳过配置文件检查（源码目录执行不需要配置文件）
+    if [ "$APP_MODE" = "dev" ]; then
+        log_info "开发模式：跳过配置文件检查"
+    else
+        # 加载配置文件（可被环境变量和命令行参数覆盖）
+        load_config
     fi
     
-    # --- 3. 参数解析 ---
+    # --- 2. 批量启动检测 ---
+    # 如果配置了 SERVICE_DEPENDENCY_ORDER 且处于部署模式，自动启用批量启动
     local batch_mode=false
-    
-    # 优先检查批量模式 --all
-    for arg in "${all_args[@]+${all_args[@]}}"; do
-        if [[ "$arg" == "--all" ]]; then
-            batch_mode=true
-            break
-        fi
-    done
+    if [ "$APP_MODE" = "deploy" ] && [ -n "${SERVICE_DEPENDENCY_ORDER+x}" ] && [ ${#SERVICE_DEPENDENCY_ORDER[@]} -gt 0 ]; then
+        batch_mode=true
+        log_info "检测到部署模式且配置了 SERVICE_DEPENDENCY_ORDER，启用批量启动模式"
+    fi
 
     # 如果是批量模式，则委托给批量启动函数
     if [ "$batch_mode" = true ]; then
-        local passthrough_args=()
-        for arg in "${all_args[@]+${all_args[@]}}"; do
-            # 过滤掉 --all 参数本身
-            if [[ "$arg" != "--all" ]]; then
-                passthrough_args+=("$arg")
-            fi
-        done
-        batch_start_all_services "${passthrough_args[@]+${passthrough_args[@]}}"
+        batch_start_all_services "$@"
         exit $?
     fi
 
@@ -883,6 +976,10 @@ main() {
     local context_lines=$DEFAULT_LOG_CONTEXT
     local force_restart=false
     local console_mode=false
+    # 网络配置（可被命令行参数覆盖）
+    local network_ignored=""
+    local network_preferred=""
+    local services_base_dir=""
 
     if [ "${DEBUG_MODE:-}" = "debug" ]; then
         debug_mode=true
@@ -896,6 +993,9 @@ main() {
             -j|--jvm-opts) jvm_opts="$2"; shift 2 ;;
             -t|--timeout) startup_timeout="$2"; shift 2 ;;
             -p|--debug-port) debug_port="$2"; shift 2 ;;
+            --network-ignored) network_ignored="$2"; shift 2 ;;
+            --network-preferred) network_preferred="$2"; shift 2 ;;
+            --services-base-dir) services_base_dir="$2"; shift 2 ;;
             --skywalking-opts) skywalking_opts="$2"; shift 2 ;;
             --no-startup-log) no_startup_log=true; shift 1 ;;
             --log-context) context_lines="$2"; shift 2 ;;
@@ -904,6 +1004,20 @@ main() {
             *) die "未知参数: $1" ;;
         esac
     done
+    
+    # 应用命令行参数覆盖（最高优先级）
+    if [ -n "$network_ignored" ]; then
+        NETWORK_IGNORED="$network_ignored"
+        log_info "使用命令行指定的忽略网卡: $NETWORK_IGNORED"
+    fi
+    if [ -n "$network_preferred" ]; then
+        NETWORK_PREFERRED="$network_preferred"
+        log_info "使用命令行指定的首选网卡: $NETWORK_PREFERRED"
+    fi
+    if [ -n "$services_base_dir" ]; then
+        SERVICES_BASE_DIR="$services_base_dir"
+        log_info "使用命令行指定的服务基础目录: $SERVICES_BASE_DIR"
+    fi
     
     # 开发模式下默认前台启动（除非显式指定 -d 参数，这里没有 -d 参数）
     if [ "$APP_MODE" = "dev" ] && [ "$console_mode" = false ]; then

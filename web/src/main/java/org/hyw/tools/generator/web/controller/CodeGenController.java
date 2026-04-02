@@ -19,8 +19,8 @@ import java.util.zip.ZipOutputStream;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +30,7 @@ import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.conf.db.TableRelation;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.ComponentGroup;
 import org.hyw.tools.generator.enums.ExportFormat;
 import org.hyw.tools.generator.metadata.DatabaseMetadataReader;
 import org.hyw.tools.generator.enums.ProjectBuilder;
@@ -71,16 +72,6 @@ public class CodeGenController {
 	@Value("${app.output-dir:${user.home}/output/demo}")
 	private String defaultOutputDir;
 
-	/** PDF 字体配置（格式：目录路径:文件名模式，逗号分隔多项） */
-	@Value("${app.pdf.fonts.macos:}")
-	private String fontConfigsMacOS;
-
-	@Value("${app.pdf.fonts.windows:}")
-	private String fontConfigsWindows;
-
-	@Value("${app.pdf.fonts.linux:}")
-	private String fontConfigsLinux;
-
 	private Generator generator;
 
 	@PostConstruct
@@ -88,101 +79,14 @@ public class CodeGenController {
 		generator = Generator.getInstance();
 	}
 
-	/**
-	 * 获取当前操作系统的 PDF 字体路径列表 配置格式：目录路径:文件名模式（支持 * 通配符）
-	 */
-	private List<String> getPdfFontPaths() {
-		List<String> fontPaths = new ArrayList<>();
-		String osName = System.getProperty("os.name", "").toLowerCase();
-
-		// 根据操作系统选择配置
-		String fontConfigs;
-		if (osName.contains("mac")) {
-			fontConfigs = fontConfigsMacOS;
-			logger.debug("macOS 字体配置: {}", fontConfigsMacOS);
-		} else if (osName.contains("windows")) {
-			fontConfigs = fontConfigsWindows;
-			logger.debug("Windows 字体配置: {}", fontConfigsWindows);
-		} else if (osName.contains("linux") || osName.contains("nix")) {
-			fontConfigs = fontConfigsLinux;
-			logger.debug("Linux 字体配置: {}", fontConfigsLinux);
-		} else {
-			logger.warn("未知操作系统: {}", osName);
-			return fontPaths;
-		}
-
-		// 解析配置项列表（逗号分隔）
-		if (StringUtils.isNotBlank(fontConfigs)) {
-			logger.debug("解析字体配置，配置项: {}", fontConfigs);
-			for (String config : fontConfigs.split(",")) {
-				String trimmed = config.trim();
-				if (StringUtils.isBlank(trimmed)) {
-					continue;
-				}
-
-				// 解析 目录:文件名模式
-				String[] parts = trimmed.split(":", 2);
-				if (parts.length != 2) {
-					continue;
-				}
-
-				String dir = parts[0].trim();
-				String pattern = parts[1].trim();
-
-				File fontFile = findFontFile(new File(dir), pattern);
-				if (fontFile != null) {
-					String path = fontFile.getAbsolutePath();
-					if (!fontPaths.contains(path)) {
-						fontPaths.add(path);
-						logger.debug("找到字体: {}", path);
-					}
-				}
-			}
-		}
-
-		logger.info("PDF 字体配置: 找到 {} 个字体", fontPaths.size());
-		return fontPaths;
-	}
-
-	/**
-	 * 在目录中查找匹配模式的字体文件
-	 * 
-	 * @param dir     字体目录
-	 * @param pattern 文件名匹配模式（支持 * 通配符）
-	 * @return 匹配的字体文件，未找到返回 null
-	 */
-	private File findFontFile(File dir, String pattern) {
-		if (!dir.exists() || !dir.isDirectory()) {
-			return null;
-		}
-
-		// 先尝试精确匹配
-		File exactMatch = new File(dir, pattern);
-		if (exactMatch.exists()) {
-			return exactMatch;
-		}
-
-		// 将通配符模式转换为正则表达式
-		String regex = pattern.replace(".", "\\.").replace("*", ".*");
-
-		File[] files = dir.listFiles();
-		if (files == null) {
-			return null;
-		}
-
-		// 尝试通配符匹配
-		for (File file : files) {
-			if (file.isFile() && file.getName().matches(regex)) {
-				return file;
-			}
-		}
-
-		return null;
-	}
-
 	@PostMapping("/tables")
-	public Result<String> getTables(String ipAndPort, String dbName, String username, String pwd, String include,
-			String exclude, String tablePrefix) {
+	public Result<String> getTables(@RequestParam(name = "ipAndPort") String ipAndPort,
+			@RequestParam(name = "dbName") String dbName,
+			@RequestParam(name = "username") String username,
+			@RequestParam(name = "pwd") String pwd,
+			@RequestParam(name = "include") String include,
+			@RequestParam(name = "exclude") String exclude,
+			@RequestParam(name = "tablePrefix") String tablePrefix) {
 		logger.info("[tables] 输入 - ipAndPort: {}, dbName: {}, username: {}, include: {}, exclude: {}, tablePrefix: {}",
 				ipAndPort, dbName, username, include, exclude, tablePrefix);
 		if (StringUtils.isNotBlank(tablePrefix)) {
@@ -215,7 +119,9 @@ public class CodeGenController {
 	 * @return 数据库列表
 	 */
 	@PostMapping("/databases")
-	public Result<List<String>> getDatabases(String ipAndPort, String username, String pwd) {
+	public Result<List<String>> getDatabases(@RequestParam(name = "ipAndPort") String ipAndPort,
+			@RequestParam(name = "username") String username,
+			@RequestParam(name = "pwd") String pwd) {
 		logger.info("[databases] 输入 - ipAndPort: {}, username: {}", ipAndPort, username);
 		if (StringUtils.isBlank(ipAndPort)) {
 			logger.warn("[databases] 输出 - 错误: 数据库地址不能为空");
@@ -295,13 +201,64 @@ public class CodeGenController {
 	}
 
 	/**
+	 * 获取组件分组信息（用于前端分组展示）
+	 *
+	 * @return 组件分组列表
+	 */
+	@GetMapping("/component-groups")
+	public Result<List<Map<String, Object>>> getComponentGroups() {
+		List<Map<String, Object>> groups = new ArrayList<>();
+
+		for (ComponentGroup group : ComponentGroup.values()) {
+			Map<String, Object> groupMap = new HashMap<>();
+			groupMap.put("group", group.name());
+			groupMap.put("name", group.getGroupName());
+			groupMap.put("required", group.isRequired());
+			groupMap.put("exclusive", group.isExclusive());
+
+			// 组件列表
+			List<Map<String, String>> components = new ArrayList<>();
+			for (Component comp : group.getComponents()) {
+				Map<String, String> compMap = new HashMap<>();
+				compMap.put("value", comp.name());
+				compMap.put("label", comp.getLabel());
+				components.add(compMap);
+			}
+			groupMap.put("components", components);
+
+			groups.add(groupMap);
+		}
+
+		// 添加构建工具分组
+		Map<String, Object> buildGroup = new HashMap<>();
+		buildGroup.put("group", "BUILD");
+		buildGroup.put("name", "构建工具");
+		buildGroup.put("required", true);
+		buildGroup.put("exclusive", true);
+		List<Map<String, String>> buildComponents = new ArrayList<>();
+		Map<String, String> mavenOption = new HashMap<>();
+		mavenOption.put("value", ProjectBuilder.MAVEN.name());
+		mavenOption.put("label", ProjectBuilder.MAVEN.name());
+		buildComponents.add(mavenOption);
+		Map<String, String> gradleOption = new HashMap<>();
+		gradleOption.put("value", ProjectBuilder.GRADLE.name());
+		gradleOption.put("label", ProjectBuilder.GRADLE.name());
+		buildComponents.add(gradleOption);
+		buildGroup.put("components", buildComponents);
+		groups.add(buildGroup);
+
+		logger.info("[component-groups] 输出 - 成功，共 {} 个分组", groups.size());
+		return Result.ok(groups);
+	}
+
+	/**
 	 * 验证输出目录权限
 	 * 
 	 * @param outputDir 输出目录路径（可选，为空时返回默认配置）
 	 * @return 验证结果
 	 */
 	@GetMapping("/validateOutputDir")
-	public Result<?> validateOutputDir(@RequestParam(required = false) String outputDir) {
+	public Result<?> validateOutputDir(@RequestParam(name = "outputDir", required = false) String outputDir) {
 		String userHome = System.getProperty("user.home");
 
 		// 如果未传入目录，返回默认配置
@@ -361,8 +318,13 @@ public class CodeGenController {
 	}
 
 	@PostMapping("/step1")
-	public Result<Object> step1(String outputDir, String description, String rootPackage, String modules,
-			boolean delOutputDir, boolean fileOverride, boolean openDir) {
+	public Result<Object> step1(@RequestParam(name = "outputDir") String outputDir,
+			@RequestParam(name = "description") String description,
+			@RequestParam(name = "rootPackage") String rootPackage,
+			@RequestParam(name = "modules") String modules,
+			@RequestParam(name = "delOutputDir") boolean delOutputDir,
+			@RequestParam(name = "fileOverride") boolean fileOverride,
+			@RequestParam(name = "openDir") boolean openDir) {
 		logger.info(
 				"[step1] 输入 - outputDir: {}, description: {}, rootPackage: {}, modules: {}, delOutputDir: {}, fileOverride: {}, openDir: {}",
 				outputDir, description, rootPackage, modules, delOutputDir, fileOverride, openDir);
@@ -381,13 +343,28 @@ public class CodeGenController {
 	}
 
 	@PostMapping("/step2")
-	public Result<Object> step2(String view, String projectBuilder, String springBootVersion, String springCloudVersion,
-			String springCloudAlibabaVersion, String dubboVersion, String mybatisType, String registryCenter,
-			String zookeeperAddr, String nacosAddr, String nacosUsername, String nacosPassword, String redisHost,
-			String redisPassword, String sentinelVersion, String sentinelAddr, String skywalkingAddr, String secure) {
+	public Result<Object> step2(@RequestParam(name = "view") String view,
+			@RequestParam(name = "projectBuilder", required = false, defaultValue = "MAVEN") String projectBuilder,
+			@RequestParam(name = "microservice", required = false, defaultValue = "") String microservice,
+			@RequestParam(name = "springBootVersion") String springBootVersion,
+			@RequestParam(name = "springCloudVersion") String springCloudVersion,
+			@RequestParam(name = "springCloudAlibabaVersion") String springCloudAlibabaVersion,
+			@RequestParam(name = "dubboVersion") String dubboVersion,
+			@RequestParam(name = "mybatisType") String mybatisType,
+			@RequestParam(name = "registryCenter") String registryCenter,
+			@RequestParam(name = "zookeeperAddr") String zookeeperAddr,
+			@RequestParam(name = "nacosAddr") String nacosAddr,
+			@RequestParam(name = "nacosUsername") String nacosUsername,
+			@RequestParam(name = "nacosPassword") String nacosPassword,
+			@RequestParam(name = "redisHost") String redisHost,
+			@RequestParam(name = "redisPassword") String redisPassword,
+			@RequestParam(name = "sentinelVersion") String sentinelVersion,
+			@RequestParam(name = "sentinelAddr") String sentinelAddr,
+			@RequestParam(name = "skywalkingAddr") String skywalkingAddr,
+			@RequestParam(name = "secure") String secure) {
 		logger.info(
-				"[step2] 输入 - view: {}, projectBuilder: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}",
-				view, projectBuilder, springBootVersion, dubboVersion, mybatisType, registryCenter);
+				"[step2] 输入 - view: {}, projectBuilder: {}, microservice: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}",
+				view, projectBuilder, microservice, springBootVersion, dubboVersion, mybatisType, registryCenter);
 		GlobalConf global = generator.getGlobal();
 		ArrayUtils.removeElement(global.getComponents(), Component.VUE);
 		ArrayUtils.removeElement(global.getComponents(), Component.THYMELEAF);
@@ -397,6 +374,17 @@ public class CodeGenController {
 			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.SHIRO));
 			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.JWT));
 		}
+
+		// 处理微服务框架选择
+		ArrayUtils.removeElement(global.getComponents(), Component.SPRINGCLOUD);
+		ArrayUtils.removeElement(global.getComponents(), Component.DUBBO);
+		if ("SPRINGCLOUD".equals(microservice)) {
+			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.SPRINGCLOUD));
+		} else if ("DUBBO".equals(microservice)) {
+			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.DUBBO));
+		}
+
+		// projectBuilder 保持 MAVEN 或 GRADLE
 		global.setProjectBuilder(ProjectBuilder.valueOf(projectBuilder));
 		Map<Component, Map<String, Object>> map = generator.getComponents();
 		map.get(Component.SPRINGBOOT).put(Component.SPRINGBOOT.name().toLowerCase() + "_version", springBootVersion);
@@ -438,7 +426,8 @@ public class CodeGenController {
 
 	@PostMapping("/exec")
 	@ResponseBody
-	public Result<?> exec(String tabName, Boolean pack) throws IOException {
+	public Result<?> exec(@RequestParam(name = "tabName") String tabName,
+			@RequestParam(name = "pack") Boolean pack) throws IOException {
 		logger.info("[exec] 输入 - tabName: {}, pack: {}", tabName, pack);
 		String[] tables = StringUtils.isBlank(tabName) ? null : tabName.split(",");
 		generator.getGlobal().setInclude(tables);
@@ -532,7 +521,8 @@ public class CodeGenController {
 	 */
 	@PostMapping("/doc")
 	@ResponseBody
-	public Result<?> genDoc(String tabName, String format) {
+	public Result<?> genDoc(@RequestParam(name = "tabName") String tabName,
+			@RequestParam(name = "format") String format) {
 		logger.info("[doc] 输入 - tabName: {}, format: {}", tabName, format);
 
 		// 参数校验
@@ -576,7 +566,7 @@ public class CodeGenController {
 			generator.getGlobal().setMatchMode(false);
 
 			// 生成文档
-			generator.generateDoc(docFile, docFormat, getPdfFontPaths());
+			generator.generateDoc(docFile, docFormat, null);
 
 			long duration = System.currentTimeMillis() - startTime;
 
@@ -606,8 +596,10 @@ public class CodeGenController {
 	 * @return 压缩包列表
 	 */
 	@GetMapping("/downloads")
-	public Result<List<Map<String, Object>>> getDownloads(String ipAndPort, String dbName, String username,
-			String pwd) {
+	public Result<List<Map<String, Object>>> getDownloads(@RequestParam(name = "ipAndPort") String ipAndPort,
+			@RequestParam(name = "dbName") String dbName,
+			@RequestParam(name = "username") String username,
+			@RequestParam(name = "pwd") String pwd) {
 		logger.info("[downloads] 输入 - ipAndPort: {}, dbName: {}, username: {}", ipAndPort, dbName, username);
 
 		// 参数校验
@@ -692,7 +684,7 @@ public class CodeGenController {
 	 * @param response HTTP响应
 	 */
 	@GetMapping("/download")
-	public void download(@RequestParam(required = false) String path, HttpServletResponse response) {
+	public void download(@RequestParam(name = "path", required = false) String path, HttpServletResponse response) {
 		logger.info("[download] 输入 - path: {}", path);
 		File zipFile = null;
 
@@ -814,8 +806,11 @@ public class CodeGenController {
 	 * @return 表关系数据（nodes 和 edges）
 	 */
 	@GetMapping("/relations")
-	public Result<Map<String, Object>> getTableRelations(String ipAndPort, String dbName, String username, String pwd,
-			String tabNames) {
+	public Result<Map<String, Object>> getTableRelations(@RequestParam(name = "ipAndPort") String ipAndPort,
+			@RequestParam(name = "dbName") String dbName,
+			@RequestParam(name = "username") String username,
+			@RequestParam(name = "pwd") String pwd,
+			@RequestParam(name = "tabNames") String tabNames) {
 		logger.info("[relations] 输入 - ipAndPort: {}, dbName: {}, tabNames: {}", ipAndPort, dbName, tabNames);
 		long startTime = System.currentTimeMillis();
 

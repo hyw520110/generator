@@ -53,6 +53,13 @@
       :rowSelection="options.rowSelection"
       showPagination="auto"
     >
+      <!-- 自定义表头：实现冒号前文本显示，tooltip 显示完整文本 -->
+      <template #headerCell="{ column }">
+        <a-tooltip v-if="column.fullTitle" :title="column.fullTitle" placement="top">
+          <span>{{ column.title }}</span>
+        </a-tooltip>
+        <span v-else>{{ column.title }}</span>
+      </template>
       <template #bodyCell="{ column, text, record, index }">
         <template v-if="column.dataIndex === 'serial'">
           {{ index + 1 }}
@@ -100,6 +107,44 @@ export default {
     const selectedRows = ref([])
     const queryParam = reactive({})
 
+    /**
+     * 截取表头标题：冒号或逗号前的内容
+     * @param {string} comment - 字段注释
+     * @returns {string} 表头标题
+     */
+    const getHeaderTitle = (comment) => {
+      if (!comment) return ''
+      // 英文冒号、中文冒号、中文逗号
+      const colonIndex = comment.indexOf(':')
+      const cnColonIndex = comment.indexOf('\uFF1A')
+      const cnCommaIndex = comment.indexOf('\uFF0C')
+      // 取所有分隔符中最早出现的位置
+      const validIndices = [colonIndex, cnColonIndex, cnCommaIndex].filter(i => i >= 0)
+      if (validIndices.length === 0) return comment
+      const splitIndex = Math.min(...validIndices)
+      return splitIndex > 0 ? comment.substring(0, splitIndex).trim() : comment
+    }
+
+    /**
+     * 创建列配置
+     * @param {string} comment - 字段注释（可能包含冒号）
+     * @param {string} dataIndex - 数据索引
+     * @param {object} options - 其他选项
+     * @returns {object} 列配置对象
+     */
+    const createColumn = (comment, dataIndex, options = {}) => {
+      const title = getHeaderTitle(comment)
+      // 如果截取后的标题与原文不同，说明有冒号，需要 tooltip
+      const fullTitle = title !== comment ? comment : null
+      return {
+        title,
+        dataIndex,
+        ellipsis: true,
+        ...(fullTitle && { fullTitle }),
+        ...options
+      }
+    }
+
     const columns = [
       {
         title: '#',
@@ -109,12 +154,7 @@ export default {
       },
 #foreach($field in ${table.fields})
 #if(!$field.sensitive)
-      {
-        title: '${field.comment}',
-        dataIndex: '${field.propertyName}'#if(${table.getFieldWidthConfig($field)} != ""),
-        ${table.getFieldWidthConfig($field)}#end#if(${table.getFieldFixedConfig($field, $foreach.count)} != ""),
-        ${table.getFieldFixedConfig($field, $foreach.count)}#end
-      },
+      createColumn('#if("${field.comment}"=="")${field.name}#else${field.comment}#end', '${field.propertyName}'#if(${table.getFieldWidthConfig($field)} != "" || ${table.getFieldFixedConfig($field, $foreach.count)} != ""), { #if(${table.getFieldWidthConfig($field)} != "")${table.getFieldWidthConfig($field)}#end#if(${table.getFieldWidthConfig($field)} != "" && ${table.getFieldFixedConfig($field, $foreach.count)} != ""), #end#if(${table.getFieldFixedConfig($field, $foreach.count)} != "")${table.getFieldFixedConfig($field, $foreach.count)}#end }#end),
 #end
 #end
       {
@@ -210,3 +250,57 @@ export default {
   }
 }
 </script>
+
+<style lang="less" scoped>
+.table-page-search-wrapper {
+  .ant-form-inline {
+    .ant-form-item {
+      display: flex;
+      margin-bottom: 24px;
+      margin-right: 0;
+
+      .ant-form-item-control-wrapper {
+        flex: 1;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      > .ant-form-item-label {
+        line-height: 32px;
+        padding-right: 8px;
+        width: auto;
+      }
+
+      .ant-form-item-control {
+        line-height: 32px;
+        display: inline-block;
+        vertical-align: middle;
+        flex: 1;
+      }
+    }
+  }
+}
+
+.table-operator {
+  margin-bottom: 18px;
+}
+
+.table-page-search-submitButtons {
+  display: block;
+  margin-bottom: 24px;
+  white-space: nowrap;
+}
+
+/* 表头样式：带 tooltip 的表头显示指针样式 */
+:deep(.ant-table-thead > tr > th) {
+  cursor: pointer;
+}
+
+/* 表格内容长文本处理：最大宽度 + 省略号 */
+:deep(.ant-table-tbody > tr > td) {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

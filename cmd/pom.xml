@@ -55,6 +55,7 @@
 					<mainClass>${main.class}</mainClass>
 					<includeProjectDependencies>true</includeProjectDependencies>
 					<includePluginDependencies>false</includePluginDependencies>
+					<interactiveMode>true</interactiveMode>
 				</configuration>
 			</plugin>
 			<plugin>

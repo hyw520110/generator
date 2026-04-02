@@ -68,6 +68,7 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
 import * as md5Module from 'md5'
 import { timeFix } from '@/utils/util'
 import storage from 'store'
+import { ACCESS_TOKEN } from '@/store/mutation-types'
 
 const md5 = md5Module.default || md5Module
 
@@ -83,7 +84,7 @@ export default defineComponent({
 
     // 登录页面加载时清除旧的 token
     onMounted(() => {
-      storage.remove('Access-Token')
+      storage.remove(ACCESS_TOKEN)
     })
 
     const customActiveKey = ref('tab1')
@@ -102,16 +103,24 @@ export default defineComponent({
       loginBtn.value = true
 
       try {
+        // 登录前清除旧的 token 和 resources
+        storage.remove(ACCESS_TOKEN)
+        await store.dispatch('ClearUser')
+
         const loginParams = {
           userName: formState.username,
-          loginType: 'UPL',
+          loginType: '1',
           password: md5(formState.password)
         }
 
-        await store.dispatch('Login', loginParams)
+        const result = await store.dispatch('Login', loginParams)
+        console.log('登录成功，用户信息:', result)
 
-        // 跳转到根路径，让路由守卫处理正确的跳转
-        router.push({ path: '/' }).catch(err => console.log('catch error:', err))
+        // 直接跳转到根路径，使用 window.location 确保页面刷新
+        // 这样可以让路由守卫重新执行，加载动态路由
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 500)
 
         setTimeout(() => {
           notification.success({
@@ -120,6 +129,7 @@ export default defineComponent({
           })
         }, 1000)
       } catch (err) {
+        console.error('登录失败:', err)
         notification.error({
           message: '错误',
           description: ((err.response || {}).data || {}).message || '请求出现错误，请稍后再试',

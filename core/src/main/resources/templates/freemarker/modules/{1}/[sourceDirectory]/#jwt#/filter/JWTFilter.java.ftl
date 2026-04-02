@@ -20,11 +20,25 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+<#if global.modules?? && global.modules?size gt 1>
+import ${api_dtoPackage!}.StatusCode;
+import ${api_dtoPackage!}.Result;
+<#else>
 import ${dtoPackage!}.StatusCode;
 import ${dtoPackage!}.Result;
-import ${rootPackage!}.${projectName!}.${moduleName!}.service.TokenService;
+</#if>
+<#if global.modules?? && global.modules?size gt 1>
+import ${rootPackage!}.${projectName!}.api.service.TokenService;
+<#else>
+import ${servicePackage!}.TokenService;
+</#if>
 import ${rootPackage!}.${projectName!}.${moduleName!}.utils.SpringUtils;
-import ${rootPackage!}.${projectName!}.${moduleName!}.dto.TokenDto;
+import ${securityPackage!}.ShiroAuthenticationToken;
+<#if global.modules?? && global.modules?size gt 1>
+import ${api_dtoPackage!}.Token;
+<#else>
+import ${dtoPackage!}.Token;
+</#if>
 
 public class JWTFilter extends BasicHttpAuthenticationFilter {
 
@@ -32,8 +46,8 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 
 	private AntPathMatcher pathMatcher = new AntPathMatcher();
 
-	private String[] excludes = { "/webjars/**", "/swagger-resources/**", "/swagger-ui.html", "/error", "/v2/api-docs",
-			"/auth/login", "/auth/logout/**","/druid/**", "/resource/**", "/user/**"};
+	private String[] excludes = { "/webjars/**", "/swagger-resources/**", "/swagger-ui.html", "/error", "/v2/api-docs", "/v3/api-docs/**",
+			"/auth/login", "/auth/logout/**","/druid/**", "/resource/**", "/user/**", "/sys/**"};
 	private String HEADER_TOKEN = "X-USER-TOKEN";
 	private String CHARSET = "UTF-8";
 
@@ -73,9 +87,10 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 		String token = httpServletRequest.getHeader(HEADER_TOKEN);
 		try {
-			TokenDto tokenVo = tokenService.parseToken(token);
+			Token tokenInfo = tokenService.parseToken(token);
 			// 因为登录时未将令牌放入,所以此时需要将令牌放入以便后续Realm进行用户认证
-			tokenVo.setToken(token);
+			tokenInfo.setToken(token);
+			ShiroAuthenticationToken tokenVo = new ShiroAuthenticationToken(tokenInfo.getUserId(), tokenInfo.getToken());
 			getSubject(request, response).login(tokenVo);
 			return true;
 		} catch (Exception e) {

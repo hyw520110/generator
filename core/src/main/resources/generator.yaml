@@ -16,6 +16,12 @@ dataSource:
 global:
     #生成文件的输出目录(注意此目录需要有写权限),最后一个子目录为项目名,如:/output/test，项目名为test
     outputDir: ./demo
+    # PDF 中文字体配置
+    # 格式：目录路径:文件名模式（支持 * 通配符），多项用逗号分隔
+    # 系统按配置顺序依次查找，返回第一个匹配的字体文件
+    fontConfigsMacOS: /System/Library/Fonts/Supplemental:Arial Unicode.ttf, /System/Library/Fonts:PingFang*.ttc, /System/Library/Fonts:STHeiti*.ttc, /System/Library/Fonts:Hiragino*.ttc, /Library/Fonts:*.ttf
+    fontConfigsWindows: C:/Windows/Fonts:simhei.ttf, C:/Windows/Fonts:simsun.ttc, C:/Windows/Fonts:msyh.ttc, C:/Windows/Fonts:msyh*.ttc
+    fontConfigsLinux: /usr/share/fonts/truetype/droid:DroidSansFallback*.ttf, /usr/share/fonts/truetype/wqy:wqy-microhei*.ttc, /usr/share/fonts/opentype/noto:NotoSansCJK*.ttc, /usr/share/fonts/truetype/noto:NotoSansCJK*.ttf, /usr/share/fonts:*.ttf
     #项目描述
     description: 代码生成器
     #是否删除输出目录,默认为false，注意：修改需谨慎！ 
@@ -75,17 +81,17 @@ components:
     dubbo_port: 20800
     dubbo_protocol: dubbo 
   ZOOKEEPER: 
-    connect-string: localhost:2181
+    connect_string: zk-server:2181
     curator_version: '4.0.1'
   NACOS: 
-    server-addr: localhost:8848
+    server_addr: nacos-server:8848
     namespace: ''
     group: DEFAULT_GROUP
     username: nacos
     password: nacos
   ROCKETMQ: 
     spring_boot_starter_rocketmq_version: 0.0.4  
-    name_server_address: localhost:9876    
+    name_server_address: mq-server:9876    
   SPRINGBOOT:
     springboot_version: 3.2.12
     spring_version: 6.1.5
@@ -101,9 +107,9 @@ components:
     spring_cloud_zookeeper_version: 4.1.0
   REDIS: 
     spring_redis_password: 123456
-    spring_redis_cluster_nodes: localhost:7001, localhost:7002, localhost:7003, localhost:8001, localhost:8002, localhost:8003
+    spring_redis_cluster_nodes: redis-server:7001, redis-server:7002, redis-server:7003, redis-server:8001, redis-server:8002, redis-server:8003
   JWT:
-    jwt_version: 0.9.1
+    jwt_version: 0.12.6
   SHIRO:
     shiro_version: 2.0.2
   SWAGGER2: 
@@ -113,7 +119,7 @@ components:
     swagger_ui_version: 1.9.6
   ZIPKIN: 
     zipkin_version: '1.0.2'
-    zipkin_baseUrl: http://localhost:9411
+    zipkin_baseUrl: http://zipkin-server:9411
   MYBATIS: 
     # TODO mapperType改为sqlType: xml(XML mapper文件) / annotation(SQL注解)
     #sqlType: xml

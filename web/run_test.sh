@@ -3,8 +3,7 @@
 # GeneratorConfigTest 编译和执行脚本
 # 用法: ./run_test.sh [选项]
 # 选项:
-#   --no-clean    不清理 demo 和 logs 目录
-#   --clean       强制清理 demo 和 logs 目录（默认）
+#   -f            清理 demo 和 logs 目录
 #   -h, --help    显示帮助信息
 
 set -e  # 遇到错误立即退出
@@ -13,17 +12,13 @@ set -e  # 遇到错误立即退出
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# 默认开启清理功能
-CLEAN_DIRS=true
+# 默认不清理
+CLEAN_DIRS=false
 
 # 解析参数
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --no-clean)
-            CLEAN_DIRS=false
-            shift
-            ;;
-        --clean)
+        -f)
             CLEAN_DIRS=true
             shift
             ;;
@@ -34,14 +29,12 @@ GeneratorConfigTest 编译和执行脚本
 用法: $0 [选项]
 
 选项:
-  --no-clean    不清理 demo 和 logs 目录
-  --clean       强制清理 demo 和 logs 目录（默认行为）
+  -f            清理 demo 和 logs 目录
   -h, --help    显示此帮助信息
 
 示例:
-  $0                # 默认清理 demo 和 logs 目录
-  $0 --no-clean      # 不清理 demo 和 logs 目录
-  $0 --clean         # 显式清理 demo 和 logs 目录
+  $0                # 不清理 demo 和 logs 目录
+  $0 -f             # 清理 demo 和 logs 目录
 EOF
             exit 0
             ;;
@@ -108,7 +101,7 @@ check_and_install_core
 if [ "$CLEAN_DIRS" = true ]; then
     clean_directories
 else
-    echo "跳过目录清理（--no-clean 模式）"
+    echo "跳过目录清理"
 fi
 
 echo "开始编译 GeneratorConfigTest..."

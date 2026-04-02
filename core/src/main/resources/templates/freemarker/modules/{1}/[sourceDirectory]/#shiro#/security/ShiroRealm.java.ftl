@@ -28,14 +28,16 @@ import ${api_dtoPackage!}.StatusCode;
 import ${api_dtoPackage!}.ResourceResponseDto;
 import ${api_dtoPackage!}.Role;
 import ${api_dtoPackage!}.UserAuthCache;
+import ${api_dtoPackage!}.Token;
 <#else>
 import ${dtoPackage!}.StatusCode;
 import ${dtoPackage!}.ResourceResponseDto;
 import ${dtoPackage!}.Role;
 import ${dtoPackage!}.UserAuthCache;
+import ${dtoPackage!}.Token;
 </#if>
 import ${servicePackage!}.TokenService;
-import ${dtoPackage!}.TokenDto;
+import ${securityPackage!}.ShiroAuthenticationToken;
 
 public class ShiroRealm extends AuthorizingRealm {
 
@@ -47,7 +49,7 @@ public class ShiroRealm extends AuthorizingRealm {
 
 	@Override
 	public boolean supports(AuthenticationToken token) {
-	        return token instanceof TokenDto;
+	        return token instanceof ShiroAuthenticationToken;
 	}
 
 		public void loadTestData() {
@@ -118,9 +120,9 @@ public class ShiroRealm extends AuthorizingRealm {
 			throw new RuntimeException(StatusCode.TOKEN_ERROR.getDesc());
 		}
 
-		TokenDto tokenVo = tokenService.parseToken(token);
-		String userId = tokenVo.getUserId();
-		String type = tokenVo.getType();
+		Token tokenInfo = tokenService.parseToken(token);
+		String userId = tokenInfo.getUserId();
+		String type = tokenInfo.getType();
 
 		// 校验是否与缓存中的令牌一致
 		String cacheToken = tokenService.getCacheToken(userId, type);

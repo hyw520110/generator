@@ -356,7 +356,7 @@ public class DbToDoc {
 			}
 		}
 		
-		throw new IOException("未找到可用的中文字体，请在配置文件 app.pdf.fonts 中配置字体路径");
+		throw new IOException("未找到可用的中文字体");
 	}
 	
 	/**

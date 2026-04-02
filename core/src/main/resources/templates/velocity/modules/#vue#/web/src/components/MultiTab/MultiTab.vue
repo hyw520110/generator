@@ -18,8 +18,11 @@ export default defineComponent({
     }
 
     const remove = (targetKey) => {
-      pages.value = pages.value.filter(page => page.fullPath !== targetKey)
-      fullPathList.value = fullPathList.value.filter(path => path !== targetKey)
+      const index = fullPathList.value.indexOf(targetKey)
+      if (index > -1) {
+        pages.value.splice(index, 1)
+        fullPathList.value.splice(index, 1)
+      }
       if (!fullPathList.value.includes(activeKey.value)) {
         selectedLastPath()
       }
@@ -109,10 +112,18 @@ export default defineComponent({
     // 添加页面到标签列表
     const addPage = (newRoute) => {
       const path = newRoute.fullPath
+      const routeName = newRoute.name
       activeKey.value = path
-      if (fullPathList.value.indexOf(path) < 0) {
+
+      // 使用 name 作为去重依据，避免 redirect 导致的 fullPath 变化问题
+      const existingIndex = pages.value.findIndex(page => page.name === routeName)
+      if (existingIndex < 0) {
         fullPathList.value.push(path)
         pages.value.push(newRoute)
+      } else {
+        // 如果已存在相同 name 的页面，更新其 fullPath（处理 redirect 情况）
+        fullPathList.value[existingIndex] = path
+        pages.value[existingIndex] = newRoute
       }
     }
 

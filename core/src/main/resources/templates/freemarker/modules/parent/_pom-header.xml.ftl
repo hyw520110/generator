@@ -13,7 +13,7 @@
 		<java.version>${javaVersion!}</java.version>
 		<resource.delimiter>@</resource.delimiter>
 <#if JWT??>
-		<jwt.version>${jwt_version!'0.9.1'}</jwt.version>
+		<jwt.version>${jwt_version!'0.12.6'}</jwt.version>
 </#if>
 <#if SHIRO??>
 		<shiro.version>${shiro_version!'2.0.2'}</shiro.version>
@@ -31,8 +31,7 @@
 		<dubbo.version>${dubbo_version!}</dubbo.version>
 </#if>
 <#if SWAGGER2??>
-		<swagger.version>${swagger_version!'2.9.2'}</swagger.version>
-		<swagger.ui.version>${swagger_ui_version!'1.9.6'}</swagger.ui.version>
+		<knife4j.version>${knife4j_version!'4.5.0'}</knife4j.version>
 </#if>
 <#if SPRINGBOOT??>
 		<lombok.version>${lombok_version!'1.18.20'}</lombok.version>

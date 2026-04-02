@@ -9,7 +9,8 @@
 #   ./startup.sh -f                      # 强制重启
 # =============================================================================
 
-set -e
+# set -e 会导致任何命令失败就退出，这会影响脚本健壮性
+# 不使用 set -e，改为在关键位置添加错误检查
 
 export LANG=en_US.UTF-8
 
@@ -155,10 +156,18 @@ show_help() {
     echo "用法：$0 [选项]"
     echo ""
     echo "选项:"
-    echo "  -f, --force      强制重启 (先停止已有进程)"
-    echo "  -h, --help       显示此帮助信息"
+    echo "  -f, --force       强制重启 (先停止已有进程)"
+    echo "  -b, --background   后台运行 (默认前台运行)"
+    echo "  -l, --log <路径>  指定日志文件 (后台模式默认: logs/vite.log)"
+    echo "  -h, --help        显示此帮助信息"
     echo ""
-    echo "默认行为：启动前端服务。"
+    echo "默认行为：前台启动前端服务，日志直接输出到终端。"
+    echo ""
+    echo "示例:"
+    echo "  $0                  # 前台启动"
+    echo "  $0 -f               # 前台强制重启"
+    echo "  $0 -b               # 后台启动"
+    echo "  $0 -b -l custom.log # 后台启动并指定日志文件"
     echo ""
     echo "当前配置:"
     echo "  脚本目录：$SCRIPT_DIR"
@@ -180,11 +189,18 @@ detect_mode() {
 
 IS_DEV_MODE=$(detect_mode)
 FORCE_RESTART=false
+RUN_BACKGROUND=false
+LOG_FILE=""
 
 # 参数解析
 while [ $# -gt 0 ]; do
     case "$1" in
         -f|--force) FORCE_RESTART=true ;;
+        -b|--background) RUN_BACKGROUND=true ;;
+        -l|--log) 
+            shift
+            LOG_FILE="$1"
+            ;;
         -h|--help) show_help ;;
         *) ;;
     esac
@@ -197,7 +213,6 @@ cd "$APP_DIR"
 # 如果指定了强制启动，停止已有进程
 if [ "$FORCE_RESTART" = true ]; then
     echo_info "正在停止已有前端进程..."
-    pkill -f "node.*vite\|node.*vue-cli-service\|npm run dev\|yarn serve" 2>/dev/null || true
     
     # 精确停止配置端口的进程
     config_port=""
@@ -207,13 +222,21 @@ if [ "$FORCE_RESTART" = true ]; then
         config_port=$(grep "port:" vue.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
     fi
     [ -z "$config_port" ] && config_port="8000"
+    echo_info "配置端口: $config_port"
+    
+    # pkill 没找到进程返回 1，用 || true 避免 set -e 退出
+    pkill -f "node.*vite\|node.*vue-cli-service\|npm run dev\|yarn serve" 2>/dev/null || true
+    echo_info "pkill 执行完成"
     
     if command -v lsof > /dev/null 2>&1; then
         port_pids=$(lsof -ti :$config_port 2>/dev/null)
+        echo_info "端口 $config_port 占用进程: $port_pids"
         if [ -n "$port_pids" ]; then
             echo_info "正在停止占用端口 $config_port 的进程..."
             echo "$port_pids" | xargs kill -9 2>/dev/null || true
         fi
+    else
+        echo_warn "lsof 命令不可用，跳过端口检测"
     fi
     sleep 2
 fi
@@ -224,8 +247,10 @@ fi
 start_frontend() {
     echo_info ">>> 正在启动前端服务..."
     if [ $IS_DEV_MODE -eq 0 ]; then
+        echo_info "开发模式：开始检测代理..."
         # 检测并修复代理配置
         check_and_fix_proxy
+        echo_info "代理检测完成"
 
         # 仅监测 package.json 的变更 (意图变更)
         local files_to_hash="package.json"
@@ -294,10 +319,12 @@ start_frontend() {
             port=$(grep "port:" vue.config.js | awk -F: '{print $2}' | tr -d ', ' | head -n 1)
         fi
         [ -z "$port" ] && port="8000"
+        echo_info "检测到端口配置: $port"
 
         # 启动前检测端口是否被占用，如果被占用则先停止
         if command -v lsof > /dev/null 2>&1; then
             local port_pids=$(lsof -ti :$port 2>/dev/null)
+            echo_info "端口 $port 占用情况: $port_pids"
             if [ -n "$port_pids" ]; then
                 echo_warn "端口 $port 已被占用，正在停止占用进程..."
                 echo "$port_pids" | xargs kill -9 2>/dev/null || true
@@ -308,27 +335,45 @@ start_frontend() {
         echo_info "启动前端并监听端口：$port"
         echo_info "访问地址：http://localhost:$port"
 
-        # 检测启动命令 (支持 serve 和 dev)
-        local start_cmd=""
+        # 检测启动命令 (Vite 项目优先使用 dev)
+        local start_cmd="dev"  # Vite 项目默认使用 dev
+        
         if [ -f "package.json" ]; then
-            if grep -q '"serve"' package.json; then
-                start_cmd="serve"
-            elif grep -q '"dev"' package.json; then
-                start_cmd="dev"
+            # 优先使用 dev（Vite 标准）
+            if ! grep -q '"dev"' package.json; then
+                # 如果没有 dev，尝试 serve
+                if grep -q '"serve"' package.json; then
+                    start_cmd="serve"
+                fi
             fi
         fi
+        echo_info "检测到启动命令: $start_cmd"
 
-        if [ -z "$start_cmd" ]; then
-            start_cmd="serve"  # 默认使用 serve
+        # 确定日志文件路径
+        if [ -n "$LOG_FILE" ]; then
+            : # 使用用户指定的日志文件
+        elif [ "$RUN_BACKGROUND" = true ]; then
+            LOG_FILE="$LOG_DIR/vite.log"
         fi
 
         if command -v yarn > /dev/null 2>&1; then
-            echo_info "执行：yarn $start_cmd"
-            yarn $start_cmd --open
+            if [ "$RUN_BACKGROUND" = true ] && [ -n "$LOG_FILE" ]; then
+                echo_info "后台启动：yarn $start_cmd，日志: $LOG_FILE"
+                nohup yarn $start_cmd > "$LOG_FILE" 2>&1 &
+            else
+                echo_info "前台启动：yarn $start_cmd"
+                exec yarn $start_cmd
+            fi
         else
-            echo_info "执行：npm run $start_cmd"
-            npm run $start_cmd -- --open
+            if [ "$RUN_BACKGROUND" = true ] && [ -n "$LOG_FILE" ]; then
+                echo_info "后台启动：npm run $start_cmd，日志: $LOG_FILE"
+                nohup npm run $start_cmd > "$LOG_FILE" 2>&1 &
+            else
+                echo_info "前台启动：npm run $start_cmd"
+                exec npm run $start_cmd
+            fi
         fi
+        echo_info "启动命令已执行，PID: $!"
     else
         echo_info "模式：部署模式 (静态资源)"
     fi

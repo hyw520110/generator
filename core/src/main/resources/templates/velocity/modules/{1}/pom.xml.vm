@@ -223,38 +223,11 @@
 #end
 
 #if($!{SWAGGER2})
+		<!-- Knife4j for Spring Boot 3 -->
 		<dependency>
-		    <groupId>io.springfox</groupId>
-		    <artifactId>springfox-swagger2</artifactId>
-#if(!$!{SPRINGBOOT})
-		    <version>2.9.2</version>
-#end
-		    <exclusions>
-		        <exclusion>
-		            <groupId>io.swagger</groupId>
-		            <artifactId>swagger-models</artifactId>
-		        </exclusion>
-		    </exclusions>
+		    <groupId>com.github.xiaoymin</groupId>
+		    <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
 		</dependency>
-		<dependency>
-		    <groupId>io.swagger</groupId>
-		    <artifactId>swagger-models</artifactId>
-		    <version>1.5.21</version>
-		</dependency>
-<!-- 
-		<dependency>
-		    <groupId>io.springfox</groupId>
-		    <artifactId>springfox-swagger-ui</artifactId>
-#if(!$!{SPRINGBOOT})
-		    <version>2.9.2</version>
-#end
-		</dependency>
- -->
-		<dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>swagger-bootstrap-ui</artifactId>
-        </dependency>
-
 #end
 #if("$!{javaVersion}"=="1.8" && $!{SPRINGBOOT} && $!{DUBBO} && $!{ZIPKIN})    	
 		<!-- 实时数据追踪 -->
@@ -324,7 +297,15 @@
 		
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt</artifactId>
+			<artifactId>jjwt-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.shiro</groupId>

@@ -1,7 +1,11 @@
 package ${servicePackage};
 
 
-import ${rootPackage}.${projectName}.${moduleName}.dto.TokenDto;
+#if($global.modules && $global.modules.size() > 1)
+import ${api_dtoPackage}.Token;
+#else
+import ${dtoPackage}.Token;
+#end
 
 
 public interface TokenService {
@@ -10,7 +14,7 @@ public interface TokenService {
 
     String createToken(String content, Long timeout);
 
-    TokenDto parseToken(String token);
+    Token parseToken(String token);
 
     String refreshToken(String userId, String type);
 

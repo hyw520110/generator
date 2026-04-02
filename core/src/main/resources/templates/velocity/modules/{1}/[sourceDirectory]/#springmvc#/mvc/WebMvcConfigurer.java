@@ -17,6 +17,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -45,15 +46,15 @@ import ${interceptorPackage}.ContextInterceptor;
 
 @Configuration
 public class WebMvcConfigurer extends org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(WebMvcConfigurer.class);
-	
+
 	@Autowired
 	private ContextInterceptor contextInterceptor;
-	
+
 	#[[@Value("${spring.jackson.date-format:yyyy-MM-dd HH:mm:ss}")]]#
 	private String dateFormat;
-	
+
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(contextInterceptor).addPathPatterns("/**").excludePathPatterns("/favicon.ico","/webjars/**","/swagger-resources/**");
@@ -67,7 +68,7 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 		registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
 		registry.addResourceHandler("doc.html").addResourceLocations("classpath:/META-INF/resources/");
 	}
-#if("fastjson"=="${json_type}")	
+#if("fastjson"=="${json_type}")
 	@Bean
     public FormContentFilter formContentFilter() {
         return new JsonFormContentFilter();
@@ -75,20 +76,15 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 #end
 
 	@Override
-	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-		if(converters.isEmpty()) {
-			super.extendMessageConverters(converters);
-		}
-#if("fastjson"=="${json_type}")
-		converters.add(0, fastJsonHttpMessageConverter());
-#end
-	}
-
-	@Override
 	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+		// 添加 ByteArrayHttpMessageConverter，解决 Knife4j 4.x Base64 编码问题
+		// 参考：https://doc.xiaominfo.com/docs/faq/v4/knife4j-base64-response
+		// https://github.com/springdoc/springdoc-openapi/issues/2143
+		converters.add(new ByteArrayHttpMessageConverter());
+		
 		for (HttpMessageConverter<?> converter : converters) {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
-				// 设置jackson可读格式化 actuator输出硬编码采用jackson
+				// 设置 jackson 可读格式化 actuator 输出硬编码采用 jackson
 				MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = (MappingJackson2HttpMessageConverter) converter;
 				mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper());
 			}
@@ -105,11 +101,11 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 	public FilterRegistrationBean corsFilter() {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration config = new CorsConfiguration();
-		// 允许cookies跨域
+		// 允许 cookies 跨域
 		config.setAllowCredentials(false);
-		// #允许向该服务器提交请求的URI，*表示全部允许，在SpringMVC中，如果设成*，会自动转成当前请求头中的Origin
+		// #允许向该服务器提交请求的 URI，*表示全部允许，在 SpringMVC 中，如果设成*，会自动转成当前请求头中的 Origin
 		config.addAllowedOrigin("*");
-		// #允许访问的头信息,*表示全部
+		// #允许访问的头信息，*表示全部
 		config.addAllowedHeader("*");
 		// 预检请求的缓存时间（秒），即在这个时间段里，对于相同的跨域请求不会再预检了
 		config.setMaxAge(18000L);
@@ -120,8 +116,8 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 		bean.setOrder(0);
 		return bean;
 	}
-	 
-#if("fastjson"=="${json_type}")	
+
+#if("fastjson"=="${json_type}")
 	public FastJsonHttpMessageConverter fastJsonHttpMessageConverter() {
 		FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
 		converter.setFastJsonConfig(fastJsonConfig());
@@ -139,13 +135,13 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 		conf.setSerializerFeatures(SerializerFeature.WriteEnumUsingToString);
 		conf.setDateFormat(dateFormat);
 		conf.setCharset(Charset.forName("UTF-8"));
-		// 解决Long转json精度丢失的问题
+		// 解决 Long 转 json 精度丢失的问题
 //		SerializeConfig serializeConfig = SerializeConfig.globalInstance;
 //		serializeConfig.put(BigInteger.class, ToStringSerializer.instance);
 //		serializeConfig.put(Long.class, ToStringSerializer.instance);
 //		serializeConfig.put(Long.TYPE, ToStringSerializer.instance);
 //		conf.setSerializeConfig(serializeConfig);
-#if("plus"=="$mapperType")	
+#if("plus"=="$mapperType")
 //		NameFilter nameFilter = new NameFilter() {
 //			@Override
 //			public String process(Object object, String name, Object value) {
@@ -178,16 +174,16 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 		conf.setSerializeFilters(valueFilter);
 		return conf;
 	}
-	
+
 	public String format(long datetime, String pattern) {
 		return LocalDateTime.ofInstant(Instant.ofEpochMilli(datetime), ZoneId.systemDefault())
 				.format(DateTimeFormatter.ofPattern(pattern));
 	}
 #end
-	
+
 	/**
-	 * 设置jackson可读格式化
-	 * 
+	 * 设置 jackson 可读格式化
+	 *
 	 * @author: heyiwu
 	 * @return
 	 */

@@ -18,7 +18,7 @@ public enum Component {
 	REDIS, DUBBO, ZIPKIN, SKYWALKING, ZOOKEEPER, NACOS, ROCKETMQ, SENTINEL,
 	
 	// 业务框架/应用层
-	SPRINGBOOT, SPRINGCLOUD, SPRINGMVC, SWAGGER2, THYMELEAF, JWT, SHIRO, 
+	SPRINGBOOT, SPRINGCLOUD, SPRINGMVC, SWAGGER2, THYMELEAF, SHIRO, JWT, 
 	
 	// 前端/Web
 	VUE("web");
@@ -34,6 +34,13 @@ public enum Component {
 
 	public String getAlias() {
 		return StringUtils.isBlank(alias) ? this.name().toLowerCase() : alias;
+	}
+
+	/**
+	 * 获取组件显示标签
+	 */
+	public String getLabel() {
+		return this.name();
 	}
 
 	public static Component getComonent(String name) {

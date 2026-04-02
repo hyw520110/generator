@@ -10,12 +10,18 @@
 
 <script>
 
+// 从环境变量获取后端服务器地址
+const apiHost = import.meta.env.VITE_API_HOST || 'localhost'
+const apiPort = import.meta.env.VITE_API_PORT || '8082'
+const baseHost = `http://${apiHost}:${apiPort}`
+
 export default {
   name: 'IframeView',
   data () {
     return {
       url: '',
-      id: ''
+      id: '',
+      height: 'calc(100vh - 132px)'
     }
   },
   created () {
@@ -31,10 +37,13 @@ export default {
   },
   methods: {
     goUrl () {
-      const url = this.$route.meta.url
+      let url = this.$route.meta.url
       if (url !== null && url !== undefined) {
+        // 如果是相对路径，拼接后端服务器地址
+        if (url.startsWith('/')) {
+          url = baseHost + url
+        }
         this.url = url
-        // window.open(this.url);
       }
     }
   }
@@ -42,5 +51,8 @@ export default {
 </script>
 
 <style scoped>
-
+iframe {
+  width: 100%;
+  border: none;
+}
 </style>

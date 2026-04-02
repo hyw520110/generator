@@ -16,11 +16,11 @@ spring:
         server-addr: ${nacos-server}
   config:
     import: optional:nacos:
-#elseif($ZOOKEEPER)      
+#elseif($ZOOKEEPER)
   cloud:
     zookeeper:
       enabled: true
-      connect-string: ${connect-string}
+      connect-string: ${connect-string!'localhost:2181'}
       config:
         enabled: true
         watcher:

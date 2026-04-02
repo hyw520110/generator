@@ -5,14 +5,24 @@ logging.level.root=INFO
 logging.path=target/logs/
 logging.file=default.log
 
-# knife4j OpenAPI 3 configuration
+# SpringDoc OpenAPI 3 configuration
 springdoc.api-docs.enabled=true
 springdoc.api-docs.path=/v3/api-docs
 springdoc.swagger-ui.enabled=true
 springdoc.swagger-ui.path=/swagger-ui.html
 springdoc.packages-to-scan=${rootPackage}.${projectName}.app.controller
 springdoc.paths-to-match=/**
+springdoc.writer-with-default-pretty-printer=true
+springdoc.default-produces-media-type=application/json
+
+# Knife4j configuration
 knife4j.enable=true
+knife4j.setting.language=zh_cn
+knife4j.setting.enable-version=true
+# 禁用 Base64 编码聚合响应（Knife4j 4.x 默认开启，会导致前端解析失败）
+knife4j.agg.enabled=false
+# 禁用 OpenAPI 文档的 Base64 编码
+springdoc.api-docs.version=openapi_3_0
 
 <#if THYMELEAF!false>
 spring.thymeleaf.prefix=classpath:/templates/
@@ -40,9 +50,9 @@ spring.redis.host=localhost
 <#if DUBBO?? && DUBBO>
 spring.dubbo.appname=${projectName!'app'}
 <#if NACOS?? && NACOS>
-spring.dubbo.registry=nacos://${nacos-server!'localhost:8848'}
+spring.dubbo.registry=nacos://nacos-server:8848
 <#elseif ZOOKEEPER?? && ZOOKEEPER>
-spring.dubbo.registry=zookeeper://${connect-string!'localhost:2181'}
+spring.dubbo.registry=zookeeper://${(connect-string)!'localhost:2181'}
 <#else>
 spring.dubbo.registry=${dubbo_registry!'N/A'}
 </#if>

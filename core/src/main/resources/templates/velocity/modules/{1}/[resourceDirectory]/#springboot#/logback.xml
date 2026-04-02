@@ -24,15 +24,12 @@
 			<onMismatch>DENY</onMismatch>
 		</filter>
 		<File>#[[${LOG_BASE}]]#_error.log</File>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<fileNamePattern>#[[${LOG_BASE}]]#_error_%d{yyyy-MM-dd_HH}.%i.log
 			</fileNamePattern>
 			<!-- 保留天数 -->
 			<maxHistory>#[[${log.maxHistory:-60}]]#</maxHistory>
-			<timeBasedFileNamingAndTriggeringPolicy
-				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-				<maxFileSize>#[[${log.maxFileSize:-10MB}]]#</maxFileSize>
-			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxFileSize>#[[${log.maxFileSize:-10MB}]]#</maxFileSize>
 		</rollingPolicy>
 		<append>true</append>
 		<encoder charset="#[[${CHARSET}]]#"
@@ -46,15 +43,12 @@
 	<appender name="common-default"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<File>#[[${LOG_BASE}]]#_default.log</File>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<fileNamePattern>#[[${LOG_BASE}]]#_default.%d{yyyy-MM-dd}.%i.log
 			</fileNamePattern>
 			<!-- 保留天数 -->
 			<maxHistory>#[[${log.maxHistory:-60}]]#</maxHistory>
-			<timeBasedFileNamingAndTriggeringPolicy
-				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-				<maxFileSize>#[[${log.maxFileSize:-10MB}]]#</maxFileSize>
-			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxFileSize>#[[${log.maxFileSize:-10MB}]]#</maxFileSize>
 		</rollingPolicy>
 			<!-- HTML文件输出:encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder" 
 			pattern class="ch.qos.logback.classic.html.HTMLLayout" -->

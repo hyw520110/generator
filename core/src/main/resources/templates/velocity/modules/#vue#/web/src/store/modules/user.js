@@ -1,11 +1,12 @@
 import * as storageModule from 'store'
-import { login, getInfo, logout } from '@/api/login'
-import { getUserResources } from '@/api/cresource'
-import { ACCESS_TOKEN, USER_ID } from '@/store/mutation-types'
-import { welcome } from '@/utils/util'
+import { login, logout } from '@/api/login'
+import { ACCESS_TOKEN } from '@/store/mutation-types'
 
 // 获取 store 的默认导出
 const storage = storageModule.default || storageModule
+
+// 用户资源列表的 storage key
+const USER_RESOURCES = 'user-resources'
 
 const user = {
   state: {
@@ -14,7 +15,7 @@ const user = {
     welcome: '',
     avatar: '',
     roles: [],
-    resources: [],
+    resources: storage.get(USER_RESOURCES) || [],
     info: {}
   },
 
@@ -34,6 +35,7 @@ const user = {
     },
     SET_RESOURCES: (state, resources) => {
       state.resources = resources
+      storage.set(USER_RESOURCES, resources, 7 * 24 * 60 * 60 * 1000)
     },
     SET_INFO: (state, info) => {
       state.info = info
@@ -47,45 +49,12 @@ const user = {
         login(userInfo).then(response => {
           const result = response.data
           storage.set(ACCESS_TOKEN, result.userToken, 7 * 24 * 60 * 60 * 1000)
-          storage.set(USER_ID, result.userInfo.userId, 7 * 24 * 60 * 60 * 1000)
           commit('SET_TOKEN', result.userToken)
-          resolve(result)
-        }).catch(error => {
-          reject(error)
-        })
-      })
-    },
-
-    // 获取用户信息
-    GetInfo ({ commit }, userId) {
-      return new Promise((resolve, reject) => {
-        getInfo(userId).then(response => {
-          const result = response.result
-
-          commit('SET_INFO', result)
-          commit('SET_NAME', { name: result.name, welcome: welcome() })
-          commit('SET_AVATAR', result.avatar)
-
-          resolve(response)
-        }).catch(error => {
-          reject(error)
-        })
-      })
-    },
-
-    // 获取用户资源列表
-    GetUserResources ({ commit }, userId) {
-      return new Promise((resolve, reject) => {
-        getUserResources(userId).then(response => {
-          const result = response.data
-
-          if (result.length > 0) {
-            commit('SET_RESOURCES', result)
-          } else {
-            reject(new Error('getUserResources: resources must be a non-null array !'))
+          // 登录时直接保存资源列表
+          if (result.userResources && result.userResources.length > 0) {
+            commit('SET_RESOURCES', result.userResources)
           }
-
-          resolve(response)
+          resolve(result)
         }).catch(error => {
           reject(error)
         })
@@ -95,17 +64,20 @@ const user = {
     // 登出
     Logout ({ commit }) {
       return new Promise((resolve, reject) => {
-        const userId = storage.get(USER_ID)
-
-        logout(userId).then(() => {
-          commit('SET_TOKEN', '')
-          commit('SET_ROLES', [])
-          storage.remove(ACCESS_TOKEN)
-          storage.remove(USER_ID)
-          resolve()
-        }).catch(error => {
-          reject(error)
-        })
+        logout()
+          .then(() => {
+            resolve()
+          })
+          .catch(error => {
+            reject(error)
+          })
+          .finally(() => {
+            commit('SET_TOKEN', '')
+            commit('SET_ROLES', [])
+            commit('SET_RESOURCES', [])
+            storage.remove(ACCESS_TOKEN)
+            storage.remove(USER_RESOURCES)
+          })
       })
     },
 
@@ -114,8 +86,9 @@ const user = {
       return new Promise((resolve) => {
         commit('SET_TOKEN', '')
         commit('SET_ROLES', [])
+        commit('SET_RESOURCES', [])
         storage.remove(ACCESS_TOKEN)
-        storage.remove(USER_ID)
+        storage.remove(USER_RESOURCES)
         resolve()
       })
     }

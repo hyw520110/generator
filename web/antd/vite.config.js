@@ -60,7 +60,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 8000,
+    port: 9000,
     strictPort: true,
     proxy: {
       '/v1': {

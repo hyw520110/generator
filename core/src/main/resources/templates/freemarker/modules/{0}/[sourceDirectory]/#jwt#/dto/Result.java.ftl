@@ -2,7 +2,7 @@ package ${dtoPackage!};
 
 import java.io.Serializable;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 接口返回数据格式
@@ -10,12 +10,16 @@ import io.swagger.annotations.ApiModel;
  * @author heyw
  * @copyright: hyw Copyright (c) 2017-2020 All Rights Reserved.
  */
-@ApiModel(value = "接口返回对象", description = "接口返回对象")
+@Schema(name = "Result", description = "接口返回对象")
 public class Result<T> implements Serializable {
 	private static final long serialVersionUID = -862936613454307838L;
+	@Schema(name = "status", description = "状态码")
 	private int status;
+	@Schema(name = "message", description = "消息")
 	private String message;
+	@Schema(name = "data", description = "数据")
 	private T data;
+	@Schema(name = "timestamp", description = "时间戳")
 	private long timestamp;
 
 	public Result() {

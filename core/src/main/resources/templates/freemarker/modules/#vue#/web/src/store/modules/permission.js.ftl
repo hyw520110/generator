@@ -7,6 +7,11 @@ import { BasicLayout, RouteView, BlankLayout, PageView, IframeView } from '@/lay
 // 使用 eager: false 保持懒加载特性
 const modules = import.meta.glob('/src/views/**/*.vue')
 
+// 从环境变量获取后端服务器地址
+const apiHost = import.meta.env.VITE_API_HOST || 'localhost'
+const apiPort = import.meta.env.VITE_API_PORT || '8082'
+const baseHost = `http://${r"${apiHost}"}:${r"${apiPort}"}`
+
 // 包装动态组件，确保 Vue Router 能正确处理
 const wrapDynamicComponent = (importFn) => {
   // 返回一个异步组件定义，并使用 markRaw 防止被 Vuex 响应式包装
@@ -58,7 +63,7 @@ export const generator = (routerMap, parentPath = '') => {
         path = item.resourceUri
       } else {
         // 构建完整路径用于重定向和子路由递归
-        const fullPath = `${'$'}{parentPath}/${'$'}{item.resourceUri}`.replace(/\/+/g, '/')
+        const fullPath = `${r"${parentPath}"}/${r"${item.resourceUri}"}`.replace(/\/+/g, '/')
         
         // Vue Router 4: 子路由的 path 不应该以 / 开头
         // 如果有父路径，使用相对路径；否则使用绝对路径
@@ -93,10 +98,10 @@ export const generator = (routerMap, parentPath = '') => {
       if (!routerComponent && resourceView) {
         // Vite 动态导入 - 尝试多种可能的路径格式
         const possiblePaths = [
-          `/src/views/${'$'}{resourceView}.vue`,
-          `/src/views/${'$'}{resourceView}/index.vue`,
-          `/src/views/${'$'}{resourceView.toLowerCase()}.vue`,
-          `/src/views/${'$'}{resourceView.toLowerCase()}/index.vue`
+          `/src/views/${r"${resourceView}"}.vue`,
+          `/src/views/${r"${resourceView}"}/index.vue`,
+          `/src/views/${r"${resourceView.toLowerCase()}"}.vue`,
+          `/src/views/${r"${resourceView.toLowerCase()}"}/index.vue`
         ]
 
         // 直接匹配 - 获取动态导入函数
@@ -123,7 +128,7 @@ export const generator = (routerMap, parentPath = '') => {
           // 使用 defineAsyncComponent 包装动态组件
           routerComponent = wrapDynamicComponent(importFn)
         } else {
-          console.error(`组件不存在：${'$'}{item.resourceView}`, {
+          console.error(`组件不存在：${r"${item.resourceView}"}`, {
             possiblePaths,
             availableModules: Object.keys(modules).filter(k => k.toLowerCase().includes(item.resourceKey?.toLowerCase())).slice(0, 5)
           })
@@ -131,7 +136,7 @@ export const generator = (routerMap, parentPath = '') => {
       }
 
       // 计算完整路径用于重定向和子路由递归
-      const fullPath = `${'$'}{parentPath}/${'$'}{item.resourceUri}`.replace(/\/+/g, '/')
+      const fullPath = `${r"${parentPath}"}/${r"${item.resourceUri}"}`.replace(/\/+/g, '/')
       
       const currentRouter = {
         // 路由地址 动态拼接生成
@@ -141,10 +146,18 @@ export const generator = (routerMap, parentPath = '') => {
         // 该路由对应页面的 组件
         component: routerComponent,
         // meta: 页面标题，菜单图标，页面权限 (供指令权限用，可去掉)
-        meta: { title: item.resourceName, icon: item.resourceIcon || undefined, permission: item.resourceKey && [ item.resourceKey ] || null, url: reURL.test(item.resourceRedirect) ? item.resourceRedirect : undefined }
+        meta: {
+          title: item.resourceName,
+          icon: item.resourceIcon || undefined,
+          permission: item.resourceKey && [ item.resourceKey ] || null,
+          url: item.resourceRedirect || undefined
+        }
       }
-      // 重定向
-      item.resourceRedirect && !reURL.test(item.resourceRedirect) && (currentRouter.redirect = item.resourceRedirect)
+      // 重定向：只有内部相对路径才设置为 redirect
+      // 特殊处理：如果资源视图是 IframeView，不能设置路由重定向，否则会因为前端不存在该路径而跳转 404
+      if (item.resourceRedirect && !reURL.test(item.resourceRedirect) && resourceView !== 'IframeView') {
+        currentRouter.redirect = item.resourceRedirect
+      }
       // 是否有子菜单，并递归处理
       if (item.childResources && item.childResources.length > 0) {
         // Recursion - 传递当前生成的完整路径给子路由

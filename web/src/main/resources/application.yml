@@ -5,6 +5,20 @@ spring:
   application:
     name: generator-web
 
+# Knife4j 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
 app:
   # 自动打开浏览器 (默认关闭，由前端 Vite --open 控制)
   auto-open-browser: false
@@ -14,16 +28,4 @@ app:
   download-dir: ${user.home}/Downloads/generator
   # 代码默认输出目录 (用于前端默认值)
   output-dir: ${user.home}/output/demo
-  
-  # PDF 中文字体配置
-  # 格式：目录路径:文件名模式（支持 * 通配符），多项用逗号分隔
-  # 系统按配置顺序依次查找，返回第一个匹配的字体文件
-  pdf:
-    fonts:
-      # macOS 字体配置（按优先级排序）
-      macos: /System/Library/Fonts/Supplemental:Arial Unicode.ttf, /System/Library/Fonts:PingFang*.ttc, /System/Library/Fonts:STHeiti*.ttc, /System/Library/Fonts:Hiragino*.ttc, /Library/Fonts:*.ttf
-      # Windows 字体配置（按优先级排序）
-      windows: C:/Windows/Fonts:simhei.ttf, C:/Windows/Fonts:simsun.ttc, C:/Windows/Fonts:msyh.ttc, C:/Windows/Fonts:msyh*.ttc
-      # Linux 字体配置（按优先级排序）
-      linux: /usr/share/fonts/truetype/droid:DroidSansFallback*.ttf, /usr/share/fonts/truetype/wqy:wqy-microhei*.ttc, /usr/share/fonts/opentype/noto:NotoSansCJK*.ttc, /usr/share/fonts/truetype/noto:NotoSansCJK*.ttf, /usr/share/fonts:*.ttf
 

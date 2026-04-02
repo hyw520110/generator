@@ -18,62 +18,81 @@ import org.hyw.tools.generator.utils.ConfigValidator.ValidationResult;
  * @version 2.0
  */
 public enum ComponentGroup {
-    
-    
+
     /**
      * ORM 框架组 - 持久层框架，必选且只能选一个
      */
-    ORM("ORM 框架", true, Component.MYBATIS, Component.JPA),
-    
-    
+    ORM("ORM 框架", true, true, Component.MYBATIS, Component.JPA),
+
     /**
      * 视图技术组 - 前端方案，可选但最多选一个
      */
-    VIEW("视图技术", false, Component.VUE, Component.THYMELEAF),
-    
+    VIEW("视图技术", false, true, Component.VUE, Component.THYMELEAF),
+
     /**
-     * 认证授权组 - 安全框架，可选但最多选一个
+     * 认证授权组 - 安全框架，可选，可多选（不互斥）
      */
-    AUTH("认证授权", false, Component.SHIRO, Component.JWT),
-    
-    /**
-     * 链路追踪组 - APM 系统，可选但最多选一个
-     */
-    TRACE("链路追踪", false, Component.ZIPKIN, Component.SKYWALKING),
-    
+    AUTH("认证授权", false, false, Component.SHIRO, Component.JWT),
+
     /**
      * 注册中心组 - 微服务注册中心，可选但最多选一个
      */
-    REGISTRY("注册中心", false, Component.ZOOKEEPER, Component.NACOS),
-    
+    REGISTRY("注册中心", false, true, Component.ZOOKEEPER, Component.NACOS),
+
     /**
      * 微服务框架组 - 可选但最多选一个
      */
-    MICROSERVICE("微服务框架", false, Component.DUBBO, Component.SPRINGCLOUD);
-    
+    MICROSERVICE("微服务框架", false, true, Component.DUBBO, Component.SPRINGCLOUD),
+
+    /**
+     * 链路追踪组 - APM 系统，可选但最多选一个
+     */
+    TRACE("链路追踪", false, true, Component.ZIPKIN, Component.SKYWALKING),
+
+    /**
+     * 缓存组 - 可选但最多选一个（可扩展：Redis、Memcache...）
+     */
+    CACHE("缓存", false, true, Component.REDIS),
+
+    /**
+     * 流量防护组 - 可选但最多选一个（可扩展：Sentinel、Resilience4j...）
+     */
+    FLOW_PROTECT("流量防护", false, true, Component.SENTINEL),
+
+    /**
+     * 接口文档组 - 可选但最多选一个（可扩展：Swagger3、SpringDoc...）
+     */
+    API_DOC("接口文档", false, true, Component.SWAGGER2);
+
     /**
      * 组名称
      */
     private final String groupName;
-    
+
     /**
      * 是否必选
      */
     private final boolean required;
-    
+
     /**
-     * 组内组件列表（互斥）
+     * 是否互斥（true=单选，false=多选）
+     */
+    private final boolean exclusive;
+
+    /**
+     * 组内组件列表
      */
     private final List<Component> components;
-    
+
     /**
-    	 * 构造函数
-    	 */
-    	ComponentGroup(String groupName, boolean required, Component... components) {
-    		this.groupName = groupName;
-    		this.required = required;
-    		this.components = Collections.unmodifiableList(Arrays.asList(components));
-    	}
+     * 构造函数
+     */
+    ComponentGroup(String groupName, boolean required, boolean exclusive, Component... components) {
+        this.groupName = groupName;
+        this.required = required;
+        this.exclusive = exclusive;
+        this.components = Collections.unmodifiableList(Arrays.asList(components));
+    }
 
     public String getGroupName() {
         return groupName;
@@ -81,6 +100,10 @@ public enum ComponentGroup {
 
     public boolean isRequired() {
         return required;
+    }
+
+    public boolean isExclusive() {
+        return exclusive;
     }
 
     public List<Component> getComponents() {
@@ -161,7 +184,7 @@ public enum ComponentGroup {
             List<Component> groupSelected = group.components.stream()
                 .filter(selectedSet::contains)
                 .collect(Collectors.toList());
-            
+
             // 检查必选组
             if (group.required && groupSelected.isEmpty()) {
                 result.addError(String.format(
@@ -169,9 +192,9 @@ public enum ComponentGroup {
                     group.groupName, group.components
                 ));
             }
-            
-            // 检查互斥冲突
-            if (groupSelected.size() > 1) {
+
+            // 检查互斥冲突（仅对 exclusive=true 的组进行检查）
+            if (group.exclusive && groupSelected.size() > 1) {
                 result.addError(String.format(
                     "【%s】存在冲突，只能选择一个，当前选择了：%s",
                     group.groupName, groupSelected

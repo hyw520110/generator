@@ -4,60 +4,59 @@ import java.util.Date;
 
 import ${dtoPackage!}.BaseModel;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 资源信息
  */
-@ApiModel(value = "Resource对象", description = "资源信息")
+@Schema(name = "Resource", description = "资源信息")
 public class Resource extends BaseModel<Resource> {
 
 	private Long resourceId;
 
-	@ApiModelProperty(value = "资源名称")
+	@Schema(name = "resourceName", description = "资源名称")
 	private String resourceName;
 
-	@ApiModelProperty(value = "资源类型(G 菜单组 M 菜单  O 按钮)")
+	@Schema(name = "resourceType", description = "资源类型(G 菜单组 M 菜单  O 按钮)")
 	private String resourceType;
 
-	@ApiModelProperty(value = "资源标识符")
+	@Schema(name = "resourceKey", description = "资源标识符")
 	private String resourceKey;
 
-	@ApiModelProperty(value = "资源路径")
+	@Schema(name = "resourceUri", description = "资源路径")
 	private String resourceUri;
 
-	@ApiModelProperty(value = "资源重定向")
+	@Schema(name = "resourceRedirect", description = "资源重定向")
 	private String resourceRedirect;
 
-	@ApiModelProperty(value = "资源视图")
+	@Schema(name = "resourceView", description = "资源视图")
 	private String resourceView;
 
-	@ApiModelProperty(value = "资源图标")
+	@Schema(name = "resourceIcon", description = "资源图标")
 	private String resourceIcon;
 
-	@ApiModelProperty(value = "资源权限标识")
+	@Schema(name = "resourcePerms", description = "资源权限标识")
 	private String resourcePerms;
 
-	@ApiModelProperty(value = "资源等级")
+	@Schema(name = "resourceLevel", description = "资源等级")
 	private Integer resourceLevel;
 
-	@ApiModelProperty(value = "父级资源ID")
+	@Schema(name = "parentResourceId", description = "父级资源ID")
 	private Long parentResourceId;
 
-	@ApiModelProperty(value = "排序")
+	@Schema(name = "sort", description = "排序")
 	private Integer sort;
 
-	@ApiModelProperty(value = "创建时间", hidden = true)
+	@Schema(name = "ct", description = "创建时间", hidden = true)
 	private Date ct;
 
-	@ApiModelProperty(value = "更新时间", hidden = true)
+	@Schema(name = "ut", description = "更新时间", hidden = true)
 	private Date ut;
 
-	@ApiModelProperty(value = "删除标识位 0 未删除  1 已删除", hidden = true)
+	@Schema(name = "isDel", description = "删除标识位 0 未删除  1 已删除", hidden = true)
 	private Integer isDel;
 
-	@ApiModelProperty(value = "乐观锁标识", hidden = true)
+	@Schema(name = "version", description = "乐观锁标识", hidden = true)
 	private Long version;
 
 	public Long getResourceId() {

@@ -9,7 +9,9 @@
       "Bash(tail *)",
       "Bash(lsof *)",
       "Bash(ls *)",
-      "Bash(yarn install)"
+      "Bash(yarn install)",
+      "Bash(find *)",
+      "Bash(xargs *)"
     ]
   },
   "$version": 3

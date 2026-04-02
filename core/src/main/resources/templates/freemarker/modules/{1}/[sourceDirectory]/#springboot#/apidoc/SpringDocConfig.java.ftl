@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
  * 访问地址: http://localhost:${r"${server.port:8080}"}/doc.html
  */
 @Configuration
-public class Swagger2Configuration {
+public class SpringDocConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {

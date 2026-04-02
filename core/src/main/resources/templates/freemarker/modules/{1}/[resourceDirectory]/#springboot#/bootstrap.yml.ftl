@@ -10,17 +10,17 @@ spring:
     nacos:
       discovery:
         enabled: true
-        server-addr: ${nacos-server!'localhost:8848'}
+        server-addr: nacos-server:8848
       config:
         enabled: true
-        server-addr: ${nacos-server!'localhost:8848'}
+        server-addr: nacos-server:8848
   config:
     import: optional:nacos:
 <#elseif ZOOKEEPER?? && ZOOKEEPER>
   cloud:
     zookeeper:
       enabled: true
-      connect-string: ${connect-string!'localhost:2181'}
+      connect-string: ${(connect-string)!'localhost:2181'}
       config:
         enabled: true
         watcher:

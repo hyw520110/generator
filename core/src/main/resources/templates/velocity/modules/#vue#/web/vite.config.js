@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   const apiHost = env.VITE_API_HOST || 'localhost'
   const apiPort = env.VITE_API_PORT || '8082'
-  const apiBaseUrl = `http://${apiHost}:${apiPort}`
+  const apiBaseUrl = `http://\${apiHost}:\${apiPort}`
 
   return {
     root: path.resolve(__dirname),
@@ -85,11 +85,23 @@ export default defineConfig(({ mode }) => {
           target: apiBaseUrl,
           changeOrigin: true
         },
-        '^/user(?!/login)': {
+        '/user': {
           target: apiBaseUrl,
           changeOrigin: true
         },
         '/resource': {
+          target: apiBaseUrl,
+          changeOrigin: true
+        },
+        '/Sys': {
+          target: apiBaseUrl,
+          changeOrigin: true
+        },
+        '/sys': {
+          target: apiBaseUrl,
+          changeOrigin: true
+        },
+        '/druid': {
           target: apiBaseUrl,
           changeOrigin: true
         }

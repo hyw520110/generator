@@ -151,6 +151,9 @@ export default {
       // 查询参数
       queryParam: {},
       // 表头
+      // 对于过长的字段注释，采用以下策略：
+      // 1. 表头标题只显示冒号前的内容（如"状态：1-启用，0-禁用" → "状态"）
+      // 2. 鼠标悬停时通过原生 title 显示完整注释
       columns: [
         {
           title: '#',
@@ -163,7 +166,15 @@ export default {
         {
           title: '描述',
           dataIndex: 'description',
-          scopedSlots: { customRender: 'description' }
+          scopedSlots: { customRender: 'description' },
+          // 表头 tooltip
+          customHeaderCell: (column) => {
+            return {
+              props: {
+                title: column.title
+              }
+            }
+          }
         },
         {
           title: '服务调用次数',
@@ -277,3 +288,60 @@ export default {
   }
 }
 </script>
+
+<style lang="less" scoped>
+.table-page-search-wrapper {
+  .ant-form-inline {
+    .ant-form-item {
+      display: flex;
+      margin-bottom: 24px;
+      margin-right: 0;
+
+      .ant-form-item-control-wrapper {
+        flex: 1;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      > .ant-form-item-label {
+        line-height: 32px;
+        padding-right: 8px;
+        width: auto;
+      }
+
+      .ant-form-item-control {
+        line-height: 32px;
+        display: inline-block;
+        vertical-align: middle;
+        flex: 1;
+      }
+    }
+  }
+}
+
+.table-operator {
+  margin-bottom: 18px;
+}
+
+.table-page-search-submitButtons {
+  display: block;
+  margin-bottom: 24px;
+  white-space: nowrap;
+}
+
+/* 表头长文本处理：原生 tooltip */
+:deep(.ant-table-thead > tr > th) {
+  /* 表头单元格带 title 属性时显示指针样式 */
+  &[title] {
+    cursor: pointer;
+  }
+}
+
+/* 表格内容长文本处理：最大宽度 + 省略号 */
+:deep(.ant-table-tbody > tr > td) {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

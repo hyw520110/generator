@@ -15,7 +15,7 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import ${filterPackage!}.JWTFilter;
+import ${rootPackage!}.${projectName!}.${moduleName!}.filter.JWTFilter;
 
 @Configuration
 public class ShiroConfig {
@@ -37,8 +37,11 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/druid/**", "anon");
         filterChainDefinitionMap.put("/swagger-resources/**", "anon");
         filterChainDefinitionMap.put("/v2/api-docs/**", "anon");
+        filterChainDefinitionMap.put("/v3/api-docs/**", "anon");
         filterChainDefinitionMap.put("/v2/api-docs-ext/**", "anon");
         filterChainDefinitionMap.put("/doc.html", "anon");
+        filterChainDefinitionMap.put("/swagger-ui.html", "anon");
+        filterChainDefinitionMap.put("/swagger-ui/**", "anon");
         filterChainDefinitionMap.put("/webjars/**", "anon");
 
         // 在 Shiro过滤器链上加入 JWTFilter

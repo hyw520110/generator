@@ -37,7 +37,7 @@ import ${api_dtoPackage}.Result;
 import ${dtoPackage}.Result;
 #end
 #end
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 #set($comment="公共接口实现")
 #parse('/templates/comments/comment.vm')
 public class BaseController<BizService extends BaseService,Entity extends BaseEntity> {
@@ -48,7 +48,7 @@ public class BaseController<BizService extends BaseService,Entity extends BaseEn
 	protected static final String AUTH_TYPE_APP = "app";
 	
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    @ApiOperation(value = "添加", notes = "添加")
+    @Operation(summary = "添加", description = "添加")
 	@ResponseBody
 	public Result add(Entity entity) {
 	    bizService.save(entity);
@@ -56,14 +56,14 @@ public class BaseController<BizService extends BaseService,Entity extends BaseEn
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	@ApiOperation(value = "根据id获取数据", notes = "根据id获取数据")
+	@Operation(summary = "根据id获取数据", description = "根据id获取数据")
 	@ResponseBody
-	public Result<Entity> getInfo(@PathVariable Serializable id) {
+	public Result<Entity> getInfo(@PathVariable("id") Serializable id) {
 	    return new Result<>((Entity) bizService.getById(id));
 	}
 	
 	@RequestMapping(value = "", method = RequestMethod.PUT)
-	@ApiOperation(value = "根据id更新数据", notes = "根据id更新数据")
+	@Operation(summary = "根据id更新数据", description = "根据id更新数据")
 	@ResponseBody
 	public Result update(Entity entity) {
 	    bizService.updateById(entity);
@@ -71,22 +71,22 @@ public class BaseController<BizService extends BaseService,Entity extends BaseEn
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	@ApiOperation(value = "根据id删除数据", notes = "根据id删除数据")
+	@Operation(summary = "根据id删除数据", description = "根据id删除数据")
 	@ResponseBody
-	public Result remove(@PathVariable Serializable id) {
+	public Result remove(@PathVariable("id") Serializable id) {
 	    bizService.removeById(id);
 	    return new Result<>();
 	}
 	
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
-	@ApiOperation(value = "获取列表", notes = "获取列表")
+	@Operation(summary = "获取列表", description = "获取列表")
 	@ResponseBody
 	public Result<List<Entity>> listAll(Entity entity) {
 	    return new Result<>(bizService.list(new QueryWrapper(entity)));
 	}
 	
 	@RequestMapping(value = "/page", method = RequestMethod.GET)
-	@ApiOperation(value = "分页获取列表", notes = "分页获取列表")
+	@Operation(summary = "分页获取列表", description = "分页获取列表")
 	@ResponseBody
 	public Result<IPage<Entity>> page(@RequestParam(name = "pageNum",defaultValue = "1",required = false)Integer pageNo,@RequestParam(name = "pageSize",defaultValue = "10",required = false) Integer pageSize, Entity entity) {
 	    IPage<Entity> page = bizService.page(new Page(pageNo, pageSize),new QueryWrapper(entity));

@@ -10,45 +10,66 @@ import org.apache.commons.codec.binary.Base64;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 public class JWTUtil {
 
-    private static String key;
+    private static volatile JWTUtil instance;
+    private final String key;
 
-    public static void init(String key) {
-        JWTUtil.key = key;
+    private JWTUtil(String key) {
+        this.key = key;
+    }
+
+    public static synchronized void init(String key) {
+        if (instance == null) {
+            instance = new JWTUtil(key);
+        }
+    }
+
+    private static JWTUtil getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("JWTUtil not initialized. Call init() first.");
+        }
+        return instance;
     }
 
     public static String createJWT(String subject, long ttlMillis) {
-        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+        return getInstance().doCreateJWT(subject, ttlMillis);
+    }
+
+    private String doCreateJWT(String subject, long ttlMillis) {
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
-        SecretKey key = generalKey();
+        SecretKey secretKey = generalKey();
         JwtBuilder builder = Jwts.builder()
-                .setIssuedAt(now)
-                .setSubject(subject)
-                .signWith(signatureAlgorithm, key);
+                .issuedAt(now)
+                .subject(subject)
+                .signWith(secretKey);
         if (ttlMillis >= 0) {
             long expMillis = nowMillis + ttlMillis;
             Date exp = new Date(expMillis);
-            builder.setExpiration(exp);
+            builder.expiration(exp);
         }
         return builder.compact();
     }
 
     public static Claims parseJWT(String jwt) {
-        SecretKey key = generalKey();
-        Claims claims = Jwts.parser()
-                .setSigningKey(key)
-                .parseClaimsJws(jwt)
-                .getBody();
-        return claims;
+        return getInstance().doParseJWT(jwt);
     }
 
-    private static SecretKey generalKey() {
+    private Claims doParseJWT(String jwt) {
+        SecretKey secretKey = generalKey();
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(jwt)
+                .getPayload();
+    }
+
+    private SecretKey generalKey() {
         byte[] encodedKey = Base64.decodeBase64(key);
-        return new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
+        return Keys.hmacShaKeyFor(encodedKey);
     }
 
 }

@@ -27,6 +27,7 @@ import ${api_dtoPackage!}.LoginResponseDto;
 import ${api_dtoPackage!}.LoginDto;
 import ${api_dtoPackage!}.ResourceResponseDto;
 import ${api_dtoPackage!}.UserInfo;
+import ${api_dtoPackage!}.Token;
 <#else>
 import ${dtoPackage!}.StatusCode;
 import ${dtoPackage!}.Result;
@@ -34,6 +35,7 @@ import ${dtoPackage!}.LoginResponseDto;
 import ${dtoPackage!}.LoginDto;
 import ${dtoPackage!}.ResourceResponseDto;
 import ${dtoPackage!}.UserInfo;
+import ${dtoPackage!}.Token;
 </#if>
 import ${servicePackage!}.TokenService;
 
@@ -48,13 +50,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 
 <#assign comment ="登录示例(jwt、shiro)">
 <#include 'comments/comment.ftl'>
-@Api(value = "登录", tags = "登录相关")
+@Tag(name = "登录")
 @RestController
 public class LoginController {
 	private static final Logger logger=LoggerFactory.getLogger(LoginController.class);
@@ -110,20 +112,24 @@ public class LoginController {
 			return Result.error(401, "账户或密码错误");
 		}
 		String toke = tokenService.refreshToken(String.valueOf(user.getUserId()), AUTH_TYPE_WEB);
-		return Result.ok(new LoginResponseDto(toke, user));
+		return Result.ok(new LoginResponseDto(toke, user, userResources));
 	}
 
-	@ApiOperation(value = "用户注销", notes = "用户注销")
-	@RequestMapping(value ="/auth/logout/{userId}", method = { RequestMethod.POST, RequestMethod.PUT })
-	public Result<Object> logout(@ApiParam(value = "用户ID", required = false) @PathVariable("userId") String userId) {
-		if (StringUtils.isNotBlank(userId)) {
-			tokenService.clearToken(String.valueOf(userId), AUTH_TYPE_WEB);
+	@Operation(summary = "用户注销", description = "用户注销")
+	@RequestMapping(value ="/auth/logout", method = { RequestMethod.POST, RequestMethod.PUT })
+	public Result<Object> logout(HttpServletRequest req) {
+		String token = req.getHeader("X-USER-TOKEN");
+		if (StringUtils.isNotBlank(token)) {
+			Token tokenInfo = tokenService.parseToken(token);
+			if (tokenInfo != null && StringUtils.isNotBlank(tokenInfo.getUserId())) {
+				tokenService.clearToken(tokenInfo.getUserId(), AUTH_TYPE_WEB);
+			}
 		}
 		return Result.ok("注销成功");
 	}
 
 	@RequestMapping(value = "/unauth")
-	@ApiOperation(value = "未授权的访问", notes = "未授权的访问")
+	@Operation(summary = "未授权的访问", description = "未授权的访问")
 	public Result<?> unauth() {
 		return Result.error(StatusCode.UNAUTH_ERROR.getCode(), StatusCode.UNAUTH_ERROR.getDesc());
 	}
@@ -133,24 +139,16 @@ public class LoginController {
 		return Result.ok(user);
 	}
 
-	@RequestMapping(value = "/user/authcache/{userId}", method = { RequestMethod.POST, RequestMethod.PUT })
-	@ApiOperation(value = "刷新用户权限相关缓存(角色、权限)", notes = "刷新用户权限相关缓存(角色、权限)")
-	public Result<?> refreshUserAuthCache(
-			@ApiParam(value = "用户ID", required = true) @PathVariable("userId") Long userId) {
-		// TODO
-		return Result.ok();
-	}
-
 	@RequestMapping(value = "/resource/{userId}/list", method = RequestMethod.GET)
-	@ApiOperation(value = "获取指定用户的树状结构资源列表", notes = "获取指定用户的树状结构资源列表")
+	@Operation(summary = "获取指定用户的树状结构资源列表", description = "获取指定用户的树状结构资源列表")
 	public Result<List<ResourceResponseDto>> getUserResources(@PathVariable("userId") Long userId) {
 		init();
 		return new Result<>(userResources);
 	}
 
 	@RequestMapping(value = "/user/detail/{userId}", method = RequestMethod.GET)
-	@ApiOperation(value = "获取用户信息", notes = "获取用户信息")
-	public Result<UserInfo> getUserDetail(@ApiParam(value = "用户ID", required = true) @PathVariable("userId") Long userId) {
+	@Operation(summary = "获取用户信息", description = "获取用户信息")
+	public Result<UserInfo> getUserDetail(@Parameter(description = "用户ID", required = true) @PathVariable("userId") Long userId) {
 		return new Result<>(user);
 	}
 

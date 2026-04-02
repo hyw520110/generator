@@ -7,12 +7,11 @@ import ${pkg!};
 </#if>
 </#list>
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 <#include 'comments/comment.ftl'>
 <#if table.comment??>
-@ApiModel(value="${table.name!}", description="${table.comment!}")
+@Schema(name = "${dtoName!}", description = "${table.comment!}")
 </#if>
 public class ${dtoName!} implements Serializable {
 
@@ -28,7 +27,7 @@ public class ${dtoName!} implements Serializable {
 
 </#if>
 
-	@ApiModelProperty(value = <#if field.comment?has_content>"${field.comment!}"<#else>"${field.name!}"</#if>)
+	@Schema(name = "${field.propertyName!}", description = <#if field.comment?has_content>"${field.comment!}"<#else>"${field.name!}"</#if>)
     private ${field.fieldType.type!} ${field.propertyName!};
     
 </#list>

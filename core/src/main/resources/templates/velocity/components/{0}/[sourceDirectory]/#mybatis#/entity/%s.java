@@ -18,12 +18,11 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 #end
 import jakarta.validation.constraints.NotNull;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 #parse('/templates/comments/comment.vm')
 #if(${table.comment})
-@ApiModel(value="${table.name}", description="${table.comment}")
+@Schema(name = "${className}", description = "${table.comment}")
 #end
 #if("plus"=="$mapperType")
 @TableName("${table.name}")
@@ -51,7 +50,7 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
 	@TableField(value = "${field.name}")
 #end
 #end
-	@ApiModelProperty(value = #if("$!{field.comment}"!="")"$!{field.comment}"#else"${field.name}"#end,required = #if(${field.isNullAble()})false #else true #end)
+	@Schema(name = "${field.propertyName}", description = #if("$!{field.comment}"!="")"$!{field.comment}"#else"${field.name}"#end, required = #if(${field.isNullAble()})false #else true #end)
 #if(!${field.isCommonField} || ${StringUtils.indexOf("$superEntityClass", '.')}!=-1)
 #if(!$field.isNullAble())    @NotNull
 #end 

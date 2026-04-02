@@ -18,12 +18,11 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 </#if>
 import jakarta.validation.constraints.NotNull;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 <#include 'comments/comment.ftl'>
 <#if table.comment??>
-@ApiModel(value="${table.name!}", description="${table.comment!}")
+@Schema(name = "${className!}", description = "${table.comment!}")
 </#if>
 <#if mapperType?? && mapperType == "plus">
 @TableName("${table.name!}")
@@ -59,7 +58,7 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
 	@TableField(value = "${field.name!}")
 </#if>
 </#if>
-	@ApiModelProperty(value = <#if field.comment?has_content>"${field.comment!}"<#else>"${field.name!}"</#if>,required = <#if field.isNullAble()>false <#else> true </#if>)
+	@Schema(name = "${field.propertyName!}", description = <#if field.comment?has_content>"${field.comment!}"<#else>"${field.name!}"</#if>, required = <#if field.isNullAble()>false <#else> true </#if>)
 <#if !field.commonField || (superEntityClass?? && superEntityClass?contains('.'))>
 <#if field.isNullAble()?has_content>    @NotNull
 </#if>

@@ -14,20 +14,25 @@
 		<java.version>${javaVersion}</java.version>
 		<resource.delimiter>@</resource.delimiter>
 #if($JWT)
-		<jwt.version>${jwt_version!'0.9.1'}</jwt.version>
+		<jwt.version>${jwt_version!'0.12.6'}</jwt.version>
 #end
 #if($SHIRO)
 		<shiro.version>${shiro_version!'2.0.2'}</shiro.version>
 #end
-#if($MYBATIS && $mapperType == "plus")
+#if($MYBATIS)
+		<mybatis-spring-boot.version>${mybatis_spring_boot_version!'3.0.3'}</mybatis-spring-boot.version>
+		<pagehelper.version>${pagehelper_version!'2.1.0'}</pagehelper.version>
+		<druid.version>${druid_version!'1.2.23'}</druid.version>
+		<mysql-connector.version>${mysql_connector_version!'8.0.33'}</mysql-connector.version>
+#if($mapperType == "plus")
 		<mybatis.plus.version>${mybatis_plus_version!'3.5.8'}</mybatis.plus.version>
+#end
 #end
 #if($DUBBO)
 		<dubbo.version>${dubbo_version}</dubbo.version>
 #end
 #if($SWAGGER2)
-		<swagger.version>${swagger_version!'2.9.2'}</swagger.version>
-		<swagger.ui.version>${swagger_ui_version!'1.9.6'}</swagger.ui.version>
+		<knife4j.version>${knife4j_version!'4.5.0'}</knife4j.version>
 #end
 #if($SPRINGBOOT)
 		<lombok.version>${lombok_version!'1.18.20'}</lombok.version>
@@ -116,26 +121,34 @@
 			<dependency>
 				<groupId>org.mybatis.spring.boot</groupId>
 				<artifactId>mybatis-spring-boot-starter</artifactId>
-				<version>2.1.0</version>
+				<version>${mybatis-spring-boot.version}</version>
 			</dependency>
 			<!-- 分页插件 -->
 			<dependency>
 				<groupId>com.github.pagehelper</groupId>
 				<artifactId>pagehelper-spring-boot-starter</artifactId>
-				<version>1.2.10</version>
+				<version>${pagehelper.version}</version>
 			</dependency>
 			<!-- druid 数据库连接池 -->
 			<dependency>
 				<groupId>com.alibaba</groupId>
 				<artifactId>druid-spring-boot-starter</artifactId>
-				<version>1.1.18</version>
+				<version>${druid.version}</version>
 			</dependency>
-			<!-- https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-versions.html -->
+			<!-- mysql -->
 			<dependency>
-				<groupId>mysql</groupId>
-				<artifactId>mysql-connector-java</artifactId>
-				<version>6.0.6</version>
+				<groupId>com.mysql</groupId>
+				<artifactId>mysql-connector-j</artifactId>
+				<version>${mysql-connector.version}</version>
 			</dependency>
+#if($SWAGGER2)
+			<!-- Knife4j for Spring Boot 3 -->
+			<dependency>
+				<groupId>com.github.xiaoymin</groupId>
+				<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+				<version>${knife4j.version}</version>
+			</dependency>
+#end
 #if($ZOOKEEPER)
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
@@ -153,28 +166,6 @@
 				<version>${curator.version}</version>
 			</dependency>
 #end
-
-			<!-- swagger -->
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger2</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-bean-validators</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger-ui</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.github.xiaoymin</groupId>
-				<artifactId>swagger-bootstrap-ui</artifactId>
-				<version>${swagger.ui.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>com.lmax</groupId>
 				<artifactId>disruptor</artifactId>
@@ -182,7 +173,17 @@
 			</dependency>
 			<dependency>
 				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt</artifactId>
+				<artifactId>jjwt-api</artifactId>
+				<version>${jwt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-impl</artifactId>
+				<version>${jwt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-jackson</artifactId>
 				<version>${jwt.version}</version>
 			</dependency>
 			<dependency>

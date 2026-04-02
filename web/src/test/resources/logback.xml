@@ -20,13 +20,10 @@
 			<onMismatch>DENY</onMismatch>
 		</filter>
 		<File>${LOG_BASE}_error.log</File>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<fileNamePattern>${LOG_BASE}_error_%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
 			<maxHistory>60</maxHistory>
-			<timeBasedFileNamingAndTriggeringPolicy
-				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-				<maxFileSize>10MB</maxFileSize>
-			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxFileSize>10MB</maxFileSize>
 		</rollingPolicy>
 		<append>true</append>
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"
@@ -39,13 +36,10 @@
 	<appender name="common-default"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<File>${LOG_BASE}_default.log</File>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<fileNamePattern>${LOG_BASE}_default.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
 			<maxHistory>60</maxHistory>
-			<timeBasedFileNamingAndTriggeringPolicy
-				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-				<maxFileSize>10MB</maxFileSize>
-			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxFileSize>10MB</maxFileSize>
 		</rollingPolicy>
 		<append>true</append>
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"

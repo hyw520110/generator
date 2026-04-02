@@ -34,7 +34,7 @@ import jakarta.validation.Validator;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration.class})
 @EnableCaching
 @EnableAsync
 #if($mapperType != "plus")

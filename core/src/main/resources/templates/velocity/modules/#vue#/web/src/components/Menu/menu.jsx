@@ -168,6 +168,15 @@ export default {
     },
     $route: function () {
       this.updateMenu()
+    },
+    // 监听菜单数据变化，确保动态加载菜单后也能正确展开
+    menu: {
+      handler () {
+        this.$nextTick(() => {
+          this.updateMenu()
+        })
+      },
+      immediate: true
     }
   },
   methods: {
@@ -201,6 +210,15 @@ export default {
           openKeys.push(item.path)
         })
       }
+      
+      // 默认展开所有有子菜单的菜单项
+      this.menu.forEach(item => {
+        if (item.children && item.children.length > 0 && item.path) {
+          if (!openKeys.includes(item.path)) {
+            openKeys.push(item.path)
+          }
+        }
+      })
 
       this.collapsed ? (this.cachedOpenKeys = openKeys) : (this.openKeys = openKeys)
     },

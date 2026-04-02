@@ -29,16 +29,16 @@
             <div class="tagsTitle">标签</div>
             <div>
               <template v-for="(tag, index) in tags">
-                <a-tooltip v-if="tag.length > 20" :key="tag" :title="tag">
+                <a-tooltip v-if="tag.length > 20" :key="'tooltip-' + tag" :title="tag">
                   <a-tag
-                    :key="tag"
+                    :key="'tag-' + tag"
                     :closable="index !== 0"
                     :afterClose="() => handleTagClose(tag)"
                   >{{ `${tag.slice(0, 20)}...` }}</a-tag>
                 </a-tooltip>
                 <a-tag
                   v-else
-                  :key="tag"
+                  :key="'tag-else-' + tag"
                   :closable="index !== 0"
                   :afterClose="() => handleTagClose(tag)"
                 >{{ tag }}</a-tag>

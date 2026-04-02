@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,6 +17,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Scanner;
 
 import org.apache.commons.io.IOUtils;
@@ -26,17 +29,17 @@ import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.constants.ValidationConstants;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.ComponentGroup;
 import org.hyw.tools.generator.enums.ExportFormat;
 import org.hyw.tools.generator.enums.db.DBType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 命令行代码生成器驱动类 - 优化向导版 (数据源驱动循环流)
+ * 命令行代码生成器
  */
 public class CmdGenerator {
 	private static final Logger logger = LoggerFactory.getLogger(CmdGenerator.class);
-	private static final int MAX_RETRY = 3;
 
 	private static final String ARG_DB_PASSWORD = "--db-password";
 	private static final String ARG_DB_NAME = "--db-name";
@@ -60,14 +63,15 @@ public class CmdGenerator {
 
 			// 1. 初始化数据源 (第一步，所有操作的前提)
 			DataSourceConf ds = generator.getDataSource();
-			if (quickMode) applyCommandLineArgsToDataSource(ds, argMap);
-			boolean isAutoCreated = initDataSourceConf(ds, scanner, argMap, quickMode);
+			if (quickMode)
+				applyCommandLineArgsToDataSource(ds, argMap);
+			initDataSourceConf(ds, scanner, argMap, quickMode);
 
 			// 2. 初始化全局基础配置 (输出目录等)
 			initGlobalProjectConf(generator.getGlobal(), scanner, quickMode);
 
 			// 3. 业务配置 (选择表)
-			initTableSelectionConf(generator, scanner, isAutoCreated, quickMode);
+			initTableSelectionConf(generator, scanner, quickMode);
 
 			// 4. 进入操作循环
 			if (quickMode) {
@@ -82,24 +86,28 @@ public class CmdGenerator {
 		}
 	}
 
+	// 使用BufferedReader替代Scanner解决交互式输入问题
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	
+	private static String readLine() throws IOException {
+		return br.readLine();
+	}
+	
 	private static void operationLoop(Generator generator, Scanner scanner) throws Exception {
 		while (true) {
 			System.out.println("\n=== 请选择操作类型 ===");
 			System.out.println("1. 生成代码");
 			System.out.println("2. 导出 Word 文档");
 			System.out.println("3. 导出 PDF 文档");
-			System.out.println("4. 重新选择表");
 			System.out.println("0. 退出");
-			
 			String action = ask(scanner, "选择序号", ValueType.REQUIRE_SINGLE, "1", "2", "3", "4", "0");
-			
-			if ("0".equals(action)) {
+			if (StringUtils.isAllBlank(action) || "0".equals(action)) {
 				System.out.println("再见！");
 				break;
 			}
-			
+
 			if ("4".equals(action)) {
-				initTableSelectionConf(generator, scanner, false, false);
+				initTableSelectionConf(generator, scanner, false);
 				continue;
 			}
 
@@ -112,13 +120,14 @@ public class CmdGenerator {
 				generator.save(); // 保存配置快照
 				executeDocTask(generator, action.equals("2") ? "word" : "pdf", scanner);
 			}
-			
+
 			System.out.println("\n[提示] 任务执行完毕，您可以继续选择其他操作或退出。");
 		}
 	}
 
 	private static void initGlobalProjectConf(GlobalConf global, Scanner scanner, boolean quickMode) {
-		if (quickMode) return;
+		if (quickMode)
+			return;
 		System.out.println("\n=== 基础配置 ===");
 		global.setOutputDir(ask(scanner, "输出目录", ValueType.REQUIRE_SINGLE, global.getOutputDir()));
 	}
@@ -135,7 +144,7 @@ public class CmdGenerator {
 		selectComponentPreset(global, scanner);
 	}
 
-	private static boolean initDataSourceConf(DataSourceConf ds, Scanner scanner, Map<String, String> argMap,
+	private static void initDataSourceConf(DataSourceConf ds, Scanner scanner, Map<String, String> argMap,
 			boolean quickMode) throws SQLException {
 		if (quickMode) {
 			if (StringUtils.isBlank(ds.getPassword())) {
@@ -147,22 +156,19 @@ public class CmdGenerator {
 				dbName = ds.getDbName();
 			}
 			ds.setDbName(dbName);
-			return ds.createDatabase(dbName);
+			boolean isNew = ds.createDatabase(dbName);
+			if (!isNew) {
+				return;
+			}
 		}
-		return setupDataSourceInteractive(ds, scanner);
+		setupDataSourceInteractive(ds, scanner);
 	}
 
-	private static void initTableSelectionConf(Generator generator, Scanner scanner, boolean isAutoCreated,
-			boolean quickMode) throws Exception {
+	private static void initTableSelectionConf(Generator generator, Scanner scanner, boolean quickMode)
+			throws Exception {
 		List<String> tables = generator.getAllTableNames();
-
-		if ((tables == null || tables.isEmpty()) && !isAutoCreated) {
-			if (generator.getDataSource().getDBType() == DBType.MYSQL) {
-				System.out.println("检测到数据库为空，尝试导入示例 SQL...");
-				if (executeAllSqlScripts(generator.getDataSource().getCon())) {
-					tables = generator.getAllTableNames();
-				}
-			}
+		if ((tables == null || tables.isEmpty())) {
+			System.exit(0);
 		}
 
 		if (tables == null || tables.isEmpty()) {
@@ -188,47 +194,68 @@ public class CmdGenerator {
 	}
 
 	private static boolean setupDataSourceInteractive(DataSourceConf ds, Scanner scanner) throws SQLException {
-		for (int i = 1; i <= MAX_RETRY; i++) {
-			System.out.println("\n=== 配置数据库连接 (尝试 " + i + "/" + MAX_RETRY + ") ===");
-			String typeStr = ask(scanner, "数据库类型", ValueType.REQUIRE_SINGLE, DBType.getDbNames());
-			DBType dbType = DBType.getDbType(typeStr);
-
-			String ip = scanner(scanner, "数据库IP", ValidationConstants.IP_PATTERNS, ValueType.REQUIRE_SINGLE,
-					ds.getIp());
-			String port = scanner(scanner, "端口", ValidationConstants.PORT_PATTERNS, ValueType.REQUIRE_SINGLE,
-					ds.getPort());
-
+		// 先检测 IP 端口连通性
+		String ip = ds.getIp();
+		String port = ds.getPort();
+		do {
+			ip = scanner(scanner, "数据库IP", ValidationConstants.IP_PATTERNS, ValueType.REQUIRE_SINGLE, ds.getIp());
+			port = scanner(scanner, "端口", ValidationConstants.PORT_PATTERNS, ValueType.REQUIRE_SINGLE, ds.getPort());
+			ds.setIpAndPort(ip + ":" + port);
+		} while (!isPortReachable(ip, Integer.parseInt(port)));
+		// 验证用户名和密码是否有效（不指定数据库）
+		boolean isValid = false;
+		do {
 			String user = ask(scanner, "用户名", ValueType.REQUIRE_SINGLE, ds.getUsername());
-			System.out.print("密码: ");
-			String pwd = scanner.nextLine().trim();
-
+			String pwd = ask(scanner, "密码", ValueType.REQUIRE_SINGLE);
 			if (StringUtils.isBlank(pwd)) {
 				System.err.println("错误：密码不能为空！");
 				continue;
 			}
-
-			ds.setDBType(dbType);
-			ds.setIpAndPort(ip + ":" + port);
 			ds.setUsername(user);
 			ds.setPassword(pwd);
-			
-			Connection[] holder = new Connection[1];
-			String dbName = selectOrCreateDbWorkflow(ds, scanner, holder);
-			if (dbName != null) {
-				ds.setDriverClassName(dbType.getDriverClassName());
-				ds.setUrl(dbType.buildUrl(ip, port, dbName));
-				ds.init();
-				return false;
+			if (null == ds.getDBType()) {
+				String typeStr = ask(scanner, "数据库类型", ValueType.REQUIRE_SINGLE, DBType.getDbNames());
+				DBType dbType = DBType.getDbType(typeStr);
+				ds.setDBType(dbType);
 			}
+			try {
+				String testUrl = ds.getDBType().buildUrl(ds.getIp(), ds.getPort());
+				try (Connection testConn = DriverManager.getConnection(testUrl, user, pwd)) {
+					if (testConn != null && !testConn.isClosed()) {
+						isValid = true;
+					}
+				}
+			} catch (SQLException e) {
+				System.err.println("数据库连接验证失败: " + e.getMessage());
+			}
+		} while (!isValid);
+
+		Connection[] holder = new Connection[1];
+		String dbName = selectOrCreateDbWorkflow(ds, scanner, holder);
+		DBType dbType = ds.getDBType();
+		if (dbName != null) {
+			ds.setDriverClassName(dbType.getDriverClassName());
+			ds.setUrl(dbType.buildUrl(ds.getIp(), ds.getPort(), dbName));
+			ds.init();
 		}
-		System.err.println("无法连接数据库，退出。");
-		System.exit(1);
-		return false;
+		return dbName != null;
+	}
+
+	/**
+	 * 检测 IP:端口 是否可达
+	 */
+	private static boolean isPortReachable(String host, int port) {
+		try {
+			java.net.Socket socket = new java.net.Socket();
+			socket.connect(new java.net.InetSocketAddress(host, port), 3000);
+			socket.close();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	private static String selectOrCreateDbWorkflow(DataSourceConf ds, Scanner scanner, Connection[] holder) {
-		if (ds.getDBType() == DBType.ORACLE)
-			return ask(scanner, "Oracle服务名", ValueType.REQUIRE_SINGLE, "orcl");
 		List<String> dbs = ds.getDataBaseNames();
 		System.out.println("可用数据库: " + String.join(", ", dbs));
 		String input = ask(scanner, "选择数据库 (序号/名称, 回车自动创建)", ValueType.NOT_REQUIRE_SINGLE, "");
@@ -236,48 +263,54 @@ public class CmdGenerator {
 		if (StringUtils.isBlank(input)) {
 			String newDb = "db_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMddHHmm"));
 			if (ds.createDatabase(newDb)) {
+				ds.setDbName(newDb);
+				// 自动导入 SQL 示例到新数据库
+				ds.importSql(scanSqlFilesInExamples());
 				return newDb;
 			}
-			return null;
+			return newDb;
+		}
+		if (dbs.contains(input)) {
+			ds.setDbName(input);
+			// 判断数据库是否为空，为空则导入SQL示例
+			if (ds.isEmptyDataBase()) {
+				ds.importSql(scanSqlFilesInExamples());
+			}
+			return input;
 		}
 		try {
 			int idx = Integer.parseInt(input) - 1;
 			String dbName = (idx >= 0 && idx < dbs.size()) ? dbs.get(idx) : input;
 			ds.setDbName(dbName);
+			// 判断数据库是否为空，为空则导入SQL示例
 			if (ds.isEmptyDataBase()) {
 				ds.importSql(scanSqlFilesInExamples());
 			}
 			return dbName;
 		} catch (NumberFormatException e) {
-			return input;
 		}
+		return input;
 	}
 
 	private static void selectComponentPreset(GlobalConf global, Scanner scanner) {
 		System.out.println("选择组件套装:");
-		System.out.println("1. 标准版 (前后端)");
-		System.out.println("2. 全家桶 (含 APM)");
-		String choice = ask(scanner, "选择序号", ValueType.REQUIRE_SINGLE, "1", "2");
-		String preset = ValidationConstants.COMPONENT_PRESETS[Integer.parseInt(choice) - 1];
-		global.setComponents(Arrays.stream(preset.split(",")).map(Component::getComponent).toArray(Component[]::new));
-	}
-
-	private static boolean executeAllSqlScripts(Connection conn) {
-		List<String> files = scanSqlFilesInExamples();
-		if (files.isEmpty())
-			return false;
-		Collections.sort(files);
-		for (String f : files) {
-			try (InputStream is = CmdGenerator.class.getClassLoader().getResourceAsStream("examples/" + f)) {
-				String sql = IOUtils.toString(is, StandardCharsets.UTF_8);
-				conn.createStatement().execute(sql);
-				System.out.println("成功执行脚本: " + f);
-			} catch (Exception e) {
-				System.err.println("脚本失败: " + f + " -> " + e.getMessage());
-				return false;
+		System.out.println("1. 标准版:" + Arrays.toString(global.getComponentNames()));
+		// 使用ComponentGroup构建全家桶组件，每个互斥组选择一个代表性组件
+		List<Component> fullStackComponents = new ArrayList<>();
+		for (ComponentGroup group : ComponentGroup.values()) {
+			List<Component> components = group.getComponents();
+			// 选择每个组的第一个组件作为全家桶的代表性组件
+			if (!components.isEmpty()) {
+				fullStackComponents.add(components.get(0));
 			}
 		}
-		return true;
+		Component[] fullStack = fullStackComponents.toArray(new Component[0]);
+		System.out.println("2. 全家桶:" + Arrays.toString(fullStack));
+		
+		String choice = ask(scanner, "选择序号", ValueType.REQUIRE_SINGLE, "1", "2");
+		if ("2".equals(choice)) {
+			global.setComponents(fullStack);
+		}
 	}
 
 	private static List<String> scanSqlFilesInExamples() {
@@ -383,21 +416,30 @@ public class CmdGenerator {
 	private static String scanner(Scanner scanner, String tip, String[] regex, ValueType valType, String... defaults) {
 		String dInfo = (defaults != null && defaults.length > 0) ? " [" + String.join("/", defaults) + "]" : "";
 		System.out.print(tip + (valType.isRequired() ? "(*)" : "") + dInfo + ": ");
+		System.out.flush();
 
-		while (scanner.hasNextLine()) {
-			String input = scanner.nextLine().trim();
-			if (StringUtils.isBlank(input)) {
-				if (valType.isRequired() && (defaults == null || defaults.length == 0))
-					continue;
-				return (defaults != null && defaults.length > 0)
-						? (valType.isSingle() ? defaults[0] : String.join(",", defaults))
-						: "";
+		try {
+			while (true) {
+				String input = readLine();
+				if (input == null) {
+					return "";
+				}
+				input = input.trim();
+				if (StringUtils.isBlank(input)) {
+					if (valType.isRequired() && (defaults == null || defaults.length == 0))
+						continue;
+					return (defaults != null && defaults.length > 0)
+							? (valType.isSingle() ? defaults[0] : String.join(",", defaults))
+							: "";
+				}
+				if (regex == null || Arrays.stream(regex).anyMatch(input::matches)) {
+					return input;
+				}
+				System.out.print("输入格式错误，请重新输入 " + dInfo + ": ");
+				System.out.flush();
 			}
-			if (regex == null || Arrays.stream(regex).anyMatch(input::matches)) {
-				return input;
-			}
-			System.out.print("输入格式错误，请重新输入 " + dInfo + ": ");
+		} catch (IOException e) {
+			return "";
 		}
-		return (defaults != null && defaults.length > 0) ? defaults[0] : "";
 	}
 }

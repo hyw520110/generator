@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import ${projectPackage}.enums.StatusCode;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 接口返回数据格式
@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModel;
  * @author heyw
  * @copyright: hyw Copyright (c) 2017-2020 All Rights Reserved.
  */
-@ApiModel(value = "接口返回对象", description = "接口返回对象")
+@Schema(name = "Result", description = "接口返回对象")
 public class Result<T> implements Serializable {
 	private static final long serialVersionUID = -862936613454307838L;
 	private int status;

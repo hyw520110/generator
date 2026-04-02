@@ -17,6 +17,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -75,20 +76,15 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 </#if>
 
 	@Override
-	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-		if(converters.isEmpty()) {
-			super.extendMessageConverters(converters);
-		}
-<#if "fastjson"=="${json_type}">
-		converters.add(0, fastJsonHttpMessageConverter());
-</#if>
-	}
-
-	@Override
 	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+		// 添加 ByteArrayHttpMessageConverter，解决 Knife4j 4.x Base64 编码问题
+		// 参考：https://doc.xiaominfo.com/docs/faq/v4/knife4j-base64-response
+		// https://github.com/springdoc/springdoc-openapi/issues/2143
+		converters.add(new ByteArrayHttpMessageConverter());
+		
 		for (HttpMessageConverter<?> converter : converters) {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
-				// 设置jackson可读格式化 actuator输出硬编码采用jackson
+				// 设置 jackson 可读格式化 actuator 输出硬编码采用 jackson
 				MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = (MappingJackson2HttpMessageConverter) converter;
 				mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper());
 			}

@@ -1,6 +1,6 @@
 package ${dtoPackage!};
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
@@ -17,32 +17,33 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * - resourceType: G(菜单组), M(菜单), O(按钮)
  * - resourceView: 对应前端组件名称，如 BasicLayout, RouteView, IframeView, 或具体页面组件
  */
+@Schema(name = "ResourceResponseDto", description = "资源响应对象")
 public class ResourceResponseDto {
-	@ApiModelProperty(value = "资源ID")
+	@Schema(name = "resourceId", description = "资源ID")
 	private Long resourceId;
-	@ApiModelProperty(value = "资源名称")
+	@Schema(name = "resourceName", description = "资源名称")
 	private String resourceName;
-	@ApiModelProperty(value = "资源类型(M 菜单  O 按钮)")
+	@Schema(name = "resourceType", description = "资源类型(M 菜单  O 按钮)")
 	private String resourceType;
-	@ApiModelProperty(value = "资源路径")
+	@Schema(name = "resourceUri", description = "资源路径")
 	private String resourceUri;
-	@ApiModelProperty(value = "资源重定向")
+	@Schema(name = "resourceRedirect", description = "资源重定向")
 	private String resourceRedirect;
-	@ApiModelProperty(value = "资源视图")
+	@Schema(name = "resourceView", description = "资源视图")
 	private String resourceView;
-	@ApiModelProperty(value = "资源标识符")
+	@Schema(name = "resourceKey", description = "资源标识符")
 	private String resourceKey;
-	@ApiModelProperty(value = "资源图标")
+	@Schema(name = "resourceIcon", description = "资源图标")
 	private String resourceIcon;
-	@ApiModelProperty(value = "资源权限标识")
+	@Schema(name = "resourcePerms", description = "资源权限标识")
 	private String resourcePerms;
-	@ApiModelProperty(value = "资源等级 0-99 0为顶级")
+	@Schema(name = "resourceLevel", description = "资源等级 0-99 0为顶级")
 	private Integer resourceLevel;
-	@ApiModelProperty(value = "父类资源ID")
+	@Schema(name = "parentResourceId", description = "父类资源ID")
 	private Long parentResourceId;
-	@ApiModelProperty(value = "排序")
+	@Schema(name = "sort", description = "排序")
 	private Integer sort;
-	@ApiModelProperty(value = "子级资源列表")
+	@Schema(name = "childResources", description = "子级资源列表")
 	private List<ResourceResponseDto> childResources;
 
 	public Long getResourceId() {

@@ -2,21 +2,20 @@ package ${dtoPackage!};
 
 import jakarta.validation.constraints.NotNull;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel("登录请求实体")
+@Schema(name = "LoginDto", description = "登录请求实体")
 public class LoginDto {
-    @ApiModelProperty("登录方式:1:用户名密码登录;2:手机验证码登录")
+    @Schema(name = "loginType", description = "登录方式:1:用户名密码登录;2:手机验证码登录")
     @NotNull(message = "登录方式必填")
     private String loginType;
-    @ApiModelProperty("用户名")
+    @Schema(name = "userName", description = "用户名")
     private String userName;
-    @ApiModelProperty("密码(32位MD5加密)")
+    @Schema(name = "password", description = "密码(32位MD5加密)")
     private String password;
-    @ApiModelProperty("手机号")
+    @Schema(name = "mobile", description = "手机号")
     private String mobile;
-    @ApiModelProperty("登录验证码")
+    @Schema(name = "authCode", description = "登录验证码")
     private String authCode;
 
     public String getLoginType() {

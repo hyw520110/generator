@@ -38,16 +38,9 @@ export function getInfo (userId) {
   })
 }
 
-export function refreshUserAuthCache (userId) {
+export function logout () {
   return axios({
-    url: '/user/authcache/' + userId,
-    method: 'put'
-  })
-}
-
-export function logout (userId) {
-  return axios({
-    url: api.Logout + '/' + userId,
+    url: api.Logout,
     method: 'put'
   })
 }

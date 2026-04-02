@@ -1,33 +1,12 @@
-#!/bin/sh
-
-# =============================================================================
-# 代码生成器启动脚本
-# 自动检测运行模式：开发模式/部署模式
-# 支持命令行参数透传至 CmdGenerator
-# =============================================================================
-# 用法:
-#   交互式模式:
-#     ./run.sh                          # 自动检测模式启动
-#     ./run.sh 5005                     # 启动 + 调试端口
-#
-#   快速模式 (极简参数):
-#     ./run.sh --quick --db-password 123456
-#
-#   查看帮助:
-#     ./run.sh --help
-# =============================================================================
+#!/bin/bash
 
 set -e
 
 # 设置语言环境
 export LANG=en_US.UTF-8
 
-# 优先使用 mvnd（Maven Daemon）
-if command -v mvnd >/dev/null 2>&1; then
-    MVN="mvnd"
-else
-    MVN="mvn"
-fi
+# 强制使用 mvn（mvnd 不支持交互式输入）
+MVN="mvn"
 
 # 动态检测CPU核心数（用于并行编译）
 get_cpu_cores() {
@@ -127,9 +106,6 @@ else
     echo_info "使用 CMS GC (JDK $JAVA_VERSION)"
 fi
 
-# =============================================================================
-# 参数解析
-# =============================================================================
 # 解析调试端口参数（如果提供），其他参数直接传递给Java程序
 JAVA_CMD_ARGS=()
 i=0
@@ -150,21 +126,37 @@ if [ -n "$DEBUG_PORT" ]; then
     echo_info "调试模式端口：$DEBUG_PORT"
 fi
 
-# =============================================================================
 # 启动应用
-# =============================================================================
 if [ $IS_DEV_MODE -eq 0 ]; then
     echo_info "=== 开发模式 ==="
-    if [ ! -d "$CLASSES_DIR" ]; then
-     $MVN clean compile -T ${CPU_CORES}C
-    fi
+    # 先编译core和cmd模块
+    cd "$APP_DIR/.."
+    $MVN compile -pl core,cmd -am -q
+    cd "$APP_DIR"
+    
 	rm -rf ./demo ./logs
-    # 使用Maven exec插件运行，自动处理classpath和依赖
-    # 将Java命令行参数转换为Maven exec插件的参数格式
+    
+    # 获取classpath
+    TEMP_CP=$(mktemp)
+    $MVN dependency:build-classpath -Dmdep.outputFile=$TEMP_CP -q
+    CP=$(cat $TEMP_CP)
+    rm $TEMP_CP
+    
+    # 添加classes目录到classpath
+    FULL_CP="$APP_DIR/target/classes:$CP"
+    # 从pom.xml动态获取主类
+    MAIN_CLASS=$(grep -oP '(?<=<main.class>)[^<]+' "$APP_DIR/../pom.xml" 2>/dev/null || grep -oP '(?<=<main.class>)[^<]+' "$APP_DIR/pom.xml" 2>/dev/null || echo "org.hyw.tools.generator.cmd.CmdGenerator")
+    
+    # 重置终端stty设置，确保输入正确处理（修复^M回车问题）
+    stty sane
+    stty icrnl
+    stty icanon
+    
+    # 直接运行java程序
     if [ ${#JAVA_CMD_ARGS[@]} -gt 0 ]; then
-        $MVN exec:java -Dexec.args="${JAVA_CMD_ARGS[*]}"
+        java -cp "$FULL_CP" $JAVA_OPTS $MAIN_CLASS "${JAVA_CMD_ARGS[@]}"
     else
-        $MVN exec:java
+        java -cp "$FULL_CP" $JAVA_OPTS $MAIN_CLASS
     fi
 else
     echo_info "=== 部署模式 ==="

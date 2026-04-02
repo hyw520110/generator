@@ -5,86 +5,87 @@ import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import notification from 'ant-design-vue/es/notification'
 import { setDocumentTitle, domTitle } from '@/utils/domUtil'
-import { ACCESS_TOKEN, USER_ID } from '@/store/mutation-types'
-import { refreshUserAuthCache } from '@/api/login'
+import { ACCESS_TOKEN } from '@/store/mutation-types'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['login', 'register', 'registerResult'] // no redirect whitelist
 
 // 递归获取第一个可用的路由路径
-function getFirstAvailablePath (routes) {
+function getFirstAvailablePath (routes, parentPath = '') {
   if (!routes || routes.length === 0) {
-    return '/dashboard/workplace' // 默认回退路径
+    return '/index/dashboard' // 默认回退路径
   }
   for (const route of routes) {
-    // 如果有重定向配置，使用重定向路径
-    if (route.redirect) {
-      return route.redirect
+    // 跳过隐藏路由
+    if (route.hidden === true) {
+      continue
     }
+    // 构建完整路径：子路由的 path 是相对路径（没有前导斜杠）
+    const routePath = route.path.startsWith('/') ? route.path : route.path
+    const fullPath = parentPath ? `${parentPath}/${routePath}`.replace(/\/+/g, '/') : `/${routePath}`
+    
     // 如果有子路由，递归查找
     if (route.children && route.children.length > 0) {
-      const childPath = getFirstAvailablePath(route.children)
+      const childPath = getFirstAvailablePath(route.children, fullPath)
       if (childPath) {
         return childPath
       }
     }
-    // 如果没有子路由且有 path，返回当前路径
-    if (route.path && !route.children) {
-      return route.path
+    
+    // 如果没有子路由且有 path（不是外部 URL），返回当前路径
+    if (route.path && !route.children && !route.path.startsWith('http')) {
+      return fullPath
     }
   }
-  return '/dashboard/workplace' // 默认回退路径
+  // 如果都没有，返回默认路径
+  return parentPath ? `${parentPath}/dashboard` : '/index/dashboard'
 }
 
 router.beforeEach(async (to, from, next) => {
   const userToken = storage.get(ACCESS_TOKEN)
-  const userId = storage.get(USER_ID)
   NProgress.start() // start progress bar
   to.meta && (typeof to.meta.title !== 'undefined' && setDocumentTitle(`${to.meta.title} - ${domTitle}`))
 
-  if (userToken && userId) {
+  if (userToken) {
     /* has token */
-    // 判断当前用户是否资源列表为空，是则开始获取资源列表 (即权限列表)
+    // 判断当前用户是否资源列表为空，是则开始生成动态路由
     if (store.getters.resources.length === 0) {
+      // 资源列表为空，说明登录失败或 token 失效，跳转到登录页
+      notification.error({
+        message: '错误',
+        description: '登录状态已失效，请重新登录'
+      })
+      await store.dispatch('Logout')
+      next({ path: '/user/login' })
+    } else if (store.getters.addRouters.length === 0) {
+      // 资源列表存在但动态路由未生成，生成动态路由
       try {
-        const res = await store.dispatch('GetUserResources', userId)
-        await store.dispatch('GeneratorDynamicRouter', res)
+        await store.dispatch('GeneratorDynamicRouter', { data: store.getters.resources })
         // 动态添加可访问路由表 (Vue Router 4 使用 addRoute)
-        // Vue Router 4: 直接添加顶级路由，而不是作为子路由添加
-        // 因为 path 以 / 开头的路由会被视为顶级路由
         const routes = store.getters.addRouters
         routes.forEach(route => {
           router.addRoute(route)
         })
-        // 刷新用户权限相关缓存
-        refreshUserAuthCache(userId)
 
-        // 获取第一个可用的重定向路径（从动态路由中获取）
+        // 获取第一个可用的重定向路径
         const redirectPath = getFirstAvailablePath(routes)
+        console.log('动态路由已添加，重定向到:', redirectPath)
 
-        // 如果是访问登录页或根路径，跳转到首页，否则重新导航到目标路由
-        if (to.path === '/user/login' || to.path === '/') {
-          next({ path: redirectPath, replace: true })
-        } else {
-          // hack 方法：重新导航到目标路由，确保动态路由已生效
-          next({ ...to, replace: true })
-        }
+        // 直接重定向到第一个可用路径
+        next({ path: redirectPath, replace: true })
       } catch (e) {
+        console.error('生成动态路由失败:', e)
         notification.error({
           message: '错误',
-          description: '请求用户信息失败，请重试'
+          description: '生成路由失败，请重试'
         })
         await store.dispatch('Logout')
-        next({ path: '/user/login', query: { redirect: to.fullPath } })
+        next({ path: '/user/login' })
       }
     } else {
-      // 已有资源列表，如果访问根路径或登录页则跳转到首页
-      if (to.path === '/' || to.path === '/user/login') {
-        next({ path: '/dashboard/workplace', replace: true })
-      } else {
-        next()
-      }
+      // 已有资源列表和动态路由，直接放行
+      next()
     }
   } else {
     // 未登录

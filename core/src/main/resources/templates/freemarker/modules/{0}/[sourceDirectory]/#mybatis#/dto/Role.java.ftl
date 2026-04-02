@@ -4,33 +4,34 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "Role", description = "角色信息")
 public class Role {
 
 	private static final long serialVersionUID = 1L;
 
 	private Long roleId;
 
-	@ApiModelProperty(value = "角色名称")
+	@Schema(name = "roleName", description = "角色名称")
 	private String roleName;
 
-	@ApiModelProperty(value = "角色权限标识")
+	@Schema(name = "roleKey", description = "角色权限标识")
 	private String roleKey;
 
-	@ApiModelProperty(value = "角色描述")
+	@Schema(name = "roleDesc", description = "角色描述")
 	private String roleDesc;
 
-	@ApiModelProperty(value = "创建时间", hidden = true)
+	@Schema(name = "ct", description = "创建时间", hidden = true)
 	private Date ct;
 
-	@ApiModelProperty(value = "更新时间", hidden = true)
+	@Schema(name = "ut", description = "更新时间", hidden = true)
 	private Date ut;
 
-	@ApiModelProperty(value = "删除标识位 0 未删除  1 已删除", hidden = true)
+	@Schema(name = "isDel", description = "删除标识位 0 未删除  1 已删除", hidden = true)
 	private Integer isDel;
 
-	@ApiModelProperty(value = "乐观锁标识", hidden = true)
+	@Schema(name = "version", description = "乐观锁标识", hidden = true)
 	private Long version;
 
 	public Long getRoleId() {

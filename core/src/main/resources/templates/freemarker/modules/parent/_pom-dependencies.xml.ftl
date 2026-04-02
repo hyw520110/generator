@@ -84,26 +84,12 @@
 				<artifactId>mysql-connector-j</artifactId>
 				<version><#noparse>${mysql-connector.version}</#noparse></version>
 			</dependency>
-			<!-- swagger -->
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger2</artifactId>
-				<version><#noparse>${swagger.version}</#noparse></version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-bean-validators</artifactId>
-				<version><#noparse>${swagger.version}</#noparse></version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger-ui</artifactId>
-				<version><#noparse>${swagger.version}</#noparse></version>
-			</dependency>
+<#if SWAGGER2??>
+			<!-- Knife4j for Spring Boot 3 -->
 			<dependency>
 				<groupId>com.github.xiaoymin</groupId>
-				<artifactId>swagger-bootstrap-ui</artifactId>
-				<version><#noparse>${swagger.ui.version}</#noparse></version>
+				<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+				<version><#noparse>${knife4j.version}</#noparse></version>
 			</dependency>
 			<!-- 其他 -->
 			<dependency>
@@ -113,7 +99,17 @@
 			</dependency>
 			<dependency>
 				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt</artifactId>
+				<artifactId>jjwt-api</artifactId>
+				<version><#noparse>${jwt.version}</#noparse></version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-impl</artifactId>
+				<version><#noparse>${jwt.version}</#noparse></version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-jackson</artifactId>
 				<version><#noparse>${jwt.version}</#noparse></version>
 			</dependency>
 			<dependency>
@@ -162,6 +158,7 @@
 				<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
 				<version><#noparse>${mybatis.plus.version}</#noparse></version>
 			</dependency>
+</#if>
 </#if>
 		</dependencies>
 	</dependencyManagement>

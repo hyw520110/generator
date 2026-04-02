@@ -357,18 +357,44 @@ export default {
       slots[name] = this.$slots[name]
     }
     
+    /**
+     * 截取表头标题：冒号或逗号前的内容
+     * @param {string} title - 原始标题
+     * @returns {object} { title: 截断后的标题, fullTitle: 完整标题(如果有分隔符) }
+     */
+    const getShortTitle = (title) => {
+      if (!title || typeof title !== 'string') return { title }
+      // 英文冒号、中文冒号、中文逗号
+      const colonIndex = title.indexOf(':')
+      const cnColonIndex = title.indexOf('\uFF1A')
+      const cnCommaIndex = title.indexOf('\uFF0C')
+      // 取所有分隔符中最早出现的位置
+      const validIndices = [colonIndex, cnColonIndex, cnCommaIndex].filter(i => i >= 0)
+      if (validIndices.length === 0) return { title }
+      const splitIndex = Math.min(...validIndices)
+      if (splitIndex > 0) {
+        return {
+          title: title.substring(0, splitIndex).trim(),
+          fullTitle: title
+        }
+      }
+      return { title }
+    }
+    
     // 处理列配置
     const processedColumns = this.visibleColumns.filter(col => col.visible).map(col => {
       const columnConfig = { ...col }
-      // 为长标题添加tooltip
-      if (col.title && col.title.length > 8) {
-        const originalTitle = col.title
-        const shortTitle = col.title.substring(0, 8) + '...'
-        columnConfig.title = () => (
-          <a-tooltip title={originalTitle} placement="top">
-            {shortTitle}
-          </a-tooltip>
-        )
+      // 处理表头标题：检测冒号或逗号，截断显示
+      if (col.title && typeof col.title === 'string') {
+        const { title: shortTitle, fullTitle } = getShortTitle(col.title)
+        if (fullTitle) {
+          // 有分隔符，使用 tooltip 显示完整标题
+          columnConfig.title = () => (
+            <a-tooltip title={fullTitle} placement="top">
+              {shortTitle}
+            </a-tooltip>
+          )
+        }
       }
       // 添加文本省略和最大宽度
       if (!col.width && col.dataIndex !== 'serial' && col.dataIndex !== 'action') {
@@ -389,8 +415,14 @@ export default {
       props.scroll = this.scroll
     }
 
+    // 准备 v-slots，透传所有插槽
+    const vSlots = {}
+    Object.keys(this.$slots).forEach(key => {
+      vSlots[key] = this.$slots[key]
+    })
+
     const table = (
-      <a-table {...props} columns={processedColumns} v-slots={slots} onChange={this.loadData} />
+      <a-table {...props} columns={processedColumns} v-slots={vSlots} onChange={this.loadData} />
     )
     
     // 列选择器组件

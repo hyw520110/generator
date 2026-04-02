@@ -217,11 +217,10 @@
 </#if>
 
 <#if SWAGGER2?? && SWAGGER2>
-		<!-- knife4j for Spring Boot 3.x (OpenAPI 3 / Swagger 3) -->
+		<!-- Knife4j for Spring Boot 3 -->
 		<dependency>
 		    <groupId>com.github.xiaoymin</groupId>
 		    <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
-		    <version>4.3.0</version>
 		</dependency>
 </#if>
 <#if "${javaVersion!}"=="1.8"  &&  !SPRINGBOOT  &&  !DUBBO  &&  !ZIPKIN>    	
@@ -305,7 +304,15 @@
 		
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt</artifactId>
+			<artifactId>jjwt-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.shiro</groupId>

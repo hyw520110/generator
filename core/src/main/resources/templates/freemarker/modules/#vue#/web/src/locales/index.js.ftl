@@ -39,7 +39,7 @@ export function loadLanguageAsync (lang = defaultLang) {
     storage.set('lang', lang)
     if (i18n.global.locale.value !== lang) {
       if (!loadedLanguages.includes(lang)) {
-        return import(/* @vite-ignore */ `./lang/${'$'}{lang}.js`).then(msg => {
+        return import(/* @vite-ignore */ `./lang/${r"${lang}"}.js`).then(msg => {
           const locale = msg.default
           i18n.global.setLocaleMessage(lang, locale)
           loadedLanguages.push(lang)
@@ -54,7 +54,7 @@ export function loadLanguageAsync (lang = defaultLang) {
 }
 
 export function i18nRender (key) {
-  return i18n.global.t(`${'$'}{key}`)
+  return i18n.global.t(`${r"${key}"}`)
 }
 
 export default i18n

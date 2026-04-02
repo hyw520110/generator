@@ -4,6 +4,12 @@ showTables: show tables
 tabComments: show table status
 #列出表的列详细信息 等效语句:SHOW FULL COLUMNS FROM tb_name   查看表字段信息：select column_name, column_comment from information_schema.columns where table_schema ='db' and table_name = 'tablename' ;
 tbFields: show full fields from %s
+#创建数据库 SQL（使用 {dbName} 占位符）
+createDatabase: CREATE DATABASE IF NOT EXISTS `{dbName}` DEFAULT CHARACTER SET utf8mb4
+#列出所有数据库
+listDatabases: SHOW DATABASES
+#检查数据库是否为空（使用数据库函数，不需要占位符）
+checkEmptyDatabase: SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()
 #表名
 tbName: NAME
 #表说明

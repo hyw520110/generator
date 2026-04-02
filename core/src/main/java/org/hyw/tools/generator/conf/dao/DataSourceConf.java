@@ -406,17 +406,17 @@ public class DataSourceConf extends DruidDataSource {
 			logger.warn("检查数据库是否存在时发生异常 - 数据库名: {}, 错误: {}", dbName, e.getLocalizedMessage());
 		}
 
-		String sql = switch (dbType) {
-		case MYSQL -> "CREATE DATABASE IF NOT EXISTS `" + dbName + "` DEFAULT CHARACTER SET utf8mb4";
-		case POSTGRE_SQL -> "CREATE DATABASE \"" + dbName + "\" ENCODING 'UTF8'";
-		case SQL_SERVER -> "CREATE DATABASE [" + dbName + "]";
-		default -> null;
-		};
-
-		if (sql == null) {
+		// 从 QuerySQL 配置获取创建数据库的 SQL
+		QuerySQL sqlConfig = getQuerySQL();
+		String sqlTemplate = sqlConfig.getCreateDatabase();
+		
+		if (StringUtils.isBlank(sqlTemplate)) {
 			logger.warn("当前数据库类型不支持自动创建数据库 - 数据库类型: {}", dbType);
 			return false;
 		}
+		
+		// 替换占位符
+		String sql = sqlTemplate.replace("{dbName}", dbName);
 
 		logger.info("准备执行创建数据库SQL - SQL: {}, IP: {}, 端口: {}, 用户: {}", sql, getIp(), getPort(), getUsername());
 		try (Connection conn = getConnection(null); Statement st = conn.createStatement()) {
@@ -441,15 +441,15 @@ public class DataSourceConf extends DruidDataSource {
 			logger.error("无法识别数据库类型，URL: {}", getUrl());
 			return dbNames;
 		}
-		String sql = switch (currentDbType) {
-		case MYSQL -> "SHOW DATABASES";
-		case POSTGRE_SQL -> "SELECT datname FROM pg_database WHERE datistemplate = false";
-		case SQL_SERVER -> "SELECT name FROM sys.databases";
-		case ORACLE -> "SELECT username FROM all_users";
-		default -> null;
-		};
-		if (sql == null)
+		
+		// 从 QuerySQL 配置获取列出数据库的 SQL
+		QuerySQL sqlConfig = getQuerySQL();
+		String sql = sqlConfig.getListDatabases();
+		
+		if (StringUtils.isBlank(sql)) {
+			logger.warn("当前数据库类型不支持列出所有数据库 - 数据库类型: {}", currentDbType);
 			return dbNames;
+		}
 
 		// 使用 DriverManager 直接获取连接（不依赖连接池），避免连接池已关闭的问题
 		try (Connection conn = getConnection((String) null);
@@ -475,15 +475,15 @@ public class DataSourceConf extends DruidDataSource {
 	 * 检查当前数据库是否为空
 	 */
 	public boolean isEmptyDataBase() {
-		String sql = switch (dbType) {
-		case MYSQL -> "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()";
-		case POSTGRE_SQL -> "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = current_schema()";
-		case SQL_SERVER -> "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = SCHEMA_NAME()";
-		case ORACLE -> "SELECT COUNT(*) FROM user_tables WHERE username = USER";
-		default -> null;
-		};
-		if (sql == null)
+		// 从 QuerySQL 配置获取检查数据库是否为空的 SQL
+		QuerySQL sqlConfig = getQuerySQL();
+		String sql = sqlConfig.getCheckEmptyDatabase();
+		
+		if (StringUtils.isBlank(sql)) {
+			logger.warn("当前数据库类型不支持检查数据库是否为空 - 数据库类型: {}", dbType);
 			return true;
+		}
+		
 		try (Connection conn = getConnection();
 				Statement st = conn.createStatement();
 				ResultSet rs = st.executeQuery(sql)) {

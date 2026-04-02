@@ -19,8 +19,8 @@ import java.util.zip.ZipOutputStream;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;

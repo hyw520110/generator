@@ -25,18 +25,6 @@ public class TemplateModel {
     private String entityPackage;
     private Set<Component> components;
     private Map<String, Object> extra;
-    private Map<String, String> naming;
-
-    public Map<String, String> getNaming() {
-        if (naming == null && table != null) {
-            naming = org.hyw.tools.generator.utils.NamingStrategy.buildNamingMap(table.getBeanName());
-        }
-        return naming;
-    }
-
-    public void setNaming(Map<String, String> naming) {
-        this.naming = naming;
-    }
 
     public GlobalConf getConfig() { return config; }
     public void setConfig(GlobalConf config) { this.config = config; }
@@ -91,7 +79,6 @@ public class TemplateModel {
         copy.entityPackage = this.entityPackage;
         copy.components = this.components;
         copy.extra = this.extra;
-        copy.naming = this.naming;
         return copy;
     }
 

@@ -28,7 +28,7 @@ import org.hyw.tools.generator.template.TemplateRenderer;
 import org.hyw.tools.generator.template.TemplateResource;
 import org.hyw.tools.generator.utils.FileUtils;
 import org.hyw.tools.generator.utils.FontUtils;
-import org.hyw.tools.generator.utils.NamingStrategy;
+
 import org.yaml.snakeyaml.Yaml;
 
 import lombok.extern.slf4j.Slf4j;
@@ -166,7 +166,7 @@ public class Generator extends AbstractGenerator {
 			for (Table table : tables) {
 				// 将当前表的上下文信息注入到全局 context
 				globalContext.put("table", table);
-				globalContext.putAll(org.hyw.tools.generator.utils.NamingStrategy.buildNamingMap(table.getBeanName()));
+
 				renderResources(globalContext, componentResources, true);
 			}
 			renderResources(globalContext, moduleResources, true);
@@ -339,7 +339,7 @@ public class Generator extends AbstractGenerator {
 		if (context.containsKey("table")) {
 			Table table = (Table) context.get("table");
 			model.setTable(table);
-			model.setNaming(NamingStrategy.buildNamingMap(table.getBeanName()));
+
 		}
 
 		String outputPath;
@@ -359,19 +359,14 @@ public class Generator extends AbstractGenerator {
 		// 向全局 context 注册包名变量
 		registerPackageVariablesToContext(context, normalizedPath, outputPath, finalModuleName);
 
-		// 设置命名变量（entityName, serviceName, className 等）
+		// 设置命名变量（entityName, entityNameLower, className 等）
 		if (context.containsKey("table")) {
 			Table table = (Table) context.get("table");
-			Map<String, String> naming = org.hyw.tools.generator.utils.NamingStrategy
-					.buildNamingMap(table.getBeanName());
-			// 将命名变量直接放入 context，而不是 model
-			for (Map.Entry<String, String> entry : naming.entrySet()) {
-				context.put(entry.getKey(), entry.getValue());
-			}
-			// 设置额外的命名变量
-			context.put("entityName", table.getBeanName());
+			String beanName = table.getBeanName();
+			// 设置命名变量
+			context.put("entityName", beanName);
 			context.put("entityNameLower", table.getLowercaseBeanName());
-			context.put("className", table.getBeanName());
+			context.put("className", beanName);
 		}
 
 		File dest = new File(global.getOutputDir(), FileUtils.normalizePath(outputPath));

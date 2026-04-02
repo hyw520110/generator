@@ -2,6 +2,12 @@ showTables: select tablename from pg_tables where schemaname='public' ORDER BY t
 tabComments: SELECT A.tablename, obj_description(relfilenode, 'pg_class') AS comments FROM pg_tables A, pg_class B WHERE A.schemaname='public' AND A.tablename = B.relname
 tbFields: SELECT DISTINCT A.attname AS name,format_type(A.atttypid,A.atttypmod) AS type,col_description(A.attrelid,A.attnum) AS comment,(CASE C.contype WHEN 'p' THEN 'PRI' ELSE '' END) AS key
   FROM pg_attribute A INNER JOIN pg_class B ON A.attrelid = B.oid  LEFT JOIN pg_constraint C ON A.attnum = C.conkey[1] WHERE B.relname = '%s' AND A.attnum>0
+#创建数据库 SQL（使用 {dbName} 占位符）
+createDatabase: CREATE DATABASE "{dbName}" ENCODING 'UTF8'
+#列出所有数据库
+listDatabases: SELECT datname FROM pg_database WHERE datistemplate = false
+#检查数据库是否为空
+checkEmptyDatabase: SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = current_schema()
 tbName: tablename
 tbComment: comments
 fieldName: name

@@ -14,7 +14,7 @@ import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
-import org.hyw.tools.generator.utils.NamingStrategy;
+
 import org.hyw.tools.generator.utils.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -92,7 +92,6 @@ public class TemplateContextBuilder {
 					props.forEach((key, value) -> {
 						// 增加带组件名前缀的注入 (如 JPA_version)，避免冲突
 						builder.variable(component.name() + "_" + key, value);
-						
 						// 如果该 key 在 global 中不存在，才注入到顶层，保证 global 配置优先级最高
 						if (key.contains(".") || key.contains("-") || !isGlobalProperty(key)) {
 							builder.variable(key, value);
@@ -127,8 +126,6 @@ public class TemplateContextBuilder {
 		model.setProjectName(global.getProjectName());
 		model.setRootPackage(global.getRootPackage());
 		
-		Map<String, String> naming = NamingStrategy.buildNamingMap(table.getBeanName());
-		context.put("naming", naming);
 		context.put("entityName", table.getBeanName());
 		context.put("entityNameLower", table.getLowercaseBeanName());
 		context.put("tableName", table.getName());

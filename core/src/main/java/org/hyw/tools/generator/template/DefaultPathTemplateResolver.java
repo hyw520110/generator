@@ -228,17 +228,18 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
             path = replaceDirectoryPlaceholder(path, anchor, dirValue);
         }
 
-        // 3. 处理业务占位符
-        if (model.getNaming() != null) {
-            Map<String, String> naming = model.getNaming();
-            path = path.replace("${beanName}", naming.get("entity"))
-                       .replace("${EntityName}", naming.get("entity"))
-                       .replace("${table.beanName}", naming.get("entity"))
-                       .replace("${entityName}", naming.get("entityLower"))
-                       .replace("${mapperName}", naming.get("mapper"))
-                       .replace("${serviceName}", naming.get("service"))
-                       .replace("${controllerName}", naming.get("controller"))
-                       .replace("%s", naming.get("entity"));
+        // 3. 处理业务占位符 - 使用 Table 对象替代 NamingStrategy
+        if (model.getTable() != null) {
+            String beanName = model.getTable().getBeanName();
+            String beanNameLower = model.getTable().getLowercaseBeanName();
+            path = path.replace("${beanName}", beanName)
+                       .replace("${EntityName}", beanName)
+                       .replace("${table.beanName}", beanName)
+                       .replace("${entityName}", beanNameLower)
+                       .replace("${mapperName}", beanName + "Mapper")
+                       .replace("${serviceName}", beanName + "Service")
+                       .replace("${controllerName}", beanName + "Controller")
+                       .replace("%s", beanName);
         }
         
         if (model.getProjectName() != null) path = path.replace("${projectName}", model.getProjectName());

@@ -61,7 +61,6 @@ public class RenderContext implements Serializable {
             if (model.getAuthor() != null) context.put("author", model.getAuthor());
             if (model.getDate() != null) context.put("date", model.getDate());
             if (model.getCopyright() != null) context.put("copyright", model.getCopyright());
-            if (model.getNaming() != null) context.put("naming", model.getNaming());
             if (model.getExtra() != null) context.putAll(model.getExtra());
         }
         return context;

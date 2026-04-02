@@ -236,9 +236,6 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
                        .replace("${EntityName}", beanName)
                        .replace("${table.beanName}", beanName)
                        .replace("${entityName}", beanNameLower)
-                       .replace("${mapperName}", beanName + "Mapper")
-                       .replace("${serviceName}", beanName + "Service")
-                       .replace("${controllerName}", beanName + "Controller")
                        .replace("%s", beanName);
         }
         

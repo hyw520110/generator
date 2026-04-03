@@ -15,7 +15,6 @@
 	<url>http://www.github.com/hyw520110/generator.git</url>
 	<properties>
 		<main.class>org.hyw.tools.generator.Generator</main.class>
-		<mysql.version>8.0.27</mysql.version>
 	</properties>
 
 	<dependencies>
@@ -90,10 +89,27 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 		</dependency>
+		<!-- JGraphT 图计算库（表关系图） -->
+		<dependency>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-ext</artifactId>
+		</dependency>
+		<!-- log4j API 和桥接器：解决 xmlbeans 的 log4j 依赖 -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-to-slf4j</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.11</version>
 		</dependency>
 		<!-- 单元测试 -->
 		<dependency>
@@ -101,47 +117,24 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext</artifactId>
-			<version>2.1.7</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itext-asian</artifactId>
-			<version>5.2.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext-rtf</artifactId>
-			<version>2.1.7</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
 		<finalName>${project.name}</finalName>
-		<resources>
-			<resource>
-				<directory>${project.basedir}/src/main/resources</directory>
-				<includes>
-					<include>bin/*.bat</include>
-					<include>bin/*.sh</include>
-				</includes>
-				<filtering>true</filtering>
-			</resource>
+			<resources>
 			<resource>
 				<directory>${project.basedir}/src/main/resources</directory>
 				<filtering>false</filtering>
+				<includes>
+					<include>**/*</include>
+				</includes>
 			</resource>
 		</resources>
 		<plugins>
-			<plugin>
+			<!-- 
+				<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
 				<configuration>
 					<archive>
 						<addMavenDescriptor>false</addMavenDescriptor>
@@ -155,10 +148,12 @@
 						</manifest>
 					</archive>
 					<excludes>
-						<exclude>*.xml</exclude>
+						<exclude>templates/**/*.xml</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
+				
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>

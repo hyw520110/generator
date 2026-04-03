@@ -16,7 +16,6 @@
 </#if>
  *
  * @author ${author!}
- * @since ${date!}
  * @copyright ${copyright!}
  */
 </#macro>
@@ -30,7 +29,6 @@
  * ${description!}
  *
  * @author ${author!}
- * @since ${date!}
  * @copyright ${copyright!}
  */
 </#macro>
@@ -130,19 +128,19 @@ package ${packageName!};
 </#macro>
 
 <#--  -------------------------------------------- -->
-<#--  Swagger @ApiModel 注解 -->
+<#--  OpenAPI 3 @Schema 注解 -->
 <#--  参数：description - 描述 -->
 <#--  -------------------------------------------- -->
 <#macro swaggerApiModel description>
-@ApiModel("${description!}")
+@Schema(description = "${description!}")
 </#macro>
 
 <#--  -------------------------------------------- -->
-<#--  Swagger @ApiModelProperty 注解 -->
-<#--  参数：description - 描述，required - 是否必填 -->
+<#--  OpenAPI 3 @Schema 注解 -->
+<#--  参数：description - 描述，required - 是否必填，hidden - 是否隐藏 -->
 <#--  -------------------------------------------- -->
-<#macro swaggerApiModelProperty description required>
-@ApiModelProperty(value = "${description!}"<#if required>, required = true</#if>)
+<#macro swaggerApiModelProperty description required hidden>
+@Schema(<#if description>description = "${description!}"</#if><#if required>, required = true</#if><#if hidden>, hidden = true</#if>)
 </#macro>
 
 <#--  -------------------------------------------- -->

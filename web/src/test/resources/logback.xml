@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false" debug="false">
+	<timestamp key="timestamp" datePattern="yyyyMMdd'T'HHmmss"/>
+	<property name="LOG_BASE" value="./logs/test" />
+	<property name="CHARSET" value="UTF-8" />
+	
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"
+			charset="${CHARSET}">
+			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %msg%n %ex{2}</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- 错误日志配置 -->
+	<appender name="common-error"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+		<File>${LOG_BASE}_error.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_BASE}_error_%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
+			<maxHistory>60</maxHistory>
+			<maxFileSize>10MB</maxFileSize>
+		</rollingPolicy>
+		<append>true</append>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"
+			charset="${CHARSET}">
+			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %msg%n %ex{2}</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- 应用日志 -->
+	<appender name="common-default"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${LOG_BASE}_default.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_BASE}_default.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxHistory>60</maxHistory>
+			<maxFileSize>10MB</maxFileSize>
+		</rollingPolicy>
+		<append>true</append>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"
+			charset="${CHARSET}">
+			<pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%file:%line] %msg%n %ex{2}</pattern>
+		</encoder>
+	</appender>
+
+	<!-- logger 配置 -->
+	<logger name="ch.qos.logback.classic" level="WARN" />
+	<logger name="java.sql" level="WARN" />
+	<logger name="jdbc" level="WARN" />
+	<logger name="org.hibernate" level="INFO" />
+	<logger name="org.hibernate.cache" level="ERROR" />
+	<logger name="org.hibernate.sql" level="INFO" />
+	<logger name="org.hibernate.engine" level="INFO" />
+	<logger name="org.hibernate.type" level="ERROR" />
+	<logger name="org.hibernate.util" level="ERROR" />
+	<logger name="org.hibernate.cfg" level="WARN" />
+	<logger name="org.springframework" level="INFO" />
+	<logger name="org.springframework.web" level="INFO" />
+	<logger name="org.apache" level="INFO" />
+	<logger name="org.apache.shiro" level="INFO" />
+	<logger name="org.apache.mina" level="WARN" />
+	<logger name="freemarker" level="INFO" />
+	<logger name="org.eclipse.jetty" level="INFO" />
+	<logger name="com.opensymphony" level="WARN" />
+	<logger name="net.sf" level="WARN" />
+	<logger name="druid.sql.Statement" level="DEBUG" />
+	<logger name="com.alibaba.dubbo" level="INFO" />
+	
+	<root level="DEBUG">
+		<appender-ref ref="stdout"/>
+		<appender-ref ref="common-error" level="ERROR" />
+		<appender-ref ref="common-default" level="INFO"/>
+	</root>
+</configuration>

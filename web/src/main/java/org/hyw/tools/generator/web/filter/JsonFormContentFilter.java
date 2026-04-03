@@ -44,6 +44,9 @@ public class JsonFormContentFilter extends FormContentFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		MultiValueMap<String, String> params = parseIfNecessary(request);
+		if (params != null && !params.isEmpty()) {
+			logger.debug("JSON 表单解析成功，参数数量: {}", params.size());
+		}
 		filterChain.doFilter(
 				(null == params || params.isEmpty()) ? request : new FormContentRequestWrapper(request, params),
 				response);
@@ -54,6 +57,7 @@ public class JsonFormContentFilter extends FormContentFilter {
 		if (!shouldParse(request)) {
 			return result;
 		}
+		logger.debug("开始解析 JSON 表单参数");
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(new InputStreamReader(request.getInputStream()), writer);
 		try {
@@ -62,8 +66,9 @@ public class JsonFormContentFilter extends FormContentFilter {
 			for (String name : json.keySet()) {
 				result.add(name, json.getString(name));
 			}
+			logger.debug("JSON 表单解析成功，参数: {}", result.keySet());
 		} catch (Exception e) {
-			logger.error("{}:{}", e.getClass(), e.getLocalizedMessage());
+			logger.error("JSON 表单解析失败: {}, 错误: {}", request.getRequestURI(), e.getMessage(), e);
 		}
 		return result;
 	}

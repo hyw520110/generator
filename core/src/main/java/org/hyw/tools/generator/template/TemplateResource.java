@@ -1,12 +1,10 @@
 package org.hyw.tools.generator.template;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * 模板资源接口 (支持按需加载)
- * <p>
- * 用于封装模板文件，支持延迟读取内容，优化内存占用。
- * </p>
+ * 模板资源接口 (支持按需加载与流式处理)
  */
 public interface TemplateResource {
 
@@ -22,21 +20,21 @@ public interface TemplateResource {
 
     /**
      * 获取模板内容 (文本)
-     * @return 模板内容
-     * @throws IOException 读取失败时抛出
      */
     String getContent() throws IOException;
     
     /**
      * 是否为二进制资源
-     * @return true 如果是二进制文件
      */
     boolean isBinary();
     
     /**
      * 获取二进制内容
-     * @return 字节数组
-     * @throws IOException 读取失败时抛出
      */
     byte[] getBytes() throws IOException;
+
+    /**
+     * 打开输入流 (用于流式拷贝或渲染)
+     */
+    InputStream openStream() throws IOException;
 }

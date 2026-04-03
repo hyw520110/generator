@@ -62,6 +62,10 @@ public class Result<T> implements Serializable {
 		return error(StatusCode.SYSTEM_ERROR.getCode(), StatusCode.SYSTEM_ERROR.getDesc());
 	}
 
+	public static <T> Result<T> error(String message) {
+		return error(StatusCode.SYSTEM_ERROR.getCode(), message);
+	}
+
 	public static <T> Result<T> error(int code, String message) {
 		return new Result<>(code, message);
 	}

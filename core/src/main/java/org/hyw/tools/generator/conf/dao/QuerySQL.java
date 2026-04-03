@@ -19,6 +19,18 @@ public class QuerySQL extends BaseBean {
      */
     private String                  tbFields;
     /**
+     * 创建数据库
+     */
+    private String                  createDatabase;
+    /**
+     * 列出所有数据库
+     */
+    private String                  listDatabases;
+    /**
+     * 检查数据库是否为空
+     */
+    private String                  checkEmptyDatabase;
+    /**
      * 表名
      */
     private String                  tbName;
@@ -54,6 +66,10 @@ public class QuerySQL extends BaseBean {
      * 特别信息 是否自增 mysql值为auto_increment表示自增
      */
     private KeyPair<String, String> extraKeyValue;
+    /**
+     * 类型映射
+     */
+    private java.util.Map<String, String> mappings;
 
     public String getShowTables() {
         return showTables;
@@ -77,6 +93,30 @@ public class QuerySQL extends BaseBean {
 
     public void setTbFields(String tbFields) {
         this.tbFields = tbFields;
+    }
+
+    public String getCreateDatabase() {
+        return createDatabase;
+    }
+
+    public void setCreateDatabase(String createDatabase) {
+        this.createDatabase = createDatabase;
+    }
+
+    public String getListDatabases() {
+        return listDatabases;
+    }
+
+    public void setListDatabases(String listDatabases) {
+        this.listDatabases = listDatabases;
+    }
+
+    public String getCheckEmptyDatabase() {
+        return checkEmptyDatabase;
+    }
+
+    public void setCheckEmptyDatabase(String checkEmptyDatabase) {
+        this.checkEmptyDatabase = checkEmptyDatabase;
     }
 
     public String getTbName() {
@@ -150,5 +190,13 @@ public class QuerySQL extends BaseBean {
 	public void setTbCreateTime(String tbCreateTime) {
 		this.tbCreateTime = tbCreateTime;
 	}
+
+    public java.util.Map<String, String> getMappings() {
+        return mappings;
+    }
+
+    public void setMappings(java.util.Map<String, String> mappings) {
+        this.mappings = mappings;
+    }
 
 }

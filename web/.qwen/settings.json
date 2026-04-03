@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat)",
+      "Bash(sed *)",
+      "Bash(eof)",
+      "Bash(bash *)",
+      "Bash(./run.sh *)",
+      "Bash(nc *)",
+      "Bash(lsof *)",
+      "Bash(pkill *)",
+      "Bash(sleep *)",
+      "Bash(xargs *)",
+      "Bash(mvn *)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_click"
+    ]
+  },
+  "$version": 3
+}

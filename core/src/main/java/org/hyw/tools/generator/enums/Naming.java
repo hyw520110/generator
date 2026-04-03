@@ -1,7 +1,7 @@
 package org.hyw.tools.generator.enums;
 
 public enum Naming {
-    NOCHANGE("不做处理"), TOCAMEL("驼峰命名");
+    NOCHANGE("不做处理"), TOCAMEL("驼峰命名"), TOPASCAL("帕斯卡命名");
 
     private final String desc;
 

@@ -18,11 +18,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-build-dependencies</artifactId>
-				<version><#noparse>${spring-cloud-build.version}</#noparse></version>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version><#noparse>${spring-cloud.version}</#noparse></version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+<#if ZOOKEEPER?? && ZOOKEEPER>
 			<!-- spring cloud zookeeper -->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
@@ -40,6 +41,8 @@
 				<artifactId>curator-framework</artifactId>
 				<version><#noparse>${curator.version}</#noparse></version>
 			</dependency>
+</#if>
+<#if DUBBO?? && DUBBO>
 			<!-- dubbo -->
 			<dependency>
 				<groupId>org.apache.dubbo</groupId>
@@ -48,72 +51,90 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+</#if>
+<#if ZOOKEEPER?? && ZOOKEEPER>
+			<!-- sentinel datasource zookeeper -->
+			<dependency>
+				<groupId>com.alibaba.csp</groupId>
+				<artifactId>sentinel-datasource-zookeeper</artifactId>
+				<version><#noparse>${sentinel.version}</#noparse></version>
+			</dependency>
+</#if>
 			<!-- mybatis -->
 			<dependency>
 				<groupId>org.mybatis.spring.boot</groupId>
 				<artifactId>mybatis-spring-boot-starter</artifactId>
-				<version>2.1.0</version>
+				<version><#noparse>${mybatis-spring-boot.version}</#noparse></version>
 			</dependency>
 			<!-- 分页插件 -->
 			<dependency>
 				<groupId>com.github.pagehelper</groupId>
 				<artifactId>pagehelper-spring-boot-starter</artifactId>
-				<version>1.2.10</version>
+				<version><#noparse>${pagehelper.version}</#noparse></version>
 			</dependency>
 			<!-- druid 数据库连接池 -->
 			<dependency>
 				<groupId>com.alibaba</groupId>
 				<artifactId>druid-spring-boot-starter</artifactId>
-				<version>1.1.18</version>
+				<version><#noparse>${druid.version}</#noparse></version>
 			</dependency>
 			<!-- mysql -->
 			<dependency>
-				<groupId>mysql</groupId>
-				<artifactId>mysql-connector-java</artifactId>
-				<version>6.0.6</version>
+				<groupId>com.mysql</groupId>
+				<artifactId>mysql-connector-j</artifactId>
+				<version><#noparse>${mysql-connector.version}</#noparse></version>
 			</dependency>
-			<!-- swagger -->
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger2</artifactId>
-				<version><#noparse>${swagger.version}</#noparse></version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-bean-validators</artifactId>
-				<version><#noparse>${swagger.version}</#noparse></version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger-ui</artifactId>
-				<version><#noparse>${swagger.version}</#noparse></version>
-			</dependency>
+<#if SWAGGER2??>
+			<!-- Knife4j for Spring Boot 3 -->
 			<dependency>
 				<groupId>com.github.xiaoymin</groupId>
-				<artifactId>swagger-bootstrap-ui</artifactId>
-				<version><#noparse>${swagger.ui.version}</#noparse></version>
+				<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+				<version><#noparse>${knife4j.version}</#noparse></version>
 			</dependency>
 			<!-- 其他 -->
 			<dependency>
 				<groupId>com.lmax</groupId>
 				<artifactId>disruptor</artifactId>
-				<version>3.4.2</version>
+				<version><#noparse>${disruptor.version}</#noparse></version>
 			</dependency>
 			<dependency>
 				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt</artifactId>
+				<artifactId>jjwt-api</artifactId>
+				<version><#noparse>${jwt.version}</#noparse></version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-impl</artifactId>
+				<version><#noparse>${jwt.version}</#noparse></version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-jackson</artifactId>
 				<version><#noparse>${jwt.version}</#noparse></version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-spring</artifactId>
 				<version><#noparse>${shiro.version}</#noparse></version>
+				<classifier>jakarta</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.shiro</groupId>
+				<artifactId>shiro-core</artifactId>
+				<version><#noparse>${shiro.version}</#noparse></version>
+				<classifier>jakarta</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.shiro</groupId>
+				<artifactId>shiro-web</artifactId>
+				<version><#noparse>${shiro.version}</#noparse></version>
+				<classifier>jakarta</classifier>
 			</dependency>
 			<!-- lombok -->
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.20</version>
+				<version><#noparse>${lombok.version}</#noparse></version>
 			</dependency>
 <#if mapperType?? && mapperType == "plus">
 			<!-- mybatis-plus -->
@@ -134,9 +155,10 @@
 			</dependency>
 			<dependency>
 				<groupId>com.baomidou</groupId>
-				<artifactId>mybatis-plus-boot-starter</artifactId>
+				<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
 				<version><#noparse>${mybatis.plus.version}</#noparse></version>
 			</dependency>
+</#if>
 </#if>
 		</dependencies>
 	</dependencyManagement>

@@ -1,360 +1,316 @@
 package org.hyw.tools.generator;
 
-import static java.text.MessageFormat.format;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.stream.Collectors;
 
-import org.apache.commons.io.filefilter.FileFileFilter;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.velocity.VelocityContext;
+import org.apache.commons.lang3.StringUtils;
+import org.hyw.tools.generator.conf.SkipRuntimeFieldsRepresenter;
 import org.hyw.tools.generator.conf.db.Table;
+import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.ExportFormat;
 import org.hyw.tools.generator.exception.GeneratorException;
-import org.hyw.tools.generator.template.EngineType;
+import org.hyw.tools.generator.export.DbToDoc;
+import org.hyw.tools.generator.template.DefaultPathTemplateResolver;
+import org.hyw.tools.generator.template.PathTemplateResolver;
 import org.hyw.tools.generator.template.RenderContext;
 import org.hyw.tools.generator.template.TemplateContextBuilder;
+import org.hyw.tools.generator.template.TemplateModel;
 import org.hyw.tools.generator.template.TemplateRenderer;
+import org.hyw.tools.generator.template.TemplateResource;
 import org.hyw.tools.generator.utils.FileUtils;
-import org.hyw.tools.generator.utils.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.hyw.tools.generator.utils.FontUtils;
+
 import org.yaml.snakeyaml.Yaml;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
- * 代码生成器
- * 
- * @author: heyiwu
- * @version: 1.0 Create at: 2017年6月12日 上午10:53:49
- *
+ * 代码生成器核心类
  */
+@Slf4j
 public class Generator extends AbstractGenerator {
 
-	private static final Logger logger = LoggerFactory.getLogger(Generator.class.getName());
-	private static final long serialVersionUID = 345083252519120430L;
-
-	/**
-	 * 生成器默认配置文件
-	 */
-	private static String conf = "/generator.yaml";
 	private static Generator generator;
 	private TemplateRenderer templateRenderer;
 	private TemplateContextBuilder contextBuilder;
-	private static final String SEPARATOR = "/";
-	static {
-		load(conf);
-	}
+	private PathTemplateResolver pathResolver = new DefaultPathTemplateResolver();
+	private static final String SEPARATOR = Consts.PATH_SEPARATOR;
 
-	private Generator() {
+	private static final String EXTERNAL_CONFIG_DIR = System.getProperty("user.home") + File.separator
+			+ Consts.CONFIG_DIR_NAME;
+
+	static {
+		load(Consts.DEFAULT_CONFIG_FILE);
 	}
 
 	public static Generator getInstance() {
+		if (null == generator)
+			generator = new Generator();
 		return generator;
 	}
 
-	private static void load(String conf) {
-		InputStream is = Generator.class.getResourceAsStream(conf);
-		if (null == is) {
-			logger.warn("{} config file not found!", conf);
+	public static void main(String[] args) {
+		Generator.getInstance().execute();
+	}
+
+	public static void load(String conf) {
+		// 优先加载用户目录下最新的配置文件
+		File configDir = new File(EXTERNAL_CONFIG_DIR);
+		File latestFile = FileUtils.getLatestFile(configDir, Consts.EXT_YAML, Consts.EXT_YML);
+		if (latestFile != null && latestFile.exists() && latestFile.length() > 0) {
+			try {
+				load(latestFile.toURI().toURL());
+				return;
+			} catch (Exception e) {
+				log.warn("加载外部配置文件失败，尝试加载内置配置");
+			}
+		}
+		// 加载内置默认配置
+		load(Generator.class.getResource(conf));
+	}
+
+	private static void load(URL url) {
+		if (null == url) {
 			return;
 		}
-		generator = new Yaml().loadAs(is, Generator.class);
+		try (InputStream is = url.openStream()) {
+			generator = new Yaml().loadAs(is, Generator.class);
+			log.info("加载内置配置文件成功: {}", url);
+		} catch (Exception e) {
+			log.warn("加载内置配置文件失败: {}", url);
+		}
 	}
 
-	public static void main(String[] args) throws Exception {
-		Generator generator = getInstance();
-		long s = System.currentTimeMillis();
-		generator.execute();
-		logger.info("generation completed:{}ms", System.currentTimeMillis() - s);
-	}
-
-	/**
-	 * 生成代码
-	 * @throws IOException 
-	 * 
-	 * @throws Exception
-	 */
 	public void execute() {
+		log.info("开始执行代码生成，输出目录: {}", global != null ? global.getOutputDir() : "");
 		long startTime = System.currentTimeMillis();
 		try {
 			validateConfig();
 			prepare();
 			generateCode();
-			long duration = System.currentTimeMillis() - startTime;
-			logger.info("代码生成完成，耗时: {}ms", duration);
+			log.info("代码生成完成，耗时: {}ms", System.currentTimeMillis() - startTime);
 		} catch (Exception e) {
-			long duration = System.currentTimeMillis() - startTime;
-			logger.error("代码生成失败，耗时: {}ms", duration, e);
+			log.error("代码生成失败", e);
 			throw new GeneratorException("代码生成失败", e);
-		} finally {
-			if (dataSource != null) {
-				dataSource.close();
-			}
 		}
 	}
-	
+
 	private void validateConfig() {
-		if (global == null) {
-			throw new GeneratorException("全局配置不能为空");
-		}
-		
+		if (global == null)
+			throw new GeneratorException(Consts.ERR_GLOBAL_CONFIG_NULL);
 		String outputDir = global.getOutputDir();
-		if (StringUtils.isBlank(outputDir)) {
-			throw new GeneratorException("输出目录不能为空");
-		}
-		
+		if (StringUtils.isBlank(outputDir))
+			throw new GeneratorException(Consts.ERR_OUTPUT_DIR_EMPTY);
+
 		File dir = new File(outputDir);
-		if (dir.exists() && !dir.canWrite()) {
-			throw new GeneratorException("输出目录无写权限: " + outputDir);
-		}
-		
-		if (global.getEngineTemplateDirPath() == null) {
-			throw new GeneratorException("模板目录不存在: " + global.getTemplateDir());
-		}
-		
-		if (dataSource == null) {
-			throw new GeneratorException("数据源配置不能为空");
-		}
-		
-		// 数据库连通性心跳检测
+		if (!dir.exists() && !dir.mkdirs())
+			throw new GeneratorException(Consts.ERR_CREATE_OUTPUT_DIR + outputDir);
+
+		if (dataSource == null)
+			throw new GeneratorException(Consts.ERR_DATASOURCE_NULL);
 		try (java.sql.Connection conn = dataSource.getCon()) {
-			if (conn == null || conn.isClosed()) {
-				throw new GeneratorException("数据库连接失败，请检查配置");
-			}
-			logger.info("数据库连接正常: {}", dataSource.getDbName());
+			if (conn == null || conn.isClosed())
+				throw new GeneratorException(Consts.ERR_DB_CONNECTION_FAILED);
+			log.info("数据库连接正常: {}", dataSource.getDbName());
 		} catch (Exception e) {
-			throw new GeneratorException("数据库连接异常: " + e.getMessage(), e);
-		}
-		
-		if (global.getComponents() == null || global.getComponents().length == 0) {
-			logger.warn("未配置任何组件，将生成基础代码结构");
+			throw new GeneratorException(Consts.ERR_DB_CONNECTION_ERROR + e.getMessage(), e);
 		}
 	}
-	
+
 	private void generateCode() {
 		List<Table> tables = getTables();
-		if (tables.isEmpty()) {
-			logger.warn("查询表为空！");
+		if (tables.isEmpty())
 			return;
-		}
-		
-		// 初始化模板渲染器和上下文构建器
+
 		templateRenderer = new TemplateRenderer();
 		contextBuilder = new TemplateContextBuilder(global, dataSource, components);
-		
-		// 创建全局上下文
+
 		RenderContext globalContext = contextBuilder.buildGlobalContext();
-		globalContext.put("tables", tables);
-		
-		// 创建工程模块
-		String[] componentNames = global.getComponentNames();
-		renderModules(globalContext, componentNames);
-		
-		// 渲染组件模板
-		Map<String, String> templates = getTemplates("components", true, componentNames);
-		logger.info("已加载组件模板数量: {}, 表数量: {}", templates.size(), tables.size());
-		if (logger.isDebugEnabled()) {
-			templates.keySet().forEach(path -> logger.debug("组件模板路径: {}", path));
+		globalContext.put(Consts.CTX_TABLES, tables);
+
+		URL templateUrl = global.getTemplateDirPath();
+		// 静态资源: 扫描并立即分发
+		if (templateUrl != null) {
+			log.info("开始处理静态资源 ...");
+			List<TemplateResource> assets = scanFilteredResources(templateUrl, Consts.ASSETS_DIR);
+			for (TemplateResource res : assets) {
+				distributeAsset(res);
+			}
 		}
-		for (Table table : tables) {
-			RenderContext tableContext = contextBuilder.buildTableContext(table);
-			renderComponentTemplates(tableContext, templates, table.getBeanName());
+		URL engineUrl = global.getEngineTemplateDirPath();
+		if (engineUrl != null) {
+			List<TemplateResource> moduleResources = scanFilteredResources(engineUrl, Consts.DIR_MODULES);
+			List<TemplateResource> componentResources = scanFilteredResources(engineUrl, Consts.DIR_COMPONENTS);
+
+			// 业务级别 (Components): 排序并针对每张表渲染
+			log.info("开始处理业务组件模板...");
+			componentResources = filterComponentResources(componentResources);
+
+			// 排序：先按模块排序，再按组件排序（确保依赖顺序正确）如：api 模块的 entity > service > vo，然后才是 app 模块的
+			// controller
+			componentResources = sort(componentResources);
+			log.info("待处理业务组件模板: {}, 表数量: {}, 排序策略：先模块后组件", componentResources.size(), tables.size());
+			// 模块级别 (Modules): 在组件渲染后处理，此时包名变量已就绪
+			log.info("开始处理模块模板 ...");
+			moduleResources = sort(moduleResources);
+
+			for (Table table : tables) {
+				// 将当前表的上下文信息注入到全局 context
+				globalContext.put("table", table);
+
+				renderResources(globalContext, componentResources, true);
+			}
+			renderResources(globalContext, moduleResources, true);
 		}
-		
 		openDir();
 	}
-	
-	private void renderModules(RenderContext context, String[] componentNames) {
-		URL dir = global.getEngineTemplateDirPath();
-		render(dir, context, getTemplates("modules", false), true);
-		render(dir, context, getTemplates("modules", false, Component.VUE.name().toLowerCase()), false);
-		render(dir, context, getTemplates("commons", true, componentNames), true);
-		// 当生成 vue 模块时，也需要生成 commons/vue 目录下的文件
-		render(dir, context, getTemplates("commons", true, Component.VUE.name().toLowerCase()), true);
-	}
-	
-	private void renderComponentTemplates(RenderContext context, Map<String, String> templates, String tableName) {
-		URL dir = global.getEngineTemplateDirPath();
-		render(dir, context, templates, true, tableName);
-	}
 
-	private void render(final URL dir, RenderContext context, Map<String, String> templates, boolean render) {
-		render(dir, context, templates, render, null);
-	}
+	/**
+	 * 模板排序：先按模块排序，再按组件排序，最后按文件路径和文件名排序
+	 * 
+	 * 排序策略： 1. 第一级：模块排序（api > app），确保基础模块先渲染 2. 第二级：组件排序（entity > service >
+	 * controller），确保依赖顺序正确 3. 第三级：文件路径排序（按路径字符串） 4. 第四级：文件名排序（在路径相等时）
+	 */
+	private List<TemplateResource> sort(List<TemplateResource> resources) {
+		return resources.stream().sorted((r1, r2) -> {
+			String module1 = inferModuleNameFromPath(r1.getPath());
+			String module2 = inferModuleNameFromPath(r2.getPath());
 
-	private void render(final URL dir, RenderContext context, Map<String, String> templates, boolean render,
-			String name) {
-		if (null == templates || templates.isEmpty()) {
-			logger.error("{}目录下没有所需的模板文件！", dir);
-			return;
-		}
-		
-		for (Entry<String, String> entry : templates.entrySet()) {
-			String path = entry.getKey();
-			String data = entry.getValue();
-			try {
-				renderTemplateFile(dir, context, path, data, render, name);
-			} catch (Exception e) {
-				logger.error("渲染文件失败: {}", path, e);
+			// 获取模块在 modules 数组中的索引（越小越先）
+			int moduleIndex1 = getModuleIndex(module1);
+			int moduleIndex2 = getModuleIndex(module2);
+
+			if (moduleIndex1 != moduleIndex2) {
+				return Integer.compare(moduleIndex1, moduleIndex2);
 			}
-		}
+			// 同一模块内，按组件 ordinal 排序
+			int componentOrdinal1 = getComponentOrdinal(r1.getPath());
+			int componentOrdinal2 = getComponentOrdinal(r2.getPath());
+
+			if (componentOrdinal1 != componentOrdinal2) {
+				return Integer.compare(componentOrdinal1, componentOrdinal2);
+			}
+			// 文件类型优先级排序（确保 .java 在 .xml 之前渲染，以便先注册包名变量）
+			int typePriority1 = getFileTypePriority(r1.getPath());
+			int typePriority2 = getFileTypePriority(r2.getPath());
+			if (typePriority1 != typePriority2) {
+				return Integer.compare(typePriority1, typePriority2);
+			}
+			// 组件和模块都相同，按路径字符串排序
+			int pathCompare = r1.getPath().compareTo(r2.getPath());
+			if (pathCompare != 0) {
+				return pathCompare;
+			}
+			// 路径相等时，按文件名排序
+			String fileName1 = StringUtils.substringAfterLast(r1.getPath(), SEPARATOR);
+			String fileName2 = StringUtils.substringAfterLast(r2.getPath(), SEPARATOR);
+			return fileName1.compareTo(fileName2);
+		}).collect(Collectors.toList());
 	}
-		
-	private void renderTemplateFile(final URL dir, RenderContext context, String path, String data, 
-			boolean render, String name) {
-		// 1. 动态路径格式化 (处理占位符)
-		if (StringUtils.isNotBlank(name)) {
-			// 处理 %s 占位符
-			if (path.contains("%s")) {
-				try {
-					path = String.format(path, 
-						StringUtils.countMatches(path, "%s") > 1 ? StringUtils.lowercaseFirst(name) : name, 
-						name);
-				} catch (Exception e) {
-					logger.warn("路径 %s 格式化跳过: {}", path);
-				}
-			}
-			// 处理模板风格占位符 ${table.beanName}
-			if (path.contains("${table.beanName}")) {
-				path = path.replace("${table.beanName}", name);
-			}
-			// 设置实体相关的上下文变量（与原代码保持一致）
-			context.put("entityName", name);
-			context.put("mapperName", name + "Mapper");
-			context.put("serviceName", name + "Service");
-			context.put("serviceImplName", name + "ServiceImpl");
-			context.put("controllerName", name + "Controller");
-		}
 
-		// 2. 注入当前文件的动态上下文变量
-		String moduleName = StringUtils.substringBefore(path, SEPARATOR);
-		context.put("moduleName", moduleName);
-		
-		// 对于 Java 文件（.java 或 .java.ftl），提取类名和包名
-		String pathForClassCheck = path;
-		if (pathForClassCheck.endsWith(".ftl")) {
-			pathForClassCheck = pathForClassCheck.substring(0, pathForClassCheck.length() - 4);
+	/**
+	 * 获取文件类型优先级（数值越小优先级越高） 确保 Java 源码先于资源文件渲染，以便包名变量先被注册
+	 * 
+	 * @param path 文件路径
+	 * @return 优先级数值（1=Java源码, 2=XML资源, 3=其他）
+	 */
+	private int getFileTypePriority(String path) {
+		if (path == null)
+			return 3;
+		String lower = path.toLowerCase();
+		// Java 源码优先级最高
+		if (lower.contains(".java")) {
+			return 1;
 		}
-		if (pathForClassCheck.endsWith(".java")) {
-			String spackage = getPackage(pathForClassCheck);
-			String pName = StringUtils.substringAfterLast(spackage, ".");
-			context.put(pName + "Package", spackage);
-			String className = StringUtils.substringBefore(StringUtils.substringAfterLast(pathForClassCheck, SEPARATOR), ".");
-			context.put("className", className);
-			context.put(className + "Package", spackage);
+		// XML 资源文件次之
+		if (lower.contains(".xml")) {
+			return 2;
 		}
+		return 3;
+	}
 
-		// 3. 判定是否为模板文件 - 仅根据文件扩展名判断
-		// 不根据内容判断，避免将 Shell 脚本、Spring 配置等文件错误地当作模板处理
-		String extension = global.getEngineType().getExtension();
-		boolean isTemplateFile = path.toLowerCase().endsWith(extension);
-		
-		// 检查是否为资源文件（即使有 .ftl 扩展名）
-		// 如 bootstrap.min.js.ftl 应该被当作资源文件，而不是模板
-		String[] resourceExts = global.getResources();
-		if (resourceExts != null && isTemplateFile) {
-			String pathWithoutExt = path.substring(0, path.length() - extension.length());
-			for (String resExt : resourceExts) {
-				if (pathWithoutExt.toLowerCase().endsWith("." + resExt.toLowerCase())) {
-					isTemplateFile = false;
-					break;
+	private int getComponentOrdinal(String path) {
+		if (path == null)
+			return 999;
+		String norm = FileUtils.normalizePath(path);
+		if (norm.contains("#")) {
+			String[] parts = norm.split(SEPARATOR);
+			for (String part : parts) {
+				if (part.startsWith("#") && part.endsWith("#")) {
+					String alias = part.substring(1, part.length() - 1);
+					Component c = Component.getComponent(alias);
+					if (c != null)
+						return c.ordinal();
 				}
 			}
 		}
-		
-		// 检查是否在排除目录中
-		boolean isExcluded = false;
-		if (global.getExcludeDir() != null && path.contains(global.getResourceDirectory())) {
-			String dirInResources = StringUtils.substringBetween(
-				StringUtils.substringAfter(path, global.getResourceDirectory()), "/", "/");
-			isExcluded = ArrayUtils.contains(global.getExcludeDir(), "/" + dirInResources);
-		}
-		
-		if (logger.isDebugEnabled()) {
-			logger.debug("处理文件: {}, 是否模板: {}, 渲染模式: {}, 是否排除: {}", path, isTemplateFile, render, isExcluded);
-		}
+		return 999; // 无组件标记的资源排在最后
+	}
 
-		// 4. 执行渲染（排除目录中的文件不渲染）
-		if (isTemplateFile && render && !isExcluded) {
-			try {
-				EngineType engineType = global.getEngineType();
-				data = templateRenderer.render(data, context, engineType);
-			} catch (Exception e) {
-				logger.error("模板文件渲染失败: {}, 错误: {}", path, e.getMessage(), e);
-				return;
+	/**
+	 * 获取模块在配置数组中的索引
+	 * 
+	 * @param moduleName 模块名称
+	 * @return 模块索引，未找到返回 999
+	 */
+	private int getModuleIndex(String moduleName) {
+		if (global.getModules() == null) {
+			return 0;
+		}
+		for (int i = 0; i < global.getModules().length; i++) {
+			if (global.getModules()[i].equals(moduleName)) {
+				return i;
 			}
 		}
-		
-		// 5. 资源文件与结果写入
-		boolean isResource = ArrayUtils.contains(global.getResources(), StringUtils.substringAfterLast(path, "."));
-		if (isResource) {
-			writeBinaryFile(path, Base64.getDecoder().decode(data));
-		} else {
-			String outputPath = isTemplateFile ? global.getEngineType().removeExtension(path) : path;
-			writeToFile(outputPath, data, !isTemplateFile);
+		return 999; // 未找到的模块排在最后
+	}
+
+	private void distributeAsset(TemplateResource resource) {
+		String norm = FileUtils.normalizePath(resource.getPath());
+		TemplateModel m = buildBasicModel();
+		m.setModuleName(inferModuleNameFromPath(norm));
+		try {
+			String out = pathResolver.resolve(norm, m);
+			if (StringUtils.isNotBlank(out) && !out.contains(Consts.PATH_PLACEHOLDER_START)) {
+				distributeBinary(resource, new File(global.getOutputDir(), out));
+			}
+		} catch (Exception ignored) {
 		}
 	}
 
-	private boolean isResourceFile(String path) {
-		return ArrayUtils.contains(global.getResources(),
-				StringUtils.lowerCase(StringUtils.substringAfterLast(path, ".")));
-	}
+	private List<TemplateResource> filterComponentResources(List<TemplateResource> resources) {
+		String[] componentNames = global.getComponentNames();
+		if (componentNames != null && componentNames.length > 0) {
+			List<String> list = Arrays.asList(componentNames);
+			return resources.stream().filter(res -> {
+				String rel = res.getPath().substring(Consts.DIR_COMPONENTS.length() + Consts.PATH_SEPARATOR.length());
+				String first = StringUtils.substringBefore(rel, SEPARATOR);
 
-	private String getPackage(String path) {
-		String spackage = (path.contains(global.getSourceDirectory())
-				? StringUtils.substringAfter(path, global.getSourceDirectory())
-				: StringUtils.substringAfter(path, global.getTestSourceDirectory()));
-		return StringUtils.substring(spackage, 1, spackage.lastIndexOf(SEPARATOR)).replaceAll(SEPARATOR, ".");
-	}
-		
-	private void writeBinaryFile(String path, byte[] bytes) {
-		File dest = new File(global.getOutputDir(), path);
-		if (dest.exists() && !global.isFileOverride()) {
-			return;
+				// 模块占位符格式：{0}, {1}
+				if (first.startsWith(Consts.PATH_PLACEHOLDER_START)) {
+					return true;
+				}
+
+				// 组件标记格式：#vue#, #mybatis# - 提取别名检查组件是否启用
+				if (first.startsWith("#") && first.endsWith("#")) {
+					String alias = first.substring(1, first.length() - 1);
+					Component c = Component.getComponent(alias);
+					return c != null && isComponentEnabled(c);
+				}
+				// 3. 普通组件名
+				return list.contains(first);
+			}).collect(Collectors.toList());
 		}
-		try {
-			org.apache.commons.io.FileUtils.writeByteArrayToFile(dest, bytes);
-			logger.info("生成资源文件: {}", dest);
-		} catch (Exception e) {
-			logger.error("写入资源文件失败: {}", dest, e);
-		}
-	}
-		
-	private void writeToFile(String path, String data, boolean skipRender) {
-		// 如果文件是模板文件（需要渲染），移除模板扩展名
-		String outputPath = path;
-		if (!skipRender) {
-			outputPath = global.getEngineType().removeExtension(path);
-		}
-		
-		File dest = new File(global.getOutputDir(), outputPath);
-		
-		if ((!skipRender && StringUtils.isBlank(data)) || (dest.exists() && !global.isFileOverride())) {
-			return;
-		}
-		
-		if (dest.exists()) {
-			logger.warn("覆盖文件: {}", dest);
-		} else {
-			logger.info("生成文件: {}", dest);
-		}
-		
-		try {
-			FileUtils.write(dest, data);
-		} catch (Exception e) {
-			logger.error("写入文件失败: {}", dest, e);
-		}
+		return resources;
 	}
 
 	private void prepare() {
@@ -362,131 +318,283 @@ public class Generator extends AbstractGenerator {
 		mkDirs();
 	}
 
-	public Map<String, String> getTemplates(String subDirName, boolean buildPath, String... componentNames) {
-		URL url = global.getEngineTemplateDirPath();
-		if (null == url) {
-			logger.error("{} template dir not exist!", subDirName);
-			throw new RuntimeException(subDirName + " template dir not exist!");
-		}
-		
-		Map<String, String> templates = new LinkedHashMap<>();
-		String subPathPrefix = subDirName + SEPARATOR;
-		
-		if ("jar".equals(url.getProtocol())) {
-			// 获取基础路径：如 templates/freemarker/
-			String basePath = url.getPath();
-			logger.debug("JAR URL getPath: {}", basePath);
-			if (basePath.contains("!/")) {
-				basePath = StringUtils.substringAfter(basePath, "!/");
-			}
-			logger.debug("basePath after extraction: {}", basePath);
-			// 确保basePath不以/结尾，以便正确拼接
-			if (basePath.endsWith("/")) {
-				basePath = basePath.substring(0, basePath.length() - 1);
-			}
-			String entryName = basePath + "/" + subDirName;
-			logger.debug("entryName: {}", entryName);
-			logger.debug("componentNames: {}", Arrays.toString(componentNames));
-			
-			Map<String, String> map = FileUtils.getJarEntries(url, entryName,
-					(null == componentNames || componentNames.length == 0)
-							? (entryName + SEPARATOR + Component.VUE.name().toLowerCase())
-							: null,
-					global.getResources(), componentNames);
-			for (Entry<String, String> entry : map.entrySet()) {
-				String path = entry.getKey().replace(entryName, "");
-				if (path.startsWith(SEPARATOR)) {
-					path = path.substring(1);
-				}
-				String newPath = buildPath(buildPath, path);
-				templates.put(newPath, entry.getValue());
-			}
-		} else {
-			File baseDir = new File(url.getPath(), subDirName);
-			if (!baseDir.exists()) {
-				logger.warn("模板目录不存在: {}", baseDir);
-				return templates;
-			}
-			
-			// 递归获取所有文件
-			java.util.Collection<File> allFiles = org.apache.commons.io.FileUtils.listFiles(baseDir, null, true);
-			List<String> componentList = componentNames != null ? Arrays.asList(componentNames) : new ArrayList<>();
-			
-			for (File file : allFiles) {
-				// 获取相对于 subDirName 的相对路径
-				String relativePath = file.getAbsolutePath().replace(baseDir.getAbsolutePath(), "");
-				if (relativePath.startsWith(File.separator)) {
-					relativePath = relativePath.substring(1);
-				}
-				
-				// 过滤组件：如果指定了组件名，则相对路径的第一级目录必须匹配其中之一
-				if (!componentList.isEmpty()) {
-					String firstDir = StringUtils.substringBefore(relativePath.replace("\\", "/"), "/");
-					if (!componentList.contains(firstDir)) {
-						continue;
-					}
-				}
-				
-				try {
-					String path = buildPath(buildPath, relativePath);
-					String data;
-					if (ArrayUtils.contains(global.getResources(), StringUtils.substringAfterLast(file.getName(), "."))) {
-						data = Base64.getEncoder().encodeToString(org.apache.commons.io.FileUtils.readFileToByteArray(file));
-					} else {
-						data = org.apache.commons.io.FileUtils.readFileToString(file, global.getEncoding());
-					}
-					templates.put(path, data);
-				} catch (IOException e) {
-					logger.error("读取模板文件失败: {}", file, e);
-				}
-			}
-		}
-		
-		// 排序以保证生成顺序一致
-		Map<String, String> resultMap = new TreeMap<>((str1, str2) -> str1.compareTo(str2));
-		resultMap.putAll(templates);
-		return resultMap;
+	private List<TemplateResource> scanFilteredResources(URL url, String subDir) {
+		List<TemplateResource> resources = FileUtils.getTemplateResources(url, subDir, global.getResources());
+		return resources.stream().filter(res -> !shouldSkipByComponent(res.getPath())).collect(Collectors.toList());
 	}
 
-	private String buildPath(boolean buildPath, String path) {
-		// 手动替换 {0}, {1} 等模块占位符，避免 MessageFormat 冲突
-		String[] modules = global.getModules();
-		if (modules != null && modules.length > 0) {
-			for (int i = 0; i < modules.length; i++) {
-				path = path.replace("{" + i + "}", modules[i]);
-			}
+	private void renderResources(RenderContext context, List<TemplateResource> resources, boolean render) {
+		if (null == resources)
+			return;
+		for (TemplateResource resource : resources) {
+			renderTemplateResource(context, resource, render);
 		}
-		
-		path = isWin() ? path.replace("\\", "/") : path;
-		String moduleName = StringUtils.substringBefore(path, SEPARATOR);
-		boolean skipBuild = false;
-		if (path.startsWith(Component.VUE.name().toLowerCase() + SEPARATOR)) {
-			skipBuild = true;
+	}
+
+	private void renderTemplateResource(RenderContext context, TemplateResource resource, boolean render) {
+		TemplateModel model = buildBasicModel();
+		String normalizedPath = FileUtils.normalizePath(resource.getPath());
+		model.setModuleName(inferModuleNameFromPath(normalizedPath));
+
+		if (context.containsKey("table")) {
+			Table table = (Table) context.get("table");
+			model.setTable(table);
+
 		}
 
-		if (buildPath && !skipBuild) {
-			// 判定是否为 Java 文件，需考虑模板后缀 (.ftl 或 .vm)
-			String engineExt = global.getEngineType().getExtension();
-			boolean isJava = path.endsWith(".java") || path.endsWith(".java" + engineExt);
-			
-			String subPath = StringUtils.substringAfter(path, SEPARATOR);
-			moduleName = StringUtils.substringBefore(subPath, SEPARATOR);
-			subPath = StringUtils.substringAfter(subPath, moduleName + SEPARATOR);
-			boolean isTest = subPath.startsWith("test");
-			if (isJava) {
-				// 标准 Maven Java 路径：module/src/main/java/rootPackage/projectName/module/relativePath
-				path = StringUtils.toPath(moduleName,
-						isTest ? global.getTestSourceDirectory() : global.getSourceDirectory(),
-						global.getRootPackage().replace(".", SEPARATOR), 
-						global.getProjectName(), moduleName, subPath);
+		String outputPath;
+		try {
+			outputPath = pathResolver.resolve(normalizedPath, model);
+		} catch (Exception e) {
+			return;
+		}
+
+		if (outputPath == null || outputPath.contains(Consts.PATH_PLACEHOLDER_START))
+			return;
+
+		String finalModuleName = inferFinalModuleName(outputPath);
+		model.setModuleName(finalModuleName);
+		context.put(Consts.CTX_MODULE_NAME, finalModuleName);
+
+		// 向全局 context 注册包名变量
+		registerPackageVariablesToContext(context, normalizedPath, outputPath, finalModuleName);
+
+		// 设置命名变量（entityName, entityNameLower, className 等）
+		if (context.containsKey("table")) {
+			Table table = (Table) context.get("table");
+			String beanName = table.getBeanName();
+			// 设置命名变量
+			context.put("entityName", beanName);
+			context.put("entityNameLower", table.getLowercaseBeanName());
+			context.put("className", beanName);
+		}
+
+		File dest = new File(global.getOutputDir(), FileUtils.normalizePath(outputPath));
+		if (dest.exists() && !global.isFileOverride())
+			return;
+
+		try {
+			if (resource.isBinary()) {
+				distributeBinary(resource, dest);
+			} else if (render && isTemplateFile(normalizedPath)) {
+				log.debug("渲染模板: {} -> {} ", normalizedPath, outputPath);
+				String data = templateRenderer.render(resource.getContent(), context, global.getEngineType());
+				if (StringUtils.isNotBlank(data) && StringUtils.isNotBlank(data.trim())) {
+					FileUtils.write(dest, data, global.getEncoding());
+					log.info("生成文件: {}, 大小: {} bytes", dest.getPath(), dest.length());
+				} else {
+					log.warn("模板渲染结果为空: {}", normalizedPath);
+				}
 			} else {
-				// 资源文件路径：module/src/main/resources/relativePath
-				path = StringUtils.toPath(moduleName,
-						isTest ? global.getTestResourceDirectory() : global.getResourceDirectory(),
-						isTest ? StringUtils.substringAfter(subPath, SEPARATOR) : subPath);
+				distributeBinary(resource, dest);
 			}
+		} catch (Exception e) {
+			log.error("生成文件失败: {}", dest.getPath(), e);
 		}
-		return path;
 	}
 
+	private void distributeBinary(TemplateResource resource, File dest) throws IOException {
+		try (InputStream is = resource.openStream()) {
+			if(!dest.exists()||global.isFileOverride()) {
+				log.debug("分发文件: {}", dest.getPath());
+				FileUtils.copyInputStreamToFile(is, dest);
+			}
+		}
+	}
+
+	private boolean isTemplateFile(String path) {
+		return path.toLowerCase().endsWith(global.getEngineType().getExtension());
+	}
+
+	private String inferFinalModuleName(String outputPath) {
+		String moduleName = StringUtils.substringBefore(outputPath, SEPARATOR);
+		if (StringUtils.isBlank(moduleName) || moduleName.contains(Consts.FILE_EXTENSION_SEPARATOR)
+				|| moduleName.contains(Consts.PATH_WINDOWS_SEPARATOR)) {
+			String[] modules = global.getModules();
+			if (modules != null) {
+				for (String m : modules) {
+					if (outputPath.startsWith(m + SEPARATOR))
+						return m;
+				}
+			}
+		}
+		return moduleName;
+	}
+
+	/**
+	 * 直接向全局 context 注册包名变量
+	 * 
+	 * @param context      全局 context
+	 * @param templatePath 模板路径
+	 * @param outputPath   输出路径
+	 * @param moduleName   模块名
+	 */
+	private void registerPackageVariablesToContext(RenderContext context, String templatePath, String outputPath,
+			String moduleName) {
+		if (outputPath == null || !outputPath.endsWith(".java")) {
+			return;
+		}
+
+		// 提取包名
+		String javaDirMark = Consts.DIR_JAVA + Consts.PATH_SEPARATOR;
+		int index = outputPath.indexOf(javaDirMark);
+		if (index == -1)
+			return;
+
+		String packagePath = outputPath.substring(index + javaDirMark.length());
+		// 移除文件名（最后一个路径分隔符之后的部分）
+		int lastSlashIndex = packagePath.lastIndexOf(Consts.PATH_SEPARATOR);
+		if (lastSlashIndex != -1) {
+			packagePath = packagePath.substring(0, lastSlashIndex);
+		}
+		String fullPackage = packagePath.replace(Consts.PATH_SEPARATOR, ".");
+
+		if (fullPackage == null || fullPackage.isEmpty()) {
+			return;
+		}
+
+		// 根据父目录名注册包名变量
+		String parentDir = org.apache.commons.lang3.StringUtils.substringAfterLast(
+				org.apache.commons.lang3.StringUtils.substringBeforeLast(outputPath, Consts.PATH_SEPARATOR),
+				Consts.PATH_SEPARATOR);
+		if (org.apache.commons.lang3.StringUtils.isNotBlank(parentDir)) {
+			String varName = parentDir + "Package";
+			context.put(varName, fullPackage);
+			log.debug("注册包名变量: {} = {}", varName, fullPackage);
+			// 同时注册模块前缀的变量
+			if (org.apache.commons.lang3.StringUtils.isNotBlank(moduleName)) {
+				context.put(moduleName + "_" + varName, fullPackage);
+				log.debug("注册模块包名变量: {} = {}", moduleName + "_" + varName, fullPackage);
+			}
+		}
+
+		// 根据文件名注册包名变量
+		String fileName = org.apache.commons.lang3.StringUtils.substringAfterLast(outputPath, Consts.PATH_SEPARATOR);
+		String className = org.apache.commons.lang3.StringUtils.substringBefore(fileName, ".java");
+		if (org.apache.commons.lang3.StringUtils.isNotBlank(className)) {
+			context.put(className + "Package", fullPackage);
+			context.put(className + "FullPackage", fullPackage + "." + className);
+			// 同时注册模块前缀的变量
+			if (org.apache.commons.lang3.StringUtils.isNotBlank(moduleName)) {
+				context.put(moduleName + "_" + className + "Package", fullPackage);
+				context.put(moduleName + "_" + className + "FullPackage", fullPackage + "." + className);
+			}
+			context.put(parentDir + "Name", className);
+		}
+	}
+
+	private boolean shouldSkipByComponent(String path) {
+		if (path == null)
+			return false;
+		String norm = FileUtils.normalizePath(path);
+		if (!norm.contains("#")) {
+			return false;
+		}
+		String[] parts = norm.split(SEPARATOR);
+		for (String part : parts) {
+			if (part.startsWith("#") && part.endsWith("#")) {
+				String alias = part.substring(1, part.length() - 1);
+				Component c = Component.getComponent(alias);
+				if (c != null && !isComponentEnabled(c)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean isComponentEnabled(Component c) {
+		if (global.getComponents() == null)
+			return false;
+		for (Component enabled : global.getComponents()) {
+			if (enabled == c)
+				return true;
+		}
+		return false;
+	}
+
+	private String inferModuleNameFromPath(String path) {
+		String remaining = StringUtils.substringAfter(FileUtils.normalizePath(path), SEPARATOR);
+		String part = StringUtils.substringBefore(remaining, SEPARATOR);
+		if (part.startsWith(Consts.PATH_PLACEHOLDER_START) && part.endsWith(Consts.PATH_PLACEHOLDER_END)) {
+			try {
+				int idx = Integer.parseInt(part.substring(Consts.PATH_PLACEHOLDER_START.length(),
+						part.length() - Consts.PATH_PLACEHOLDER_END.length()));
+				if (global.getModules() != null && idx < global.getModules().length)
+					return global.getModules()[idx];
+			} catch (Exception ignored) {
+			}
+		}
+		return part;
+	}
+
+	private TemplateModel buildBasicModel() {
+		TemplateModel m = new TemplateModel();
+		m.setConfig(global);
+		m.setDataSource(dataSource);
+		m.setRootPackage(global.getRootPackage());
+		m.setProjectName(global.getProjectName());
+		if (global.getComponents() != null)
+			m.setComponents(new HashSet<>(Arrays.asList(global.getComponents())));
+		return m;
+	}
+
+	public void generateDoc(File outputFile, String format, List<String> fontPaths) {
+		try {
+			List<Table> tables = getTables();
+			if (tables.isEmpty())
+				throw new GeneratorException(Consts.ERR_NO_TABLES_FOUND);
+
+			ExportFormat exportFormat = ExportFormat.fromExtension(format);
+			if (exportFormat == null)
+				exportFormat = ExportFormat.WORD;
+
+			if (fontPaths == null && exportFormat == ExportFormat.PDF) {
+				fontPaths = FontUtils.getPdfFontPaths(global.getOSFontConfig());
+			}
+			DbToDoc.toDoc(tables, exportFormat, outputFile.getAbsolutePath(), fontPaths);
+			log.info("文档生成完成: {}", outputFile.getAbsolutePath());
+		} catch (Exception e) {
+			log.error("生成文档失败", e);
+			throw new GeneratorException(Consts.ERR_DOC_GENERATION_FAILED + e.getMessage(), e);
+		}
+	}
+
+	public synchronized void save() {
+		try {
+			File dir = new File(EXTERNAL_CONFIG_DIR);
+			if (!dir.exists())
+				dir.mkdirs();
+
+			String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+			File configFile = new File(dir, "generator_" + timestamp + Consts.EXT_YAML);
+
+			org.yaml.snakeyaml.DumperOptions options = new org.yaml.snakeyaml.DumperOptions();
+			options.setDefaultFlowStyle(org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK);
+			options.setPrettyFlow(true);
+			Yaml yaml = new Yaml(new SkipRuntimeFieldsRepresenter(options), options);
+
+			java.io.StringWriter stringWriter = new java.io.StringWriter();
+			yaml.dump(this, stringWriter);
+			String yamlContent = removeTypeTagsAndNulls(stringWriter.toString());
+
+			org.apache.commons.io.FileUtils.writeStringToFile(configFile, yamlContent, Consts.DEFAULT_ENCODING);
+			log.info("配置已持久化至: {}", configFile.getAbsolutePath());
+		} catch (Exception e) {
+			log.error("持久化配置失败", e);
+		}
+	}
+
+	private static String removeTypeTagsAndNulls(String yamlContent) {
+		String[] lines = yamlContent.split("\n");
+		StringBuilder result = new StringBuilder();
+		for (String line : lines) {
+			if (line.trim().matches(".*:\\s*null$"))
+				continue;
+			line = line.replaceAll("^!![^\\s\\n]+\\s*", "");
+			line = line.replaceAll("-\\s*!![^\\s\\n]+\\s+", "- ");
+			result.append(line).append("\n");
+		}
+		return result.toString();
+	}
 }

@@ -1,7 +1,7 @@
 <#noparse># 说明</#noparse>
 
-<#if ZOOKEEPER?has_content>
-<#noparse><#--  初始化分布式配置数据(非必须)：</#noparse> -->
+<#if ZOOKEEPER?? && ZOOKEEPER>
+<#noparse><#--  初始化分布式配置数据(非必须)：</#noparse> -->
 建议把可能会调整的配置，初始化到zookeeper分布式配置中(个性化配置除外，如权重数据)，当应用集群部署时，方便集中管理配置数据，实现实时加载动态配置，避免逐台服务器手工修改配置文件
 
 - 利用zookeeper客户端zkCli导入zookeeper.data脚本数据
@@ -9,8 +9,8 @@
 			
 </#if>
 
-<#if SPRINGBOOT?has_content>
-<#noparse><#--  启动：</#noparse> -->
+<#if SPRINGBOOT?? && SPRINGBOOT>
+<#noparse><#--  启动：</#noparse> -->
 导入源码到IDE中执行Booter类
 
 或执行：

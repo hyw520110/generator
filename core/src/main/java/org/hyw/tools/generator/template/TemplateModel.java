@@ -7,11 +7,13 @@ import java.util.Set;
 import java.util.List;
 
 import org.hyw.tools.generator.conf.GlobalConf;
+import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.enums.Component;
 
 public class TemplateModel {
     private GlobalConf config;
+    private DataSourceConf dataSource;
     private Table table;
     private List<Table> allTables;
     private String author;
@@ -26,6 +28,8 @@ public class TemplateModel {
 
     public GlobalConf getConfig() { return config; }
     public void setConfig(GlobalConf config) { this.config = config; }
+    public DataSourceConf getDataSource() { return dataSource; }
+    public void setDataSource(DataSourceConf dataSource) { this.dataSource = dataSource; }
     public Table getTable() { return table; }
     public void setTable(Table table) { this.table = table; }
     public List<Table> getAllTables() { return allTables; }
@@ -60,11 +64,30 @@ public class TemplateModel {
     public boolean isMybatis() { return hasComponent(Component.MYBATIS); }
     public boolean isJpa() { return hasComponent(Component.JPA); }
 
+    public TemplateModel copy() {
+        TemplateModel copy = new TemplateModel();
+        copy.config = this.config;
+        copy.dataSource = this.dataSource;
+        copy.table = this.table;
+        copy.allTables = this.allTables;
+        copy.author = this.author;
+        copy.date = this.date;
+        copy.copyright = this.copyright;
+        copy.projectName = this.projectName;
+        copy.rootPackage = this.rootPackage;
+        copy.moduleName = this.moduleName;
+        copy.entityPackage = this.entityPackage;
+        copy.components = this.components;
+        copy.extra = this.extra;
+        return copy;
+    }
+
     public static Builder builder() { return new Builder(); }
 
     public static class Builder {
         private TemplateModel model = new TemplateModel();
         public Builder config(GlobalConf config) { model.setConfig(config); return this; }
+        public Builder dataSource(DataSourceConf dataSource) { model.setDataSource(dataSource); return this; }
         public Builder table(Table table) { model.setTable(table); return this; }
         public Builder allTables(List<Table> allTables) { model.setAllTables(allTables); return this; }
         public Builder author(String author) { model.setAuthor(author); return this; }

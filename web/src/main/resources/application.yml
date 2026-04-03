@@ -1,0 +1,31 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: generator-web
+
+# Knife4j 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+app:
+  # 自动打开浏览器 (默认关闭，由前端 Vite --open 控制)
+  auto-open-browser: false
+  # 自动启动前端开发服务 (默认关闭)
+  auto-start-frontend: false
+  # 代码下载目录 (默认为用户下载目录)
+  download-dir: ${user.home}/Downloads/generator
+  # 代码默认输出目录 (用于前端默认值)
+  output-dir: ${user.home}/output/demo
+

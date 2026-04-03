@@ -1,4 +1,4 @@
-<#if "MAVEN"=="${global.projectBuilder}">
+<#if projectBuilder == "MAVEN">
 # 说明
 
 多模块工程的聚合工程，主要作用是为多模块工程提供便捷构建（此也可定义公共依赖、插件）

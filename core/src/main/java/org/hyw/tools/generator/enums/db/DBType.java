@@ -1,16 +1,13 @@
 package org.hyw.tools.generator.enums.db;
 
 import org.hyw.tools.generator.conf.converts.TypeConvertor;
-import org.hyw.tools.generator.conf.converts.impl.MySqlTypeConvert;
-import org.hyw.tools.generator.conf.converts.impl.OracleTypeConvert;
-import org.hyw.tools.generator.conf.converts.impl.PostgreSqlTypeConvert;
-import org.hyw.tools.generator.conf.converts.impl.SqlServerTypeConvert;
+import org.hyw.tools.generator.conf.converts.TypeConvertStrategyFactory;
 
 public enum DBType {
-	MYSQL("mysql", "com.mysql.jdbc.Driver","jdbc:mysql://%s:%s/%s?connectTimeout=3000&socketTimeout=10000&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false","jdbc:mysql://%s:%s?connectTimeout=3000&socketTimeout=10000&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false",new MySqlTypeConvert()), 
-	ORACLE("oracle", "oracle.jdbc.driver.OracleDriver","jdbc:oracle:thin:@%s:%s:%s","jdbc:oracle:thin:@%s:%s",new OracleTypeConvert()),
-	SQL_SERVER("sqlserver","com.microsoft.sqlserver.jdbc.SQLServerDriver","jdbc:sqlserver://%s:%s;databaseName=%s","jdbc:sqlserver://%s:%s", new SqlServerTypeConvert()), 
-	POSTGRE_SQL("postgresql","org.postgresql.Driver","jdbc:postgresql://%s/%s","jdbc:postgresql://%s", new PostgreSqlTypeConvert());
+	MYSQL("mysql", "com.mysql.jdbc.Driver","jdbc:mysql://%s:%s/%s?connectTimeout=3000&socketTimeout=10000&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false","jdbc:mysql://%s:%s?connectTimeout=3000&socketTimeout=10000&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false"), 
+	ORACLE("oracle", "oracle.jdbc.driver.OracleDriver","jdbc:oracle:thin:@%s:%s:%s","jdbc:oracle:thin:@%s:%s"),
+	SQL_SERVER("sqlserver","com.microsoft.sqlserver.jdbc.SQLServerDriver","jdbc:sqlserver://%s:%s;databaseName=%s","jdbc:sqlserver://%s:%s"), 
+	POSTGRE_SQL("postgresql","org.postgresql.Driver","jdbc:postgresql://%s/%s","jdbc:postgresql://%s");
 
 	private final String name;
 	private String driver;
@@ -18,12 +15,11 @@ public enum DBType {
 	private String urlWithoutDb;
 	private TypeConvertor convertor;
 
-	DBType(String value,String driver,String url, String urlWithoutDb, TypeConvertor convertor) {
+	DBType(String value,String driver,String url, String urlWithoutDb) {
 		this.name = value;
 		this.driver=driver;
 		this.url=url;
 		this.urlWithoutDb = urlWithoutDb;
-		this.convertor = convertor;
 	}
 
 	public static String[] getDbNames() {
@@ -49,8 +45,15 @@ public enum DBType {
 		return name;
 	}
 
+	/**
+	 * 获取类型转换器
+	 * 优先返回手动设置的 convertor，否则从工厂获取
+	 */
 	public TypeConvertor getConvertor() {
-		return convertor;
+		if (convertor != null) {
+			return convertor;
+		}
+		return TypeConvertStrategyFactory.getStrategy(this);
 	}
 
 	public void setConvertor(TypeConvertor convertor) {

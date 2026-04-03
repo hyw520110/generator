@@ -1,5 +1,6 @@
 package org.hyw.tools.generator.conf.dao;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.hyw.tools.generator.conf.converts.TypeConvertor;
+import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.db.DBType;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
@@ -47,6 +49,10 @@ public class DataSourceConf extends DruidDataSource {
 
 	private String conProperties;
 	/**
+	 * 当前选择的数据库名（独立于URL，用于动态切换数据库）
+	 */
+	private String currentDbName;
+	/**
 	 * 类型转换
 	 */
 	private TypeConvertor typeConvertor;
@@ -76,17 +82,21 @@ public class DataSourceConf extends DruidDataSource {
 		if (jdbcUrl != null && jdbcUrl.equals(this.getUrl())) {
 			return;
 		}
-		
 		logger.info("设置数据库URL - 原URL: {}, 新URL: {}, 用户: {}", this.getUrl(), jdbcUrl, getUsername());
-		try {
-			super.setUrl(jdbcUrl);
-			logger.info("数据库URL设置成功 - URL: {}", jdbcUrl);
-		} catch (UnsupportedOperationException e) {
-			logger.error("数据库URL设置失败 - 原URL: {}, 新URL: {}, 用户: {}, 错误: Druid连接池已初始化，不允许修改URL", 
-				this.getUrl(), jdbcUrl, getUsername());
-			// 抛出异常以便调用者知道修改失败
-			throw e;
+		// 连接池已初始化，需要关闭后重新设置
+		if (super.isInited()) {
+			logger.info("连接池已初始化，关闭连接池后重新设置URL");
+			super.close();
 		}
+		// 设置新的 jdbcUrl
+		this.jdbcUrl = jdbcUrl;
+		// 从 URL 中解析数据库名并同步到 currentDbName
+		String dbNameFromUrl = StringUtils.substringBetween(jdbcUrl, getPort() + "/", "?");
+		if (StringUtils.isNotBlank(dbNameFromUrl)) {
+			this.currentDbName = dbNameFromUrl;
+			logger.info("从URL解析数据库名: {}", dbNameFromUrl);
+		}
+		logger.info("数据库URL设置成功 - URL: {}", jdbcUrl);
 	}
 
 	public DBType getDBType() {
@@ -101,13 +111,21 @@ public class DataSourceConf extends DruidDataSource {
 			return null;
 		}
 
+		// 直接从 JDBC URL 解析数据库类型
+		dbType = parseDBTypeFromUrl(jdbcUrl);
+		if (dbType != null) {
+			logger.info("从 URL 解析数据库类型 - 类型: {}, URL: {}", dbType, jdbcUrl);
+			return dbType;
+		}
+
+		// 如果无法解析，尝试通过 Druid 连接池识别
 		logger.info("初始化数据库连接池 - URL: {}, 用户: {}", jdbcUrl, getUsername());
 		try {
 			super.init();
 			logger.info("数据库连接池初始化成功 - IP: {}, 端口: {}, 用户: {}", getIp(), getPort(), getUsername());
 		} catch (SQLException e) {
-			logger.error("数据库连接池初始化失败 - URL: {}, 用户: {}, 错误类型: {}, 错误信息: {}", 
-				jdbcUrl, getUsername(), e.getClass(), e.getMessage(), e);
+			logger.error("数据库连接池初始化失败 - URL: {}, 用户: {}, 错误类型: {}, 错误信息: {}", jdbcUrl, getUsername(), e.getClass(),
+					e.getMessage(), e);
 		}
 
 		String dbTypeName = super.getDbType();
@@ -117,6 +135,23 @@ public class DataSourceConf extends DruidDataSource {
 		}
 
 		return dbType;
+	}
+
+	/**
+	 * 从 JDBC URL 解析数据库类型
+	 */
+	private DBType parseDBTypeFromUrl(String url) {
+		if (url == null)
+			return null;
+		if (url.contains(":mysql:"))
+			return DBType.MYSQL;
+		if (url.contains(":oracle:"))
+			return DBType.ORACLE;
+		if (url.contains(":sqlserver:"))
+			return DBType.SQL_SERVER;
+		if (url.contains(":postgresql:"))
+			return DBType.POSTGRE_SQL;
+		return null;
 	}
 
 	public void setDBType(DBType dbType) {
@@ -141,8 +176,15 @@ public class DataSourceConf extends DruidDataSource {
 
 	public QuerySQL getQuerySQL() {
 		if (null == querySQL) {
-			String conf = String.format("/conf/%s.yml", getDBType().getName());
-			this.querySQL = new Yaml().loadAs(DataSourceConf.class.getResourceAsStream(conf), QuerySQL.class);
+			String confYml = String.format(Consts.CONF_DIR_PATH + "%s" + Consts.EXT_YML, getDBType().getName());
+			try (InputStream is = DataSourceConf.class.getResourceAsStream(confYml)) {
+				if (is != null) {
+					this.querySQL = new Yaml().loadAs(is, QuerySQL.class);
+				}
+				log.info("加载:{} 完成",confYml);
+			} catch (Exception e) {
+				log.warn("加载：{} 异常:{}", confYml, e.getLocalizedMessage());
+			} 
 		}
 		return querySQL;
 	}
@@ -206,28 +248,131 @@ public class DataSourceConf extends DruidDataSource {
 	}
 
 	public void setIpAndPort(String ipAndPort) {
-		StringUtils.replace(getUrl(), getIpAndPort(), ipAndPort);
+		String currentIpAndPort = getIpAndPort();
+
+		// 如果相同，不需要修改
+		if (ipAndPort != null && ipAndPort.equals(currentIpAndPort)) {
+			logger.debug("IP和端口相同，跳过设置 - {}", ipAndPort);
+			return;
+		}
+
+		if (currentIpAndPort == null || currentIpAndPort.isEmpty()) {
+			logger.warn("无法获取当前IP和端口，跳过设置");
+			return;
+		}
+
+		// 关闭现有连接池
+		if (super.isInited()) {
+			logger.info("关闭现有连接池，准备切换数据库服务器 - 当前: {}, 新: {}", currentIpAndPort, ipAndPort);
+			super.close();
+		}
+
+		// 使用正则替换 IP:端口 部分，避免误替换 URL 中的其他部分
+		String currentUrl = getUrl();
+		String newUrl = currentUrl.replaceFirst("//([^/?]+)", "//" + ipAndPort);
+
+		logger.info("设置数据库URL - 原URL: {}, 新URL: {}", currentUrl, newUrl);
+		this.jdbcUrl = newUrl;
+		this.dbType = parseDBTypeFromUrl(jdbcUrl);
 	}
 
 	public String getIpAndPort() {
-		return StringUtils.substringBetween(getUrl(), "//", "/");
+		String url = getUrl();
+		if (url == null)
+			return null;
+		// 使用正则匹配 //后面的 IP:端口 部分
+		java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("//([^/?]+)").matcher(url);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return null;
 	}
 
 	public String getIp() {
-		return StringUtils.substringBetween(getUrl(), "//", ":");
+		String ipAndPort = getIpAndPort();
+		if (ipAndPort == null)
+			return null;
+		int colonIndex = ipAndPort.lastIndexOf(":");
+		if (colonIndex > 0) {
+			return ipAndPort.substring(0, colonIndex);
+		}
+		return ipAndPort;
 	}
 
 	public String getPort() {
-		return StringUtils.substringBetween(getUrl(), getIp() + ":", "/");
+		String ipAndPort = getIpAndPort();
+		if (ipAndPort == null)
+			return null;
+		int colonIndex = ipAndPort.lastIndexOf(":");
+		if (colonIndex > 0) {
+			return ipAndPort.substring(colonIndex + 1);
+		}
+		return null;
 	}
 
 	public String getDbName() {
+		// 优先返回当前设置的数据库名
+		if (StringUtils.isNotBlank(currentDbName)) {
+			return currentDbName;
+		}
 		return StringUtils.substringBetween(getUrl(), getPort() + "/", "?");
 	}
 
 	public void setDbName(String dbName) {
-		String newUrl = StringUtils.replace(getUrl(), getDbName(), dbName);
-		setUrl(newUrl);
+		// trim 处理，空字符串转为 null（表示不指定数据库）
+		String trimmedDbName = StringUtils.trimToNull(dbName);
+
+		// 值没有变化则不处理
+		if ((trimmedDbName == null && this.currentDbName == null)
+				|| (trimmedDbName != null && trimmedDbName.equals(this.currentDbName))) {
+			logger.debug("数据库未变化，无需切换 - 当前库：{}", this.currentDbName);
+			return;
+		}
+
+		String oldDbName = this.currentDbName;
+		this.currentDbName = trimmedDbName;
+		logger.info("切换数据库 - 当前库: {}, 新库: {}", oldDbName, trimmedDbName);
+
+		// 如果连接池已初始化，需要关闭
+		if (super.isInited()) {
+			logger.info("连接池已初始化，关闭连接池后更新URL");
+			super.close();
+		}
+
+		// 更新 URL（无论连接池是否初始化都要更新，保持 URL 与 currentDbName 同步）
+		String newUrl = (trimmedDbName == null) ? getDBType().buildUrl(getIp(), getPort())
+				: getDBType().buildUrl(getIp(), getPort(), trimmedDbName);
+		logger.info("设置数据库URL - 新URL: {}", newUrl);
+		this.jdbcUrl = newUrl;
+	}
+
+	/**
+	 * 重写 getConnection 方法，确保连接池在关闭后能重新初始化
+	 */
+	@Override
+	public com.alibaba.druid.pool.DruidPooledConnection getConnection() throws SQLException {
+		// 如果连接池已关闭但需要重新使用，先重置状态
+		if (super.isClosed()) {
+			logger.info("连接池已关闭，重新初始化连接池");
+			// 重置内部状态，允许重新初始化
+			synchronized (this) {
+				if (super.isClosed()) {
+					// DruidDataSource 的 restart 方法可以重新启动已关闭的连接池
+					super.restart();
+				}
+			}
+		}
+		return super.getConnection();
+	}
+
+	/**
+	 * 重置数据源（关闭连接池，下次获取连接时自动重新初始化）
+	 */
+	public void resetDataSource() {
+		if (super.isInited()) {
+			logger.info("重置数据源 - 关闭连接池");
+			super.close();
+		}
 	}
 
 	public Connection getConnection(String dbName) throws SQLException {
@@ -260,27 +405,27 @@ public class DataSourceConf extends DruidDataSource {
 		} catch (SQLException e) {
 			logger.warn("检查数据库是否存在时发生异常 - 数据库名: {}, 错误: {}", dbName, e.getLocalizedMessage());
 		}
+
+		// 从 QuerySQL 配置获取创建数据库的 SQL
+		QuerySQL sqlConfig = getQuerySQL();
+		String sqlTemplate = sqlConfig.getCreateDatabase();
 		
-		String sql = switch (dbType) {
-		case MYSQL -> "CREATE DATABASE IF NOT EXISTS `" + dbName + "` DEFAULT CHARACTER SET utf8mb4";
-		case POSTGRE_SQL -> "CREATE DATABASE \"" + dbName + "\" ENCODING 'UTF8'";
-		case SQL_SERVER -> "CREATE DATABASE [" + dbName + "]";
-		default -> null;
-		};
-		
-		if (sql == null) {
+		if (StringUtils.isBlank(sqlTemplate)) {
 			logger.warn("当前数据库类型不支持自动创建数据库 - 数据库类型: {}", dbType);
 			return false;
 		}
 		
+		// 替换占位符
+		String sql = sqlTemplate.replace("{dbName}", dbName);
+
 		logger.info("准备执行创建数据库SQL - SQL: {}, IP: {}, 端口: {}, 用户: {}", sql, getIp(), getPort(), getUsername());
 		try (Connection conn = getConnection(null); Statement st = conn.createStatement()) {
 			st.execute(sql);
 			logger.info("数据库创建成功 - 数据库名: {}", dbName);
 			return true;
 		} catch (SQLException e) {
-			logger.error("创建数据库失败 - 数据库名: {}, IP: {}, 端口: {}, 用户: {}, SQL: {}, 错误: {}", 
-				dbName, getIp(), getPort(), getUsername(), sql, e.getMessage(), e);
+			logger.error("创建数据库失败 - 数据库名: {}, IP: {}, 端口: {}, 用户: {}, SQL: {}, 错误: {}", dbName, getIp(), getPort(),
+					getUsername(), sql, e.getMessage(), e);
 			return false;
 		}
 	}
@@ -290,16 +435,24 @@ public class DataSourceConf extends DruidDataSource {
 	 */
 	public List<String> getDataBaseNames() {
 		List<String> dbNames = new ArrayList<>();
-		String sql = switch (dbType) {
-		case MYSQL -> "SHOW DATABASES";
-		case POSTGRE_SQL -> "SELECT datname FROM pg_database WHERE datistemplate = false";
-		case SQL_SERVER -> "SELECT name FROM sys.databases";
-		case ORACLE -> "SELECT username FROM all_users";
-		default -> null;
-		};
-		if (sql == null)
+		// 确保 dbType 已初始化
+		DBType currentDbType = getDBType();
+		if (currentDbType == null) {
+			logger.error("无法识别数据库类型，URL: {}", getUrl());
 			return dbNames;
-		try (Connection conn = getConnection();
+		}
+		
+		// 从 QuerySQL 配置获取列出数据库的 SQL
+		QuerySQL sqlConfig = getQuerySQL();
+		String sql = sqlConfig.getListDatabases();
+		
+		if (StringUtils.isBlank(sql)) {
+			logger.warn("当前数据库类型不支持列出所有数据库 - 数据库类型: {}", currentDbType);
+			return dbNames;
+		}
+
+		// 使用 DriverManager 直接获取连接（不依赖连接池），避免连接池已关闭的问题
+		try (Connection conn = getConnection((String) null);
 				Statement st = conn.createStatement();
 				ResultSet rs = st.executeQuery(sql)) {
 			while (rs.next()) {
@@ -322,15 +475,15 @@ public class DataSourceConf extends DruidDataSource {
 	 * 检查当前数据库是否为空
 	 */
 	public boolean isEmptyDataBase() {
-		String sql = switch (dbType) {
-		case MYSQL -> "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()";
-		case POSTGRE_SQL -> "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = current_schema()";
-		case SQL_SERVER -> "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = SCHEMA_NAME()";
-		case ORACLE -> "SELECT COUNT(*) FROM user_tables WHERE username = USER";
-		default -> null;
-		};
-		if (sql == null)
+		// 从 QuerySQL 配置获取检查数据库是否为空的 SQL
+		QuerySQL sqlConfig = getQuerySQL();
+		String sql = sqlConfig.getCheckEmptyDatabase();
+		
+		if (StringUtils.isBlank(sql)) {
+			logger.warn("当前数据库类型不支持检查数据库是否为空 - 数据库类型: {}", dbType);
 			return true;
+		}
+		
 		try (Connection conn = getConnection();
 				Statement st = conn.createStatement();
 				ResultSet rs = st.executeQuery(sql)) {

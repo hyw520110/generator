@@ -1,0 +1,32 @@
+package ${securityPackage!};
+
+import java.io.Serializable;
+
+import org.apache.shiro.authc.AuthenticationToken;
+
+import ${securityPackage!}.TokenInfo;
+
+/**
+ * Shiro 认证令牌
+ */
+public class ShiroAuthenticationToken extends TokenInfo implements AuthenticationToken, Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	public ShiroAuthenticationToken() {
+	}
+
+	public ShiroAuthenticationToken(String userId, String token) {
+		super(userId, token);
+	}
+
+	@Override
+	public Object getPrincipal() {
+		return getUsername();
+	}
+
+	@Override
+	public Object getCredentials() {
+		return getToken();
+	}
+}

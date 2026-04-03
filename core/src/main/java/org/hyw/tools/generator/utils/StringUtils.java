@@ -64,6 +64,19 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
 	}
 
 	/**
+	 * 去除前缀并转换为帕斯卡命名（首字母大写的驼峰）
+	 *
+	 * @param name       表名或字段名
+	 * @param tablePrefix 表前缀
+	 * @param separators 分隔符
+	 * @return 帕斯卡命名的字符串
+	 */
+	public static String removePrefixAndPascal(String name, String[] tablePrefix, char[] separators) {
+		String s = removePrefixAndCamel(name, tablePrefix, separators);
+		return capitalFirst(s);
+	}
+
+	/**
 	 * 实体首字母大写
 	 *
 	 * @param name 待转换的字符串
@@ -241,4 +254,6 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
 		}
 		return sDefault.length == 1 ? org.apache.commons.lang.StringUtils.isEmpty(sDefault[0]) : false;
 	}
+	
+	
 }

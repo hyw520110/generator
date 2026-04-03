@@ -1,4 +1,4 @@
-<#if "MAVEN"=="${global.projectBuilder}">
+<#if projectBuilder == "MAVEN">
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -25,19 +25,29 @@
 		  	<version>2.4</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.hibernate</groupId>
-		    <artifactId>hibernate-validator</artifactId>
-		    <#if springboot?has_content><version>6.0.17.Final</version></#if>
-		</dependency>
-<#if springboot && !jpa?has_content>		
+			    <groupId>org.hibernate</groupId>
+			    <artifactId>hibernate-validator</artifactId>
+			    <#if springboot?has_content><version>8.0.1.Final</version></#if>
+			</dependency>
+			<dependency>
+			    <groupId>jakarta.validation</groupId>
+			    <artifactId>jakarta.validation-api</artifactId>
+			</dependency><#if springboot && !jpa?has_content>		
 		<dependency>
 		  <groupId>org.springframework.boot</groupId>
 		  <artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 </#if>
+		<!-- OpenAPI 3 注解 -->
 		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>2.2.15</version>
+		</dependency>
+		<!-- Jackson -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
 		</dependency>
 <#if mapperType?? && mapperType == "plus">
 		<dependency>
@@ -64,9 +74,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.3</version>
 				<configuration>
-					<source>${maven.compiler.source!}</source>
-					<target>${maven.compiler.target!}</target>
-					<encoding>${project.build.sourceEncoding!}</encoding>
+					<source><#noparse>${maven.compiler.source}</#noparse></source>
+					<target><#noparse>${maven.compiler.target}</#noparse></target>
+					<encoding><#noparse>${project.build.sourceEncoding}</#noparse></encoding>
 				</configuration>
 			</plugin>
 			<!-- 源码jar插件 -->

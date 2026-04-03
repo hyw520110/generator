@@ -16,7 +16,6 @@
 #end
  *
  * @author ${author}
- * @since ${date}
  * @copyright ${copyright}
  */
 #end
@@ -30,7 +29,6 @@
  * ${description}
  *
  * @author ${author}
- * @since ${date}
  * @copyright ${copyright}
  */
 #end
@@ -130,19 +128,19 @@ package ${packageName};
 #end
 
 ## --------------------------------------------
-## Swagger @ApiModel 注解
+## OpenAPI 3 @Schema 注解
 ## 参数：$description - 描述
 ## --------------------------------------------
 #macro(swaggerApiModel $description)
-@ApiModel("${description}")
+@Schema(description = "${description}")
 #end
 
 ## --------------------------------------------
-## Swagger @ApiModelProperty 注解
-## 参数：$description - 描述，$required - 是否必填
+## OpenAPI 3 @Schema 注解
+## 参数：$description - 描述，$required - 是否必填，$hidden - 是否隐藏
 ## --------------------------------------------
-#macro(swaggerApiModelProperty $description $required)
-@ApiModelProperty(value = "${description}"#if($required), required = true#end)
+#macro(swaggerApiModelProperty $description $required $hidden)
+@Schema(#if($description)description = "${description}"#end#if($required), required = true#end#if($hidden), hidden = true#end)
 #end
 
 ## --------------------------------------------

@@ -1,6 +1,8 @@
 package org.hyw.tools.generator.web;
 
 import org.hyw.tools.generator.web.filter.JsonFormContentFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -14,34 +16,45 @@ import org.springframework.web.filter.FormContentFilter;
 @SpringBootApplication
 @EnableAsync
 public class WebGenerator {
+	private static final Logger logger = LoggerFactory.getLogger(WebGenerator.class);
 
 	public static void main(String[] args) {
+		logger.info("正在启动代码生成器 Web 应用...");
 		SpringApplication.run(WebGenerator.class, args);
+		logger.info("代码生成器 Web 应用启动完成");
 	}
 
 	@Bean
 	public FilterRegistrationBean<CorsFilter> corsFilter() {
+		logger.debug("配置 CORS 跨域过滤器");
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration config = new CorsConfiguration();
-		// 允许cookies跨域
+		// 允cookies跨域
 		config.setAllowCredentials(true);
-		// #允许向该服务器提交请求的URI，*表示全部允许，在SpringMVC中，如果设成*，会自动转成当前请求头中的Origin
-		config.addAllowedOrigin("*");
+		// #允许向该服务器提交请求的URI，*表示全部允许
+		// Spring Boot 2.4+ 当 allowCredentials=true 时需使用 allowedOriginPatterns
+		config.addAllowedOriginPattern("*");
 		// #允许访问的头信息,*表示全部
 		config.addAllowedHeader("*");
 		// 预检请求的缓存时间（秒），即在这个时间段里，对于相同的跨域请求不会再预检了
 		config.setMaxAge(18000L);
 		// 允许提交请求的方法，*表示全部允许
 		config.addAllowedMethod("*");
+		// 暴露响应头（用于文件下载）
+		config.addExposedHeader("Content-Disposition");
 		source.registerCorsConfiguration("/**", config);
 		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(new CorsFilter(source));
 		bean.setOrder(0);
+		logger.debug("CORS 跨域过滤器配置完成");
 		return bean;
 	}
 
 	@Bean
 	public FormContentFilter formContentFilter() {
-		return new JsonFormContentFilter();
+		logger.debug("配置 JSON 表单内容过滤器");
+		JsonFormContentFilter filter = new JsonFormContentFilter();
+		logger.debug("JSON 表单内容过滤器配置完成");
+		return filter;
 	}
 
 }

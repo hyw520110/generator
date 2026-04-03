@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hyw.tools.generator.constants.Consts;
 
 /**
  * 输出配置
@@ -52,5 +53,5 @@ public class OutputConfig implements Serializable {
      * 生成文件的编码
      */
     @Builder.Default
-    private String encoding = "UTF-8";
+    private String encoding = Consts.DEFAULT_ENCODING;
 }

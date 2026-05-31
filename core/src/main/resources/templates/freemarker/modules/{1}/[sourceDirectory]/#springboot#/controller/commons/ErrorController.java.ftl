@@ -3,8 +3,8 @@ package ${commonsPackage!};
 import ${dtoPackage!}.StatusCode;
 import ${dtoPackage!}.Result;
 
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.http.HttpServletRequest;
+import ${servletPackage}.RequestDispatcher;
+import ${servletPackage}.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;

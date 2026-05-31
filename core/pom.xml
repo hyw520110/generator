@@ -37,7 +37,7 @@
 		<!-- 模板引擎 -->
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
-			<artifactId>velocity</artifactId>
+			<artifactId>velocity-engine-core</artifactId>
 		</dependency>
 		<!-- yaml配置文件解析/加载 -->
 		<dependency>
@@ -131,29 +131,76 @@
 			</resource>
 		</resources>
 		<plugins>
-			<!-- 
-				<plugin>
+			<!--
+				需要真实 DB / 特定本地路径的集成测试默认排除，由 -Dintegration=true 或 -Dtest=... 显式触发。
+				CI 多 JDK 矩阵跑无依赖单测以保稳定。
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>**/GeneratorTest.java</exclude>
+						<exclude>**/GeneratorConfigPersistenceTest.java</exclude>
+						<exclude>**/TemplateContextBuilderTest.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<!--
+				MRJAR：Java 17 增强实现独立编译到 META-INF/versions/17/
+				源码目录：src/main/java17/，资源目录：src/main/resources-java17/
+				-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>compile-java17</id>
+						<phase>compile</phase>
+						<goals><goal>compile</goal></goals>
+						<configuration>
+							<release>17</release>
+							<compileSourceRoots>
+								<compileSourceRoot>${project.basedir}/src/main/java17</compileSourceRoot>
+							</compileSourceRoots>
+							<multiReleaseOutput>true</multiReleaseOutput>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- 把 resources-java17 下的 META-INF 复制到 target/classes/META-INF/versions/17/META-INF/ -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources-java17</id>
+						<phase>process-resources</phase>
+						<goals><goal>copy-resources</goal></goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/META-INF/versions/17</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}/src/main/resources-java17</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- 标记 jar 为 Multi-Release -->
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<archive>
-						<addMavenDescriptor>false</addMavenDescriptor>
 						<manifestEntries>
-							<Class-Path>. ../conf ../templates ../</Class-Path>
+							<Multi-Release>true</Multi-Release>
 						</manifestEntries>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>../lib/</classpathPrefix>
-							<mainClass>${main.class}</mainClass>
-						</manifest>
 					</archive>
-					<excludes>
-						<exclude>templates/**/*.xml</exclude>
-					</excludes>
 				</configuration>
 			</plugin>
-				
-			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -168,4 +215,59 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<!--
+		多数据库驱动 profile 化：默认仅 mysql，其他数据库需显式启用：
+		  mvn package -P postgres
+		  mvn package -P oracle    # 需另行准备 ojdbc 私服或本地 install
+		  mvn package -P sqlserver
+		  mvn package -P all-db    # 同时打包所有 JDBC 驱动
+	-->
+	<profiles>
+		<profile>
+			<id>postgres</id>
+			<dependencies>
+				<dependency>
+					<groupId>org.postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>42.7.3</version>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>oracle</id>
+			<dependencies>
+				<dependency>
+					<groupId>com.oracle.database.jdbc</groupId>
+					<artifactId>ojdbc11</artifactId>
+					<version>23.3.0.23.09</version>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>sqlserver</id>
+			<dependencies>
+				<dependency>
+					<groupId>com.microsoft.sqlserver</groupId>
+					<artifactId>mssql-jdbc</artifactId>
+					<version>12.6.1.jre11</version>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>all-db</id>
+			<dependencies>
+				<dependency>
+					<groupId>org.postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>42.7.3</version>
+				</dependency>
+				<dependency>
+					<groupId>com.microsoft.sqlserver</groupId>
+					<artifactId>mssql-jdbc</artifactId>
+					<version>12.6.1.jre11</version>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 </project>

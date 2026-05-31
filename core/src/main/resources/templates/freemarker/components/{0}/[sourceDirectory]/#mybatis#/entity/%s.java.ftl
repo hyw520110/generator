@@ -8,7 +8,7 @@ import ${pkg!};
 import ${entityPackage!}.${superEntityClass!};
 <#else>
 import java.io.Serializable;
-import jakarta.validation.constraints.NotNull;
+import ${validationPackage}.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 </#if>
 <#if mapperType?? && mapperType == "plus">
@@ -17,7 +17,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 </#if>
-import jakarta.validation.constraints.NotNull;
+import ${validationPackage}.constraints.NotNull;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 <#include 'comments/comment.ftl'>

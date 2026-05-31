@@ -31,6 +31,7 @@ import org.hyw.tools.generator.constants.ValidationConstants;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.ComponentGroup;
 import org.hyw.tools.generator.enums.ExportFormat;
+import org.hyw.tools.generator.enums.JavaVersion;
 import org.hyw.tools.generator.enums.db.DBType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,6 +139,10 @@ public class CmdGenerator {
 		global.setFileOverride(
 				Boolean.parseBoolean(ask(scanner, "是否覆盖已有文件", ValueType.REQUIRE_SINGLE, "true", "false")));
 		global.setDescription(ask(scanner, "项目描述", ValueType.NOT_REQUIRE_SINGLE, global.getDescription()));
+		String javaVersions = Arrays.toString(Arrays.stream(JavaVersion.values())
+				.map(v -> String.valueOf(v.getVersion()))
+				.toArray(String[]::new));
+		global.setJavaVersion(ask(scanner, "Java版本" + javaVersions, ValueType.REQUIRE_SINGLE, global.getJavaVersion()));
 
 		String modules = ask(scanner, "工程模块(逗号分隔)", ValueType.REQUIRE_MULTIPLE, String.join(",", global.getModules()));
 		global.setModules(modules.split(","));

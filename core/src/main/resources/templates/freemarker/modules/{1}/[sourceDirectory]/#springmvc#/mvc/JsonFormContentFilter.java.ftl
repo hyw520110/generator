@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
-import jakarta.servlet.http.HttpServletResponse;
+import ${servletPackage}.FilterChain;
+import ${servletPackage}.ServletException;
+import ${servletPackage}.http.HttpServletRequest;
+import ${servletPackage}.http.HttpServletRequestWrapper;
+import ${servletPackage}.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.enums.FieldType;
 import org.hyw.tools.generator.utils.StringUtils;
@@ -134,6 +134,63 @@ public class Table extends BaseBean {
 			builder.append(propName).append(",");
 		}
 		return builder.length() > 0 ? builder.deleteCharAt(builder.length()-1).toString() : "";
+	}
+
+	public String getPrimaryKeyJsArray() {
+		if (!hasPrimarykeys()) {
+			return "['id']";
+		}
+		StringBuilder builder = new StringBuilder("[");
+		List<TabField> list = getPrimarykeyFields();
+		for (TabField tabField : list) {
+			builder.append("'").append(tabField.getPropertyName()).append("'");
+			if (list.indexOf(tabField) < list.size() - 1) {
+				builder.append(", ");
+			}
+		}
+		return builder.append("]").toString();
+	}
+
+	public String getPrimaryKeyPathPattern() {
+		if (!hasPrimarykeys()) {
+			return "/{id}";
+		}
+		StringBuilder builder = new StringBuilder();
+		for (TabField field : getPrimarykeyFields()) {
+			builder.append("/{").append(field.getPropertyName()).append("}");
+		}
+		return builder.toString();
+	}
+
+	public String getPrimaryKeyMethodParameters() {
+		if (!hasPrimarykeys()) {
+			return "@PathVariable(\"id\") final java.io.Serializable id";
+		}
+		StringBuilder builder = new StringBuilder();
+		List<TabField> list = getPrimarykeyFields();
+		for (TabField field : list) {
+			builder.append("@PathVariable(\"").append(field.getPropertyName()).append("\") final ")
+					.append(field.getFieldType().getType()).append(" ").append(field.getPropertyName());
+			if (list.indexOf(field) < list.size() - 1) {
+				builder.append(", ");
+			}
+		}
+		return builder.toString();
+	}
+
+	public String getPrimaryKeyArgumentList() {
+		if (!hasPrimarykeys()) {
+			return "id";
+		}
+		StringBuilder builder = new StringBuilder();
+		List<TabField> list = getPrimarykeyFields();
+		for (TabField field : list) {
+			builder.append(field.getPropertyName());
+			if (list.indexOf(field) < list.size() - 1) {
+				builder.append(", ");
+			}
+		}
+		return builder.toString();
 	}
 
 	/**

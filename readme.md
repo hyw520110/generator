@@ -59,7 +59,7 @@ global:
 
 ### Web 版操作说明
 
-1. **启动服务**后访问：`http://localhost:8000/generator/code`
+1. **启动服务**后访问 Web 前端：`http://localhost:9000/generator/code`（后端 API 默认端口：`8081`）
 
 2. **三步完成代码生成**：
    - **步骤 1：全局设置** - 配置生成目录、包名、工程模块等（带 * 为必填项）
@@ -107,10 +107,10 @@ global:
 
 ### 环境要求
 
-- **JDK 版本**：JDK 17 或更高版本
+- **JDK 版本**：JDK 11+
 - **构建工具**：Maven 3.6+ 或 Gradle 7.0+
 - **数据库**：MySQL 5.7+ / Oracle 11g+ / PostgreSQL 9.6+ / SQL Server 2016+
-- **Node.js**：14.0+（生成 Vue 前端工程时需要）
+- **Node.js**：17.9.1+（运行 Web 前端或生成 Vue 前端工程时需要）
 
 ---
 
@@ -141,17 +141,50 @@ global:
    # 进入项目根目录
    cd generator
    
-   # 方式一：使用 Docker（推荐）
+   # 方式一：使用 Docker 启动后端 API
    docker-compose up -d
    
    # 方式二：直接运行
    ./package.sh  # 打包
-   java -jar cmd/target/generator-*.jar  # 启动
+   java -jar web/target/generator-web.jar  # 启动后端 API，默认端口 8081
+
+   # 前端开发服务
+   cd web/antd
+   yarn install
+   yarn dev
    ```
 
 2. **访问页面：**
    ```
-   http://localhost:8000/generator/code
+   http://localhost:9000/generator/code
+   ```
+
+   后端健康检查/API 配置地址：
+   ```
+   http://localhost:8081/v1/gen/health
+   http://localhost:8081/v1/gen/config
+   ```
+
+   Web 版默认使用“全局默认配置 + 用户配置”的方式保存配置：
+   - 全局默认配置：`${user.home}/.generator/default.yml`
+   - 用户配置目录：`${user.home}/.generator/users`
+   - 默认用户识别策略：`app.user-config-strategy=ip`
+   - 可选策略：`ip`、`client`、`session`
+   - 密码默认不落盘：`app.persist-password=false`
+
+   局域网多人使用时，推荐配置：
+   ```yaml
+   app:
+     user-config-strategy: client
+     persist-password: false
+   ```
+   前端会为浏览器生成稳定 `GENERATOR_CLIENT_ID`，并通过请求头和 Cookie 传给后端；下载文件也会按用户配置隔离。
+
+   Docker 部署时可挂载持久化目录：
+   ```yaml
+   volumes:
+     - ./data:/app/data
+     - ./downloads:/app/downloads
    ```
 
 3. **操作步骤：**
@@ -177,7 +210,58 @@ rootPackage: com.test
 
 以上为必须修改的配置项，其他均为可选修改项，更多可选配置项说明见配置文件注释
 
-#### 3.2 生成代码：
+#### 3.2 Java 兼容版本矩阵
+
+生成器通过 `core/src/main/resources/compatibility.yml` 统一维护 Java 版本和框架/组件版本的兼容关系。命令行版、Web 版和模板渲染共用同一份矩阵。
+
+用户通常只需要配置：
+
+```yaml
+global:
+  javaVersion: 17
+```
+
+支持 `8`、`11`、`17`、`21`。生成器会自动匹配 Spring Boot、Spring Cloud、MyBatis、MyBatis-Plus、Knife4j、Shiro 等版本，并向模板注入 `templateFamily`、`namespace`、`servletPackage`、`validationPackage` 等变量。
+
+需要明确指定兼容档位时，可配置 `platformId`。不配置时，生成器会按 `javaVersion` 使用默认档位：
+
+```yaml
+global:
+  javaVersion: 21
+  platformId: java21-boot3
+```
+
+如需小版本覆盖，只能覆盖 `compatibility.yml` 中 `allowOverride` 允许的版本项：
+
+```yaml
+versionOverrides:
+  SPRINGBOOT:
+    springboot_version: 3.2.13
+  MYBATIS:
+    mybatis_plus_version: 3.5.8
+```
+
+#### 3.3 常用高级配置
+
+```yaml
+# 顶层 include 用于拆分配置文件，被 include 的配置先加载，当前文件覆盖同名配置
+include:
+  - ./conf/datasource.yml
+  - ./conf/components.yml
+
+global:
+  # 只生成指定表；exclude 优先级更高
+  include: [user, order]
+  exclude: [sys_log]
+
+  # 多表并行渲染，默认 true；排查模板副作用或希望稳定串行输出时可关闭
+  parallelTables: true
+
+  # 模拟生成，执行完整解析和渲染流程但不写入文件，适合验证配置和模板
+  dryRun: false
+```
+
+#### 3.4 生成代码：
 
 1. 导入源码到 IDE(安装配置好 maven/gradle)
 2. 修改生成器配置文件 `generator.yaml`
@@ -366,7 +450,7 @@ java.lang.UnsupportedClassVersionError cannot be cast to [Ljava.lang.Object;
 
 为了持续提升生成器的专业性、健壮性与执行效率，本项目在架构层面遵循以下优化准则：
 
-> **实现进度：8/12 (67%)**
+> **实现进度：12/12 (100%)**
 
 ### ✅ 已实现
 
@@ -411,24 +495,29 @@ java.lang.UnsupportedClassVersionError cannot be cast to [Ljava.lang.Object;
 
 ---
 
-### ❌ 未实现 (按优先级排序)
+### ✅ 已实现（补充）
 
-#### 2. 并行化渲染驱动 (P0) ❌
-- **细节**：利用 Java 8+ 的 `ParallelStream` 或 `CompletableFuture` 对表元数据进行并发处理。
-- **逻辑**：在多核 CPU 环境下，将百级别表的生成耗时从秒级降低至毫秒级，协同处理 IO 与 CPU 密集型任务。
+#### 2. 并行化渲染驱动 (P0) ✅
+- **细节**：通过 `global.parallelTables` 控制多表并行渲染，表内组件仍按依赖顺序串行。
+- **逻辑**：在多核 CPU 环境下提升多表生成吞吐，同时保留关闭并行的排障开关。
+- **实现位置**：`Generator.java` + `GlobalConf.parallelTables`
 
-#### 10. 原子性生成保护 (P0) ❌
+#### 10. 原子性生成保护 (P0) ✅
 - **细节**：引入临时目录生成与最终替换机制。
 - **逻辑**：生成过程中的任何异常均不会污染目标目录，只有全部渲染任务成功后才会更新输出结果，保证生成工程的原子性。
+- **实现位置**：`Generator.java`
 
-#### 11. 跨平台诊断工具 (EnvChecker) (P2) ❌
+#### 11. 跨平台诊断工具 (EnvChecker) (P2) ✅
 - **细节**：内置环境预检逻辑。
-- **逻辑**：启动时自动检查 JDK 版本 (>=17)、系统字符集、目录写权限等关键指标，提供精准的故障诊断提示。
+- **逻辑**：启动时自动检查 JDK 版本、系统字符集、目录写权限等关键指标，提供精准的故障诊断提示。
+- **实现位置**：`EnvChecker.java` + `Generator.java`
 
-#### 8. 配置模块化 (Include Config) (P3) ❌
+#### 8. 配置模块化 (Include Config) (P3) ✅
 - **细节**：支持 `include: [sub-configs]` 语法。
 - **逻辑**：允许将庞大的 `generator.yaml` 拆分为数据库配置、组件配置等多个模块，提高大型项目配置的可维护性。
+- **实现位置**：`YamlIncludeLoader.java` + `Generator.java`
 
-#### 3. 数据源深度配置透传 (P3) ❌
+#### 3. 数据源深度配置透传 (P3) ✅
 - **细节**：在 `generator.yaml` 中开放 Druid 连接池的高级参数（如 `maxActive`, `minIdle`）。
 - **逻辑**：针对大型数据库或复杂元数据场景，优化连接持有效率，防止在并发生成时连接枯竭。
+- **实现位置**：`DataSourceConf.java`

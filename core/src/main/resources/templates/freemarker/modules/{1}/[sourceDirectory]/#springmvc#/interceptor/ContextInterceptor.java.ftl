@@ -1,8 +1,8 @@
 package ${interceptorPackage!};
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import ${servletPackage}.http.HttpServletRequest;
+import ${servletPackage}.http.HttpServletResponse;
+import ${servletPackage}.http.HttpSession;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;

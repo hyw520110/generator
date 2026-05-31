@@ -4,10 +4,10 @@ package ${entityPackage};
 import ${pkg};
 #end
 import java.io.Serializable;    
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import ${persistencePackage}.Entity;
+import ${persistencePackage}.GeneratedValue;
+import ${persistencePackage}.GenerationType;
+import ${persistencePackage}.Id;
 
 #parse('/templates/comments/comment.vm')
 @Entity

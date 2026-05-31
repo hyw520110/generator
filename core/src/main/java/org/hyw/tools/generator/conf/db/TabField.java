@@ -1,6 +1,6 @@
 package org.hyw.tools.generator.conf.db;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.enums.FieldType;
 import org.hyw.tools.generator.utils.StringUtils;

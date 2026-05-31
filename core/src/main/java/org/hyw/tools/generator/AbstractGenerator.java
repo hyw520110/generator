@@ -16,10 +16,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.velocity.app.VelocityEngine;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.conf.KeyPair;
@@ -57,6 +56,11 @@ public abstract class AbstractGenerator extends BaseBean {
 	 * 组件配置
 	 */
 	protected Map<Component, Map<String, Object>> components;
+
+	/**
+	 * 用户允许的小版本覆盖配置，按组件分组。
+	 */
+	protected Map<Component, Map<String, Object>> versionOverrides;
 	
 	/**
 	 * 表元数据缓存
@@ -73,6 +77,10 @@ public abstract class AbstractGenerator extends BaseBean {
 
 	public List<Table> getTables(boolean all) {
 		logger.debug("获取表列表，全部表: {}, 数据库: {}", all, dataSource.getDbName());
+		// 缓存开关：未启用时直接走 DB，避免表结构变更后读到旧元数据
+		if (global == null || !global.isEnableCache()) {
+			return queryTablesFromDatabase(all);
+		}
 		String cacheKey = buildCacheKey(all);
 		
 		// 先尝试从缓存获取
@@ -129,7 +137,7 @@ public abstract class AbstractGenerator extends BaseBean {
 				while (results.next()) {
 					String tabName = results.getString(sql.getTbName());
 					if (StringUtils.isEmpty(tabName)) {
-						System.err.println(Arrays.toString(global.getInclude()) + "数据库为空！！！");
+						logger.warn("数据库表名为空，include={}, 终止读取", Arrays.toString(global.getInclude()));
 						break;
 					}
 					if (!all && (!match(global.getInclude(), tabName, true)
@@ -304,9 +312,14 @@ public abstract class AbstractGenerator extends BaseBean {
 				logger.info("文件已生成:{}", dir);
 				return;
 			}
-			// 打开windows or Mac的输出目录
-			Runtime.getRuntime().exec((osName.contains(Consts.OS_NAME_WINDOWS) ? 
-				Consts.OS_COMMAND_WINDOWS : Consts.OS_COMMAND_UNIX) + dir);
+			ProcessBuilder pb;
+			if (osName.contains(Consts.OS_NAME_WINDOWS)) {
+				// cmd /c start "" "<dir>" — 第一个空字符串是窗口标题占位，避免路径含空格被当作标题
+				pb = new ProcessBuilder("cmd", "/c", "start", "", dir);
+			} else {
+				pb = new ProcessBuilder("open", dir);
+			}
+			pb.start();
 		} catch (IOException e) {
 			logger.error("打开目录:{},发生异常:{}", dir, e.getLocalizedMessage());
 		}
@@ -347,5 +360,13 @@ public abstract class AbstractGenerator extends BaseBean {
 
 	public void setComponents(Map<Component, Map<String, Object>> components) {
 		this.components = components;
+	}
+
+	public Map<Component, Map<String, Object>> getVersionOverrides() {
+		return versionOverrides;
+	}
+
+	public void setVersionOverrides(Map<Component, Map<String, Object>> versionOverrides) {
+		this.versionOverrides = versionOverrides;
 	}
 }

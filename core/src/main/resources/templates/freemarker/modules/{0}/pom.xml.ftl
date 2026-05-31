@@ -30,8 +30,8 @@
 			    <#if springboot?has_content><version>8.0.1.Final</version></#if>
 			</dependency>
 			<dependency>
-			    <groupId>jakarta.validation</groupId>
-			    <artifactId>jakarta.validation-api</artifactId>
+			    <groupId>${validationApiGroupId}</groupId>
+			    <artifactId>${validationApiArtifactId}</artifactId>
 			</dependency><#if springboot && !jpa?has_content>		
 		<dependency>
 		  <groupId>org.springframework.boot</groupId>

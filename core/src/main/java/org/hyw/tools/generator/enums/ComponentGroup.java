@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hyw.tools.generator.platform.PlatformAdapters;
 import org.hyw.tools.generator.utils.ConfigValidator.ValidationResult;
 
 /**
@@ -128,18 +129,16 @@ public enum ComponentGroup {
      * 获取所有必选组
      */
     public static List<ComponentGroup> getRequiredGroups() {
-        return Arrays.stream(values())
-            .filter(ComponentGroup::isRequired)
-            .collect(Collectors.toList());
+        return PlatformAdapters.current().toList(Arrays.stream(values())
+            .filter(ComponentGroup::isRequired));
     }
     
     /**
      * 获取所有可选组
      */
     public static List<ComponentGroup> getOptionalGroups() {
-        return Arrays.stream(values())
-            .filter(g -> !g.isRequired())
-            .collect(Collectors.toList());
+        return PlatformAdapters.current().toList(Arrays.stream(values())
+            .filter(g -> !g.isRequired()));
     }
     
     /**
@@ -181,9 +180,8 @@ public enum ComponentGroup {
         
         for (ComponentGroup group : values()) {
             // 找出该组中被选中的组件
-            List<Component> groupSelected = group.components.stream()
-                .filter(selectedSet::contains)
-                .collect(Collectors.toList());
+            List<Component> groupSelected = PlatformAdapters.current().toList(group.components.stream()
+                .filter(selectedSet::contains));
 
             // 检查必选组
             if (group.required && groupSelected.isEmpty()) {
@@ -281,4 +279,3 @@ public enum ComponentGroup {
         }
     }
 }
-

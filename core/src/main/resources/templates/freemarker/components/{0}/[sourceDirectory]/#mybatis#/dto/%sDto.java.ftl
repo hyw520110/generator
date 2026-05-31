@@ -2,7 +2,7 @@ package ${dtoPackage!};
 
 import java.io.Serializable;
 <#list table.importPackages as pkg>
-<#if pkg?has_content && !pkg?contains('jakarta.validation') && !pkg?contains('org.apache.commons')>
+<#if pkg?has_content && !pkg?contains(validationPackage) && !pkg?contains('org.apache.commons')>
 import ${pkg!};
 </#if>
 </#list>

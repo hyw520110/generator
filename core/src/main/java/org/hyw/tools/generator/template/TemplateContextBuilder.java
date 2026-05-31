@@ -44,13 +44,18 @@ public class TemplateContextBuilder {
 				.variable("projectName", global.getProjectName())
 				.variable("version", global.getVersion())
 				.variable("javaVersion", global.getJavaVersion())
+				.variable("platformId", global.getPlatformId())
+				.variable("templateFamily", global.getTemplateFamily())
+				.variable("namespace", global.getNamespace())
+				.variable("eeNamespace", global.getNamespace())
+				.variable("bytecodeRelease", global.getBytecodeRelease())
 				.variable("rootPackage", global.getRootPackage())
 				.variable("copyright", global.getCopyright())
 				.variable("projectPackage", global.getRootPackage() + "." + global.getProjectName())
 				.variable("date", LocalDateTime.now().format(DATE_FORMATTER))
 				.variable("StringUtils", new StringUtilsBean())
-				.variable("global", global)
-				.variable("dataSource", dataSource);
+				.variable(Consts.CTX_GLOBAL, global)
+				.variable(Consts.CTX_DATA_SOURCE, dataSource);
 
 		if (global.getModules() != null) {
 			builder.variable("modules", Arrays.asList(global.getModules()));
@@ -60,6 +65,9 @@ public class TemplateContextBuilder {
 		builder.variable("dbType", dbType);
 		builder.variable("sqlType", dbType);
 		builder.variable("projectBuilder", global.getProjectBuilder().name());
+		if (global.getPlatformVariables() != null) {
+			global.getPlatformVariables().forEach(builder::variable);
+		}
 
 		Map<String, Object> project = new HashMap<>();
 		project.put("artifactId", global.getProjectName());
@@ -116,8 +124,8 @@ public class TemplateContextBuilder {
 
 	public RenderContext buildTableContext(Table table) {
 		RenderContext context = buildGlobalContext().createChildContext();
-		context.put("global", global);
-		context.put("dataSource", dataSource);
+		context.put(Consts.CTX_GLOBAL, global);
+		context.put(Consts.CTX_DATA_SOURCE, dataSource);
 		context.table(table);
 		
 		TemplateModel model = context.getModel();
@@ -126,7 +134,7 @@ public class TemplateContextBuilder {
 		model.setProjectName(global.getProjectName());
 		model.setRootPackage(global.getRootPackage());
 		
-		context.put("entityName", table.getBeanName());
+		context.put(Consts.CTX_ENTITY_NAME, table.getBeanName());
 		context.put("entityNameLower", table.getLowercaseBeanName());
 		context.put("tableName", table.getName());
 		return context;

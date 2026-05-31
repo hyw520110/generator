@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
       vue(),
       vueJsx(),
       Components({
+        globs: ['src/components/**/*.vue', '!src/components/Charts/Trend.vue'],
         resolvers: [
           AntDesignVueResolver({
             importStyle: false, // Ant Design Vue 4.x 默认使用 CSS-in-JS
@@ -64,6 +65,18 @@ export default defineConfig(({ mode }) => {
       esbuildOptions: {
         loader: {
           '.js': 'jsx'
+        }
+      }
+    },
+    build: {
+      chunkSizeWarningLimit: 2500,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vue: ['vue', 'vue-router', 'pinia', 'vue-i18n'],
+            antd: ['ant-design-vue'],
+            'antd-icons': ['@ant-design/icons-vue']
+          }
         }
       }
     },

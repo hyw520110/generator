@@ -178,19 +178,23 @@ variables:
 # 渲染规则
 render:
   # 资源文件不渲染，直接复制
-  # 注意：现在根据文件是否以 .ftl 结尾来判断是否为模板文件
-  # .ftl 结尾的是 FreeMarker 模板文件，需要渲染
-  # 不以 .ftl 结尾的文件（如 banner.txt, application.properties 等）直接复制
+  # 注意：现在根据文件是否以 .ftl/.vm 结尾来判断是否为模板文件
+  # .ftl/.vm 结尾的是模板文件，需要渲染
+  # 不以模板后缀结尾的文件（如 banner.txt, application.properties 等）直接复制
   resources:
     - jar
     - png
     - jpg
+    - jpeg
     - gif
+    - webp
+    - ico
     - svg
     - eot
     - ttf
     - woff
     - woff2
+    - map
 
   # 排除的目录
   excludeDirs:

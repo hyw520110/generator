@@ -11,6 +11,14 @@ dataSource:
     #filters: config
     # 明文密码时值留空或注释;
     #conProperties: "druid.log.stmt.executableSql=true;druid.stat.logSlowSql=true;druid.stat.slowSqlMillis=5000;config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKvoVokPjMkBOPtHoWk9WC2FWa1Uq+thjE3fvYY6+BB0dn4SZ7NLOGLR+6l1Qc/XBPBBaiy33MlSUjvkS4cd+vUCAwEAAQ=="
+    # Druid 连接池高级参数（DataSourceConf 继承 DruidDataSource，setter 直接对应）
+    # 大库元数据查询并发场景下推荐显式配置以防连接枯竭
+    #initialSize: 5
+    #minIdle: 5
+    #maxActive: 50
+    #maxWait: 60000
+    #timeBetweenEvictionRunsMillis: 60000
+    #minEvictableIdleTimeMillis: 300000
 
 #全局配置
 global:
@@ -50,7 +58,7 @@ global:
     author: heyw
     #版权
     copyright: hyw Copyright (c) 2017-2020 All Rights Reserved.
-    #jdk版本
+    #jdk版本：支持 8/11/17/21。生成器会根据 compatibility.yml 自动匹配框架和组件版本。
     javaVersion: 17
     #表名、字段名、是否使用下划线命名
     separators: [_,-]
@@ -69,7 +77,7 @@ global:
     #资源文件目录
     resourceDirectory: src/main/resources
     #非模板文件排除渲染 
-    resources: [ 'css','dll','exe','eot','png','jpg','gif','swf','svg','ttf','woff','woff2','eot','min.js','min.css']
+    resources: [ 'css','dll','exe','eot','png','jpg','jpeg','gif','webp','ico','swf','svg','ttf','woff','woff2','map','min.js','min.css']
     #模板引擎类型，可选值：freemarker, velocity
     templateEngine: freemarker
 # 组件配置    
@@ -168,6 +176,13 @@ components:
 
   JPA: 
     version: 1.5.6.RELEASE
+
+# 用户小版本覆盖配置，按组件分组；必须符合 compatibility.yml 中 allowOverride 规则。
+#versionOverrides:
+#  SPRINGBOOT:
+#    springboot_version: 3.2.13
+#  MYBATIS:
+#    mybatis_plus_version: 3.5.8
     
   SPRINGMVC: 
     controllerName: '%sController'

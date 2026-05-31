@@ -99,7 +99,7 @@
 		<!-- mybatis-plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <artifactId>${mybatis_plus_starter_artifact!'mybatis-plus-spring-boot3-starter'}</artifactId>
         </dependency>
     	<!-- mybatis plus generator -->
 		<dependency>
@@ -220,7 +220,7 @@
 		<!-- Knife4j for Spring Boot 3 -->
 		<dependency>
 		    <groupId>com.github.xiaoymin</groupId>
-		    <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+		    <artifactId>${knife4j_starter_artifact!'knife4j-openapi3-jakarta-spring-boot-starter'}</artifactId>
 		</dependency>
 </#if>
 <#if "${javaVersion!}"=="1.8"  &&  !SPRINGBOOT  &&  !DUBBO  &&  !ZIPKIN>    	
@@ -270,8 +270,8 @@
 </#if>
 		<!-- Jakarta Validation API (Spring Boot 3.x) -->
 		<dependency>
-			<groupId>jakarta.validation</groupId>
-			<artifactId>jakarta.validation-api</artifactId>
+			<groupId>${validationApiGroupId}</groupId>
+			<artifactId>${validationApiArtifactId}</artifactId>
 		</dependency>
 <#else>
 		<dependency>
@@ -290,8 +290,8 @@
 			<version>${spring_version!}</version>
 		</dependency>
 		<dependency>
-		  <groupId>jakarta.servlet</groupId>
-		  <artifactId>servlet-api</artifactId>
+		  <groupId>${servletApiGroupId}</groupId>
+		  <artifactId>${servletApiArtifactId}</artifactId>
 		  <version>3.0-alpha-1</version>
 		  <scope>provided</scope>
 		</dependency>
@@ -317,7 +317,9 @@
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-spring</artifactId>
-			<classifier>jakarta</classifier>
+			<#if shiroClassifier?has_content>
+			<classifier>${shiroClassifier}</classifier>
+			</#if>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.shiro</groupId>
@@ -332,12 +334,16 @@
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
-			<classifier>jakarta</classifier>
+			<#if shiroClassifier?has_content>
+			<classifier>${shiroClassifier}</classifier>
+			</#if>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-web</artifactId>
-			<classifier>jakarta</classifier>
+			<#if shiroClassifier?has_content>
+			<classifier>${shiroClassifier}</classifier>
+			</#if>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -351,8 +357,8 @@
 <#if javaVersion?? && (javaVersion?starts_with("17") || javaVersion?starts_with("21"))>
 		<!-- JAXB API for Java 17+ compatibility -->
 		<dependency>
-			<groupId>jakarta.xml.bind</groupId>
-			<artifactId>jakarta.xml.bind-api</artifactId>
+			<groupId>${jaxbApiGroupId}</groupId>
+			<artifactId>${jaxbApiArtifactId}</artifactId>
 			<version>4.0.0</version>
 		</dependency>
 		<dependency>

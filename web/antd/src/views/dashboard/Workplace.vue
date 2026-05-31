@@ -126,7 +126,6 @@
 <script>
 import { timeFix } from '@/utils/util'
 import { mapState } from 'vuex'
-import { PageHeaderWrapper } from '@ant-design-vue/pro-layout'
 import { Radar } from '@/components'
 
 import { getRoleList, getServiceList } from '@/api/manage'
@@ -136,7 +135,6 @@ const DataSet = require('@antv/data-set')
 export default {
   name: 'Workplace',
   components: {
-    PageHeaderWrapper,
     Radar
   },
   data () {

@@ -3,10 +3,10 @@ package ${filterPackage};
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import ${servletPackage}.ServletRequest;
+import ${servletPackage}.ServletResponse;
+import ${servletPackage}.http.HttpServletRequest;
+import ${servletPackage}.http.HttpServletResponse;
 
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.util.AntPathMatcher;

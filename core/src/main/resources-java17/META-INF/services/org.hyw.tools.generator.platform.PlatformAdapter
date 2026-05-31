@@ -1,0 +1,2 @@
+org.hyw.tools.generator.platform.DefaultPlatformAdapter
+org.hyw.tools.generator.platform.Java17PlatformAdapter

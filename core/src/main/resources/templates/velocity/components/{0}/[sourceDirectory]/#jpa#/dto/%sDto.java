@@ -2,7 +2,7 @@ package ${dtoPackage};
 
 import java.io.Serializable;
 #foreach($pkg in $table.importPackages)
-#if($pkg && !$pkg.contains("jakarta.validation") && !$pkg.contains("org.apache.commons"))
+#if($pkg && !$pkg.contains($validationPackage) && !$pkg.contains("org.apache.commons"))
 import ${pkg};
 #end
 #end

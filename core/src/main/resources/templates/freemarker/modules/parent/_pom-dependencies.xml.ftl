@@ -88,7 +88,7 @@
 			<!-- Knife4j for Spring Boot 3 -->
 			<dependency>
 				<groupId>com.github.xiaoymin</groupId>
-				<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+				<artifactId>${knife4j_starter_artifact!'knife4j-openapi3-jakarta-spring-boot-starter'}</artifactId>
 				<version><#noparse>${knife4j.version}</#noparse></version>
 			</dependency>
 			<!-- 其他 -->
@@ -116,19 +116,25 @@
 				<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-spring</artifactId>
 				<version><#noparse>${shiro.version}</#noparse></version>
-				<classifier>jakarta</classifier>
+				<#if shiroClassifier?has_content>
+				<classifier>${shiroClassifier}</classifier>
+				</#if>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-core</artifactId>
 				<version><#noparse>${shiro.version}</#noparse></version>
-				<classifier>jakarta</classifier>
+				<#if shiroClassifier?has_content>
+				<classifier>${shiroClassifier}</classifier>
+				</#if>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-web</artifactId>
 				<version><#noparse>${shiro.version}</#noparse></version>
-				<classifier>jakarta</classifier>
+				<#if shiroClassifier?has_content>
+				<classifier>${shiroClassifier}</classifier>
+				</#if>
 			</dependency>
 			<!-- lombok -->
 			<dependency>
@@ -155,7 +161,7 @@
 			</dependency>
 			<dependency>
 				<groupId>com.baomidou</groupId>
-				<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+				<artifactId>${mybatis_plus_starter_artifact!'mybatis-plus-spring-boot3-starter'}</artifactId>
 				<version><#noparse>${mybatis.plus.version}</#noparse></version>
 			</dependency>
 </#if>

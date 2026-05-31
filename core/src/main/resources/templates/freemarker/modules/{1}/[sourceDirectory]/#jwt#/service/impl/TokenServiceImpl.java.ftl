@@ -3,7 +3,7 @@ package ${implPackage!};
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.PostConstruct;
+import ${annotationPackage}.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

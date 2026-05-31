@@ -8,16 +8,17 @@
 	<packaging>pom</packaging>
 	
 	<properties>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.release>11</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- 统一版本管理 -->
 		<spring-boot.version>2.7.18</spring-boot.version>
 		<slf4j.version>1.7.36</slf4j.version>
-		<velocity.version>1.7</velocity.version>
+		<velocity.version>2.3</velocity.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
-		<lombok.version>1.18.30</lombok.version>
+		<lombok.version>1.18.44</lombok.version>
 		<freemarker.version>2.3.32</freemarker.version>
 		<caffeine.version>3.1.8</caffeine.version>
 		<commons-io.version>2.15.0</commons-io.version>
@@ -31,8 +32,10 @@
 		<junit.version>4.13.2</junit.version>
 		<mysql.version>8.0.33</mysql.version>
 		<exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
-		<fastjson.version>1.2.83</fastjson.version>
+		<fastjson.version>2.0.53</fastjson.version>
+		<jackson.version>2.15.2</jackson.version>
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
 		<maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
 		<maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
@@ -67,7 +70,7 @@
 			<!-- 模板引擎 -->
 			<dependency>
 				<groupId>org.apache.velocity</groupId>
-				<artifactId>velocity</artifactId>
+				<artifactId>velocity-engine-core</artifactId>
 				<version>${velocity.version}</version>
 			</dependency>
 			<!-- yaml配置文件解析/加载 -->
@@ -176,7 +179,7 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>2.15.2</version>
+				<version>${jackson.version}</version>
 			</dependency>
 
 		</dependencies>
@@ -191,10 +194,15 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${maven-compiler-plugin.version}</version>
 					<configuration>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
+						<release>${maven.compiler.release}</release>
 						<encoding>${project.build.sourceEncoding}</encoding>
 					</configuration>
+				</plugin>
+				<!-- 资源插件 -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${maven-resources-plugin.version}</version>
 				</plugin>
 				<!-- 源码插件 -->
 				<plugin>
@@ -245,4 +253,3 @@
 		<module>./web</module>
  	</modules>
 </project>
-

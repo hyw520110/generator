@@ -145,7 +145,7 @@
 			<!-- Knife4j for Spring Boot 3 -->
 			<dependency>
 				<groupId>com.github.xiaoymin</groupId>
-				<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+				<artifactId>${knife4j_starter_artifact}</artifactId>
 				<version>${knife4j.version}</version>
 			</dependency>
 #end
@@ -190,19 +190,25 @@
 				<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-spring</artifactId>
 				<version>${shiro.version}</version>
-				<classifier>jakarta</classifier>
+				#if($shiroClassifier && $shiroClassifier != "")
+				<classifier>${shiroClassifier}</classifier>
+				#end
 			</dependency>
 			<dependency>
 				<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-core</artifactId>
 				<version>${shiro.version}</version>
-				<classifier>jakarta</classifier>
+				#if($shiroClassifier && $shiroClassifier != "")
+				<classifier>${shiroClassifier}</classifier>
+				#end
 			</dependency>
 			<dependency>
 				<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-web</artifactId>
 				<version>${shiro.version}</version>
-				<classifier>jakarta</classifier>
+				#if($shiroClassifier && $shiroClassifier != "")
+				<classifier>${shiroClassifier}</classifier>
+				#end
 			</dependency>
 #if("plus"=="$mapperType")
 			<dependency>
@@ -222,7 +228,7 @@
 			</dependency>
 			<dependency>
 	            <groupId>com.baomidou</groupId>
-	            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+	            <artifactId>${mybatis_plus_starter_artifact}</artifactId>
 	            <version>${mybatis.plus.version}</version>
 		    </dependency>
 #end

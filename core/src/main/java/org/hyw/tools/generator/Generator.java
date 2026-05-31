@@ -9,9 +9,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hyw.tools.generator.compat.CompatibilityResolver;
+import org.hyw.tools.generator.compat.ResolvedPlatform;
 import org.hyw.tools.generator.conf.SkipRuntimeFieldsRepresenter;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.constants.Consts;
@@ -19,6 +21,7 @@ import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.ExportFormat;
 import org.hyw.tools.generator.exception.GeneratorException;
 import org.hyw.tools.generator.export.DbToDoc;
+import org.hyw.tools.generator.platform.PlatformAdapters;
 import org.hyw.tools.generator.template.DefaultPathTemplateResolver;
 import org.hyw.tools.generator.template.PathTemplateResolver;
 import org.hyw.tools.generator.template.RenderContext;
@@ -39,10 +42,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Generator extends AbstractGenerator {
 
-	private static Generator generator;
+	private static volatile Generator generator;
 	private TemplateRenderer templateRenderer;
 	private TemplateContextBuilder contextBuilder;
 	private PathTemplateResolver pathResolver = new DefaultPathTemplateResolver();
+	private ResolvedPlatform resolvedPlatform;
+	private GenerationReport report;
 	private static final String SEPARATOR = Consts.PATH_SEPARATOR;
 
 	private static final String EXTERNAL_CONFIG_DIR = System.getProperty("user.home") + File.separator
@@ -53,8 +58,13 @@ public class Generator extends AbstractGenerator {
 	}
 
 	public static Generator getInstance() {
-		if (null == generator)
-			generator = new Generator();
+		if (generator == null) {
+			synchronized (Generator.class) {
+				if (generator == null) {
+					generator = new Generator();
+				}
+			}
+		}
 		return generator;
 	}
 
@@ -82,26 +92,179 @@ public class Generator extends AbstractGenerator {
 		if (null == url) {
 			return;
 		}
-		try (InputStream is = url.openStream()) {
-			generator = new Yaml().loadAs(is, Generator.class);
+		try {
+			String yamlText = org.hyw.tools.generator.utils.YamlIncludeLoader.loadAndMerge(url);
+			generator = new Yaml().loadAs(yamlText, Generator.class);
+			if (generator != null) {
+				generator.applyCompatibility();
+			}
 			log.info("加载内置配置文件成功: {}", url);
 		} catch (Exception e) {
 			log.warn("加载内置配置文件失败: {}", url);
 		}
 	}
 
+	public static Generator loadFrom(File configFile) {
+		if (configFile == null || !configFile.exists() || configFile.length() == 0) {
+			return null;
+		}
+		try {
+			String yamlText = org.hyw.tools.generator.utils.YamlIncludeLoader.loadAndMerge(configFile);
+			Generator loaded = new Yaml().loadAs(yamlText, Generator.class);
+			if (loaded != null) {
+				loaded.applyCompatibility();
+			}
+			return loaded;
+		} catch (Exception e) {
+			log.warn("加载配置文件失败: {}", configFile.getAbsolutePath(), e);
+			return null;
+		}
+	}
+
+	public Generator copy() {
+		try {
+			Yaml yaml = createConfigYaml();
+			java.io.StringWriter stringWriter = new java.io.StringWriter();
+			yaml.dump(this, stringWriter);
+			String yamlContent = removeTypeTagsAndNulls(stringWriter.toString());
+			Generator copied = new Yaml().loadAs(yamlContent, Generator.class);
+			if (copied != null) {
+				copied.applyCompatibility();
+				return copied;
+			}
+			return new Generator();
+		} catch (Exception e) {
+			log.warn("复制生成器配置失败，使用空配置兜底", e);
+			return new Generator();
+		}
+	}
+
 	public void execute() {
 		log.info("开始执行代码生成，输出目录: {}", global != null ? global.getOutputDir() : "");
 		long startTime = System.currentTimeMillis();
+		this.report = new GenerationReport();
 		try {
+			applyCompatibility();
 			validateConfig();
-			prepare();
-			generateCode();
-			log.info("代码生成完成，耗时: {}ms", System.currentTimeMillis() - startTime);
+			generateAtomically();
+			long elapsed = System.currentTimeMillis() - startTime;
+			logSummary(elapsed);
+			log.info("代码生成完成，耗时: {}ms", elapsed);
 		} catch (Exception e) {
 			log.error("代码生成失败", e);
 			throw new GeneratorException("代码生成失败", e);
 		}
+	}
+
+	/**
+	 * 输出生成结果摘要：成功/跳过文件数 + 失败列表（带原因）。
+	 * 失败时只警告，不阻断流程——避免百表场景下因个别模板失误丢失全部产物。
+	 */
+	private void logSummary(long elapsedMs) {
+		if (report == null) {
+			return;
+		}
+		int tables = report.processedTables();
+		int success = report.successFiles();
+		int skipped = report.skippedFiles();
+		int fail = report.failures().size();
+		log.info("生成摘要：表 {} 个 | 文件 成功 {} / 跳过 {} / 失败 {} | 耗时 {}ms",
+				tables, success, skipped, fail, elapsedMs);
+		if (report.hasFailures()) {
+			log.warn("生成失败明细（共 {} 项）：", fail);
+			int idx = 0;
+			for (GenerationReport.Failure f : report.failures()) {
+				log.warn("  [{}] table={}, path={}, reason={}", ++idx, f.tableName(), f.templatePath(), f.reason());
+			}
+		}
+	}
+
+	/**
+	 * 仅供测试和外部诊断使用：返回最近一次 execute 的累加结果。
+	 */
+	public GenerationReport getReport() {
+		return report;
+	}
+
+	/**
+	 * 原子性生成：先写到 .tmp 临时目录，全部成功后再替换正式目录。
+	 * 异常时清理临时目录，正式目录保持不变；保证生成失败不会污染已有产物。
+	 */
+	private void generateAtomically() throws java.io.IOException {
+		String finalDir = global.getOutputDir();
+		File finalFile = new File(finalDir);
+		File parent = finalFile.getAbsoluteFile().getParentFile();
+		String tmpName = finalFile.getName() + ".tmp." + System.currentTimeMillis();
+		File tmpDir = new File(parent, tmpName);
+
+		boolean originalDelOutputDir = global.isDelOutputDir();
+		try {
+			// 重定向到临时目录，强制清空并重建（即使用户配置了 delOutputDir=false）
+			global.setOutputDir(tmpDir.getAbsolutePath());
+			global.setDelOutputDir(true);
+			prepare();
+			generateCode();
+
+			// dry-run：保留 tmp，不替换正式目录，便于用户 diff 预览
+			if (global.isDryRun()) {
+				log.warn("dry-run 模式：产物保留在临时目录，未覆盖正式输出: {}", tmpDir.getAbsolutePath());
+				return;
+			}
+
+			// 原子替换：移走旧目录 → 临时目录改名为正式目录
+			File backup = null;
+			if (finalFile.exists()) {
+				backup = new File(parent, finalFile.getName() + ".bak." + System.currentTimeMillis());
+				if (!finalFile.renameTo(backup)) {
+					throw new java.io.IOException("无法重命名已存在的输出目录: " + finalFile);
+				}
+			}
+			try {
+				java.nio.file.Files.move(tmpDir.toPath(), finalFile.toPath(),
+						java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+			} catch (java.nio.file.AtomicMoveNotSupportedException e) {
+				// 跨文件系统时回退到非原子 move
+				java.nio.file.Files.move(tmpDir.toPath(), finalFile.toPath());
+			}
+			if (backup != null) {
+				try {
+					org.apache.commons.io.FileUtils.deleteDirectory(backup);
+				} catch (Exception ex) {
+					log.warn("清理备份目录失败: {}", backup, ex);
+				}
+			}
+		} catch (Exception e) {
+			// 清理临时目录，正式目录保持不变
+			if (tmpDir.exists()) {
+				try {
+					org.apache.commons.io.FileUtils.deleteDirectory(tmpDir);
+				} catch (Exception ex) {
+					log.warn("清理临时目录失败: {}", tmpDir, ex);
+				}
+			}
+			throw e instanceof java.io.IOException ? (java.io.IOException) e : new java.io.IOException(e);
+		} finally {
+			global.setOutputDir(finalDir);
+			global.setDelOutputDir(originalDelOutputDir);
+		}
+		if (!global.isDryRun()) {
+			openDir();
+		}
+	}
+
+	public ResolvedPlatform applyCompatibility() {
+		if (global == null || components == null) {
+			return null;
+		}
+		resolvedPlatform = new CompatibilityResolver().apply(global, components, versionOverrides);
+		return resolvedPlatform;
+	}
+
+	public ResolvedPlatform getResolvedPlatform() {
+		if (resolvedPlatform == null) {
+			return applyCompatibility();
+		}
+		return resolvedPlatform;
 	}
 
 	private void validateConfig() {
@@ -114,6 +277,17 @@ public class Generator extends AbstractGenerator {
 		File dir = new File(outputDir);
 		if (!dir.exists() && !dir.mkdirs())
 			throw new GeneratorException(Consts.ERR_CREATE_OUTPUT_DIR + outputDir);
+
+		// 启动环境预检：JDK 版本、字符集、输出目录写权限、目标 JDK 合法性
+		try {
+			List<String> warnings = org.hyw.tools.generator.utils.EnvChecker.check(outputDir,
+					global.getJavaVersion());
+			for (String w : warnings) {
+				log.warn("环境预检告警: {}", w);
+			}
+		} catch (IllegalStateException e) {
+			throw new GeneratorException(e.getMessage(), e);
+		}
 
 		if (dataSource == null)
 			throw new GeneratorException(Consts.ERR_DATASOURCE_NULL);
@@ -163,15 +337,22 @@ public class Generator extends AbstractGenerator {
 			log.info("开始处理模块模板 ...");
 			moduleResources = sort(moduleResources);
 
-			for (Table table : tables) {
-				// 将当前表的上下文信息注入到全局 context
-				globalContext.put("table", table);
-
-				renderResources(globalContext, componentResources, true);
-			}
+			java.util.stream.Stream<Table> tableStream = global.isParallelTables()
+					? tables.parallelStream() : tables.stream();
+			final List<TemplateResource> finalComponentResources = componentResources;
+			final int totalTables = tables.size();
+			tableStream.forEach(table -> {
+				long tStart = System.currentTimeMillis();
+				// 每张表使用独立 ctx 副本，避免并行渲染时共享变量被覆盖
+				RenderContext tableContext = globalContext.snapshot();
+				tableContext.put(Consts.CTX_TABLE, table);
+				renderResources(tableContext, finalComponentResources, true);
+				int idx = report == null ? 0 : report.incrementTableCounter();
+				log.info("[{}/{}] {} → 渲染完成 ({}ms)", idx, totalTables, table.getName(),
+						System.currentTimeMillis() - tStart);
+			});
 			renderResources(globalContext, moduleResources, true);
 		}
-		openDir();
 	}
 
 	/**
@@ -181,7 +362,7 @@ public class Generator extends AbstractGenerator {
 	 * controller），确保依赖顺序正确 3. 第三级：文件路径排序（按路径字符串） 4. 第四级：文件名排序（在路径相等时）
 	 */
 	private List<TemplateResource> sort(List<TemplateResource> resources) {
-		return resources.stream().sorted((r1, r2) -> {
+		Stream<TemplateResource> sorted = resources.stream().sorted((r1, r2) -> {
 			String module1 = inferModuleNameFromPath(r1.getPath());
 			String module2 = inferModuleNameFromPath(r2.getPath());
 
@@ -214,7 +395,8 @@ public class Generator extends AbstractGenerator {
 			String fileName1 = StringUtils.substringAfterLast(r1.getPath(), SEPARATOR);
 			String fileName2 = StringUtils.substringAfterLast(r2.getPath(), SEPARATOR);
 			return fileName1.compareTo(fileName2);
-		}).collect(Collectors.toList());
+		});
+		return PlatformAdapters.current().toList(sorted);
 	}
 
 	/**
@@ -291,7 +473,7 @@ public class Generator extends AbstractGenerator {
 		String[] componentNames = global.getComponentNames();
 		if (componentNames != null && componentNames.length > 0) {
 			List<String> list = Arrays.asList(componentNames);
-			return resources.stream().filter(res -> {
+			Stream<TemplateResource> filtered = resources.stream().filter(res -> {
 				String rel = res.getPath().substring(Consts.DIR_COMPONENTS.length() + Consts.PATH_SEPARATOR.length());
 				String first = StringUtils.substringBefore(rel, SEPARATOR);
 
@@ -308,7 +490,8 @@ public class Generator extends AbstractGenerator {
 				}
 				// 3. 普通组件名
 				return list.contains(first);
-			}).collect(Collectors.toList());
+			});
+			return PlatformAdapters.current().toList(filtered);
 		}
 		return resources;
 	}
@@ -320,7 +503,7 @@ public class Generator extends AbstractGenerator {
 
 	private List<TemplateResource> scanFilteredResources(URL url, String subDir) {
 		List<TemplateResource> resources = FileUtils.getTemplateResources(url, subDir, global.getResources());
-		return resources.stream().filter(res -> !shouldSkipByComponent(res.getPath())).collect(Collectors.toList());
+		return PlatformAdapters.current().toList(resources.stream().filter(res -> !shouldSkipByComponent(res.getPath())));
 	}
 
 	private void renderResources(RenderContext context, List<TemplateResource> resources, boolean render) {
@@ -336,8 +519,8 @@ public class Generator extends AbstractGenerator {
 		String normalizedPath = FileUtils.normalizePath(resource.getPath());
 		model.setModuleName(inferModuleNameFromPath(normalizedPath));
 
-		if (context.containsKey("table")) {
-			Table table = (Table) context.get("table");
+		if (context.containsKey(Consts.CTX_TABLE)) {
+			Table table = (Table) context.get(Consts.CTX_TABLE);
 			model.setTable(table);
 
 		}
@@ -360,37 +543,62 @@ public class Generator extends AbstractGenerator {
 		registerPackageVariablesToContext(context, normalizedPath, outputPath, finalModuleName);
 
 		// 设置命名变量（entityName, entityNameLower, className 等）
-		if (context.containsKey("table")) {
-			Table table = (Table) context.get("table");
+		if (context.containsKey(Consts.CTX_TABLE)) {
+			Table table = (Table) context.get(Consts.CTX_TABLE);
 			String beanName = table.getBeanName();
 			// 设置命名变量
-			context.put("entityName", beanName);
+			context.put(Consts.CTX_ENTITY_NAME, beanName);
 			context.put("entityNameLower", table.getLowercaseBeanName());
-			context.put("className", beanName);
+			context.put(Consts.CTX_CLASS_NAME, beanName);
 		}
 
 		File dest = new File(global.getOutputDir(), FileUtils.normalizePath(outputPath));
 		if (dest.exists() && !global.isFileOverride())
 			return;
 
+		String tableName = null;
+		if (context.containsKey(Consts.CTX_TABLE)) {
+			Table t = (Table) context.get(Consts.CTX_TABLE);
+			if (t != null) {
+				tableName = t.getName();
+			}
+		}
+
 		try {
 			if (resource.isBinary()) {
 				distributeBinary(resource, dest);
+				recordSuccess();
 			} else if (render && isTemplateFile(normalizedPath)) {
 				log.debug("渲染模板: {} -> {} ", normalizedPath, outputPath);
 				String data = templateRenderer.render(resource.getContent(), context, global.getEngineType());
 				if (StringUtils.isNotBlank(data) && StringUtils.isNotBlank(data.trim())) {
 					FileUtils.write(dest, data, global.getEncoding());
 					log.info("生成文件: {}, 大小: {} bytes", dest.getPath(), dest.length());
+					recordSuccess();
 				} else {
 					log.warn("模板渲染结果为空: {}", normalizedPath);
+					recordSkipped();
 				}
 			} else {
 				distributeBinary(resource, dest);
+				recordSuccess();
 			}
 		} catch (Exception e) {
 			log.error("生成文件失败: {}", dest.getPath(), e);
+			recordFailure(tableName, normalizedPath, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
 		}
+	}
+
+	private void recordSuccess() {
+		if (report != null) report.recordSuccess();
+	}
+
+	private void recordSkipped() {
+		if (report != null) report.recordSkipped();
+	}
+
+	private void recordFailure(String tableName, String templatePath, String reason) {
+		if (report != null) report.recordFailure(tableName, templatePath, reason);
 	}
 
 	private void distributeBinary(TemplateResource resource, File dest) throws IOException {
@@ -568,21 +776,42 @@ public class Generator extends AbstractGenerator {
 
 			String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 			File configFile = new File(dir, "generator_" + timestamp + Consts.EXT_YAML);
+			save(configFile);
+		} catch (Exception e) {
+			log.error("持久化配置失败", e);
+		}
+	}
 
-			org.yaml.snakeyaml.DumperOptions options = new org.yaml.snakeyaml.DumperOptions();
-			options.setDefaultFlowStyle(org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK);
-			options.setPrettyFlow(true);
-			Yaml yaml = new Yaml(new SkipRuntimeFieldsRepresenter(options), options);
+	public synchronized void save(File configFile) {
+		save(configFile, true);
+	}
 
+	public synchronized void save(File configFile, boolean persistPassword) {
+		try {
+			File parent = configFile.getParentFile();
+			if (parent != null && !parent.exists()) {
+				parent.mkdirs();
+			}
+			Yaml yaml = createConfigYaml();
 			java.io.StringWriter stringWriter = new java.io.StringWriter();
 			yaml.dump(this, stringWriter);
 			String yamlContent = removeTypeTagsAndNulls(stringWriter.toString());
+			if (!persistPassword) {
+				yamlContent = removePasswordFields(yamlContent);
+			}
 
 			org.apache.commons.io.FileUtils.writeStringToFile(configFile, yamlContent, Consts.DEFAULT_ENCODING);
 			log.info("配置已持久化至: {}", configFile.getAbsolutePath());
 		} catch (Exception e) {
 			log.error("持久化配置失败", e);
 		}
+	}
+
+	private static Yaml createConfigYaml() {
+		org.yaml.snakeyaml.DumperOptions options = new org.yaml.snakeyaml.DumperOptions();
+		options.setDefaultFlowStyle(org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK);
+		options.setPrettyFlow(true);
+		return new Yaml(new SkipRuntimeFieldsRepresenter(options), options);
 	}
 
 	private static String removeTypeTagsAndNulls(String yamlContent) {
@@ -596,5 +825,30 @@ public class Generator extends AbstractGenerator {
 			result.append(line).append("\n");
 		}
 		return result.toString();
+	}
+
+	private static String removePasswordFields(String yamlContent) {
+		String[] lines = yamlContent.split("\n");
+		StringBuilder result = new StringBuilder();
+		for (String line : lines) {
+			if (isSensitiveYamlLine(line)) {
+				continue;
+			}
+			result.append(line).append("\n");
+		}
+		return result.toString();
+	}
+
+	private static boolean isSensitiveYamlLine(String line) {
+		String trimmed = line.trim();
+		if (trimmed.startsWith("- ")) {
+			trimmed = trimmed.substring(2).trim();
+		}
+		int colonIndex = trimmed.indexOf(':');
+		if (colonIndex <= 0) {
+			return false;
+		}
+		String key = trimmed.substring(0, colonIndex).toLowerCase();
+		return key.contains("password") || key.contains("pwd") || key.contains("secret") || key.contains("token");
 	}
 }

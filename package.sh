@@ -388,15 +388,18 @@ check_java_version() {
 
     local required_version
     if [ -f "$PROJECT_ROOT_DIR/pom.xml" ]; then
-        required_version=$(grep -E "<java.version>" "$PROJECT_ROOT_DIR/pom.xml" | head -1 | sed -E 's/.*<java.version>([^<]+)<\/java.version>.*/\1/')
+        required_version=$(grep -E "<java.version>" "$PROJECT_ROOT_DIR/pom.xml" | head -1 | sed -E 's/.*<java.version>([^<]+)<\/java.version>.*/\1/' || true)
+        if [ -z "$required_version" ]; then
+            required_version=$(grep -E "<maven.compiler.source>" "$PROJECT_ROOT_DIR/pom.xml" | head -1 | sed -E 's/.*<maven.compiler.source>([^<]+)<\/maven.compiler.source>.*/\1/' || true)
+        fi
     fi
 
     if [ -z "$current_version" ]; then
         die "无法检测 Java 版本"
     fi
 
-    if [ -n "$required_version" ] && [ "$current_version" != "$required_version" ]; then
-        die "Java 版本不匹配: 当前 $current_version，需要 $required_version"
+    if [ -n "$required_version" ] && [ "$current_version" -lt "$required_version" ]; then
+        die "Java 版本不匹配: 当前 $current_version，需要 >= $required_version"
     fi
 
     log_info "Java 版本检查通过: $current_version"

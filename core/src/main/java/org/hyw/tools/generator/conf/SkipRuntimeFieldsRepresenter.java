@@ -2,7 +2,7 @@ package org.hyw.tools.generator.conf;
 
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.introspector.Property;
 import org.yaml.snakeyaml.representer.Representer;
@@ -15,9 +15,15 @@ import org.yaml.snakeyaml.representer.Representer;
 public class SkipRuntimeFieldsRepresenter extends Representer {
 
 	// 需要排除的运行时字段列表
-	private static final String[] EXCLUDED_FIELDS = { "templateRenderer", // 模板渲染器（运行时对象）
+private static final String[] EXCLUDED_FIELDS = { "templateRenderer", // 模板渲染器（运行时对象）
 			"contextBuilder", // 上下文构建器（运行时对象）
 			"pathResolver", // 路径解析器（运行时对象）
+			"resolvedPlatform", // 兼容性矩阵解析结果
+			"platformId", // 派生字段，保存时由 javaVersion 重新解析
+			"templateFamily", // 派生字段，保存时由 javaVersion 重新解析
+			"namespace", // 派生字段，保存时由 javaVersion 重新解析
+			"bytecodeRelease", // 派生字段，保存时由 javaVersion 重新解析
+			"platformVariables", // 派生模板变量
 			"tableCache" // 缓存对象（运行时对象，包含无法序列化的内部对象）
 	};
 

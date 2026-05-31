@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.Naming;
@@ -55,6 +55,16 @@ public class GlobalConf extends BaseBean {
 	 * 是否打开输出目录
 	 */
 	private boolean openDir = true;
+
+	/**
+	 * 是否启用元数据缓存（表结构稳定时启用可加速重复生成；频繁改表结构时建议关闭）
+	 */
+	private boolean enableCache = false;
+
+	/**
+	 * 是否并行渲染表（多表场景下显著提速；表内组件仍按依赖顺序串行）
+	 */
+	private boolean parallelTables = true;
 
 	/**
 	 * 父包名,如果为空，将下面子包名必须写全部， 否则就只需写子包名
@@ -133,6 +143,31 @@ public class GlobalConf extends BaseBean {
 	 * jdk版本
 	 */
 	private String javaVersion;
+
+	/**
+	 * 兼容性矩阵解析后的平台标识
+	 */
+	private String platformId;
+
+	/**
+	 * 模板代际，如 boot2 / boot3
+	 */
+	private String templateFamily;
+
+	/**
+	 * Java EE / Jakarta EE 命名空间，如 javax / jakarta
+	 */
+	private String namespace;
+
+	/**
+	 * 编译目标 release
+	 */
+	private String bytecodeRelease;
+
+	/**
+	 * 兼容性矩阵派生出的模板变量
+	 */
+	private Map<String, Object> platformVariables;
 
 	/**
 	 * 生成文件的编码
@@ -240,6 +275,30 @@ public class GlobalConf extends BaseBean {
 
 	public void setOpenDir(boolean openDir) {
 		this.openDir = openDir;
+	}
+
+	public boolean isEnableCache() {
+		return enableCache;
+	}
+
+	public void setEnableCache(boolean enableCache) {
+		this.enableCache = enableCache;
+	}
+
+	public boolean isParallelTables() {
+		return parallelTables;
+	}
+
+	public void setParallelTables(boolean parallelTables) {
+		this.parallelTables = parallelTables;
+	}
+
+	public boolean isDryRun() {
+		return dryRun;
+	}
+
+	public void setDryRun(boolean dryRun) {
+		this.dryRun = dryRun;
 	}
 
 	public String getAuthor() {
@@ -508,6 +567,46 @@ public class GlobalConf extends BaseBean {
 
 	public void setJavaVersion(String javaVersion) {
 		this.javaVersion = javaVersion;
+	}
+
+	public String getPlatformId() {
+		return platformId;
+	}
+
+	public void setPlatformId(String platformId) {
+		this.platformId = platformId;
+	}
+
+	public String getTemplateFamily() {
+		return templateFamily;
+	}
+
+	public void setTemplateFamily(String templateFamily) {
+		this.templateFamily = templateFamily;
+	}
+
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
+
+	public String getBytecodeRelease() {
+		return bytecodeRelease;
+	}
+
+	public void setBytecodeRelease(String bytecodeRelease) {
+		this.bytecodeRelease = bytecodeRelease;
+	}
+
+	public Map<String, Object> getPlatformVariables() {
+		return platformVariables;
+	}
+
+	public void setPlatformVariables(Map<String, Object> platformVariables) {
+		this.platformVariables = platformVariables;
 	}
 
 	public String[] getResources() {

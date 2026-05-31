@@ -1,11 +1,11 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/roleResourceMapping'
+const modulePath = '/v1/roleResourceMapping'
 
 const api = {
-  roleresourcemappingList: moudulePath + '/page',
-  roleresourcemappingAll: moudulePath + '/all',
-  addRoleResourceMapping: moudulePath
+  roleresourcemappingList: modulePath + '/page',
+  roleresourcemappingAll: modulePath + '/all',
+  addRoleResourceMapping: modulePath
 }
 
 export default api
@@ -28,7 +28,7 @@ export function getRoleResourceMappingAll (parameter) {
 
 export function getRoleResourceMappingInfo (id) {
   return axios({
-    url: moudulePath + '/' + id,
+    url: modulePath + '/' + id,
     method: 'get'
   })
 }
@@ -42,9 +42,8 @@ export function addRoleResourceMapping (parameter) {
 }
 
 export function editRoleResourceMapping (parameter) {
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath,
+    url: modulePath,
     method: 'put',
     params: parameter
   })
@@ -53,7 +52,7 @@ export function editRoleResourceMapping (parameter) {
 export function delRoleResourceMapping (id) {
   console.log('id', id)
   return axios({
-    url: moudulePath + '/' + id,
+    url: modulePath + '/' + id,
     method: 'delete'
   })
 }

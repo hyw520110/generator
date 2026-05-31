@@ -296,27 +296,32 @@
 		  <scope>provided</scope>
 		</dependency>
 </#if>
+<#if global.modules?? && global.modules?size gt 1>
 		<dependency>
 			<groupId>${rootPackage!}</groupId>
 			<artifactId>${projectName!}-api</artifactId>
-			<version>1.0.1-SNAPSHOT</version>
+			<version>${version!}</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-api</artifactId>
+</#if>
+			
+<#if JWT?? && JWT>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-jackson</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.shiro</groupId>
-			<artifactId>shiro-spring</artifactId>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-jackson</artifactId>
+			</dependency>
+</#if>
+<#if SHIRO?? && SHIRO>
+			<dependency>
+				<groupId>org.apache.shiro</groupId>
+				<artifactId>shiro-spring</artifactId>
 			<#if shiroClassifier?has_content>
 			<classifier>${shiroClassifier}</classifier>
 			</#if>
@@ -336,23 +341,24 @@
 			<artifactId>shiro-core</artifactId>
 			<#if shiroClassifier?has_content>
 			<classifier>${shiroClassifier}</classifier>
-			</#if>
-		</dependency>
-		<dependency>
+				</#if>
+			</dependency>
+</#if>
+			<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-web</artifactId>
 			<#if shiroClassifier?has_content>
 			<classifier>${shiroClassifier}</classifier>
 			</#if>
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-<#if SPRINGBOOT?? && SPRINGBOOT>
-			<version>4.12</version>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter</artifactId>
+<#if !SPRINGBOOT?? || !SPRINGBOOT>
+				<version>5.10.2</version>
 </#if>
-			<scope>test</scope>
-		</dependency>
+				<scope>test</scope>
+			</dependency>
 <#if SPRINGBOOT?? && SPRINGBOOT>
 <#if javaVersion?? && (javaVersion?starts_with("17") || javaVersion?starts_with("21"))>
 		<!-- JAXB API for Java 17+ compatibility -->
@@ -393,10 +399,10 @@
 			 </resource>
 		</resources>	
 		<plugins>
-			<plugin>
-			 <groupId>org.apache.maven.plugins</groupId>
-			 <artifactId>maven-resources-plugin</artifactId>
-<#if SPRINGBOOT?? && SPRINGBOOT>			 <version>2.6</version></#if>
+			 	<plugin>
+				 <groupId>org.apache.maven.plugins</groupId>
+				 <artifactId>maven-resources-plugin</artifactId>
+<#if SPRINGBOOT?? && SPRINGBOOT>			 <version>3.3.1</version></#if>
 			 <configuration>
 			    <delimiters>
 			       <delimiter>@</delimiter>
@@ -405,16 +411,15 @@
 			 </configuration>
 			</plugin>
 			<!-- 编译插件：设置编译版本、编码 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-<#if SPRINGBOOT?? && SPRINGBOOT><version>3.3</version></#if>
-				<configuration>
-					<source>${r'${maven.compiler.source}'}</source>
-					<target>${r'${maven.compiler.target}'}</target>
-					<encoding>${r'${project.build.sourceEncoding}'}</encoding>
-				</configuration>
-			</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+<#if SPRINGBOOT?? && SPRINGBOOT><version>3.13.0</version></#if>
+					<configuration>
+						<release>${r'${maven.compiler.release}'}</release>
+						<encoding>${r'${project.build.sourceEncoding}'}</encoding>
+					</configuration>
+				</plugin>
 <#if SPRINGBOOT?? && SPRINGBOOT>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -449,9 +454,9 @@
 </#if>
 
 		<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-<#if SPRINGBOOT?? && SPRINGBOOT><version>2.6</version></#if>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+<#if SPRINGBOOT?? && SPRINGBOOT><version>3.4.2</version></#if>
 				<configuration>
 					<archive>
 						<addMavenDescriptor>false</addMavenDescriptor>
@@ -476,9 +481,9 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-<#if SPRINGBOOT?? && SPRINGBOOT><version>2.2.1</version></#if>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+<#if SPRINGBOOT?? && SPRINGBOOT><version>3.7.1</version></#if>
 				<configuration>
 					<descriptors>
 						<descriptor>src/main/resources/maven/assembly.xml</descriptor>

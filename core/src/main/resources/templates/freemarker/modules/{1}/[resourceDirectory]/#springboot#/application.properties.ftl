@@ -37,7 +37,7 @@ spring.output.ansi.enabled=DETECT
 spring.http.encoding.charset=UTF-8
 spring.http.multipart.max-file-size=10MB
 spring.http.multipart.max-request-size=100MB
-spring.http.converters.preferred-json-mapper=fastjson
+spring.http.converters.preferred-json-mapper=${json_type!'jackson'}
 spring.messages.basename=conf/messages
 spring.messages.cache-seconds=60
 <#if REDIS!false>

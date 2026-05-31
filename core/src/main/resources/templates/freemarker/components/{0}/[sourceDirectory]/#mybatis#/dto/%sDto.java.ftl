@@ -8,6 +8,8 @@ import ${pkg!};
 </#list>
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import ${validationPackage}.constraints.NotBlank;
+import ${validationPackage}.constraints.NotNull;
 
 <#include 'comments/comment.ftl'>
 <#if table.comment??>
@@ -28,6 +30,11 @@ public class ${dtoName!} implements Serializable {
 </#if>
 
 	@Schema(name = "${field.propertyName!}", description = <#if field.comment?has_content>"${field.comment!}"<#else>"${field.name!}"</#if>)
+<#if !field.isNullAble() && !field.isPrimarykey()>
+<#if field.fieldType.type == "String">    @NotBlank
+<#else>    @NotNull
+</#if>
+</#if>
     private ${field.fieldType.type!} ${field.propertyName!};
     
 </#list>

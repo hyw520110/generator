@@ -1,13 +1,13 @@
 import { axios } from '@/utils/request'
 import md5 from 'md5'
 
-const moudulePath = '/v1/user'
+const modulePath = '/v1/user'
 
 const api = {
-  userList: moudulePath + '/page',
-  userAll: moudulePath + '/all',
-  addUser: moudulePath,
-  reset: moudulePath + '/reset'
+  userList: modulePath + '/page',
+  userAll: modulePath + '/all',
+  addUser: modulePath,
+  reset: modulePath + '/reset'
 }
 
 export default api
@@ -30,14 +30,14 @@ export function getUserAll (parameter) {
 
 export function getUserByGroupId (groupId) {
   return axios({
-    url: moudulePath + '/group/' + groupId + '/list',
+    url: modulePath + '/group/' + groupId + '/list',
     method: 'get'
   })
 }
 
 export function getUserInfo (userId) {
   return axios({
-    url: moudulePath + '/' + userId,
+    url: modulePath + '/' + userId,
     method: 'get'
   })
 }
@@ -53,7 +53,7 @@ export function addUser (parameter) {
 
 export function editUser (userId, parameter) {
   return axios({
-    url: moudulePath + '/' + userId,
+    url: modulePath + '/' + userId,
     method: 'put',
     params: parameter
   })
@@ -71,7 +71,7 @@ export function resetPwd (parameter) {
 export function delUser (userId) {
   console.log('userId', userId)
   return axios({
-    url: moudulePath + '/' + userId,
+    url: modulePath + '/' + userId,
     method: 'delete'
   })
 }

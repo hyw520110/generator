@@ -9,6 +9,7 @@
 	<properties>
 		<maven.compiler.source>${javaVersion!}</maven.compiler.source>
 		<maven.compiler.target>${javaVersion!}</maven.compiler.target>
+		<maven.compiler.release>${bytecodeRelease!javaVersion!}</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>${javaVersion!}</java.version>
 		<resource.delimiter>@</resource.delimiter>

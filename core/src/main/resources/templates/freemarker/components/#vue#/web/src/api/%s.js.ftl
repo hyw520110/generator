@@ -12,6 +12,9 @@ function buildPrimaryKeyPath (record) {
 }
 
 function buildPrimaryKeyPayload (record) {
+  if (primaryKeyFields.length === 1) {
+    return record && typeof record === 'object' ? record[primaryKeyFields[0]] : record
+  }
   if (record && typeof record === 'object') {
     return primaryKeyFields.reduce((payload, key) => {
       payload[key] = record[key]

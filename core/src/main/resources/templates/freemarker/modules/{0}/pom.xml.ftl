@@ -13,10 +13,11 @@
 	<artifactId>${projectName!}-${moduleName!}</artifactId>
 	<version>${version!}</version>
 	<packaging>jar</packaging>
-	<properties>
-		<maven.compiler.source>${javaVersion!}</maven.compiler.source>
-		<maven.compiler.target>${javaVersion!}</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<properties>
+			<maven.compiler.source>${javaVersion!}</maven.compiler.source>
+			<maven.compiler.target>${javaVersion!}</maven.compiler.target>
+			<maven.compiler.release>${bytecodeRelease!javaVersion!}</maven.compiler.release>
+			<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -60,25 +61,24 @@
 		</dependency>
 </#if>				
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.10.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<!-- 编译插件：设置编译版本、编码 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
-				<configuration>
-					<source><#noparse>${maven.compiler.source}</#noparse></source>
-					<target><#noparse>${maven.compiler.target}</#noparse></target>
-					<encoding><#noparse>${project.build.sourceEncoding}</#noparse></encoding>
-				</configuration>
-			</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.13.0</version>
+					<configuration>
+						<release><#noparse>${maven.compiler.release}</#noparse></release>
+						<encoding><#noparse>${project.build.sourceEncoding}</#noparse></encoding>
+					</configuration>
+				</plugin>
 			<!-- 源码jar插件 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -95,21 +95,6 @@
 			</plugin>
 		</plugins>
 	</build>
-	<!-- 发布节点 -->
-	<distributionManagement>
-		<!-- mvn deploy -Pprod 发布正式版本到nexus私服 -->
-		<repository>
-			<id>prod</id>
-			<name>dev-nexus-release</name>
-			<url>http://dev.maven.com:8081/nexus/content/repositories/releases/</url>
-		</repository>
-		<!-- mvn deploy 发布默认快照版本到nexus私服 -->
-		<snapshotRepository>
-			<id>dev</id>
-			<name>dev-nexus-snapshot</name>
-			<url>http://dev.maven.com:8081/nexus/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 	<profiles>
 		<!-- 生产环境,调用开发环境配置,默认激活 -->
 		<profile>

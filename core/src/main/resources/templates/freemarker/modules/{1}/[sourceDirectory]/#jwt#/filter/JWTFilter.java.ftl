@@ -18,8 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 <#if global.modules?? && global.modules?size gt 1>
 import ${api_dtoPackage!}.StatusCode;
 import ${api_dtoPackage!}.Result;
@@ -45,9 +44,10 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 	private Logger log = LoggerFactory.getLogger(JWTFilter.class);
 
 	private AntPathMatcher pathMatcher = new AntPathMatcher();
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	private String[] excludes = { "/webjars/**", "/swagger-resources/**", "/swagger-ui.html", "/error", "/v2/api-docs", "/v3/api-docs/**",
-			"/auth/login", "/auth/logout/**","/druid/**", "/resource/**", "/user/**", "/sys/**"};
+			"/auth/login", "/auth/logout/**" };
 	private String HEADER_TOKEN = "X-USER-TOKEN";
 	private String CHARSET = "UTF-8";
 
@@ -94,7 +94,7 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 			getSubject(request, response).login(tokenVo);
 			return true;
 		} catch (Exception e) {
-			log.error("token:{}", token, e);
+			log.error("token authentication failed", e);
 			return false;
 		}
 	}
@@ -109,9 +109,8 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 		httpResponse.setContentType(contentType);
 		try {
 			PrintWriter printWriter = httpResponse.getWriter();
-			printWriter.append(JSON.toJSONString(
-					Result.error(StatusCode.UNAUTH_ERROR.getCode(), StatusCode.UNAUTH_ERROR.getDesc()),
-					SerializerFeature.WriteMapNullValue));
+			printWriter.append(OBJECT_MAPPER.writeValueAsString(
+					Result.error(StatusCode.UNAUTH_ERROR.getCode(), StatusCode.UNAUTH_ERROR.getDesc())));
 		} catch (IOException e) {
 			log.error("sendChallenge error,can not resolve httpServletResponse");
 		}

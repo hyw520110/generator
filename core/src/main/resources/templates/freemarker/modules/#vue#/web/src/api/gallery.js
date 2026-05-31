@@ -1,11 +1,11 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/gallery'
+const modulePath = '/v1/gallery'
 
 const api = {
-  galleryList: moudulePath + '/page',
-  galleryAll: moudulePath + '/all',
-  addGallery: moudulePath
+  galleryList: modulePath + '/page',
+  galleryAll: modulePath + '/all',
+  addGallery: modulePath
 }
 
 export default api
@@ -28,7 +28,7 @@ export function getGalleryAll (parameter) {
 
 export function getGalleryInfo (galleryId) {
   return axios({
-    url: moudulePath + '/' + galleryId,
+    url: modulePath + '/' + galleryId,
     method: 'get'
   })
 }
@@ -42,9 +42,8 @@ export function addGallery (parameter) {
 }
 
 export function editGallery (parameter) {
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath,
+    url: modulePath,
     method: 'put',
     params: parameter
   })
@@ -53,7 +52,7 @@ export function editGallery (parameter) {
 export function delGallery (galleryId) {
   console.log('galleryId', galleryId)
   return axios({
-    url: moudulePath + '/' + galleryId,
+    url: modulePath + '/' + galleryId,
     method: 'delete'
   })
 }

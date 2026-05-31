@@ -8,6 +8,8 @@ import ${persistencePackage}.Entity;
 import ${persistencePackage}.GeneratedValue;
 import ${persistencePackage}.GenerationType;
 import ${persistencePackage}.Id;
+import ${validationPackage}.constraints.NotBlank;
+import ${validationPackage}.constraints.NotNull;
 
 <#include 'comments/comment.ftl'>
 @Entity
@@ -23,6 +25,11 @@ public class ${className!} implements Serializable{
 </#if>
 <#if field.isPrimarykey()>
 	@Id @GeneratedValue(strategy=GenerationType.AUTO)
+</#if>
+<#if !field.isNullAble() && !field.isPrimarykey()>
+<#if field.fieldType.type == "String">    @NotBlank
+<#else>    @NotNull
+</#if>
 </#if>
     private ${field.fieldType.type!} ${field.propertyName!};
 </#list>

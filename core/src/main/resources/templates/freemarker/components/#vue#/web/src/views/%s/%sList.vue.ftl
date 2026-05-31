@@ -49,6 +49,7 @@
       :data="loadData"
       :alert="options.alert"
       :rowSelection="options.rowSelection"
+      :rowKey="getRecordKey"
       showPagination="auto"
     >
       <!-- 自定义表头：实现冒号前文本显示，tooltip 显示完整文本 -->
@@ -70,9 +71,9 @@
 </#if>
 </#list>
         <template v-else-if="column.dataIndex === 'action'">
-          <a @click="handleEdit(record.id)">编辑</a>
+          <a @click="handleEdit(record)">编辑</a>
           <a-divider type="vertical" />
-          <a @click="handleDelete(record.id)">删除</a>
+          <a @click="handleDelete(record)">删除</a>
         </template>
       </template>
     </s-table>
@@ -86,7 +87,7 @@ import { ref, reactive } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import { PlusOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { STable } from '@/components'
-import { getList, del${table.beanName?cap_first} } from '@/api/${table.beanName}'
+import { getList, del${table.beanName?cap_first}, batchDel${table.beanName?cap_first} } from '@/api/${table.beanName}'
 import CreateForm from './${table.beanName}Form.vue'
 
 export default {
@@ -104,6 +105,7 @@ export default {
     const selectedRowKeys = ref([])
     const selectedRows = ref([])
     const queryParam = reactive({})
+    const primaryKeyFields = ${table.primaryKeyJsArray}
 
     /**
      * 截取表头标题：冒号或逗号前的内容
@@ -170,6 +172,10 @@ export default {
         })
     }
 
+    const getRecordKey = (record) => {
+      return primaryKeyFields.map(key => record[key]).join(':')
+    }
+
     const options = {
       alert: {
         show: true,
@@ -188,19 +194,18 @@ export default {
       createModalRef.value.add()
     }
 
-    const handleEdit = (id) => {
-      createModalRef.value.edit(id)
+    const handleEdit = (record) => {
+      createModalRef.value.edit(record)
     }
 
-    const handleDelete = (id) => {
+    const handleDelete = (record) => {
       Modal.confirm({
         title: '确认删除',
         content: '确定要删除这条记录吗？',
-        onOk: () => {
-          del${table.beanName?cap_first}(id).then(() => {
-            message.info('删除成功')
-            tableRef.value.refresh()
-          })
+        onOk: async () => {
+          await del${table.beanName?cap_first}(record)
+          message.info('删除成功')
+          tableRef.value.refresh()
         }
       })
     }
@@ -209,8 +214,8 @@ export default {
       Modal.confirm({
         title: '确认删除',
         content: '确定要删除选中的记录吗？',
-        onOk: () => {
-          // 批量删除逻辑
+        onOk: async () => {
+          await batchDel${table.beanName?cap_first}(selectedRows.value)
           message.info('删除成功')
           selectedRowKeys.value = []
           tableRef.value.refresh()
@@ -235,6 +240,7 @@ export default {
       columns,
       queryParam,
       loadData,
+      getRecordKey,
       selectedRowKeys,
       selectedRows,
       options,

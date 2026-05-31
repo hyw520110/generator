@@ -3,12 +3,13 @@
   "version": "3.0.0",
   "private": true,
   "engines": {
-    "node": ">=17.9.1"
+    "node": ">=18.18.0"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "build:check": "vite build --mode production",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {

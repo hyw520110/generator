@@ -136,6 +136,8 @@ public class CompatibilityResolver {
 		variables.put("jaxbApiArtifactId", "jakarta".equals(namespace) ? "jakarta.xml.bind-api" : "jaxb-api");
 		variables.put("shiroClassifier", "jakarta".equals(namespace) ? "jakarta" : "");
 		variables.put("springBootMajor", "boot3".equals(profile.getTemplateFamily()) ? "3" : "2");
+		variables.put("apiDocFamily", "boot3".equals(profile.getTemplateFamily()) ? "openapi3" : "swagger2");
+		variables.put("testFramework", "junit5");
 		return variables;
 	}
 

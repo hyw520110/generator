@@ -191,7 +191,7 @@ components:
     rest: true
     crud: true
     superControllerClass: BaseController
-    json_type: fastjson
+    json_type: jackson
     jsonp: false
   THYMELEAF: 
     suffix: .html

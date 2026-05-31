@@ -8,6 +8,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+<#if springcloud_version?has_content>
 			<!-- spring cloud alibaba -->
 			<dependency>
 				<groupId>com.alibaba.cloud</groupId>
@@ -23,6 +24,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+</#if>
 <#if ZOOKEEPER?? && ZOOKEEPER>
 			<!-- spring cloud zookeeper -->
 			<dependency>
@@ -86,20 +88,24 @@
 			</dependency>
 <#if SWAGGER2??>
 			<!-- Knife4j for Spring Boot 3 -->
-			<dependency>
-				<groupId>com.github.xiaoymin</groupId>
-				<artifactId>${knife4j_starter_artifact!'knife4j-openapi3-jakarta-spring-boot-starter'}</artifactId>
-				<version><#noparse>${knife4j.version}</#noparse></version>
-			</dependency>
-			<!-- 其他 -->
-			<dependency>
-				<groupId>com.lmax</groupId>
-				<artifactId>disruptor</artifactId>
-				<version><#noparse>${disruptor.version}</#noparse></version>
-			</dependency>
-			<dependency>
-				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt-api</artifactId>
+				<dependency>
+					<groupId>com.github.xiaoymin</groupId>
+					<artifactId>${knife4j_starter_artifact!'knife4j-openapi3-jakarta-spring-boot-starter'}</artifactId>
+					<version><#noparse>${knife4j.version}</#noparse></version>
+				</dependency>
+</#if>
+	<#if SPRINGBOOT??>
+				<!-- 其他 -->
+				<dependency>
+					<groupId>com.lmax</groupId>
+					<artifactId>disruptor</artifactId>
+					<version><#noparse>${disruptor.version}</#noparse></version>
+				</dependency>
+</#if>
+	<#if JWT??>
+				<dependency>
+					<groupId>io.jsonwebtoken</groupId>
+					<artifactId>jjwt-api</artifactId>
 				<version><#noparse>${jwt.version}</#noparse></version>
 			</dependency>
 			<dependency>
@@ -109,12 +115,14 @@
 			</dependency>
 			<dependency>
 				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt-jackson</artifactId>
-				<version><#noparse>${jwt.version}</#noparse></version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.shiro</groupId>
-				<artifactId>shiro-spring</artifactId>
+					<artifactId>jjwt-jackson</artifactId>
+					<version><#noparse>${jwt.version}</#noparse></version>
+				</dependency>
+</#if>
+	<#if SHIRO??>
+				<dependency>
+					<groupId>org.apache.shiro</groupId>
+					<artifactId>shiro-spring</artifactId>
 				<version><#noparse>${shiro.version}</#noparse></version>
 				<#if shiroClassifier?has_content>
 				<classifier>${shiroClassifier}</classifier>
@@ -134,15 +142,18 @@
 				<version><#noparse>${shiro.version}</#noparse></version>
 				<#if shiroClassifier?has_content>
 				<classifier>${shiroClassifier}</classifier>
-				</#if>
-			</dependency>
-			<!-- lombok -->
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version><#noparse>${lombok.version}</#noparse></version>
-			</dependency>
-<#if mapperType?? && mapperType == "plus">
+					</#if>
+				</dependency>
+</#if>
+	<#if SPRINGBOOT??>
+				<!-- lombok -->
+				<dependency>
+					<groupId>org.projectlombok</groupId>
+					<artifactId>lombok</artifactId>
+					<version><#noparse>${lombok.version}</#noparse></version>
+				</dependency>
+</#if>
+	<#if mapperType?? && mapperType == "plus">
 			<!-- mybatis-plus -->
 			<dependency>
 				<groupId>com.baomidou</groupId>
@@ -163,8 +174,7 @@
 				<groupId>com.baomidou</groupId>
 				<artifactId>${mybatis_plus_starter_artifact!'mybatis-plus-spring-boot3-starter'}</artifactId>
 				<version><#noparse>${mybatis.plus.version}</#noparse></version>
-			</dependency>
-</#if>
-</#if>
-		</dependencies>
+				</dependency>
+	</#if>
+			</dependencies>
 	</dependencyManagement>

@@ -47,7 +47,7 @@ public class GeneratorTest {
 		global.setAuthor("heyiwu");
 		global.setRootPackage("org.hyw.test");
 		global.setModules(new String[]{"api", "app"});
-		global.setComponents(new Component[]{Component.MYBATIS, Component.SPRINGMVC});
+		global.setComponents(new Component[]{Component.MYBATIS, Component.SPRINGBOOT, Component.SPRINGMVC});
 		global.setFileOverride(true);
 		global.setDelOutputDir(true);
 		global.setSeparators(new char[]{'_', '-'});

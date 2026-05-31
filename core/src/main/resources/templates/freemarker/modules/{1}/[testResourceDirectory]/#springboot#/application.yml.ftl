@@ -57,7 +57,7 @@ spring:
       max-file-size: 10MB
       max-request-size: 100MB
     converters: 
-      preferred-json-mapper: fastjson  
+      preferred-json-mapper: ${json_type!'jackson'}
   messages:
     basename: conf/messages
     #资源文件缓存失效时间,默认-1永不失效
@@ -209,4 +209,4 @@ context:
 
 rocketmq:
   name-server-address: 192.168.40.95:9876
-  producer-group: backstage_producer  
+  producer-group: backstage_producer

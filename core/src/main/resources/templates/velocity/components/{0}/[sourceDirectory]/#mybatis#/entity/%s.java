@@ -8,8 +8,6 @@ import ${pkg};
 import #if($StringUtils.indexOf("$superEntityClass",'.')==-1)${entityPackage}.#end$superEntityClass;
 #else
 import java.io.Serializable;
-import ${validationPackage}.constraints.NotNull;
-import org.apache.commons.lang3.StringUtils;
 #end
 #if("plus"=="$mapperType")
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -17,6 +15,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 #end
+import ${validationPackage}.constraints.NotBlank;
 import ${validationPackage}.constraints.NotNull;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -52,7 +51,7 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
 #end
 	@Schema(name = "${field.propertyName}", description = #if("$!{field.comment}"!="")"$!{field.comment}"#else"${field.name}"#end, required = #if(${field.isNullAble()})false #else true #end)
 #if(!${field.isCommonField} || ${StringUtils.indexOf("$superEntityClass", '.')}!=-1)
-#if(!$field.isNullAble())    @NotNull
+#if(!$field.isNullAble())#if($field.propertyType == "String")    @NotBlank#else    @NotNull#end
 #end 
     private ${field.fieldType.type} ${field.propertyName};
     

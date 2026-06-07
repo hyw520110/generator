@@ -131,7 +131,6 @@ export default {
     })
     
     const handleChange = (value) => {
-      console.log(`selected ${value}`)
     }
     
     const getList = () => {

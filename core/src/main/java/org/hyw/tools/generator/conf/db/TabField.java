@@ -184,6 +184,59 @@ public class TabField extends BaseBean {
 			   name.contains("credential");
 	}
 
+	public String getVueInitialValue() {
+		String type = getNormalizedPropertyType();
+		if ("boolean".equals(type)) {
+			return "false";
+		}
+		if (isVueNumberControl()) {
+			return "null";
+		}
+		return "''";
+	}
+
+	public boolean isVueSwitchControl() {
+		return "boolean".equals(getNormalizedPropertyType());
+	}
+
+	public boolean isVueDateControl() {
+		String type = getNormalizedPropertyType();
+		return type.contains("date") || type.contains("time") || type.contains("timestamp");
+	}
+
+	public boolean isVueNumberControl() {
+		String type = getNormalizedPropertyType();
+		return "integer".equals(type) || "int".equals(type) || "long".equals(type) || "short".equals(type)
+				|| "double".equals(type) || "float".equals(type) || "bigdecimal".equals(type);
+	}
+
+	public boolean isVueTextareaControl() {
+		String dbType = type != null ? type.toLowerCase() : "";
+		String label = getComment();
+		return dbType.contains("text") || dbType.contains("clob") || (label != null && label.length() > 20);
+	}
+
+	private String getNormalizedPropertyType() {
+		String javaType = getPropertyType();
+		if (javaType == null) {
+			return "";
+		}
+		String normalized = javaType.toLowerCase();
+		if (normalized.startsWith("java.lang.")) {
+			normalized = normalized.substring("java.lang.".length());
+		}
+		if (normalized.startsWith("java.math.")) {
+			normalized = normalized.substring("java.math.".length());
+		}
+		if (normalized.startsWith("java.util.")) {
+			normalized = normalized.substring("java.util.".length());
+		}
+		if (normalized.startsWith("java.sql.")) {
+			normalized = normalized.substring("java.sql.".length());
+		}
+		return normalized;
+	}
+
 	@Override
 	public boolean equals(Object arg) {
 		if (null == arg) {

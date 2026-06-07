@@ -69,7 +69,6 @@ export function resetPwd (parameter) {
 }
 
 export function delUser (userId) {
-  console.log('userId', userId)
   return axios({
     url: modulePath + '/' + userId,
     method: 'delete'

@@ -393,14 +393,12 @@ export default {
     }
     
     const loadData = async (parameter) => {
-      console.log(parameter)
       loading.value = true
       errorMessage.value = ''
       errorType.value = 'error'
       genResult.value = null
       try {
         const res = await getTableList(parameter || formState)
-        console.log(res)
         loading.value = false
         const resData = JSON.parse(res.data)
         data.value = resData.tables
@@ -624,7 +622,6 @@ export default {
     }
     
     const handleCreate = async (record) => {
-      console.log('re', record)
       generating.value = true
       genResult.value = null
       startTimer()
@@ -651,7 +648,6 @@ export default {
     const onSelectChange = (keys, rows) => {
       selectedRowKeys.value = keys
       selectedRows.value = rows
-      console.log('selectedRowKeys', keys, 'selectedRows', rows)
     }
     
     const resetSearchForm = () => {

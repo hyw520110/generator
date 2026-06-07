@@ -33,7 +33,6 @@ export function addResource (parameter) {
 }
 
 export function editResource (resourceId, parameter) {
-  console.log('resourceId', resourceId)
   return axios({
     url: modulePath + '/' + resourceId,
     method: 'put',
@@ -42,7 +41,6 @@ export function editResource (resourceId, parameter) {
 }
 
 export function delResource (resourceId) {
-  console.log('resourceId', resourceId)
   return axios({
     url: modulePath + '/' + resourceId,
     method: 'delete'

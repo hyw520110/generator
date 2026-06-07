@@ -5,11 +5,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hyw.tools.generator.Generator;
@@ -22,6 +24,10 @@ import org.springframework.stereotype.Service;
 public class UserGeneratorService {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserGeneratorService.class);
+	private static final String CLIENT_ID_HEADER = "X-Generator-Client-Id";
+	private static final String CLIENT_ID_COOKIE = "GENERATOR_CLIENT_ID";
+	private static final String CLIENT_ID_ATTRIBUTE = UserGeneratorService.class.getName() + ".CLIENT_ID";
+	private static final int CLIENT_ID_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 
 	@Value("${app.user-config-dir:${user.home}/.generator/users}")
 	private String userConfigDir;
@@ -86,7 +92,7 @@ public class UserGeneratorService {
 		if ("session".equals(strategy) && request != null) {
 			return "session-" + hash(request.getSession(true).getId());
 		}
-		if ("client".equals(strategy)) {
+		if (isClientStrategy()) {
 			String clientId = resolveClientId(request);
 			if (StringUtils.isNotBlank(clientId)) {
 				return "client-" + hash(clientId);
@@ -107,6 +113,28 @@ public class UserGeneratorService {
 		return trustedProxyEnabled;
 	}
 
+	public String ensureClientId(HttpServletRequest request, HttpServletResponse response) {
+		if (!isClientStrategy() || request == null) {
+			return resolveClientId(request);
+		}
+		String clientId = resolveClientId(request);
+		if (StringUtils.isNotBlank(clientId)) {
+			return clientId;
+		}
+		clientId = UUID.randomUUID().toString();
+		request.setAttribute(CLIENT_ID_ATTRIBUTE, clientId);
+		if (response != null) {
+			Cookie cookie = new Cookie(CLIENT_ID_COOKIE, clientId);
+			String contextPath = request.getContextPath();
+			cookie.setPath(StringUtils.isBlank(contextPath) ? "/" : contextPath);
+			cookie.setMaxAge(CLIENT_ID_COOKIE_MAX_AGE);
+			cookie.setHttpOnly(true);
+			cookie.setSecure(request.isSecure());
+			response.addCookie(cookie);
+		}
+		return clientId;
+	}
+
 	private Generator loadUserGenerator(String clientKey) {
 		File configFile = userConfigFile(clientKey);
 		Generator loaded = Generator.loadFrom(configFile);
@@ -124,19 +152,27 @@ public class UserGeneratorService {
 		if (request == null) {
 			return null;
 		}
-		String clientId = request.getHeader("X-Generator-Client-Id");
+		Object generated = request.getAttribute(CLIENT_ID_ATTRIBUTE);
+		if (generated instanceof String && StringUtils.isNotBlank((String) generated)) {
+			return (String) generated;
+		}
+		String clientId = request.getHeader(CLIENT_ID_HEADER);
 		if (StringUtils.isNotBlank(clientId)) {
 			return clientId;
 		}
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
 			for (Cookie cookie : cookies) {
-				if ("GENERATOR_CLIENT_ID".equals(cookie.getName())) {
+				if (CLIENT_ID_COOKIE.equals(cookie.getName())) {
 					return cookie.getValue();
 				}
 			}
 		}
 		return null;
+	}
+
+	private boolean isClientStrategy() {
+		return "client".equals(StringUtils.defaultString(userConfigStrategy, "ip").toLowerCase(Locale.ROOT));
 	}
 
 	private String resolveClientIp(HttpServletRequest request) {

@@ -50,7 +50,6 @@ export function editParam (parameter) {
 }
 
 export function delParam (paramId) {
-  console.log('paramId', paramId)
   return axios({
     url: modulePath + '/' + paramId,
     method: 'delete'

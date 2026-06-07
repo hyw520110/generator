@@ -379,7 +379,6 @@ const initGraph = () => {
   
   // 布局完成后自动适应画布
   graph.on('afterlayout', () => {
-    console.log('[G6] 布局完成，节点数:', graph.getNodes().length, '边数:', graph.getEdges().length)
     graph.fitView(20)
     graph.fitCenter()
     // 布局完成后启动流动动画
@@ -388,7 +387,6 @@ const initGraph = () => {
   
   // 绑定事件
   graph.on('node:mouseenter', (evt) => {
-    console.log('[G6] 节点悬停:', evt.item.getModel().tableName)
     const node = evt.item
     const model = node.getModel()
     graph.setItemState(node, 'hover', true)
@@ -446,7 +444,6 @@ const initGraph = () => {
 
   // 节点点击事件
   graph.on('node:click', (evt) => {
-    console.log('节点被点击:', evt.item.getModel())
     const node = evt.item
     const model = node.getModel()
 
@@ -475,28 +472,20 @@ const initGraph = () => {
 
   // 画布空白区域点击，关闭面板
   graph.on('canvas:click', (evt) => {
-    console.log('画布被点击')
     closeDetailsPanel()
   })
 }
 
 // 加载表详情数据
 const loadTableDetails = async (tableId) => {
-  console.log('[loadTableDetails] 开始加载表详情:', tableId)
-  console.log('[loadTableDetails] props.graphData:', props.graphData)
-  
   detailsLoading.value = true
   try {
     // 从 props.graphData 中获取表详情数据
     const tableDetailsData = props.graphData?.tableDetails || {}
     const tableForeignKeysData = props.graphData?.tableForeignKeys || {}
     
-    console.log('[loadTableDetails] tableDetailsData:', tableDetailsData)
-    console.log('[loadTableDetails] tableForeignKeysData:', tableForeignKeysData)
-    
     // 获取表的基本信息
     const tableNode = props.graphData?.nodes?.find(n => n.id === tableId || n.tableName === tableId)
-    console.log('[loadTableDetails] tableNode:', tableNode)
     
     if (tableDetailsData[tableId] && tableDetailsData[tableId].length > 0) {
       // 使用 API 返回的表详情数据
@@ -506,10 +495,8 @@ const loadTableDetails = async (tableId) => {
         columns: tableDetailsData[tableId],
         foreignKeys: tableForeignKeysData[tableId] || []
       }
-      console.log('[loadTableDetails] 表详情数据加载成功:', tableDetails.value)
     } else {
       // 如果没有 tableDetails 数据，使用模拟数据（用于测试）
-      console.log('[loadTableDetails] 未找到表详情数据，使用模拟数据:', tableId)
       tableDetails.value = {
         tableName: tableNode?.tableName || tableId,
         comment: tableNode?.comment || '系统用户表',
@@ -819,7 +806,6 @@ const handleFullscreenChange = () => {
 
 // 监听数据变化（只监听 nodes 变化，避免不必要的重新渲染）
 watch(() => props.graphData?.nodes, (newNodes) => {
-  console.log('[watch] graphData.nodes 变化，节点数:', newNodes?.length)
   if (!newNodes || newNodes.length === 0) return
 
   // 如果 graph 还未初始化，等待初始化完成后再更新

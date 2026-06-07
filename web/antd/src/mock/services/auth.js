@@ -8,7 +8,6 @@ const password = ['8914de686ab28dc22f30d3d8e107ff6c', '21232f297a57a5a743894a0e4
 
 const login = (options) => {
   const body = getBody(options)
-  console.log('mock: body', body)
   // 支持 userName 和 username 两种格式
   const loginUser = body.userName || body.username
   if (!username.includes(loginUser) || !password.includes(body.password)) {

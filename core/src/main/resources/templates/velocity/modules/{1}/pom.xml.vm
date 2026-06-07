@@ -339,10 +339,10 @@
 			#end
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
 #if(!$!{SPRINGBOOT})
-			<version>4.12</version>
+			<version>5.10.2</version>
 #end
 			<scope>test</scope>
 		</dependency>
@@ -403,8 +403,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 #if(!$!{SPRINGBOOT})<version>3.3</version>#end
 				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
+					<release>${maven.compiler.release}</release>
 					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
 			</plugin>

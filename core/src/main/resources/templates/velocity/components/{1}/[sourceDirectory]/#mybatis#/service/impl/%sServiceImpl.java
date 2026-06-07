@@ -18,7 +18,7 @@ import org.springframework.beans.BeanUtils;
 #if($!{DUBBO})
 @org.apache.dubbo.config.annotation.DubboService
 #end
-public class ${implName} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})}<#if("plus"=="$mapperType")${StringUtils.capitalFirst("$entityName")}Mapper,${dtoName}#else ${StringUtils.capitalFirst("$entityName")},${table.primaryKeyClass}#end> #end implements ${serviceName} {
+public class ${implName} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})}#if("plus"=="$mapperType")<${StringUtils.capitalFirst("$entityName")}Mapper,${dtoName}>#else<${StringUtils.capitalFirst("$entityName")},${table.primaryKeyClass}>#end #end implements ${serviceName} {
 #if("plus"!="$mapperType")
 #set($sName=${StringUtils.lowercaseFirst($mapperName)})
 

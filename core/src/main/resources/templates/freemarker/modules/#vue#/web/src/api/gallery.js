@@ -50,7 +50,6 @@ export function editGallery (parameter) {
 }
 
 export function delGallery (galleryId) {
-  console.log('galleryId', galleryId)
   return axios({
     url: modulePath + '/' + galleryId,
     method: 'delete'

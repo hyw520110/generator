@@ -52,7 +52,6 @@ export default {
       loading.value = true
       try {
         await formRef.value.validate()
-        console.log('表单 values', formState)
         timer = setTimeout(() => {
           loading.value = false
           emit('nextStep')

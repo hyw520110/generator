@@ -71,7 +71,6 @@ export default {
       e.preventDefault()
       try {
         await formRef.value.validate()
-        console.log('Received values of form: ', formState)
       } catch (error) {
         // validation failed
       }

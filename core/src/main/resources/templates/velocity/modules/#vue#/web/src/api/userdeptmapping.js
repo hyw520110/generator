@@ -1,11 +1,11 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/userDeptMapping'
+const modulePath = '/v1/userDeptMapping'
 
 const api = {
-  userdeptmappingList: moudulePath + '/page',
-  userdeptmappingAll: moudulePath + '/all',
-  addUserDeptMapping: moudulePath
+  userdeptmappingList: modulePath + '/page',
+  userdeptmappingAll: modulePath + '/all',
+  addUserDeptMapping: modulePath
 }
 
 export default api
@@ -28,7 +28,7 @@ export function getUserDeptMappingAll (parameter) {
 
 export function getUserDeptMappingInfo (mappingId) {
   return axios({
-    url: moudulePath + '/' + mappingId,
+    url: modulePath + '/' + mappingId,
     method: 'get'
   })
 }
@@ -42,18 +42,16 @@ export function addUserDeptMapping (parameter) {
 }
 
 export function editUserDeptMapping (parameter) {
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath,
+    url: modulePath,
     method: 'put',
     params: parameter
   })
 }
 
 export function delUserDeptMapping (mappingId) {
-  console.log('mappingId', mappingId)
   return axios({
-    url: moudulePath + '/' + mappingId,
+    url: modulePath + '/' + mappingId,
     method: 'delete'
   })
 }

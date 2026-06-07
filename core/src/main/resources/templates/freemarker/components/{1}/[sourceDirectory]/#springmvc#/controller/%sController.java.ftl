@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -30,11 +30,13 @@ import ${pkg!};
 </#if>
 </#list>
 
-<#if VUE??>
+<#if VUE?? || THYMELEAF??>
 <#if global.modules?? && global.modules?size gt 1>
 import ${api_dtoPackage!}.Result;
+import ${api_dtoPackage!}.PageResult;
 <#else>
 import ${dtoPackage!}.Result;
+import ${dtoPackage!}.PageResult;
 </#if>
 </#if>
 
@@ -115,19 +117,13 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 <#if VUE??>
 	@Operation(summary = "${table.comment!}-分页列表查询", description = "${table.comment!}-分页列表查询")
 	@GetMapping(value="/page")
-	public Result<Map<String, Object>> page(@RequestParam Map<String, Object> map,
+	public Result<PageResult<${dtoName!}>> page(@RequestParam Map<String, Object> map,
 			@RequestParam(required = false, defaultValue = "1") int pageNum,
 			@RequestParam(required = false, defaultValue = "10") int pageSize) {
 		PageHelper.startPage(pageNum, pageSize);
 		List<${dtoName!}> list = ${sName!}.findAll(map);
 		PageInfo<${dtoName!}> page = new PageInfo<>(list);
-		Map<String, Object> result = new HashMap<>();
-		result.put("records", page.getList());
-		result.put("current", page.getPageNum());
-		result.put("size", page.getPageSize());
-		result.put("total", page.getTotal());
-		result.put("pages", page.getPages());
-		return Result.ok(result);
+		return Result.ok(PageResult.of(page.getList(), page.getPageNum(), page.getPageSize(), page.getTotal()));
 	}
 
 <#if table.primarykeyFields?size gt 0>

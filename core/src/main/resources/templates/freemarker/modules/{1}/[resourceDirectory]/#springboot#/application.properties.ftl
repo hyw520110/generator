@@ -131,8 +131,9 @@ spring.datasource.druid.web-stat-filter.profile-enable=true
 spring.datasource.druid.stat-view-servlet.enabled=true
 spring.datasource.druid.stat-view-servlet.url-pattern=/druid/*
 spring.datasource.druid.stat-view-servlet.reset-enable=false
-spring.datasource.druid.stat-view-servlet.allow=''
-spring.datasource.druid.stat-view-servlet.deny=''
+spring.datasource.druid.stat-view-servlet.allow=${r"${druid.stat.allow:127.0.0.1,::1}"}
+spring.datasource.druid.stat-view-servlet.login-username=${r"${druid.stat.username:admin}"}
+spring.datasource.druid.stat-view-servlet.login-password=${r"${druid.stat.password:admin}"}
 
 spring.datasource.druid.filter.wall.enabled=true
 spring.datasource.druid.filter.wall.db-type=mysql

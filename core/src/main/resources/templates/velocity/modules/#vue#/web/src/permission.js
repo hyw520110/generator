@@ -70,7 +70,6 @@ router.beforeEach(async (to, from, next) => {
 
         // 获取第一个可用的重定向路径
         const redirectPath = getFirstAvailablePath(routes)
-        console.log('动态路由已添加，重定向到:', redirectPath)
 
         // 直接重定向到第一个可用路径
         next({ path: redirectPath, replace: true })

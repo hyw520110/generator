@@ -38,3 +38,6 @@ app:
   persist-password: false
   # 仅在部署在可信反向代理后面时开启，开启后会读取 X-Forwarded-For/X-Real-IP
   trusted-proxy-enabled: false
+  cors:
+    # CORS 来源白名单。默认只允许本机前端开发；局域网前后端分离部署时显式追加来源，例如 http://192.168.1.10:5173
+    allowed-origin-patterns: http://localhost:*,http://127.0.0.1:*,http://[::1]:*

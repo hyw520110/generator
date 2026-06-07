@@ -104,7 +104,7 @@ export default defineComponent({
 
         await store.dispatch('Login', loginParams)
 
-        router.push({ path: '/' }).catch(err => console.log('catch error:', err))
+        router.push({ path: '/' }).catch(() => {})
 
         setTimeout(() => {
           notification.success({

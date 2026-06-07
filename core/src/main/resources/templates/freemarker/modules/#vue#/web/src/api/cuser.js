@@ -33,7 +33,6 @@ export function addUser (parameter) {
 }
 
 export function editUser (userId, parameter) {
-  console.log('userId', userId)
   return axios({
     url: modulePath + '/' + userId,
     method: 'put',
@@ -42,7 +41,6 @@ export function editUser (userId, parameter) {
 }
 
 export function delUser (userId) {
-  console.log('userId', userId)
   return axios({
     url: modulePath + '/' + userId,
     method: 'delete'

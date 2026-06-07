@@ -27,7 +27,7 @@ create /config/${projectName},dev/spring.output.ansi.enabled DETECT
 create /config/${projectName},dev/spring.http.encoding.charcreate UTF-8
 create /config/${projectName},dev/spring.http.multipart.max-file-size 10MB
 create /config/${projectName},dev/spring.http.multipart.max-request-size 100MB
-create /config/${projectName},dev/spring.http.converters.preferred-json-mapper fastjson
+create /config/${projectName},dev/spring.http.converters.preferred-json-mapper ${json_type!'jackson'}
 create /config/${projectName},dev/spring.messages.cache-seconds 60
 
 create /config/${projectName},dev/spring.dubbo.version 1.0.0

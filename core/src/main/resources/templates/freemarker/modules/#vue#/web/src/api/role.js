@@ -64,7 +64,6 @@ export function editRole (parameter) {
 }
 
 export function delRole (roleId) {
-  console.log('roleId', roleId)
   return axios({
     url: modulePath + '/' + roleId,
     method: 'delete'

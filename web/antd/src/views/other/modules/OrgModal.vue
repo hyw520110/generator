@@ -64,7 +64,6 @@ export default {
     const handleOk = async () => {
       try {
         await formRef.value.validate()
-        console.log('form values', formState)
         
         confirmLoading.value = true
         new Promise((resolve) => {

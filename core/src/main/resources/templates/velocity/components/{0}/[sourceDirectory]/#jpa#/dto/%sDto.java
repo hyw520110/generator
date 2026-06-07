@@ -7,11 +7,13 @@ import ${pkg};
 #end
 #end
 
+import ${validationPackage}.constraints.NotBlank;
+import ${validationPackage}.constraints.NotNull;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 #parse('comments/comment.vm')
-#if table.comment?has_content>
-@Schema(name = "${dtoName}", description = "${table.comment!}")
+#if($table.comment)
+@Schema(name = "${dtoName}", description = "${table.comment}")
 #end
 public class ${dtoName} implements Serializable {
 
@@ -27,6 +29,8 @@ public class ${dtoName} implements Serializable {
 
 #end
 
+#if(!$field.isPrimarykey() && !$field.isNullAble())#if($field.propertyType == "String")	@NotBlank#else	@NotNull#end
+#end
 	@Schema(name = "${field.propertyName}", description = #if($field.comment)"${field.comment}"#else"${field.name}"#end)
     private ${field.fieldType.type} ${field.propertyName};
     

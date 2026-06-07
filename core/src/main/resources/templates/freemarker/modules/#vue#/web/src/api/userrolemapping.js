@@ -50,7 +50,6 @@ export function editUserRoleMapping (parameter) {
 }
 
 export function delUserRoleMapping (id) {
-  console.log('id', id)
   return axios({
     url: modulePath + '/' + id,
     method: 'delete'

@@ -1,11 +1,11 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/param'
+const modulePath = '/v1/param'
 
 const api = {
-  paramList: moudulePath + '/page',
-  paramAll: moudulePath + '/all',
-  addParam: moudulePath
+  paramList: modulePath + '/page',
+  paramAll: modulePath + '/all',
+  addParam: modulePath
 }
 
 export default api
@@ -28,7 +28,7 @@ export function getParamAll (parameter) {
 
 export function getParamInfo (paramId) {
   return axios({
-    url: moudulePath + '/' + paramId,
+    url: modulePath + '/' + paramId,
     method: 'get'
   })
 }
@@ -42,18 +42,16 @@ export function addParam (parameter) {
 }
 
 export function editParam (parameter) {
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath,
+    url: modulePath,
     method: 'put',
     params: parameter
   })
 }
 
 export function delParam (paramId) {
-  console.log('paramId', paramId)
   return axios({
-    url: moudulePath + '/' + paramId,
+    url: modulePath + '/' + paramId,
     method: 'delete'
   })
 }

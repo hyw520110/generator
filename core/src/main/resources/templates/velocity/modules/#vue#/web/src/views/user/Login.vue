@@ -114,7 +114,6 @@ export default defineComponent({
         }
 
         const result = await store.dispatch('Login', loginParams)
-        console.log('登录成功，用户信息:', result)
 
         // 直接跳转到根路径，使用 window.location 确保页面刷新
         // 这样可以让路由守卫重新执行，加载动态路由

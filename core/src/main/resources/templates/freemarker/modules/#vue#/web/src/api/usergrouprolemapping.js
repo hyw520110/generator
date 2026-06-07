@@ -50,7 +50,6 @@ export function editUserGroupRoleMapping (parameter) {
 }
 
 export function delUserGroupRoleMapping (mappingId) {
-  console.log('mappingId', mappingId)
   return axios({
     url: modulePath + '/' + mappingId,
     method: 'delete'

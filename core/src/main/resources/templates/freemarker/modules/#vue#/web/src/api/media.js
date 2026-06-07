@@ -50,7 +50,6 @@ export function editMedia (parameter) {
 }
 
 export function delMedia (id) {
-  console.log('id', id)
   return axios({
     url: modulePath + '/' + id,
     method: 'delete'

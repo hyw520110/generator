@@ -11,12 +11,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
+
+import org.apache.commons.lang3.StringUtils;
 import org.hyw.tools.generator.Generator;
 import org.hyw.tools.generator.enums.Component;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
 
 public class UserGeneratorServiceTest {
@@ -52,6 +56,28 @@ public class UserGeneratorServiceTest {
 
 		assertEquals(service.resolveClientKey(first), service.resolveClientKey(second));
 		assertNotEquals(service.resolveClientKey(first), service.resolveClientKey(third));
+	}
+
+	@Test
+	public void clientStrategyIssuesCookieWhenBrowserIdIsMissing() throws Exception {
+		UserGeneratorService service = service("client", false);
+		MockHttpServletRequest first = request("10.0.0.1", null, null);
+		MockHttpServletResponse response = new MockHttpServletResponse();
+
+		String clientId = service.ensureClientId(first, response);
+		String firstKey = service.resolveClientKey(first);
+		Cookie cookie = response.getCookie("GENERATOR_CLIENT_ID");
+
+		assertTrue(StringUtils.isNotBlank(clientId));
+		assertTrue(firstKey.startsWith("client-"));
+		assertEquals(clientId, cookie.getValue());
+		assertTrue(cookie.isHttpOnly());
+		assertEquals("/", cookie.getPath());
+
+		MockHttpServletRequest second = request("10.0.0.2", null, null);
+		second.setCookies(new Cookie("GENERATOR_CLIENT_ID", clientId));
+
+		assertEquals(firstKey, service.resolveClientKey(second));
 	}
 
 	@Test

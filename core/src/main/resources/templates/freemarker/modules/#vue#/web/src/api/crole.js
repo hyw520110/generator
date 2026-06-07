@@ -26,7 +26,6 @@ export function addRole (parameter) {
 }
 
 export function editRole (roleId, parameter) {
-  console.log('roleId', roleId)
   return axios({
     url: modulePath + '/' + roleId,
     method: 'put',
@@ -35,7 +34,6 @@ export function editRole (roleId, parameter) {
 }
 
 export function delRole (roleId) {
-  console.log('roleId', roleId)
   return axios({
     url: modulePath + '/' + roleId,
     method: 'delete'

@@ -1,10 +1,10 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/role'
+const modulePath = '/v1/role'
 
 const api = {
-  roleList: moudulePath + '/page',
-  addRole: moudulePath
+  roleList: modulePath + '/page',
+  addRole: modulePath
 }
 
 export default api
@@ -26,19 +26,16 @@ export function addRole (parameter) {
 }
 
 export function editRole (roleId, parameter) {
-  console.log('roleId', roleId)
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath + '/' + roleId,
+    url: modulePath + '/' + roleId,
     method: 'put',
     params: parameter
   })
 }
 
 export function delRole (roleId) {
-  console.log('roleId', roleId)
   return axios({
-    url: moudulePath + '/' + roleId,
+    url: modulePath + '/' + roleId,
     method: 'delete'
   })
 }

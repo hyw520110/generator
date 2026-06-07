@@ -1,19 +1,19 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/gen'
+const modulePath = '/v1/gen'
 
 const api = {
-  tableList: moudulePath + '/tables',
-  databases: moudulePath + '/databases',
-  step1: moudulePath + '/step1',
-  step2: moudulePath + '/step2',
-  genCode: moudulePath + '/exec',
-  genDoc: moudulePath + '/doc',
-  downloads: moudulePath + '/downloads',
-  download: moudulePath + '/download',
-  relations: moudulePath + '/relations',
-  validateOutputDir: moudulePath + '/validateOutputDir',
-  config: moudulePath + '/config'
+  tableList: modulePath + '/tables',
+  databases: modulePath + '/databases',
+  step1: modulePath + '/step1',
+  step2: modulePath + '/step2',
+  genCode: modulePath + '/exec',
+  genDoc: modulePath + '/doc',
+  downloads: modulePath + '/downloads',
+  download: modulePath + '/download',
+  relations: modulePath + '/relations',
+  validateOutputDir: modulePath + '/validateOutputDir',
+  config: modulePath + '/config'
 }
 
 export function getTableList (parameter) {

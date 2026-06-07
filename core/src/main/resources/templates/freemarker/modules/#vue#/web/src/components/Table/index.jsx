@@ -128,7 +128,6 @@ export default {
       pageSize: this.pageSize,
       showSizeChanger: this.showSizeChanger
     }) || false
-    console.log('this.localPagination', this.localPagination)
     this.needTotalList = this.initTotalList(this.columns)
     // 初始化可见列
     this.initVisibleColumns()
@@ -328,7 +327,6 @@ export default {
       if (k === 'rowSelection') {
         if (showAlert && this.rowSelection) {
           // 如果需要使用alert，则重新绑定 rowSelection 事件
-          console.log('this.rowSelection', this.rowSelection)
           props[k] = {
             ...this.rowSelection,
             selectedRows: this.selectedRows,

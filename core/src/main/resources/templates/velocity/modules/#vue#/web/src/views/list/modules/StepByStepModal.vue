@@ -147,9 +147,7 @@ export default {
       // last step
       this.confirmLoading = true
       validateFields((errors, values) => {
-        console.log('errors:', errors, 'val:', values)
         if (!errors) {
-          console.log('values:', values)
           setTimeout(() => {
             this.confirmLoading = false
             this.$emit('ok', values)

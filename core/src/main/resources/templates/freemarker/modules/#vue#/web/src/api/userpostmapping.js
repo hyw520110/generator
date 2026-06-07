@@ -50,7 +50,6 @@ export function editUserPostMapping (parameter) {
 }
 
 export function delUserPostMapping (mappingId) {
-  console.log('mappingId', mappingId)
   return axios({
     url: modulePath + '/' + mappingId,
     method: 'delete'

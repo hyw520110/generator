@@ -71,19 +71,16 @@ export default {
     })
     
     const onOk = () => {
-      console.log('监听了 modal ok 事件')
       return Promise.resolve(true)
     }
     
     const onCancel = () => {
-      console.log('监听了 modal cancel 事件')
       return Promise.resolve(true)
     }
     
     const handleSubmit = async () => {
       try {
         await formRef.value.validate()
-        console.log('values', formState)
       } catch (errors) {
         // validation failed
       }

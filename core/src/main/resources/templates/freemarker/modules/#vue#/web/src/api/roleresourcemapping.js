@@ -50,7 +50,6 @@ export function editRoleResourceMapping (parameter) {
 }
 
 export function delRoleResourceMapping (id) {
-  console.log('id', id)
   return axios({
     url: modulePath + '/' + id,
     method: 'delete'

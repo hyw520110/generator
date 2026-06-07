@@ -12,10 +12,8 @@ if (process.env.NODE_ENV !== 'production' || import.meta.env.VITE_APP_PREVIEW ==
   if (isIE()) {
     console.error('[antd-pro] ERROR: `mockjs` NOT SUPPORT `IE` PLEASE DO NOT USE IN `production` ENV.')
   }
-  console.log('[antd-pro] mock mounting')
 
   Mock.setup({
     timeout: 800 // setter delay time
   })
-  console.log('[antd-pro] mock mounted')
 }

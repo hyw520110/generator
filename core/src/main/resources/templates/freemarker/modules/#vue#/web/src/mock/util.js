@@ -34,7 +34,6 @@ export const getQueryParameters = (options) => {
 }
 
 export const getBody = (options) => {
-  console.log('[Mock] getBody options:', options)
   if (!options.body) {
     return {}
   }

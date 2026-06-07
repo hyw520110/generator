@@ -1,13 +1,38 @@
 <#if projectBuilder == "MAVEN">
-# 说明
+# ${projectName!} Parent
 
-多模块工程的聚合工程，主要作用是为多模块工程提供便捷构建（此也可定义公共依赖、插件）
+聚合构建模块，用于统一管理子模块构建顺序、Java 编译级别和公共依赖版本。
 
-此目录执行maven打包命令:
+## 平台
 
-	mvn package
-打包所有子模块
-	
-此模块也可删除,前提是子模块没有引用此模块定义的公共依赖、插件(默认弱关联，不需要可直接删除)，
-如删除此模块后，构建需进入各个子模块工程单独构建(构建顺序需遵循依赖顺序)
+- Java: ${javaVersion!}
+- Bytecode release: ${bytecodeRelease!javaVersion!}
+- Template family: ${templateFamily!'boot2'}
+- Namespace: ${namespace!'javax'}
+
+## 构建
+
+```bash
+mvn clean package
+```
+
+只构建后端应用模块：
+
+```bash
+mvn -pl ../${projectName!}-${moduleName!'app'} -am clean package
+```
+
+## 生成前验证
+
+生成器侧建议先执行 dry-run 预览输出范围，再正式生成：
+
+```bash
+java -jar generator-core.jar --dryRun --include backend,frontend
+```
+
+多表并行生成时可按机器配置调整并发度：
+
+```bash
+java -jar generator-core.jar --parallelTables 4
+```
 </#if>

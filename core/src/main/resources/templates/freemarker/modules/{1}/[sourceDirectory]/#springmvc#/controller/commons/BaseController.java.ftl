@@ -28,8 +28,10 @@ import ${servicePackage!}.BaseService;
 <#if VUE>
 <#if global.modules?? && global.modules?size gt 1>
 import ${api_dtoPackage!}.Result;
+import ${api_dtoPackage!}.PageResult;
 <#else>
 import ${dtoPackage!}.Result;
+import ${dtoPackage!}.PageResult;
 </#if>
 </#if>
 import io.swagger.v3.oas.annotations.Operation;
@@ -100,9 +102,9 @@ public class BaseController<BizService extends BaseService,Entity extends BaseEn
 	@RequestMapping(value = "/page", method = RequestMethod.GET)
 	@Operation(summary = "分页获取列表", description = "分页获取列表")
 	@ResponseBody
-	public Result<IPage<Entity>> page(@RequestParam(name = "pageNum",defaultValue = "1",required = false)Integer pageNo,@RequestParam(name = "pageSize",defaultValue = "10",required = false) Integer pageSize, Entity entity) {
+	public Result<PageResult<Entity>> page(@RequestParam(name = "pageNum",defaultValue = "1",required = false)Integer pageNo,@RequestParam(name = "pageSize",defaultValue = "10",required = false) Integer pageSize, Entity entity) {
 	    IPage<Entity> page = bizService.page(new Page(pageNo, pageSize),new QueryWrapper(entity));
-	    return new Result<>(page);
+	    return Result.ok(PageResult.of(page.getRecords(), page.getCurrent(), page.getSize(), page.getTotal()));
 	} 
 </#if>
 </#if>

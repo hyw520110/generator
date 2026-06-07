@@ -19,7 +19,6 @@ export default {
   },
   methods: {
     handleIconChange (icon) {
-      console.log('change Icon', icon)
       this.$message.info(`选中图标 ${icon}`)
     }
   }

@@ -258,7 +258,6 @@ export default {
         const errors = Object.assign({}, repository.form.getFieldsError(), task.form.getFieldsError())
         const tmp = { ...errors }
         this.errorList(tmp)
-        console.log(tmp)
       })
     },
     errorList (errors) {

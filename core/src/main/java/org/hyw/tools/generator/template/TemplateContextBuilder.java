@@ -14,6 +14,7 @@ import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.Feature;
 
 import org.hyw.tools.generator.utils.StringUtils;
 
@@ -42,8 +43,10 @@ public class TemplateContextBuilder {
 				.variable("author", global.getAuthor())
 				.variable("encoding", global.getEncoding())
 				.variable("projectName", global.getProjectName())
+				.variable("description", global.getDescription())
 				.variable("version", global.getVersion())
 				.variable("javaVersion", global.getJavaVersion())
+				.variable("security", global.getSecurity() == null ? "NONE" : global.getSecurity().name())
 				.variable("platformId", global.getPlatformId())
 				.variable("templateFamily", global.getTemplateFamily())
 				.variable("namespace", global.getNamespace())
@@ -65,6 +68,21 @@ public class TemplateContextBuilder {
 		builder.variable("dbType", dbType);
 		builder.variable("sqlType", dbType);
 		builder.variable("projectBuilder", global.getProjectBuilder().name());
+        
+        // Inject validation API coordinates based on namespace
+        String namespace = global.getNamespace();
+        if ("jakarta".equals(namespace)) {
+            builder.variable("validationApiGroupId", "jakarta.validation");
+            builder.variable("validationApiArtifactId", "jakarta.validation-api");
+            builder.variable("servletPackage", "jakarta.servlet");
+            builder.variable("annotationPackage", "jakarta.annotation");
+        } else {
+            builder.variable("validationApiGroupId", "javax.validation");
+            builder.variable("validationApiArtifactId", "validation-api");
+            builder.variable("servletPackage", "javax.servlet");
+            builder.variable("annotationPackage", "javax.annotation");
+        }
+        
 		if (global.getPlatformVariables() != null) {
 			global.getPlatformVariables().forEach(builder::variable);
 		}
@@ -92,6 +110,15 @@ public class TemplateContextBuilder {
 			boolean isSelected = selectedSet.contains(c);
 			builder.variable(c.name(), isSelected);
 			builder.variable(c.name().toLowerCase(), isSelected);
+		}
+
+		Set<Feature> selectedFeatures = global.getFeatures() != null ? 
+				new HashSet<>(Arrays.asList(global.getFeatures())) : new HashSet<>();
+		
+		for (Feature f : Feature.values()) {
+			boolean isSelected = selectedFeatures.contains(f);
+			builder.variable(f.name(), isSelected);
+			builder.variable(f.name().toLowerCase(), isSelected);
 		}
 
 		if (components != null) {

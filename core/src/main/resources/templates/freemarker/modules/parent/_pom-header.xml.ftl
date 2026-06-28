@@ -13,17 +13,20 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>${javaVersion!}</java.version>
 		<resource.delimiter>@</resource.delimiter>
-<#if JWT??>
+<#if JWT?? && JWT>
 		<jwt.version>${jwt_version!'0.12.6'}</jwt.version>
 </#if>
-<#if SHIRO??>
-		<shiro.version>${shiro_version!'2.0.2'}</shiro.version>
+<#if SHIRO?? && SHIRO>
+		<shiro.version>${shiro_version!'1.13.0'}</shiro.version>
 </#if>
-<#if MYBATIS??>
+<#if MYBATIS?? && MYBATIS>
 		<mybatis-spring-boot.version>${mybatis_spring_boot_version!'3.0.3'}</mybatis-spring-boot.version>
 		<pagehelper.version>${pagehelper_version!'2.1.0'}</pagehelper.version>
 		<druid.version>${druid_version!'1.2.23'}</druid.version>
 		<mysql-connector.version>${mysql_connector_version!'8.0.33'}</mysql-connector.version>
+		<postgresql.version>${postgresql_version!'42.7.3'}</postgresql.version>
+		<oracle.version>${oracle_version!'21.13.0.0'}</oracle.version>
+		<mssql.version>${mssql_version!'12.6.1.jre8'}</mssql.version>
 	<#if mapperType?? && mapperType == "plus">
 		<mybatis.plus.version>${mybatis_plus_version!'3.5.8'}</mybatis.plus.version>
 	</#if>
@@ -31,10 +34,10 @@
 <#if DUBBO?? && DUBBO>
 		<dubbo.version>${dubbo_version!}</dubbo.version>
 </#if>
-<#if SWAGGER2??>
+<#if SWAGGER2?? && SWAGGER2>
 		<knife4j.version>${knife4j_version!'4.5.0'}</knife4j.version>
 </#if>
-<#if SPRINGBOOT??>
+<#if SPRINGBOOT?? && SPRINGBOOT>
 		<lombok.version>${lombok_version!'1.18.20'}</lombok.version>
 		<disruptor.version>${disruptor_version!'3.4.2'}</disruptor.version>
 </#if>

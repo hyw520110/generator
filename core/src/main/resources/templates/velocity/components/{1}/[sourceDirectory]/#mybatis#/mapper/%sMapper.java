@@ -38,6 +38,7 @@ import org.apache.ibatis.annotations.Select;
 #end
 public interface ${mapperName} #if(${superMapperClass}) extends ${StringUtils.getClassName(${superMapperClass})}<${StringUtils.capitalFirst("$entityName")}#if("plus"!="$mapperType"),${table.primaryKeyClass}#end> #end{
 #if("${mapperType}"!="plus")
+#if($table.hasPrimarykeys())
 #if("${mapperType}"=="annotation")
         //TODO 
     @Select("SELECT * FROM ${table.beanName} WHERE #foreach($field in ${table.primarykeyFields})${field.name} = #{${field.propertyName}}#if($foreach.count!=${table.primarykeyFields.size()}) and #end#end")
@@ -50,6 +51,7 @@ public interface ${mapperName} #if(${superMapperClass}) extends ${StringUtils.ge
 #if($!{REDIS})
     @CacheEvict(key = "#p0")
 	public void deleteById(#foreach($field in ${table.primarykeyFields})@Param("${field.propertyName}")${field.fieldType.type} ${field.propertyName}#if($foreach.count!=${table.primarykeyFields.size()}),#end#end);
+#end
 #end
 	
 #end

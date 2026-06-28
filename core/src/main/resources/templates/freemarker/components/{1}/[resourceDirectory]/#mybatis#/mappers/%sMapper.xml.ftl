@@ -25,7 +25,7 @@
     </sql>
 </#if>
 
-<#if findById?has_content>
+<#if findById?has_content && table.hasPrimarykeys()>
 	<select id="findById" resultMap="BaseResultMap" >
 	    SELECT <#if columns?has_content> <include refid="columns"/> <#else>  ${table.fieldNames!} </#if> from ${table.name!} WHERE <#list table.primarykeyFields as field> ${field.name!} = <#assign paramPlaceholder = "#{" + field.propertyName + ",jdbcType=" + field.jdbcType + "}">${paramPlaceholder} <#if field?has_next> and </#if> </#list> 
 	</select>	
@@ -45,13 +45,15 @@
 <#if findPage?has_content>	
 	<select id="findPage" resultMap="BaseResultMap" parameterType="java.util.Map">
 		select <include refid="columns"/>  from ${table.name!} where 1=1 <include refid="queryWhere"/> 
-	    <![CDATA[ ORDER BY <#list table.primarykeyFields as field> ${field.name!} <#if field?has_next> and </#if> </#list>  DESC ]]>
-        <![CDATA[ LIMIT #{startRecord},#{endRecord} ]]>
+<#if table.hasPrimarykeys()>
+	    <![CDATA[ ORDER BY <#list table.primarykeyFields as field> ${field.name!}<#if field?has_next>, </#if></#list> DESC ]]>
+</#if>
+        <![CDATA[ LIMIT ${r'#{startRecord}'},${r'#{endRecord}'} ]]>
 	</select>
 </#if>	
 <#if findAll?has_content>
     <select id="findAll" resultMap="BaseResultMap" parameterType="java.util.Map">
-		select	* from ${table.name!} where 1=1 <include refid="queryWhere"/>  order by <#list table.primarykeyFields as field> ${field.name!}<#if field?has_next> , </#if></#list> desc
+		select	* from ${table.name!} where 1=1 <include refid="queryWhere"/><#if table.hasPrimarykeys()> order by <#list table.primarykeyFields as field> ${field.name!}<#if field?has_next> , </#if></#list> desc</#if>
 	</select>
 </#if>
 </#if>	
@@ -61,7 +63,8 @@
 	1. insert节点中添加useGeneratedKey和keyProperty属性
 	2. insert节点下添加selectKey子节点的方式
 	 -->
-	<insert id="insert" parameterType="${entityPackage!}.${entityName!}" useGeneratedKeys="true" keyProperty="${table.primaryKeyField.propertyName!}">
+	<insert id="insert" parameterType="${entityPackage!}.${entityName!}"<#if table.primaryKeyCount == 1> useGeneratedKeys="true" keyProperty="${table.primaryKeyField.propertyName!}"</#if>>
+<#if table.primaryKeyCount == 1>
 		<!-- 
 		<selectKey resultType="<#if table.primaryKeyField.fieldType.claz??>${table.primaryKeyField.fieldType.claz!}<#else> java.lang.${table.primaryKeyField.fieldType.type!}</#if>" order="AFTER" keyProperty="${table.primaryKeyField.propertyName!}">
 			SELECT LAST_INSERT_ID()  
@@ -70,21 +73,22 @@
 		   SELECT @@IDENTITY AS id
 		   </selectKey>
 		 -->
+</#if>
 		<![CDATA[
-		INSERT INTO ${table.name!} (<#list table.fields as field><#if field.isIdentity()?has_content>${field.name!} <#if field?has_next>,</#if></#if></#list>
-		) VALUES (<#list table.fields as field><#if field.isIdentity()?has_content><#assign paramPlaceholder = "#{" + field.propertyName + ",jdbcType=" + field.jdbcType + "}">${paramPlaceholder}<#if field?has_next>,</#if></#if></#list>)
+		INSERT INTO ${table.name!} (<#list table.insertableFields as field>${field.name!}<#if field?has_next>, </#if></#list>
+		) VALUES (<#list table.insertableFields as field><#assign paramPlaceholder = "#{" + field.propertyName + ",jdbcType=" + field.jdbcType + "}">${paramPlaceholder}<#if field?has_next>, </#if></#list>)
 		]]>
 	</insert>
 </#if>
 
 <#if "plus"!=mapperType>
-<#if update?has_content>
+<#if update?has_content && table.hasPrimarykeys()>
 
 	<update id="update" parameterType="${entityPackage!}.${entityName!}">
 		UPDATE ${table.name!} 
 		<set>
 <#list table.fields as field>
-<#if field.isPrimarykey()?has_content>	
+<#if !field.isPrimarykey()>
 			<if test="${field.propertyName!} != null">
 				<#assign paramPlaceholder = "#{" + field.propertyName + ",jdbcType=" + field.jdbcType + "}">${field.name!} = ${paramPlaceholder} <#if field?has_next>,</#if>
 				
@@ -98,7 +102,7 @@
 </#if>
 </#if>
 
-<#if deleteById?has_content>
+<#if deleteById?has_content && table.hasPrimarykeys()>
 
 	<delete id="deleteById"  >
 		<![CDATA[DELETE FROM ${table.name!}  WHERE <#list table.primarykeyFields as field> <#assign paramPlaceholder = "#{" + field.propertyName + ",jdbcType=" + field.jdbcType + "}">${field.name!} = ${paramPlaceholder} <#if field?has_next> and </#if> </#list>]]>

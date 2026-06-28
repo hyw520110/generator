@@ -19,11 +19,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import ${entityPackage!}.BaseEntity;
+<#if entityPackage?? && entityPackage != "">
+import ${entityPackage}.BaseEntity;
+<#else>
+// No entityPackage found
+</#if>
 <#if global.modules?? && global.modules?size gt 1>
+<#if jpa?? && jpa>
+import ${api_servicePackage!}.BaseJpaService;
+<#else>
 import ${api_servicePackage!}.BaseService;
+</#if>
+<#else>
+<#if jpa?? && jpa>
+import ${servicePackage!}.BaseJpaService;
 <#else>
 import ${servicePackage!}.BaseService;
+</#if>
 </#if>
 <#if VUE>
 <#if global.modules?? && global.modules?size gt 1>
@@ -37,7 +49,11 @@ import ${dtoPackage!}.PageResult;
 import io.swagger.v3.oas.annotations.Operation;
 <#assign comment ="公共接口实现">
 <#include 'comments/comment.ftl'>
-public class BaseController<BizService extends BaseService,Entity extends BaseEntity> {
+<#if jpa?? && jpa>
+public class BaseController<BizService extends BaseJpaService, Entity> {
+<#else>
+public class BaseController<BizService extends BaseService, Entity extends BaseEntity> {
+</#if>
 <#if VUE>	
     @Autowired
     protected BizService bizService;

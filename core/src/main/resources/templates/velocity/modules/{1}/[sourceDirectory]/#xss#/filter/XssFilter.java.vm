@@ -1,0 +1,49 @@
+package ${packagePath};
+
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+#if($global.javaVersion == '8' || $global.javaVersion == '11')
+import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequest;
+#else
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
+#end
+import java.io.IOException;
+
+/**
+ * XSS过滤处理
+ */
+@Component
+@Order(1)
+@WebFilter(filterName = "xssFilter", urlPatterns = "/*")
+public class XssFilter implements Filter {
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // Init xss config if any
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest req = (HttpServletRequest) request;
+        String path = req.getServletPath();
+        
+        // 排除某些无需XSS过滤的路径
+        if (StringUtils.hasText(path) && path.startsWith("/api/upload")) {
+            chain.doFilter(request, response);
+            return;
+        }
+        
+        XssHttpServletRequestWrapper xssRequest = new XssHttpServletRequestWrapper((HttpServletRequest) request);
+        chain.doFilter(xssRequest, response);
+    }
+
+    @Override
+    public void destroy() {
+    }
+}

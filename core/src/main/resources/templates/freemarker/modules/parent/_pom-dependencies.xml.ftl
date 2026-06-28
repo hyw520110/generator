@@ -80,12 +80,35 @@
 				<artifactId>druid-spring-boot-starter</artifactId>
 				<version><#noparse>${druid.version}</#noparse></version>
 			</dependency>
+<#if dbType == "mysql">
 			<!-- mysql -->
 			<dependency>
 				<groupId>com.mysql</groupId>
 				<artifactId>mysql-connector-j</artifactId>
 				<version><#noparse>${mysql-connector.version}</#noparse></version>
 			</dependency>
+<#elseif dbType == "postgresql">
+			<!-- postgresql -->
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version><#noparse>${postgresql.version}</#noparse></version>
+			</dependency>
+<#elseif dbType == "oracle">
+			<!-- oracle -->
+			<dependency>
+				<groupId>com.oracle.database.jdbc</groupId>
+				<artifactId>ojdbc8</artifactId>
+				<version><#noparse>${oracle.version}</#noparse></version>
+			</dependency>
+<#elseif dbType == "sqlserver">
+			<!-- sqlserver -->
+			<dependency>
+				<groupId>com.microsoft.sqlserver</groupId>
+				<artifactId>mssql-jdbc</artifactId>
+				<version><#noparse>${mssql.version}</#noparse></version>
+			</dependency>
+</#if>
 <#if SWAGGER2??>
 			<!-- Knife4j for Spring Boot 3 -->
 				<dependency>
@@ -94,7 +117,7 @@
 					<version><#noparse>${knife4j.version}</#noparse></version>
 				</dependency>
 </#if>
-	<#if SPRINGBOOT??>
+	<#if SPRINGBOOT?? && SPRINGBOOT>
 				<!-- 其他 -->
 				<dependency>
 					<groupId>com.lmax</groupId>
@@ -102,7 +125,7 @@
 					<version><#noparse>${disruptor.version}</#noparse></version>
 				</dependency>
 </#if>
-	<#if JWT??>
+	<#if JWT?? && JWT>
 				<dependency>
 					<groupId>io.jsonwebtoken</groupId>
 					<artifactId>jjwt-api</artifactId>
@@ -119,7 +142,7 @@
 					<version><#noparse>${jwt.version}</#noparse></version>
 				</dependency>
 </#if>
-	<#if SHIRO??>
+	<#if SHIRO?? && SHIRO>
 				<dependency>
 					<groupId>org.apache.shiro</groupId>
 					<artifactId>shiro-spring</artifactId>
@@ -145,7 +168,7 @@
 					</#if>
 				</dependency>
 </#if>
-	<#if SPRINGBOOT??>
+	<#if SPRINGBOOT?? && SPRINGBOOT>
 				<!-- lombok -->
 				<dependency>
 					<groupId>org.projectlombok</groupId>

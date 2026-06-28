@@ -9,6 +9,17 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
+<#if global.features?seq_contains('TENANT')>
+import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
+import ${global.rootPackage}.${global.projectName}.${moduleName}.config.tenant.TenantContextHolder;
+</#if>
+<#if global.features?seq_contains('DATAPERMISSION')>
+import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionInterceptor;
+import ${global.rootPackage}.${global.projectName}.${moduleName}.config.permission.CustomDataPermissionHandler;
+</#if>
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -32,6 +43,32 @@ public class MybatisPlusConfiguration {
         // 设置最大单页限制数量，默认 500 条，-1 不受限制
         paginationInterceptor.setMaxLimit(500L);
         interceptor.addInnerInterceptor(paginationInterceptor);
+<#if global.features?seq_contains('TENANT')>
+        // 多租户插件
+        interceptor.addInnerInterceptor(new TenantLineInnerInterceptor(new TenantLineHandler() {
+            @Override
+            public Expression getTenantId() {
+                Long tenantId = TenantContextHolder.getTenantId();
+                if (tenantId == null) {
+                    return new LongValue(1L);
+                }
+                return new LongValue(tenantId);
+            }
+            @Override
+            public String getTenantIdColumn() {
+                return "tenant_id";
+            }
+            @Override
+            public boolean ignoreTable(String tableName) {
+                // TODO: 可以在这里配置哪些表不需要租户隔离
+                return "sys_tenant".equalsIgnoreCase(tableName);
+            }
+        }));
+</#if>
+<#if global.features?seq_contains('DATAPERMISSION')>
+        // 数据权限插件
+        interceptor.addInnerInterceptor(new DataPermissionInterceptor(new CustomDataPermissionHandler()));
+</#if>
         // 乐观锁插件
         interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
         return interceptor;

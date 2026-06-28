@@ -511,7 +511,7 @@ public class DataSourceConf extends DruidDataSource {
 						logger.warn("找不到 SQL 文件: {}", fileName);
 						continue;
 					}
-					String sqlContent = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+					String sqlContent = new String(org.apache.commons.io.IOUtils.toByteArray(is), java.nio.charset.StandardCharsets.UTF_8);
 					// 执行 SQL 脚本（可能包含多个语句）
 					Statement st = conn.createStatement();
 					// 分割 SQL 语句（以分号分隔）

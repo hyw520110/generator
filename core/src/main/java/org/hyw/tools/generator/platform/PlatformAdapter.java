@@ -8,7 +8,7 @@ import java.util.stream.Stream;
  *
  * <p>设计意图：</p>
  * <ul>
- *   <li>主线代码用 Java 11 稳定 API 即可（{@link DefaultPlatformAdapter}）。</li>
+ *   <li>主线代码用 Java 8 稳定 API 即可（{@link DefaultPlatformAdapter}）。</li>
  *   <li>Java 17/21 上想启用更优实现（如 virtual threads、records、Stream.toList）时，
  *       新增子类并通过 {@code META-INF/services/org.hyw.tools.generator.platform.PlatformAdapter}
  *       注册即可——配合 MRJAR 可把高版本字节码隔离到 {@code META-INF/versions/N/}。</li>
@@ -44,7 +44,7 @@ public interface PlatformAdapter {
 
     /**
      * 将 Stream 收集为 List。
-     * <p>Java 11 基线实现使用 Collectors.toList()；MRJAR 高版本实现可替换为 Stream.toList()。</p>
+     * <p>Java 8 基线实现使用 Collectors.toList()；MRJAR 高版本实现可替换为 Stream.toList()。</p>
      */
     <T> List<T> toList(Stream<T> stream);
 }

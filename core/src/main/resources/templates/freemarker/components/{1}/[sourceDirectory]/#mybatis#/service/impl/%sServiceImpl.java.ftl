@@ -11,6 +11,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.Serializable;
 
 <#include 'comments/comment.ftl'>
 @org.springframework.stereotype.Service
@@ -57,4 +58,24 @@ public class ${implName!} <#if superServiceImplClass??> extends ${superServiceIm
 		}
 		return dtos;
 	}
+
+<#if "plus"==mapperType!>
+    @Override
+    <#if SEATA?? && SEATA>@io.seata.spring.annotation.GlobalTransactional</#if>
+    public boolean save(${entityName!} entity) {
+        return super.save(entity);
+    }
+
+    @Override
+    <#if MULTIDATASOURCE?? && MULTIDATASOURCE>@com.baomidou.dynamic.datasource.annotation.DS("slave")</#if>
+    public List<${entityName!}> list() {
+        return super.list();
+    }
+
+    @Override
+    <#if MULTICACHE?? && MULTICACHE>@com.alicp.jetcache.anno.Cached(name = "${entityName!}Cache:", key = "#id", expire = 3600)</#if>
+    public ${entityName!} getById(Serializable id) {
+        return super.getById(id);
+    }
+</#if>
 }

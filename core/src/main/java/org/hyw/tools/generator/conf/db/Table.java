@@ -83,7 +83,7 @@ public class Table extends BaseBean {
 	public String getPrimaryKeyClass() {
 		List<TabField> list = getPrimarykeyFields();
 		if (null == list || list.isEmpty()) {
-			return "Long"; // 默认主键类型
+			return "java.io.Serializable";
 		}
 		if (list.size() == 1) {
 			// 单主键：返回主键字段类型
@@ -94,11 +94,26 @@ public class Table extends BaseBean {
 	}
 	/**
 	 * 是否有主键
-	 * TODO 无主键
 	 * @return
 	 */
 	public boolean hasPrimarykeys() {
 		return !getPrimarykeyFields().isEmpty();
+	}
+
+	/**
+	 * 是否无主键
+	 * @return
+	 */
+	public boolean isNoPrimaryKey() {
+		return !hasPrimarykeys();
+	}
+
+	/**
+	 * 主键字段数量
+	 * @return
+	 */
+	public int getPrimaryKeyCount() {
+		return getPrimarykeyFields().size();
 	}
 
 	/**
@@ -112,6 +127,21 @@ public class Table extends BaseBean {
 		List<TabField> fields = getFields();
 		for (TabField tabField : fields) {
 			if (tabField.isPrimarykey()) {
+				list.add(tabField);
+			}
+		}
+		return list;
+	}
+
+	/**
+	 * 获取可插入字段（排除数据库自增字段）
+	 *
+	 * @return
+	 */
+	public List<TabField> getInsertableFields() {
+		List<TabField> list = new LinkedList<>();
+		for (TabField tabField : getFields()) {
+			if (!tabField.isIdentity()) {
 				list.add(tabField);
 			}
 		}
@@ -138,7 +168,7 @@ public class Table extends BaseBean {
 
 	public String getPrimaryKeyJsArray() {
 		if (!hasPrimarykeys()) {
-			return "['id']";
+			return "[]";
 		}
 		StringBuilder builder = new StringBuilder("[");
 		List<TabField> list = getPrimarykeyFields();
@@ -153,7 +183,7 @@ public class Table extends BaseBean {
 
 	public String getPrimaryKeyPathPattern() {
 		if (!hasPrimarykeys()) {
-			return "/{id}";
+			return "";
 		}
 		StringBuilder builder = new StringBuilder();
 		for (TabField field : getPrimarykeyFields()) {
@@ -164,7 +194,7 @@ public class Table extends BaseBean {
 
 	public String getPrimaryKeyMethodParameters() {
 		if (!hasPrimarykeys()) {
-			return "@PathVariable(\"id\") final java.io.Serializable id";
+			return "";
 		}
 		StringBuilder builder = new StringBuilder();
 		List<TabField> list = getPrimarykeyFields();
@@ -180,7 +210,7 @@ public class Table extends BaseBean {
 
 	public String getPrimaryKeyArgumentList() {
 		if (!hasPrimarykeys()) {
-			return "id";
+			return "";
 		}
 		StringBuilder builder = new StringBuilder();
 		List<TabField> list = getPrimarykeyFields();
@@ -349,7 +379,7 @@ public class Table extends BaseBean {
 	public Class<?> getPrimaryKeyClassType() {
 		List<TabField> pkFields = getPrimarykeyFields();
 		if (pkFields.isEmpty()) {
-			return Long.class;
+			return java.io.Serializable.class;
 		}
 		if (pkFields.size() == 1) {
 			return pkFields.get(0).getFieldType().getClaz();

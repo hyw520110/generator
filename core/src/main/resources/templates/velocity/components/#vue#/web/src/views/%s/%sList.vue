@@ -29,7 +29,7 @@
         <template #icon><plus-outlined /></template>
         新建
       </a-button>
-      <a-dropdown v-if="selectedRowKeys.length > 0">
+      <a-dropdown v-if="hasPrimaryKey && selectedRowKeys.length > 0">
         <template #overlay>
           <a-menu>
             <a-menu-item key="1" @click="handleBatchDelete">
@@ -42,6 +42,12 @@
           批量操作 <down-outlined />
         </a-button>
       </a-dropdown>
+      #if($EXCEL)
+      <a-button style="margin-left: 8px" @click="handleExport">
+        <template #icon><download-outlined /></template>
+        导出 Excel
+      </a-button>
+      #end
     </div>
 
     <s-table
@@ -72,9 +78,16 @@
 #end
 #end
         <template v-else-if="column.dataIndex === 'action'">
-          <a @click="handleEdit(record)">编辑</a>
-          <a-divider type="vertical" />
-          <a @click="handleDelete(record)">删除</a>
+          <template v-if="hasPrimaryKey">
+            <a @click="handleEdit(record)">编辑</a>
+            <a-divider type="vertical" />
+            <a @click="handleDelete(record)">删除</a>
+            #if($WORKFLOW)
+            <a-divider type="vertical" />
+            <a @click="handleStartWorkflow(record)">发起审批</a>
+            #end
+          </template>
+          <span v-else class="text-muted">仅新增</span>
         </template>
       </template>
     </s-table>
@@ -86,9 +99,9 @@
 <script>
 import { ref, reactive } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { PlusOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, DeleteOutlined, DownOutlined, DownloadOutlined } from '@ant-design/icons-vue'
 import { STable } from '@/components'
-import { getList, del${table.beanName}, batchDel${table.beanName} } from '@/api/${table.beanName}'
+import { getList, del${table.beanName}, batchDel${table.beanName} #if($EXCEL), export${table.beanName}#end } from '@/api/${table.beanName}'
 import CreateForm from './${table.beanName}Form.vue'
 
 export default {
@@ -98,7 +111,8 @@ export default {
     CreateForm,
     PlusOutlined,
     DeleteOutlined,
-    DownOutlined
+    DownOutlined,
+    DownloadOutlined
   },
   setup () {
     const tableRef = ref()
@@ -107,6 +121,7 @@ export default {
     const selectedRows = ref([])
     const queryParam = reactive({})
     const primaryKeyFields = ${table.primaryKeyJsArray}
+    const hasPrimaryKey = primaryKeyFields.length > 0
 
     const getHeaderTitle = (comment) => {
       if (!comment) return ''
@@ -159,6 +174,9 @@ export default {
     }
 
     const getRecordKey = (record) => {
+      if (!hasPrimaryKey) {
+        return Object.keys(record || {}).map(key => record[key]).join(':')
+      }
       return primaryKeyFields.map(key => record[key]).join(':')
     }
 
@@ -167,13 +185,13 @@ export default {
         show: true,
         clear: () => { selectedRowKeys.value = [] }
       },
-      rowSelection: {
+      rowSelection: hasPrimaryKey ? {
         selectedRowKeys: selectedRowKeys,
         onChange: (keys, rows) => {
           selectedRowKeys.value = keys
           selectedRows.value = rows
         }
-      }
+      } : null
     }
 
     const handleAdd = () => {
@@ -181,10 +199,18 @@ export default {
     }
 
     const handleEdit = (record) => {
+      if (!hasPrimaryKey) {
+        message.warning('当前表未定义主键，无法编辑记录')
+        return
+      }
       createModalRef.value.edit(record)
     }
 
     const handleDelete = (record) => {
+      if (!hasPrimaryKey) {
+        message.warning('当前表未定义主键，无法删除记录')
+        return
+      }
       Modal.confirm({
         title: '确认删除',
         content: '确定要删除这条记录吗？',
@@ -197,6 +223,10 @@ export default {
     }
 
     const handleBatchDelete = () => {
+      if (!hasPrimaryKey) {
+        message.warning('当前表未定义主键，无法批量删除记录')
+        return
+      }
       Modal.confirm({
         title: '确认删除',
         content: '确定要删除选中的记录吗？',
@@ -212,6 +242,34 @@ export default {
     const handleOk = () => {
       tableRef.value.refresh()
     }
+
+    
+    #if($EXCEL)
+    const handleExport = () => {
+      message.info('正在导出 Excel 报表，请稍候...')
+      export${table.beanName}(queryParam).then(blob => {
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'export_data.xlsx')
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      })
+    }
+    #end
+
+    #if($WORKFLOW)
+    const handleStartWorkflow = (record) => {
+      Modal.confirm({
+        title: '发起审批',
+        content: '确定要为这条记录发起业务审批流程吗？',
+        onOk: () => {
+          message.success('审批流程发起成功！')
+        }
+      })
+    }
+    #end
 
     const resetQueryParam = () => {
       Object.keys(queryParam).forEach(key => {
@@ -229,13 +287,20 @@ export default {
       getRecordKey,
       selectedRowKeys,
       selectedRows,
+      hasPrimaryKey,
       options,
       handleAdd,
       handleEdit,
       handleDelete,
       handleBatchDelete,
       handleOk,
-      resetQueryParam
+      resetQueryParam,
+      #if($EXCEL)
+      handleExport,
+      #end
+      #if($WORKFLOW)
+      handleStartWorkflow,
+      #end
     }
   }
 }

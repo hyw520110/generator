@@ -9,6 +9,7 @@
 - Bytecode release: ${bytecodeRelease}
 - Template family: ${templateFamily}
 - Namespace: ${namespace}
+- Security: ${security}
 
 ## 构建
 

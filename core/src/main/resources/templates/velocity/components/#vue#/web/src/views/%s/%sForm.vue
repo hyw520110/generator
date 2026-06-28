@@ -48,6 +48,7 @@ export default {
     const formRef = ref()
     const currentRecord = ref({})
     const primaryKeyFields = ${table.primaryKeyJsArray}
+    const hasPrimaryKey = primaryKeyFields.length > 0
 
     const formState = reactive({
 #foreach($field in $table.fields)
@@ -77,6 +78,9 @@ export default {
     }
 
     const edit = (record) => {
+      if (!hasPrimaryKey) {
+        return
+      }
       title.value = '编辑'
       visible.value = true
       currentRecord.value = record || {}

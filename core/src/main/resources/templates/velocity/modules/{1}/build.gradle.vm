@@ -30,7 +30,7 @@ dependencies {
     implementation group: 'org.springframework', name: 'spring-context', version:'4.3.9.RELEASE'
     implementation group: 'org.springframework', name: 'spring-web', version:'4.3.9.RELEASE'
 #if("mysql"=="${dbType}")
-    runtimeOnly group: 'mysql', name: 'mysql-connector-java', version:'5.1.40'
+    runtimeOnly group: 'com.mysql', name: 'mysql-connector-j', version:'${mysql_connector_version}'
 #end
     compileOnly group: '${servletApiGroupId}', name: '${servletApiArtifactId}', version:'3.0-alpha-1'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version:'5.10.2'

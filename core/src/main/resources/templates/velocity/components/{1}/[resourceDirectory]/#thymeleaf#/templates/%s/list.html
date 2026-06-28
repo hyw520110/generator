@@ -78,9 +78,13 @@
 							<span class="yg-checkbox" onselectstart="return false"></span>
 				</td>
 				<td  class="jqgrow ui-row-ltr ui-widget-content action-buttons">
+#if($table.hasPrimarykeys())
 					<a th:href="@{/${table.beanName}/view/{id}/view(id=#foreach($field in ${table.primarykeyFields})*{item.${field.propertyName}}#if($velocityCount<${table.primarykeyFields.size()}),#end#end)}" class="ace-icon fa fa-search-plus bigger-130 blue" name="layerBtn" data-title="查看"></a>
 					<a th:href="@{/${table.beanName}/view/{id}/update(id=#foreach($field in ${table.primarykeyFields})*{item.${field.propertyName}}#if($velocityCount<${table.primarykeyFields.size()}),#end#end)}" class="ace-icon fa fa-pencil bigger-130 green" name="layerBtn" data-title="编辑"></a>
 					<a th:href="@{/${table.beanName}/del/{id}(id=#foreach($field in ${table.primarykeyFields})*{item.${field.propertyName}}#if($velocityCount<${table.primarykeyFields.size()}),#end#end)}" class="ace-icon fa fa-trash-o bigger-120 red" onclick="return delFun(this)"></a>
+#else
+					<span>无主键</span>
+#end
 				</td> 
 				#foreach($field in ${table.fields})
 				<td th:text="*{item.${field.propertyName}}" th:class="${stats.even}? 'jqgrow ui-row-ltr ui-widget-content' : 'jqgrow ui-row-ltr ui-widget-content ui-priority-secondary'" data-name="id">字段名${velocityCount}</td>

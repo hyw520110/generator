@@ -12,12 +12,13 @@
 				</plugin>
 <#if springboot_version?has_content>
 			<!-- Spring Boot 插件 -->
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<fork>true</fork>
-				</configuration>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version><#noparse>${spring-boot.version}</#noparse></version>
+					<configuration>
+						<fork>true</fork>
+					</configuration>
 			</plugin>
 </#if>
 		</plugins>

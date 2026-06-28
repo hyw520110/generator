@@ -1,13 +1,22 @@
 ## 一、简介
 
-**代码生成器/脚手架**，可全自动生成前后台工程和代码，提高开发效率。
+**代码生成器/脚手架**，可全自动生成前后台工程和代码，提高开发效率。只需配置数据源和生成参数，即可一键生成完整的前后端项目代码，包含：
 
-只需配置数据源和生成参数，即可一键生成完整的前后端项目代码，包含：
 - **后端工程**：Spring Boot/Spring Cloud 微服务架构
 - **前端工程**：Vue + Ant Design Pro 或 Thymeleaf 模板
 - **完整功能**：用户认证、权限管理、CRUD 接口、页面、API 文档等
 
-### 主要功能：
+###  核心架构与特性
+
+不仅支持基础 CRUD，更能一键拼装 17+ 项顶级微服务特性：
+
+- **底层安全与鉴权**：全面拥抱 `Spring Security 6.x` + `OAuth2` 现代安全架构体系（或 `Shiro` 排他性选型），无状态 `JWT` 认证。
+- **高阶业务能力 (Feature)**：内置 `WORKFLOW` (Flowable 工作流与发起接口)、`EXCEL` (海量报表一键导出)、`AUDITLOG` (AOP 自动操作日志)、`TENANT` (多租户隔离)、`DATAPERMISSION` (数据权限过滤)。
+- **微服务治理与高并发**：深度整合 `SEATA` (Service 层 `@GlobalTransactional` 自动绑定)、`MULTIDATASOURCE` (自动化的 `@DS("slave")` 读写分离路由)、`MULTICACHE` (阿里 JetCache 双路高并发缓存)、`SENTINEL` (限流降级)。
+- **DevOps 与云原生部署**：自动化生成 Dockerfile、K8s 清单与 Github Actions / Gitlab-CI 流水线脚本 (`CICD` & `DEVOPS` 支持)。
+- **前端 Vue 深度整合**：Vue 前端模板已深度打通业务流，自动生成带图标的“导出 Excel”与“发起审批”业务入口，自动按需装载 API 接口。
+
+### 基础功能：
 
 - **数据库支持**：主流关系型数据库 (MySQL、Oracle、PostgreSQL、SQLServer)
 - **表生成策略**：整库生成、指定部分表生成、排除指定表生成 (支持复合主键)
@@ -107,7 +116,8 @@ global:
 
 ### 环境要求
 
-- **JDK 版本**：JDK 11+
+- **运行默认生成器包**：JDK 8+
+- **源码构建生成器**：JDK 17+（core 使用 MRJAR 编译 Java 17 增强实现，推荐 JDK 21）
 - **构建工具**：Maven 3.6+ 或 Gradle 7.0+
 - **数据库**：MySQL 5.7+ / Oracle 11g+ / PostgreSQL 9.6+ / SQL Server 2016+
 - **Node.js**：17.9.1+（运行 Web 前端或生成 Vue 前端工程时需要）
@@ -145,14 +155,34 @@ global:
    docker-compose up -d
    
    # 方式二：直接运行
-   ./package.sh  # 打包
+   ./package.sh  # 默认打包 generator-web.jar（Java 8 / Spring Boot 2 运行包）
    java -jar web/target/generator-web.jar  # 启动后端 API，默认端口 8081
-
+   
    # 前端开发服务
    cd web/antd
    yarn install
    yarn dev
    ```
+
+   生成器自身支持按运行时分代打包：
+
+   ```bash
+   # 显式生成 Java 8 / Spring Boot 2 运行包
+   ./package.sh --tool-runtime=boot2 -m web
+   java -jar web/target/generator-web-boot2.jar
+   
+   # 生成 Java 17+ / Spring Boot 3 运行包
+   ./package.sh --tool-runtime=boot3 -m web
+   java -jar web/target/generator-web-boot3.jar
+   
+   # 依次生成 boot2 和 boot3 两个运行包
+   ./package.sh --tool-runtime=all -m web
+   ```
+
+   说明：
+   - 默认构建保持 Java 8 / Spring Boot 2，降低本地运行门槛。
+   - `tool-boot3` 使用同一套 `javax` 源码，在构建期生成临时 Jakarta 源码到 `web/target/generated-sources/jakarta`，再用 Spring Boot 3 依赖打包；不会修改源码目录。
+   - 生成器自身的运行 JDK 与生成出来的目标工程 JDK 解耦：Java 8 运行的生成器也可以生成 Java 17/21 + Spring Boot 3 工程。
 
 2. **访问页面：**
    ```
@@ -223,6 +253,13 @@ global:
 
 支持 `8`、`11`、`17`、`21`。生成器会自动匹配 Spring Boot、Spring Cloud、MyBatis、MyBatis-Plus、Knife4j、Shiro 等版本，并向模板注入 `templateFamily`、`namespace`、`servletPackage`、`validationPackage` 等变量。
 
+当前默认档位：
+- `java8-boot2`：Java 8 / Spring Boot 2 / `javax`
+- `java11-boot2`：Java 11 / Spring Boot 2 / `javax`
+- `java17-boot3`：Java 17 / Spring Boot 3 / `jakarta`
+- `java21-boot3`：Java 21 / Spring Boot 3 / `jakarta`
+- `java17-boot2`：Java 17 / Spring Boot 2 过渡档，需显式配置 `platformId`
+
 需要明确指定兼容档位时，可配置 `platformId`。不配置时，生成器会按 `javaVersion` 使用默认档位：
 
 ```yaml
@@ -230,6 +267,22 @@ global:
   javaVersion: 21
   platformId: java21-boot3
 ```
+
+安全方案推荐通过 `security` 表达用户意图，由生成器自动映射到 `components` / `features`：
+
+```yaml
+global:
+  # Boot2 后台管理可选
+  security: SHIRO
+
+  # Boot3 默认推荐
+  security: SPRING_SECURITY_OAUTH2
+```
+
+推荐策略：
+- `java8-boot2` / `java11-boot2`：可选 `SHIRO` 或 `SPRING_SECURITY_OAUTH2`
+- `java17-boot3` / `java21-boot3`：默认推荐 `SPRING_SECURITY_OAUTH2`
+- `SHIRO` 作为 Boot2 方案保留；Boot3 场景如需 Shiro 2.x，建议作为后续高级兼容档单独验证
 
 如需小版本覆盖，只能覆盖 `compatibility.yml` 中 `allowOverride` 允许的版本项：
 
@@ -391,13 +444,7 @@ app:
 
 ---
 
-# 六、TODO LIST
 
-1. 各主流关系型数据库驱动包集成及验证（默认只集成 mysql 驱动包，其他数据库集成相应的数据库驱动包即可）
-2. 增加分布式消息中间件 rocketmq、kafka
-3. redis 切片缓存 key 优化：示例设置过于简单，需考虑唯一性以及序列化与反序列化
-
----
 
 # 七、FAQ
 
@@ -445,79 +492,3 @@ java.lang.UnsupportedClassVersionError cannot be cast to [Ljava.lang.Object;
 3. 可以安装额外字体或将字体文件复制到配置的目录
 
 ---
-
-## 八、架构设计与优化建议
-
-为了持续提升生成器的专业性、健壮性与执行效率，本项目在架构层面遵循以下优化准则：
-
-> **实现进度：12/12 (100%)**
-
-### ✅ 已实现
-
-#### 1. 模板引擎抽象化与按需加载 ✅
-- **细节**：通过定义 `TemplateEngine` 接口解耦具体的渲染引擎，并引入延迟初始化策略。
-- **逻辑**：只有在渲染过程中真正需要特定引擎（Velocity/FreeMarker）时才通过工厂创建实例，显著降低了系统的启动内存消耗。
-- **实现位置**：`TemplateEngineFactory` + `TemplateRenderer`
-
-#### 5. 统一路径解析协议 (PathResolver) ✅
-- **细节**：废弃了 `Generator.java` 中硬编码的路径解析逻辑，统一采用 `PathTemplateResolver` 接口及其实现。
-- **逻辑**：全面支持 `${table.beanName}` 等语义化占位符，使输出路径的配置与模板解析逻辑彻底解耦，极大提升了代码的维护性。
-- **实现位置**：`DefaultPathTemplateResolver.java` + `Generator.java`
-
-#### 6. 智能资源识别与二进制安全 ✅
-- **细节**：在 `FileUtils` 中集成了基于魔数（Magic Number）的二进制判定逻辑。
-- **逻辑**：系统能自动识别非文本文件（如图片、静态库等）并执行二进制流式拷贝，规避了非文本文件进入渲染引擎导致的乱码或损坏风险。
-- **实现位置**：`FileUtils.java` + `Generator.java`
-
-#### 12. 静态资源共享与多态分发 ✅
-- **细节**：在 `templates/assets` 下建立了统一的静态资产库，彻底从 `freemarker` 和 `velocity` 目录中剥离了图片、脚本等二进制文件。
-- **逻辑**：引入了 **“虚拟资源映射”** 机制：
-    *   **脚本类 (assets/scripts/)**：自动解析映射到目标工程的 **模块根目录**。
-    *   **根资源 (assets/root/)**：映射到模块根目录。
-    *   **组件资源 (assets/commons/...)**：自动映射到 **src/main/resources/static** 等资源目录。
-- **价值**：实现了资源的一处存放、两处共用。避免了二进制资源因误入渲染引擎导致的损坏，且极大简化了脚本文件的复用逻辑。
-- **实现位置**：`Generator.java` + `DefaultPathTemplateResolver.java`
-
-#### 4. 元数据缓存策略 ✅
-- **细节**：集成 Caffeine 缓存并提供可配置的开关机制。
-- **逻辑**：通过 `global.enableCache` 配置，平衡"频繁修改表结构"与"快速重复生成"的性能需求。
-- **实现位置**：`AbstractGenerator.java`
-
-#### 7. 模板预编译缓存 ✅
-- **细节**：在执行生成前，预先解析 `components` 下的常驻模板并缓存在内存中。
-- **逻辑**：消除循环渲染各表时的重复磁盘 IO 与语法解析开销，显著提升吞吐量。
-- **实现位置**：`Generator.java`
-
-#### 9. 依赖版本中心化管理 ✅
-- **细节**：在项目根目录 `pom.xml` 中集中定义版本及依赖管理。
-- **逻辑**：确保生成的所有子模块引用的版本严格一致，消除潜在的版本冲突。
-- **实现位置**：项目根目录 `pom.xml`
-
----
-
-### ✅ 已实现（补充）
-
-#### 2. 并行化渲染驱动 (P0) ✅
-- **细节**：通过 `global.parallelTables` 控制多表并行渲染，表内组件仍按依赖顺序串行。
-- **逻辑**：在多核 CPU 环境下提升多表生成吞吐，同时保留关闭并行的排障开关。
-- **实现位置**：`Generator.java` + `GlobalConf.parallelTables`
-
-#### 10. 原子性生成保护 (P0) ✅
-- **细节**：引入临时目录生成与最终替换机制。
-- **逻辑**：生成过程中的任何异常均不会污染目标目录，只有全部渲染任务成功后才会更新输出结果，保证生成工程的原子性。
-- **实现位置**：`Generator.java`
-
-#### 11. 跨平台诊断工具 (EnvChecker) (P2) ✅
-- **细节**：内置环境预检逻辑。
-- **逻辑**：启动时自动检查 JDK 版本、系统字符集、目录写权限等关键指标，提供精准的故障诊断提示。
-- **实现位置**：`EnvChecker.java` + `Generator.java`
-
-#### 8. 配置模块化 (Include Config) (P3) ✅
-- **细节**：支持 `include: [sub-configs]` 语法。
-- **逻辑**：允许将庞大的 `generator.yaml` 拆分为数据库配置、组件配置等多个模块，提高大型项目配置的可维护性。
-- **实现位置**：`YamlIncludeLoader.java` + `Generator.java`
-
-#### 3. 数据源深度配置透传 (P3) ✅
-- **细节**：在 `generator.yaml` 中开放 Druid 连接池的高级参数（如 `maxActive`, `minIdle`）。
-- **逻辑**：针对大型数据库或复杂元数据场景，优化连接持有效率，防止在并发生成时连接枯竭。
-- **实现位置**：`DataSourceConf.java`

@@ -39,6 +39,7 @@ import org.apache.ibatis.annotations.Select;
 public interface ${mapperName!} <#if superMapperClass?? && superMapperClass?has_content> extends ${superMapperClass!}<${entityName!}> </#if>{
 
 <#if "plus"!=mapperType!>
+<#if table.hasPrimarykeys()>
 <#if REDIS??>
     @Cacheable(key = "#p0")
 </#if>
@@ -47,6 +48,7 @@ public interface ${mapperName!} <#if superMapperClass?? && superMapperClass?has_
 <#if REDIS??>
     @CacheEvict(key = "#p0")
 	public void deleteById(<#list table.primarykeyFields as field>@Param("${field.propertyName!}")${field.fieldType.type!} ${field.propertyName!}<#if field?has_next>,</#if></#list>);
+</#if>
 </#if>
 </#if>
 }

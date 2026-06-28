@@ -8,11 +8,15 @@ import ${persistencePackage}.Entity;
 import ${persistencePackage}.GeneratedValue;
 import ${persistencePackage}.GenerationType;
 import ${persistencePackage}.Id;
+import ${persistencePackage}.IdClass;
 import ${validationPackage}.constraints.NotBlank;
 import ${validationPackage}.constraints.NotNull;
 
 <#include 'comments/comment.ftl'>
 @Entity
+<#if table.isCompositePrimaryKey()>
+@IdClass(${rootPackage}.key.${table.beanName}Key.class)
+</#if>
 public class ${className!} implements Serializable{
 
     private static final long serialVersionUID = 1L;

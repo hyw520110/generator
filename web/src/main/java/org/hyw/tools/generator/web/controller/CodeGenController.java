@@ -29,6 +29,7 @@ import org.hyw.tools.generator.conf.dao.DataSourceConf;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.ComponentGroup;
 import org.hyw.tools.generator.enums.ExportFormat;
+import org.hyw.tools.generator.enums.Feature;
 import org.hyw.tools.generator.enums.ProjectBuilder;
 import org.hyw.tools.generator.utils.FileUtils;
 import org.hyw.tools.generator.web.model.Result;
@@ -125,6 +126,34 @@ public class CodeGenController {
 			}
 		}
 		return result.toArray(new Component[0]);
+	}
+
+	private Feature[] addFeatures(Feature[] features, Feature... additions) {
+		Set<Feature> result = new LinkedHashSet<>();
+		if (features != null) {
+			result.addAll(Arrays.asList(features));
+		}
+		if (additions != null) {
+			for (Feature feature : additions) {
+				if (feature != null) {
+					result.add(feature);
+				}
+			}
+		}
+		return result.toArray(new Feature[0]);
+	}
+
+	private Feature[] removeFeatures(Feature[] features, Feature... removals) {
+		Set<Feature> result = new LinkedHashSet<>();
+		if (features != null) {
+			result.addAll(Arrays.asList(features));
+		}
+		if (removals != null) {
+			for (Feature feature : removals) {
+				result.remove(feature);
+			}
+		}
+		return result.toArray(new Feature[0]);
 	}
 
 	private Map<String, Object> versionOverride(Generator generator, Component component) {
@@ -491,7 +520,8 @@ public class CodeGenController {
 			@RequestParam(name = "sentinelVersion") String sentinelVersion,
 			@RequestParam(name = "sentinelAddr") String sentinelAddr,
 			@RequestParam(name = "skywalkingAddr") String skywalkingAddr,
-			@RequestParam(name = "secure") String secure) {
+			@RequestParam(name = "secure", required = false) String[] secure,
+			@RequestParam(name = "features", required = false) String[] features) {
 		Generator generator = currentGenerator();
 		logger.info(
 				"[step2] 输入 - view: {}, projectBuilder: {}, microservice: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}",
@@ -504,9 +534,31 @@ public class CodeGenController {
 		global.setComponents(removeComponents(global.getComponents(), Component.VUE, Component.THYMELEAF));
 		Component viewComponent = Component.getComonent(view);
 		global.setComponents(addComponents(global.getComponents(), viewComponent));
-		if (viewComponent == Component.VUE) {
-			global.setComponents(addComponents(global.getComponents(), Component.SHIRO, Component.JWT));
-		}
+
+			// 处理高级特性
+			global.setFeatures(new Feature[0]);
+			if (features != null) {
+				for (String f : features) {
+					if (StringUtils.isNotBlank(f)) {
+						for (String token : f.split(",")) {
+							Feature feat = Feature.getFeature(token.trim());
+							if (feat != null) {
+								global.setFeatures(addFeatures(global.getFeatures(), feat));
+							}
+						}
+					}
+				}
+			}
+
+			global.setComponents(removeComponents(global.getComponents(), Component.SPRINGSECURITY, Component.SHIRO, Component.JWT));
+			global.setFeatures(removeFeatures(global.getFeatures(), Feature.OAUTH2));
+			String securityScheme = resolveSecurityScheme(secure);
+			if ("SHIRO".equals(securityScheme)) {
+				global.setComponents(addComponents(global.getComponents(), Component.SHIRO, Component.JWT));
+			} else if ("SPRINGSECURITY_OAUTH2".equals(securityScheme)) {
+				global.setComponents(addComponents(global.getComponents(), Component.SPRINGSECURITY));
+				global.setFeatures(addFeatures(global.getFeatures(), Feature.OAUTH2));
+			}
 
 		// 处理微服务框架选择
 		global.setComponents(removeComponents(global.getComponents(), Component.SPRINGCLOUD, Component.DUBBO));
@@ -569,6 +621,28 @@ public class CodeGenController {
 		logger.info("[step2] 输出 - 成功, viewComponent: {}, registryCenter: {}", viewComponent, registryCenter);
 		return Result.ok();
 		}
+	}
+
+	private String resolveSecurityScheme(String[] secure) {
+		if (secure == null || secure.length == 0) {
+			return "";
+		}
+		for (String value : secure) {
+			if (StringUtils.isBlank(value)) {
+				continue;
+			}
+			for (String token : value.split(",")) {
+				String normalized = token.trim().toUpperCase();
+				if ("SPRINGSECURITY_OAUTH2".equals(normalized) || "SPRING_SECURITY_OAUTH2".equals(normalized)
+						|| "OAUTH2".equals(normalized) || "SPRINGSECURITY".equals(normalized)) {
+					return "SPRINGSECURITY_OAUTH2";
+				}
+				if ("SHIRO".equals(normalized)) {
+					return "SHIRO";
+				}
+			}
+		}
+		return "";
 	}
 
 	@PostMapping("/exec")

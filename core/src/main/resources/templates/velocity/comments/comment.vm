@@ -17,6 +17,6 @@
  * ${comment}
 #end
  *
- * @author ${author}
+ * @author $!{author}
  * @copyright ${copyright}
  */

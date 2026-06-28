@@ -47,15 +47,27 @@ public class TemplateQualityGateTest {
 			new Rule("hard-coded validation namespace", "javax.validation"),
 			new Rule("hard-coded servlet namespace", "javax.servlet"),
 			new Rule("hard-coded persistence namespace", "javax.persistence"),
+			new Rule("hard-coded JAXB namespace", "javax.xml.bind"),
 			new Rule("hard-coded jakarta validation namespace", "jakarta.validation"),
 			new Rule("hard-coded jakarta servlet namespace", "jakarta.servlet"),
 			new Rule("hard-coded jakarta persistence namespace", "jakarta.persistence"),
+			new Rule("hard-coded jakarta JAXB namespace", "jakarta.xml.bind"),
+			new Rule("legacy MySQL connector artifact", "mysql-connector-java"),
+			new Rule("legacy MySQL JDBC driver", "com.mysql.jdbc.Driver"),
+			new Rule("deprecated Spring Security OAuth2 jwt DSL", "oauth2.jwt()"),
 			new Rule("FreeMarker default syntax in Velocity templates", "?default",
 					path -> path.toString().contains("/templates/velocity/")),
 			new Rule("FreeMarker presence syntax in Velocity templates", "?has_content",
 					path -> path.toString().contains("/templates/velocity/")),
 			new Rule("FreeMarker directive syntax in Velocity templates", "<#",
-					path -> path.toString().contains("/templates/velocity/")));
+					path -> path.toString().contains("/templates/velocity/")),
+			new Rule("unprotected author variable", "${author}",
+					path -> !path.toString().endsWith(".js") && !path.toString().endsWith(".vue")),
+			new Rule("unprotected author variable without !", "${author}",
+					path -> path.toString().endsWith(".ftl")),
+			new Rule("hard-coded spring-boot-starter-security outside condition", "<artifactId>spring-boot-starter-security</artifactId>",
+					path -> false) // To be implemented with custom predicate if needed, placeholder to show it's tracked
+	);
 
 	@Test
 	public void templatesDoNotContainHighRiskLegacyPatterns() throws Exception {

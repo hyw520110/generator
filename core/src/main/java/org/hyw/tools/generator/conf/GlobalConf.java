@@ -13,8 +13,10 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.Feature;
 import org.hyw.tools.generator.enums.Naming;
 import org.hyw.tools.generator.enums.ProjectBuilder;
+import org.hyw.tools.generator.enums.SecurityScheme;
 import org.hyw.tools.generator.enums.EngineType;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
@@ -92,6 +94,8 @@ public class GlobalConf extends BaseBean {
 	 * 组件配置
 	 */
 	private Component[] components;
+	private Feature[] features;
+	private SecurityScheme security;
 
 	/**
 	 * 需要包含的表名（与exclude二选一配置）
@@ -243,14 +247,28 @@ public class GlobalConf extends BaseBean {
 	}
 
 	/**
-	 * 获取项目名获取输出路径的子目录名
-	 * 
-	 * @author: heyiwu
-	 * @return
+	 * 获取项目名称
+	 */
+	private String projectName;
+
+	/**
+	 * 获取项目名称
 	 */
 	public String getProjectName() {
-		File file = new File(outputDir);
-		return file.getName();
+		if (StringUtils.isBlank(projectName)) {
+			// 如果没有显式设置 projectName，则默认使用输出目录名（去除临时后缀）
+			File file = new File(outputDir);
+			String name = file.getName();
+			if (name.contains(".tmp.")) {
+				name = name.substring(0, name.indexOf(".tmp."));
+			}
+			return name;
+		}
+		return projectName;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
 	}
 
 	public boolean isDelOutputDir() {
@@ -309,6 +327,15 @@ public class GlobalConf extends BaseBean {
 		this.author = author;
 	}
 
+	
+	public Feature[] getFeatures() {
+		return features;
+	}
+
+	public void setFeatures(Feature[] features) {
+		this.features = features;
+	}
+
 	public Component[] getComponents() {
 		return components;
 	}
@@ -327,6 +354,18 @@ public class GlobalConf extends BaseBean {
 	}
 	public void setComponents(Component[] components) {
 		this.components = components;
+	}
+
+	public SecurityScheme getSecurity() {
+		return security;
+	}
+
+	public void setSecurity(SecurityScheme security) {
+		this.security = security;
+	}
+
+	public void setSecurity(String security) {
+		this.security = SecurityScheme.from(security);
 	}
 
 	public String[] getModules() {

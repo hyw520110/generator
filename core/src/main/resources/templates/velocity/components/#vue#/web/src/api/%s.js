@@ -3,8 +3,16 @@ import { axios } from '@/utils/request'
 
 const modulePath = '/${table.beanName}'
 const primaryKeyFields = ${table.primaryKeyJsArray}
+const hasPrimaryKey = primaryKeyFields.length > 0
+
+function rejectNoPrimaryKey () {
+  return Promise.reject(new Error('当前表未定义主键，不能执行按主键查询、编辑或删除'))
+}
 
 function buildPrimaryKeyPath (record) {
+  if (!hasPrimaryKey) {
+    return ''
+  }
   if (record && typeof record === 'object') {
     return primaryKeyFields.map(key => encodeURIComponent(record[key])).join('/')
   }
@@ -12,6 +20,9 @@ function buildPrimaryKeyPath (record) {
 }
 
 function buildPrimaryKeyPayload (record) {
+  if (!hasPrimaryKey) {
+    return {}
+  }
   if (primaryKeyFields.length === 1) {
     return record && typeof record === 'object' ? record[primaryKeyFields[0]] : record
   }
@@ -41,6 +52,9 @@ export function getList (parameter) {
 }
 
 export function getInfo (record) {
+  if (!hasPrimaryKey) {
+    return rejectNoPrimaryKey()
+  }
   return axios({
     url: modulePath + '/' + buildPrimaryKeyPath(record),
     method: 'get'
@@ -64,6 +78,9 @@ export function edit${table.beanName} (parameter) {
 }
 
 export function del${table.beanName} (record) {
+  if (!hasPrimaryKey) {
+    return rejectNoPrimaryKey()
+  }
   return axios({
     url: modulePath + '/' + buildPrimaryKeyPath(record),
     method: 'delete'
@@ -71,6 +88,9 @@ export function del${table.beanName} (record) {
 }
 
 export function batchDel${table.beanName} (records) {
+  if (!hasPrimaryKey) {
+    return rejectNoPrimaryKey()
+  }
   return axios({
     url: api.batchDelete${table.beanName},
     method: 'delete',

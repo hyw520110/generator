@@ -158,6 +158,24 @@
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 		</dependency>
+<#elseif "postgresql"=="${dbType}">
+		<!-- postgresql -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
+<#elseif "oracle"=="${dbType}">
+		<!-- oracle -->
+		<dependency>
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc8</artifactId>
+		</dependency>
+<#elseif "sqlserver"=="${dbType}">
+		<!-- sqlserver -->
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>mssql-jdbc</artifactId>
+		</dependency>
 </#if>
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -236,6 +254,20 @@
 		    <groupId>com.maihaoche</groupId>
 		    <artifactId>spring-boot-starter-rocketmq</artifactId>
 		    <version>${r"${spring_boot_starter_rocketmq_version}"}</version>
+		</dependency>
+</#if>
+<#if KAFKA?? && KAFKA>        
+		<!-- kafka -->
+		<dependency>
+		    <groupId>org.springframework.kafka</groupId>
+		    <artifactId>spring-kafka</artifactId>
+		</dependency>
+</#if>
+<#if ELASTICSEARCH?? && ELASTICSEARCH>        
+		<!-- elasticsearch -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
 		</dependency>
 </#if>
 </#if>
@@ -318,9 +350,9 @@
 				<artifactId>jjwt-jackson</artifactId>
 			</dependency>
 </#if>
-<#if SHIRO?? && SHIRO>
-			<dependency>
-				<groupId>org.apache.shiro</groupId>
+	<#if SHIRO?? && SHIRO>
+				<dependency>
+					<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-spring</artifactId>
 			<#if shiroClassifier?has_content>
 			<classifier>${shiroClassifier}</classifier>
@@ -342,18 +374,18 @@
 			<#if shiroClassifier?has_content>
 			<classifier>${shiroClassifier}</classifier>
 				</#if>
+				</dependency>
+				<dependency>
+				<groupId>org.apache.shiro</groupId>
+				<artifactId>shiro-web</artifactId>
+				<#if shiroClassifier?has_content>
+				<classifier>${shiroClassifier}</classifier>
+				</#if>
 			</dependency>
-</#if>
-			<dependency>
-			<groupId>org.apache.shiro</groupId>
-			<artifactId>shiro-web</artifactId>
-			<#if shiroClassifier?has_content>
-			<classifier>${shiroClassifier}</classifier>
-			</#if>
-		</dependency>
-			<dependency>
-				<groupId>org.junit.jupiter</groupId>
-				<artifactId>junit-jupiter</artifactId>
+	</#if>
+				<dependency>
+					<groupId>org.junit.jupiter</groupId>
+					<artifactId>junit-jupiter</artifactId>
 <#if !SPRINGBOOT?? || !SPRINGBOOT>
 				<version>5.10.2</version>
 </#if>
@@ -365,21 +397,119 @@
 		<dependency>
 			<groupId>${jaxbApiGroupId}</groupId>
 			<artifactId>${jaxbApiArtifactId}</artifactId>
-			<version>4.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.3.1</version>
+			<version>${jaxbApiVersion!'4.0.0'}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jaxb</groupId>
 			<artifactId>jaxb-runtime</artifactId>
-			<version>4.0.2</version>
+			<version>${jaxbRuntimeVersion!'4.0.2'}</version>
 		</dependency>
 </#if>
 </#if>
-	</dependencies>
+	
+		<#if GATEWAY?? && GATEWAY>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-gateway</artifactId>
+		</dependency>
+		</#if>
+
+		<#if OPENAPI?? && OPENAPI>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+		</#if>
+
+		<#if OPENFEIGN?? && OPENFEIGN>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+		</#if>
+
+		<#if SPRINGSECURITY?? && SPRINGSECURITY>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		</#if>
+
+        <#if VALIDATION?? && VALIDATION>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        </#if>
+
+        <#if MULTIDATASOURCE?? && MULTIDATASOURCE>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+            <version>3.5.2</version>
+        </dependency>
+        </#if>
+
+        <#if WEBSOCKET?? && WEBSOCKET>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        </#if>
+
+        <#if EXCEL?? && EXCEL>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>3.3.3</version>
+            
+        </dependency>
+        </#if>
+
+        <#if SEATA?? && SEATA>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-seata</artifactId>
+            
+        </dependency>
+        </#if>
+
+        <#if OAUTH2?? && OAUTH2>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+            
+        </dependency>
+        </#if>
+
+        <#if MULTICACHE?? && MULTICACHE>
+        <dependency>
+            <groupId>com.alicp.jetcache</groupId>
+            <artifactId>jetcache-starter-redis</artifactId>
+            <version>2.7.3</version>
+            
+        </dependency>
+        </#if>
+
+        <#if WORKFLOW?? && WORKFLOW>
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-spring-boot-starter</artifactId>
+            <version>6.8.0</version>
+            
+        </dependency>
+        </#if>
+
+        <#if JOB?? && JOB>
+        <dependency>
+            <groupId>com.xuxueli</groupId>
+            <artifactId>xxl-job-core</artifactId>
+            <version>2.4.0</version>
+            
+        </dependency>
+        </#if>
+</dependencies>
 	<build>
 		<finalName>${r'${project.artifactId}'}</finalName>
 		<resources>
@@ -432,7 +562,110 @@
 						<artifactId>springloaded</artifactId>
 						<version>1.2.7.RELEASE</version>
 					</dependency>
-				</dependencies>
+				
+		<#if GATEWAY?? && GATEWAY>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-gateway</artifactId>
+		</dependency>
+		</#if>
+
+		<#if OPENAPI?? && OPENAPI>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+		</#if>
+
+		<#if OPENFEIGN?? && OPENFEIGN>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+		</#if>
+
+		<#if SPRINGSECURITY?? && SPRINGSECURITY>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		</#if>
+
+        <#if VALIDATION?? && VALIDATION>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        </#if>
+
+        <#if MULTIDATASOURCE?? && MULTIDATASOURCE>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+            <version>3.5.2</version>
+        </dependency>
+        </#if>
+
+        <#if WEBSOCKET?? && WEBSOCKET>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        </#if>
+
+        <#if EXCEL?? && EXCEL>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>3.3.3</version>
+            
+        </dependency>
+        </#if>
+
+        <#if SEATA?? && SEATA>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-seata</artifactId>
+            
+        </dependency>
+        </#if>
+
+        <#if OAUTH2?? && OAUTH2>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+            
+        </dependency>
+        </#if>
+
+        <#if MULTICACHE?? && MULTICACHE>
+        <dependency>
+            <groupId>com.alicp.jetcache</groupId>
+            <artifactId>jetcache-starter-redis</artifactId>
+            <version>2.7.3</version>
+            
+        </dependency>
+        </#if>
+
+        <#if WORKFLOW?? && WORKFLOW>
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-spring-boot-starter</artifactId>
+            <version>6.8.0</version>
+            
+        </dependency>
+        </#if>
+
+        <#if JOB?? && JOB>
+        <dependency>
+            <groupId>com.xuxueli</groupId>
+            <artifactId>xxl-job-core</artifactId>
+            <version>2.4.0</version>
+            
+        </dependency>
+        </#if>
+</dependencies>
 				<executions>
 					<execution>
 						<goals>

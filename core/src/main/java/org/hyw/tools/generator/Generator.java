@@ -18,6 +18,7 @@ import org.hyw.tools.generator.conf.SkipRuntimeFieldsRepresenter;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.Feature;
 import org.hyw.tools.generator.enums.ExportFormat;
 import org.hyw.tools.generator.exception.GeneratorException;
 import org.hyw.tools.generator.export.DbToDoc;
@@ -256,6 +257,7 @@ public class Generator extends AbstractGenerator {
 		if (global == null || components == null) {
 			return null;
 		}
+		org.hyw.tools.generator.utils.ConfigValidator.normalizeSecuritySelection(global);
 		resolvedPlatform = new CompatibilityResolver().apply(global, components, versionOverrides);
 		return resolvedPlatform;
 	}
@@ -267,9 +269,14 @@ public class Generator extends AbstractGenerator {
 		return resolvedPlatform;
 	}
 
-	private void validateConfig() {
+	protected void validateConfig() {
 		if (global == null)
 			throw new GeneratorException(Consts.ERR_GLOBAL_CONFIG_NULL);
+		try {
+			org.hyw.tools.generator.utils.ConfigValidator.validate(global);
+		} catch (org.hyw.tools.generator.exception.ConfigurationException e) {
+			throw new GeneratorException(e.getMessage(), e);
+		}
 		String outputDir = global.getOutputDir();
 		if (StringUtils.isBlank(outputDir))
 			throw new GeneratorException(Consts.ERR_OUTPUT_DIR_EMPTY);
@@ -486,7 +493,10 @@ public class Generator extends AbstractGenerator {
 				if (first.startsWith("#") && first.endsWith("#")) {
 					String alias = first.substring(1, first.length() - 1);
 					Component c = Component.getComponent(alias);
-					return c != null && isComponentEnabled(c);
+					if (c != null) return isComponentEnabled(c);
+					Feature f = Feature.getFeature(alias);
+					if (f != null) return isFeatureEnabled(f);
+					return false;
 				}
 				// 3. 普通组件名
 				return list.contains(first);
@@ -668,6 +678,7 @@ public class Generator extends AbstractGenerator {
 		if (org.apache.commons.lang3.StringUtils.isNotBlank(parentDir)) {
 			String varName = parentDir + "Package";
 			context.put(varName, fullPackage);
+			context.put("packagePath", fullPackage);
 			log.debug("注册包名变量: {} = {}", varName, fullPackage);
 			// 同时注册模块前缀的变量
 			if (org.apache.commons.lang3.StringUtils.isNotBlank(moduleName)) {
@@ -706,6 +717,22 @@ public class Generator extends AbstractGenerator {
 				if (c != null && !isComponentEnabled(c)) {
 					return true;
 				}
+				Feature f = Feature.getFeature(alias);
+				if (f != null && !isFeatureEnabled(f)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	
+	private boolean isFeatureEnabled(Feature f) {
+		if (global.getFeatures() == null)
+			return false;
+		for (Feature enabled : global.getFeatures()) {
+			if (enabled == f) {
+				return true;
 			}
 		}
 		return false;

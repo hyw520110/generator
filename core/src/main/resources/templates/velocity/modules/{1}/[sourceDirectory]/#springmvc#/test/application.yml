@@ -210,3 +210,15 @@ context:
 rocketmq:
   name-server-address: 192.168.40.95:9876
   producer-group: backstage_producer
+
+
+#if(${KAFKA})
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ${projectName}_group
+#end
+#if(${ELASTICSEARCH})
+  elasticsearch:
+    uris: http://localhost:9200
+#end

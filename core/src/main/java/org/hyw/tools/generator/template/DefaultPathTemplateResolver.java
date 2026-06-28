@@ -193,6 +193,11 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
             if (comp != null && !hasComponentOrImplicit(model, comp)) {
                 return true;
             }
+
+            org.hyw.tools.generator.enums.Feature feature = org.hyw.tools.generator.enums.Feature.getFeature(componentName.toLowerCase());
+            if (feature != null && !model.hasFeature(feature)) {
+                return true;
+            }
         }
         return false;
     }

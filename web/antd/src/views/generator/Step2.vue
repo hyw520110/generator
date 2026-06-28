@@ -23,17 +23,17 @@
         </a-form-item>
       </template>
 
-      <!-- 非互斥组（多选）- 认证授权 -->
-      <a-form-item label="认证授权" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+      <!-- 安全方案（二选一） -->
+      <a-form-item label="安全方案" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <template #label>
-          认证授权
-          <a-tag color="blue">可多选</a-tag>
+          安全方案
+          <a-tag color="blue">二选一</a-tag>
         </template>
-        <a-checkbox-group v-model:value="formState.secure">
-          <a-checkbox v-for="opt in authOptions" :key="opt.value" :value="opt.value">
+        <a-radio-group button-style="solid" v-model:value="formState.secure">
+          <a-radio-button v-for="opt in authOptions" :key="opt.value" :value="opt.value">
             {{ opt.label }}
-          </a-checkbox>
-        </a-checkbox-group>
+          </a-radio-button>
+        </a-radio-group>
       </a-form-item>
 
       <!-- 构建工具 -->
@@ -47,6 +47,21 @@
             {{ opt.label }}
           </a-radio-button>
         </a-radio-group>
+      </a-form-item>
+
+      <!-- 高级特性 -->
+      <a-form-item label="高级特性" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+        <template #label>
+          高级特性
+          <a-tag color="blue">多选</a-tag>
+        </template>
+        <a-checkbox-group v-model:value="formState.features">
+          <a-row>
+            <a-col :span="8" v-for="opt in advancedFeatures" :key="opt.value">
+              <a-checkbox :value="opt.value">{{ opt.label }}</a-checkbox>
+            </a-col>
+          </a-row>
+        </a-checkbox-group>
       </a-form-item>
 
       <!-- 组件配置（根据选择动态显示） -->
@@ -290,10 +305,21 @@ const buildTools = [
   { value: 'GRADLE', label: 'Gradle' }
 ]
 
-// 认证授权选项（非互斥，可多选）
+// 高级特性选项
+const advancedFeatures = [
+  { value: 'AUDITLOG', label: '操作日志 (AOP)' },
+  { value: 'TENANT', label: '多租户支持' },
+  { value: 'DATAPERMISSION', label: '数据权限' },
+  { value: 'EXCEL', label: 'Excel 导出/导入' },
+  { value: 'WORKFLOW', label: '工作流 (Flowable)' },
+  { value: 'XSS', label: 'XSS 防范' },
+  { value: 'IDEMPOTENCY', label: '接口防重放/幂等' }
+]
+
+// 安全方案选项（二选一）
 const authOptions = [
-  { value: 'SHIRO', label: 'Shiro' },
-  { value: 'JWT', label: 'JWT' }
+  { value: 'SPRINGSECURITY_OAUTH2', label: 'Spring Security / OAuth2' },
+  { value: 'SHIRO', label: 'Shiro (Boot2)' }
 ]
 
 export default {
@@ -330,7 +356,8 @@ export default {
       redisEnabled: '',
       sentinelEnabled: '',
       swaggerEnabled: '',
-      secure: []
+      secure: 'SPRINGSECURITY_OAUTH2',
+      features: []
     })
 
     // 根据Java版本计算可选版本
@@ -436,9 +463,15 @@ export default {
             }
           })
 
-          // 认证组件
-          const secure = globalComps.filter(c => c === 'JWT' || c === 'SHIRO')
-          if (secure.length > 0) formState.secure = secure
+          // 安全方案与高级特性
+          const globalFeatures = global.features || []
+          formState.features = globalFeatures
+          
+          if (globalComps.includes('SHIRO')) {
+            formState.secure = 'SHIRO'
+          } else if (globalComps.includes('SPRINGSECURITY') || globalFeatures.includes('OAUTH2')) {
+            formState.secure = 'SPRINGSECURITY_OAUTH2'
+          }
         }
       } catch (err) {
         console.error('获取配置失败:', err)
@@ -448,7 +481,7 @@ export default {
     const nextStep = async () => {
       loading.value = true
       try {
-        await step2(formState)
+        await step2({ ...formState, secure: formState.secure })
         loading.value = false
         emit('nextStep')
       } catch (error) {
@@ -470,6 +503,7 @@ export default {
       exclusiveGroups,
       authOptions,
       buildTools,
+      advancedFeatures,
       onJavaVersionChange,
       onDubboVersionChange,
       nextStep,

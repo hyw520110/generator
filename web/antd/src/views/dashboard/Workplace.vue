@@ -130,8 +130,6 @@ import { Radar } from '@/components'
 
 import { getRoleList, getServiceList } from '@/api/manage'
 
-const DataSet = require('@antv/data-set')
-
 export default {
   name: 'Workplace',
   components: {
@@ -244,15 +242,12 @@ export default {
 
       this.$http.get('/workplace/radar')
         .then(res => {
-          const dv = new DataSet.View().source(res.result)
-          dv.transform({
-            type: 'fold',
-            fields: ['个人', '团队', '部门'],
-            key: 'user',
-            value: 'score'
-          })
-
-          this.radarData = dv.rows
+          const fields = ['个人', '团队', '部门']
+          this.radarData = (res.result || []).flatMap(row => fields.map(field => ({
+            item: row.item,
+            user: field,
+            score: row[field] || 0
+          })))
           this.radarLoading = false
         })
     }

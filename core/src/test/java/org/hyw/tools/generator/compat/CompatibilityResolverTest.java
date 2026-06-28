@@ -29,6 +29,9 @@ public class CompatibilityResolverTest {
 		assertEquals("mybatis-plus-boot-starter",
 				components.get(Component.MYBATIS).get("mybatis_plus_starter_artifact"));
 		assertEquals("javax.servlet", global.getPlatformVariables().get("servletPackage"));
+		assertEquals("javax.xml.bind", global.getPlatformVariables().get("jaxbApiGroupId"));
+		assertEquals("2.3.1", global.getPlatformVariables().get("jaxbApiVersion"));
+		assertEquals("2.3.8", global.getPlatformVariables().get("jaxbRuntimeVersion"));
 	}
 
 	@Test
@@ -47,6 +50,9 @@ public class CompatibilityResolverTest {
 		assertEquals("mybatis-plus-spring-boot3-starter",
 				components.get(Component.MYBATIS).get("mybatis_plus_starter_artifact"));
 		assertEquals("jakarta.servlet", global.getPlatformVariables().get("servletPackage"));
+		assertEquals("jakarta.xml.bind", global.getPlatformVariables().get("jaxbApiGroupId"));
+		assertEquals("4.0.0", global.getPlatformVariables().get("jaxbApiVersion"));
+		assertEquals("4.0.2", global.getPlatformVariables().get("jaxbRuntimeVersion"));
 	}
 
 	@Test

@@ -1,7 +1,7 @@
 #生成器配置
 #数据源配置
 dataSource:
-    driverClassName: com.mysql.jdbc.Driver
+    driverClassName: com.mysql.cj.jdbc.Driver
     #明文密码
     url: jdbc:mysql://127.0.0.1:3306/db_20260317202850?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
     username: root
@@ -23,7 +23,7 @@ dataSource:
 #全局配置
 global:
     #生成文件的输出目录(注意此目录需要有写权限),最后一个子目录为项目名,如:/output/test，项目名为test
-    outputDir: ./demo
+    outputDir: /Users/mac/workspace/generator/output_test/java8-boot2
     # PDF 中文字体配置
     # 格式：目录路径:文件名模式（支持 * 通配符），多项用逗号分隔
     # 系统按配置顺序依次查找，返回第一个匹配的字体文件
@@ -33,7 +33,7 @@ global:
     #项目描述
     description: 代码生成器
     #是否删除输出目录,默认为false，注意：修改需谨慎！ 
-    delOutputDir: false
+    delOutputDir: true
     #是否覆盖已有文件      
     fileOverride: true
     #文件生成后是否打开输出目录
@@ -49,7 +49,9 @@ global:
     #表前缀
     tablePrefix: ['cw_','batch_','tb_']
     #支持组件见枚举类Component，可选组件：SENTINEL,SKYWALKING
-    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,SPRINGCLOUD,SWAGGER2,REDIS,JWT,SHIRO,VUE,SENTINEL,SKYWALKING]
+    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,SPRINGCLOUD,SWAGGER2,REDIS,JWT,SPRINGSECURITY,VUE,SENTINEL,SKYWALKING,KAFKA,ELASTICSEARCH,GATEWAY,OPENAPI,OPENFEIGN]
+    features: [TENANT,DATAPERMISSION,OAUTH2]
+    security: SPRING_SECURITY_OAUTH2
     #生成构建脚本/工程构建工具,可选值MAVEN:生成pom.xml、GRADLE:生成build.gradle、不配置:不生成构建脚本
     projectBuilder: MAVEN
     #工程默认版本号
@@ -59,7 +61,8 @@ global:
     #版权
     copyright: hyw Copyright (c) 2017-2020 All Rights Reserved.
     #jdk版本：支持 8/11/17/21。生成器会根据 compatibility.yml 自动匹配框架和组件版本。
-    javaVersion: 17
+    javaVersion: 8
+    platformId: java8-boot2
     #表名、字段名、是否使用下划线命名
     separators: [_,-]
     #是否大写命名
@@ -119,7 +122,7 @@ components:
   JWT:
     jwt_version: 0.12.6
   SHIRO:
-    shiro_version: 2.0.2
+    shiro_version: 1.13.0
   SWAGGER2: 
     title: "RESTful API"   
     desc: "Swagger2构建RESTful API"

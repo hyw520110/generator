@@ -30,7 +30,6 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
 
     private static final long serialVersionUID = 1L;
 
-<#assign firstPrimaryKey = true>
 <#list table.fields as field>
 
 <#if field.comment?has_content>
@@ -47,9 +46,8 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
 
 <#if mapperType?? && mapperType == "plus">
 <#if field.primarykey>
-<#if firstPrimaryKey>
+<#if table.primaryKeyCount == 1>
 	@TableId(value = "${field.name!}", type = IdType.AUTO)
-	<#assign firstPrimaryKey = false>
 <#else>
 	@TableField(value = "${field.name!}")
 </#if>
@@ -115,7 +113,7 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
     }
 </#list>
 <#if mapperType?? && mapperType == "plus">
-<#if table.hasPrimarykeys()>
+<#if table.primaryKeyCount == 1>
 	@Override
 	public ${table.primaryKeyField.propertyType!} pkVal() {
 	    return this.${table.primaryKeyField.propertyName!};

@@ -34,6 +34,9 @@ profiles:
         pagehelper_version: 1.4.7
         druid_version: 1.2.23
         mysql_connector_version: 8.0.33
+        postgresql_version: 42.7.3
+        oracle_version: 21.13.0.0
+        mssql_version: 12.6.1.jre8
       SWAGGER2:
         api_doc_family: swagger2
         knife4j_version: 3.0.3
@@ -85,12 +88,13 @@ profiles:
         pagehelper_version: 2.1.0
         druid_version: 1.2.23
         mysql_connector_version: 8.0.33
+        postgresql_version: 42.7.3
+        oracle_version: 21.13.0.0
+        mssql_version: 12.6.1.jre11
       SWAGGER2:
         api_doc_family: openapi3
         knife4j_version: 4.5.0
         knife4j_starter_artifact: knife4j-openapi3-jakarta-spring-boot-starter
-      SHIRO:
-        shiro_version: 2.0.2
     allowOverride:
       SPRINGBOOT.springboot_version: 3.2.*
       SPRINGCLOUD.springcloud_version: 2023.0.*
@@ -122,4 +126,3 @@ profiles:
     extends: java17-boot3
     name: Java 21 / Spring Boot 3
     release: 21
-

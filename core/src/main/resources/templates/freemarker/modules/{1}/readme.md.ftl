@@ -9,6 +9,7 @@
 - Spring Boot: ${springboot_version!}
 - JSON mapper: ${json_type!'jackson'}
 - Namespace: ${namespace!'javax'}
+- Security: ${security!'NONE'}
 
 ## 本地启动
 
@@ -28,6 +29,18 @@ sh startup.sh
 
 数据库连接在 `src/main/resources/application.properties` 或 `application.yml` 中维护。生产环境建议通过环境变量或外部配置覆盖账号密码。
 
+## 安全方案
+
+<#if SHIRO?? && SHIRO>
+当前工程启用 Shiro + JWT，适合 Boot2 后台管理场景。默认 token 请求头为 `X-USER-TOKEN`，上线前应替换密钥、收紧白名单，并只开放真实匿名接口。
+<#elseif SPRINGSECURITY?? && SPRINGSECURITY && OAUTH2?? && OAUTH2>
+当前工程启用 Spring Security / OAuth2 Resource Server，适合 Boot3 和标准 OAuth2/JWT 资源服务场景。请在运行环境中配置 issuer、JWK 或 token 校验策略。
+<#elseif SPRINGSECURITY?? && SPRINGSECURITY>
+当前工程启用 Spring Security。请根据业务补充登录、鉴权、匿名接口和会话策略。
+<#else>
+当前工程未启用安全模板。生产环境上线前应补充认证、授权和接口访问控制。
+</#if>
+
 <#if ZOOKEEPER?? && ZOOKEEPER>
 ## Zookeeper 配置
 
@@ -40,7 +53,7 @@ zkCli.sh < zookeeper.data
 也可以运行 `ZkTool` 从配置文件导入初始数据。
 </#if>
 
-<#if JWT?? && JWT>
+<#if JWT?? && JWT && SHIRO?? && SHIRO>
 ## JWT
 
 默认 token 请求头为 `X-USER-TOKEN`。上线前应替换密钥、收紧白名单，并只开放真实匿名接口。

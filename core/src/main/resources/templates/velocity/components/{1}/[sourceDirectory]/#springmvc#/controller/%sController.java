@@ -61,7 +61,7 @@ import #if($StringUtils.indexOf("$superControllerClass", ".") == -1)${controller
 @Controller
 #end
 @RequestMapping("/${table.beanName}")
-public class ${controllerName} #if($superControllerClass && $table.primarykeyFields.size() <= 1)extends ${superControllerClass}<${serviceName},${entityName}>#end {
+public class ${controllerName} #if($superControllerClass && $table.primarykeyFields.size() == 1)extends ${superControllerClass}<${serviceName},${entityName}>#end {
 
 #set($needOverride = false)
 #set($pkFields = $table.primarykeyFields)
@@ -218,6 +218,7 @@ public class ${controllerName} #if($superControllerClass && $table.primarykeyFie
 #end
     }
 
+#if($table.primarykeyFields.size() > 0)
 	@Operation(summary = "$!{table.comment}-删除", description = "$!{table.comment}-删除")
     @GetMapping(value="/del/#foreach($field in $table.primarykeyFields){${field.propertyName}}#if($foreach.hasNext),#end#end")
     public #if($THYMELEAF)Result<?>#else ModelAndView #end delete(#foreach($field in $table.primarykeyFields)@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} #if($foreach.hasNext),#end#end){
@@ -228,5 +229,6 @@ public class ${controllerName} #if($superControllerClass && $table.primarykeyFie
 		return new ModelAndView("redirect:/${table.beanName}/list", "flag", true);
 #end
 	}
+#end
 #end
 }

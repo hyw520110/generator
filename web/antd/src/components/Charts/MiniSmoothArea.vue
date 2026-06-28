@@ -1,40 +1,41 @@
 <template>
   <div :class="prefixCls">
-    <div class="chart-wrapper" :style="{ height: 46 }">
-      <v-chart :force-fit="true" :height="100" :data="dataSource" :scale="scale" :padding="[36, 0, 18, 0]">
-        <v-tooltip />
-        <v-smooth-line position="x*y" :size="2" />
-        <v-smooth-area position="x*y" />
-      </v-chart>
-    </div>
+    <svg class="smooth-area" viewBox="0 0 120 46" preserveAspectRatio="none">
+      <polygon :points="areaPoints" fill="rgba(24, 144, 255, .14)" />
+      <polyline :points="linePoints" fill="none" stroke="#1890ff" stroke-width="2" />
+    </svg>
   </div>
 </template>
 
 <script>
+function toPoints (rows) {
+  const max = Math.max(...rows.map(item => Number(item.y) || 0), 1)
+  const step = rows.length > 1 ? 120 / (rows.length - 1) : 120
+  return rows.map((item, index) => `${index * step},${46 - ((Number(item.y) || 0) / max) * 40 - 3}`).join(' ')
+}
+
 export default {
   name: 'MiniSmoothArea',
   props: {
-    prefixCls: {
-      type: String,
-      default: 'ant-pro-smooth-area'
-    },
-    scale: {
-      type: [Object, Array],
-      required: true
-    },
-    dataSource: {
-      type: Array,
-      required: true
-    }
+    prefixCls: { type: String, default: 'ant-pro-smooth-area' },
+    scale: { type: [Object, Array], default: () => [] },
+    dataSource: { type: Array, required: true }
   },
-  data () {
-    return {
-      height: 100
+  computed: {
+    linePoints () {
+      return toPoints(this.dataSource)
+    },
+    areaPoints () {
+      return `0,46 ${this.linePoints} 120,46`
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-  @import "smooth.area.less";
+@import "smooth.area.less";
+.smooth-area {
+  width: 100%;
+  height: 46px;
+}
 </style>

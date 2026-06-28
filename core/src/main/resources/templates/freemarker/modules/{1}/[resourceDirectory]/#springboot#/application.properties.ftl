@@ -87,6 +87,13 @@ context.userName=user_name
 rocketmq.name-server-address=${name_server_address!'localhost:9876'}
 rocketmq.producer-group=${projectName}_producer
 </#if>
+<#if KAFKA!false>
+spring.kafka.bootstrap-servers=localhost:9092
+spring.kafka.consumer.group-id=${projectName}_group
+</#if>
+<#if ELASTICSEARCH!false>
+spring.elasticsearch.uris=http://localhost:9200
+</#if>
 <#if ZIPKIN?has_content>
 dubbo.trace.enabled=true
 spring.zipkin.baseUrl=${zipkin_baseUrl!'http://localhost:9411'}
@@ -154,7 +161,7 @@ spring.datasource.druid.connection-properties=${dataSource.propertiesStr}
 
 <#if (mapperType!'plus') == 'plus'>
 mybatis-plus.mapper-locations=classpath:mybatis/mappers/*.xml
-mybatis-plus.type-aliases-package=${entityPackage}
+mybatis-plus.type-aliases-package=${entityPackage!""}
 mybatis-plus.configuration.log-impl=org.apache.ibatis.logging.log4j2.Log4j2Impl
 mybatis-plus.configuration.call-setters-on-nulls=true
 mybatis-plus.configuration.cache-enabled=true

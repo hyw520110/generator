@@ -8,7 +8,7 @@ import ${servicePackage}.${serviceName};
 import #if($StringUtils.indexOf("$superServiceImplClass",'.')==-1)${implPackage}.#end${superServiceImplClass};
 #end
 #if($table.isCompositePrimaryKey())
-import ${entityPackage}.key.${table.beanName}Key;
+import ${rootPackage}.key.${table.beanName}Key;
 #end
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.BeanUtils;

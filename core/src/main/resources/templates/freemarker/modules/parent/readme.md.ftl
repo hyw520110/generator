@@ -9,6 +9,7 @@
 - Bytecode release: ${bytecodeRelease!javaVersion!}
 - Template family: ${templateFamily!'boot2'}
 - Namespace: ${namespace!'javax'}
+- Security: ${security!'NONE'}
 
 ## 构建
 

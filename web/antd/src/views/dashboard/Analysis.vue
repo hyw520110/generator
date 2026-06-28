@@ -190,19 +190,14 @@
 
             </div>
             <h4>销售额</h4>
-            <div>
-              <!-- style="width: calc(100% - 240px);" -->
-              <div>
-                <v-chart :force-fit="true" :height="405" :data="pieData" :scale="pieScale">
-                  <v-tooltip :showTitle="false" dataKey="item*percent" />
-                  <v-axis />
-                  <!-- position="right" :offsetX="-140" -->
-                  <v-legend dataKey="item"/>
-                  <v-pie position="percent" color="item" :vStyle="pieStyle" />
-                  <v-coord type="theta" :radius="0.75" :innerRadius="0.6" />
-                </v-chart>
+            <div class="sales-type-list">
+              <div v-for="item in pieData" :key="item.item" class="sales-type-item">
+                <div class="sales-type-row">
+                  <span>{{ item.item }}</span>
+                  <strong>{{ Math.round(item.percent * 100) }}%</strong>
+                </div>
+                <a-progress :percent="Math.round(item.percent * 100)" :show-info="false" />
               </div>
-
             </div>
           </a-card>
         </a-col>
@@ -299,8 +294,6 @@ for (let i = 0; i < 50; i += 1) {
   })
 }
 
-const DataSet = require('@antv/data-set')
-
 const sourceData = [
   { item: '家用电器', count: 32.2 },
   { item: '食用酒水', count: 21 },
@@ -310,20 +303,11 @@ const sourceData = [
   { item: '其他', count: 7.8 }
 ]
 
-const pieScale = [{
-  dataKey: 'percent',
-  min: 0,
-  formatter: '.0%'
-}]
-
-const dv = new DataSet.View().source(sourceData)
-dv.transform({
-  type: 'percent',
-  field: 'count',
-  dimension: 'item',
-  as: 'percent'
-})
-const pieData = dv.rows
+const totalSales = sourceData.reduce((sum, item) => sum + item.count, 0)
+const pieData = sourceData.map(item => ({
+  ...item,
+  percent: totalSales ? item.count / totalSales : 0
+}))
 
 export default {
   name: 'Analysis',
@@ -354,13 +338,8 @@ export default {
       barData2,
 
       //
-      pieScale,
       pieData,
-      sourceData,
-      pieStyle: {
-        stroke: '#fff',
-        lineWidth: 1
-      }
+      sourceData
     }
   },
   created () {
@@ -413,5 +392,17 @@ export default {
     position: absolute;
     right: 54px;
     bottom: 12px;
+  }
+  .sales-type-list {
+    padding: 8px 16px 24px;
+  }
+  .sales-type-item {
+    margin-bottom: 18px;
+  }
+  .sales-type-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    color: rgba(0, 0, 0, .65);
   }
 </style>

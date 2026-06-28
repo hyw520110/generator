@@ -31,9 +31,10 @@ public enum ComponentGroup {
     VIEW("视图技术", false, true, Component.VUE, Component.THYMELEAF),
 
     /**
-     * 认证授权组 - 安全框架，可选，可多选（不互斥）
+     * 认证授权组 - 安全框架，可选但最多选一个
      */
-    AUTH("认证授权", false, false, Component.SHIRO, Component.JWT),
+    SECURITY("安全框架", false, true, Component.SPRINGSECURITY, Component.SHIRO),
+    AUTH("认证技术", false, false, Component.JWT),
 
     /**
      * 注册中心组 - 微服务注册中心，可选但最多选一个
@@ -59,6 +60,11 @@ public enum ComponentGroup {
      * 流量防护组 - 可选但最多选一个（可扩展：Sentinel、Resilience4j...）
      */
     FLOW_PROTECT("流量防护", false, true, Component.SENTINEL),
+
+    /**
+     * 消息队列组 - 可选，可共存（明确不同用途）
+     */
+    MQ("消息队列", false, false, Component.KAFKA, Component.ROCKETMQ),
 
     /**
      * 接口文档组 - 可选但最多选一个（可扩展：Swagger3、SpringDoc...）
@@ -161,7 +167,7 @@ public enum ComponentGroup {
      */
     public static ValidationResult validate(Component[] selected) {
         ValidationResult result = new ValidationResult();
-        
+
         if (selected == null || selected.length == 0) {
             // 检查是否有必选组未选择
             for (ComponentGroup group : values()) {
@@ -205,45 +211,47 @@ public enum ComponentGroup {
         
         return result;
     }
-    
+
     /**
      * 验证依赖关系
      */
     private static void validateDependencies(Set<Component> selected, ValidationResult result) {
         // 依赖规则集中定义：组件 -> 依赖的组件列表
-        Map<Component, List<Component>> dependencies = Map.ofEntries(
-            // Dubbo 依赖 Zookeeper 或 Nacos
-            Map.entry(Component.DUBBO, List.of(Component.ZOOKEEPER, Component.NACOS)),
-            
-            // Vue 前端需要认证（Shiro 或 JWT）
-            Map.entry(Component.VUE, List.of(Component.SHIRO, Component.JWT)),
-            
-            // Spring Cloud 需要 Spring Boot
-            Map.entry(Component.SPRINGCLOUD, List.of(Component.SPRINGBOOT)),
-            
-            // Sentinel 需要 Spring Cloud 或 Dubbo
-            Map.entry(Component.SENTINEL, List.of(Component.SPRINGCLOUD, Component.DUBBO)),
-            
-            // RocketMQ 需要微服务框架（Spring Cloud 或 Dubbo）
-            Map.entry(Component.ROCKETMQ, List.of(Component.SPRINGCLOUD, Component.DUBBO)),
-            
-            // Redis 建议 Spring Boot 使用
-            Map.entry(Component.REDIS, List.of(Component.SPRINGBOOT)),
-            
-            // Skywalking 需要 Spring Boot 或 Spring Cloud
-            Map.entry(Component.SKYWALKING, List.of(Component.SPRINGBOOT, Component.SPRINGCLOUD)),
-            
-            // Zipkin 需要 Spring Boot 或 Spring Cloud
-            Map.entry(Component.ZIPKIN, List.of(Component.SPRINGBOOT, Component.SPRINGCLOUD)),
-            
-            // Thymeleaf 需要 Spring MVC 或 Spring Boot
-            Map.entry(Component.THYMELEAF, List.of(Component.SPRINGMVC, Component.SPRINGBOOT))
-        );
-        
+        Map<Component, List<Component>> dependencies = new java.util.HashMap<>();
+        // Dubbo 依赖 Zookeeper 或 Nacos
+        dependencies.put(Component.DUBBO, Arrays.asList(Component.ZOOKEEPER, Component.NACOS));
+
+        // Vue 前端需要认证（Spring Security 或 JWT）
+        dependencies.put(Component.VUE, Arrays.asList(Component.SPRINGSECURITY, Component.SHIRO, Component.JWT));
+
+        // Spring Cloud 需要 Spring Boot
+        dependencies.put(Component.SPRINGCLOUD, Arrays.asList(Component.SPRINGBOOT));
+
+        // Sentinel 需要 Spring Cloud 或 Dubbo
+        dependencies.put(Component.SENTINEL, Arrays.asList(Component.SPRINGCLOUD, Component.DUBBO));
+
+        // RocketMQ 需要微服务框架（Spring Cloud 或 Dubbo）
+        dependencies.put(Component.ROCKETMQ, Arrays.asList(Component.SPRINGBOOT, Component.SPRINGCLOUD, Component.DUBBO));
+
+        // Kafka 需要 Spring Boot
+        dependencies.put(Component.KAFKA, Arrays.asList(Component.SPRINGBOOT));
+
+        // Redis 建议 Spring Boot 使用
+        dependencies.put(Component.REDIS, Arrays.asList(Component.SPRINGBOOT));
+
+        // Skywalking 需要 Spring Boot 或 Spring Cloud
+        dependencies.put(Component.SKYWALKING, Arrays.asList(Component.SPRINGBOOT, Component.SPRINGCLOUD));
+
+        // Zipkin 需要 Spring Boot 或 Spring Cloud
+        dependencies.put(Component.ZIPKIN, Arrays.asList(Component.SPRINGBOOT, Component.SPRINGCLOUD));
+
+        // Thymeleaf 需要 Spring MVC 或 Spring Boot
+        dependencies.put(Component.THYMELEAF, Arrays.asList(Component.SPRINGMVC, Component.SPRINGBOOT));
+
         for (Map.Entry<Component, List<Component>> entry : dependencies.entrySet()) {
             Component component = entry.getKey();
             List<Component> requiredDeps = entry.getValue();
-            
+
             if (selected.contains(component)) {
                 // 检查是否至少有一个依赖被选中
                 boolean hasDependency = requiredDeps.stream()
@@ -273,9 +281,14 @@ public enum ComponentGroup {
      * 检查已废弃或不推荐的组合
      */
     private static void checkDeprecatedCombinations(Set<Component> selected, ValidationResult result) {
-        // 检查是否同时选择了 Shiro 和 JWT（虽然不互斥，但通常二选一）
+        // 检查是否同时选择了 Spring Security 和 JWT（虽然不互斥，但通常二选一）
         if (selected.contains(Component.SHIRO) && selected.contains(Component.JWT)) {
             result.addInfo("Shiro 和 JWT 都提供了认证功能，建议根据实际需求选择其一");
+        }
+
+        // 检查 MQ 是否共存且给出提示
+        if (selected.contains(Component.ROCKETMQ) && selected.contains(Component.KAFKA)) {
+            result.addInfo("同时选择了 RocketMQ 和 Kafka，请在开发时明确两者各自的用途");
         }
     }
 }

@@ -5,6 +5,16 @@ import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 import path from 'path'
 
+function vendorChunk (id) {
+  if (!id.includes('node_modules')) return undefined
+  if (id.includes('/vue/') || id.includes('/vue-router/') || id.includes('/pinia/') || id.includes('/vue-i18n/')) {
+    return 'vue'
+  }
+  if (id.includes('/@ant-design/icons-vue/')) return 'antd-icons'
+  if (id.includes('/ant-design-vue/')) return 'antd'
+  return 'vendor'
+}
+
 export default defineConfig({
   plugins: [
     vue(),
@@ -57,11 +67,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 2500,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vue: ['vue', 'vue-router', 'pinia', 'vue-i18n'],
-          antd: ['ant-design-vue'],
-          'antd-icons': ['@ant-design/icons-vue']
-        }
+        manualChunks: vendorChunk
       }
     }
   },

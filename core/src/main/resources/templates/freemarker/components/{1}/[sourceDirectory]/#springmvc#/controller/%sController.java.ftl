@@ -62,7 +62,7 @@ import ${controllerPackage!}.commons.${superControllerClass!};
 </#if>
 @RequestMapping("/${table.beanName!}")
 <#-- 复合主键的表不继承BaseController，因为BaseController不支持复合主键 -->
-public class ${controllerName!} <#if superControllerClass?? && table.primarykeyFields?size lte 1>extends ${superControllerClass!}<${serviceName!},${entityName!}></#if> {
+public class ${controllerName!} <#if superControllerClass?? && table.primarykeyFields?size == 1>extends ${superControllerClass!}<${serviceName!},${entityName!}></#if> {
 
 <#-- 判断是否需要重写方法：
    1. 主键不是 id
@@ -240,6 +240,7 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 	/*
 	 * 注意:数据更新操作一般必须是post请求
 	 */
+<#if table.primarykeyFields?size gt 0>
 	@Operation(summary = "${table.comment!}-删除", description = "${table.comment!}-删除")
     @GetMapping(value="/del/<#list table.primarykeyFields as field>${field.propertyName}<#if field?has_next>,</#if></#list>")
     public <#if THYMELEAF??>Result<?><#else> ModelAndView </#if> delete(<#list table.primarykeyFields as field>@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} <#if field?has_next>,</#if></#list>){
@@ -250,5 +251,6 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 		return new ModelAndView("redirect:/${table.beanName!}/list","flag",true);
 </#if>
 	}
+</#if>
 </#if>
 }

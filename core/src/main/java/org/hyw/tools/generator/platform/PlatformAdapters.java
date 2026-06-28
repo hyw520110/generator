@@ -39,7 +39,14 @@ public final class PlatformAdapters {
     }
 
     private static PlatformAdapter pick() {
-        int currentMajor = Runtime.version().feature();
+        String version = System.getProperty("java.version");
+        int currentMajor;
+        if (version.startsWith("1.")) {
+            currentMajor = Integer.parseInt(version.substring(2, 3));
+        } else {
+            int dot = version.indexOf(".");
+            currentMajor = Integer.parseInt(dot != -1 ? version.substring(0, dot) : version);
+        }
         PlatformAdapter best = null;
         for (PlatformAdapter candidate : ServiceLoader.load(PlatformAdapter.class)) {
             best = chooseBetter(best, candidate, currentMajor);

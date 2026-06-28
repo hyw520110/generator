@@ -8,9 +8,9 @@
 	<packaging>pom</packaging>
 	
 	<properties>
-		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>11</maven.compiler.target>
-		<maven.compiler.release>11</maven.compiler.release>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
+		<maven.compiler.release>8</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- 统一版本管理 -->
@@ -20,7 +20,7 @@
 		<snakeyaml.version>2.2</snakeyaml.version>
 		<lombok.version>1.18.44</lombok.version>
 		<freemarker.version>2.3.32</freemarker.version>
-		<caffeine.version>3.1.8</caffeine.version>
+		<caffeine.version>2.8.5</caffeine.version>
 		<commons-io.version>2.15.0</commons-io.version>
 		<commons-lang3.version>3.14.0</commons-lang3.version>
 		<commons-codec.version>1.16.0</commons-codec.version>
@@ -31,6 +31,9 @@
 		<druid.version>1.2.20</druid.version>
 		<junit.version>4.13.2</junit.version>
 		<mysql.version>8.0.33</mysql.version>
+		<postgresql.version>42.7.3</postgresql.version>
+		<oracle.version>21.13.0.0</oracle.version>
+		<mssql.version>12.6.1.jre8</mssql.version>
 		<exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
 		<fastjson.version>2.0.53</fastjson.version>
 		<jackson.version>2.15.2</jackson.version>
@@ -41,6 +44,8 @@
 		<maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
 		<maven-surefire-plugin.version>3.0.0-M8</maven-surefire-plugin.version>
 		<versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
+		<maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
+		<tool.runtime.suffix></tool.runtime.suffix>
 
 	</properties>
 	
@@ -82,9 +87,27 @@
 			</dependency>
 			<!-- mysql -->
 			<dependency>
-				<groupId>mysql</groupId>
-				<artifactId>mysql-connector-java</artifactId>
+				<groupId>com.mysql</groupId>
+				<artifactId>mysql-connector-j</artifactId>
 				<version>${mysql.version}</version>
+			</dependency>
+			<!-- postgresql -->
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${postgresql.version}</version>
+			</dependency>
+			<!-- oracle -->
+			<dependency>
+				<groupId>com.oracle.database.jdbc</groupId>
+				<artifactId>ojdbc8</artifactId>
+				<version>${oracle.version}</version>
+			</dependency>
+			<!-- sqlserver -->
+			<dependency>
+				<groupId>com.microsoft.sqlserver</groupId>
+				<artifactId>mssql-jdbc</artifactId>
+				<version>${mssql.version}</version>
 			</dependency>
 			<!-- 数据库连接池 -->
 			<dependency>
@@ -250,6 +273,11 @@
 					<artifactId>exec-maven-plugin</artifactId>
 					<version>${exec-maven-plugin.version}</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>${maven-antrun-plugin.version}</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -259,4 +287,37 @@
 		<module>./core</module>
 		<module>./web</module>
  	</modules>
+
+	<profiles>
+		<!--
+			生成器自身默认仍按 Java 8 + Spring Boot 2 构建。
+			显式启用该 profile 时，产物名带 boot2 后缀，便于和 Boot3 包并行发布。
+		-->
+		<profile>
+			<id>tool-boot2</id>
+			<properties>
+				<maven.compiler.source>8</maven.compiler.source>
+				<maven.compiler.target>8</maven.compiler.target>
+				<maven.compiler.release>8</maven.compiler.release>
+				<spring-boot.version>2.7.18</spring-boot.version>
+				<tool.runtime.suffix>-boot2</tool.runtime.suffix>
+			</properties>
+		</profile>
+		<!--
+			实验性 Boot3/Jakarta 运行包：
+			源码仍保持 Java 8 + javax 写法，web 模块在编译后用 Eclipse Transformer
+			把 class/resource 转换为 jakarta，再使用 Spring Boot 3 依赖重新打包。
+		-->
+		<profile>
+			<id>tool-boot3</id>
+			<properties>
+				<maven.compiler.source>17</maven.compiler.source>
+				<maven.compiler.target>17</maven.compiler.target>
+				<maven.compiler.release>17</maven.compiler.release>
+				<spring-boot.version>3.2.12</spring-boot.version>
+				<caffeine.version>3.1.8</caffeine.version>
+				<tool.runtime.suffix>-boot3</tool.runtime.suffix>
+			</properties>
+		</profile>
+	</profiles>
 </project>

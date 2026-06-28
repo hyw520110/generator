@@ -15,7 +15,6 @@
   "dependencies": {
     "@ant-design-vue/pro-layout": "^3.2.5",
     "@ant-design/colors": "^7.0.0",
-    "@antv/data-set": "^0.11.8",
     "@antv/g6": "^4.8.24",
     "ant-design-vue": "^4.1.2",
     "axios": "^1.6.7",
@@ -28,7 +27,6 @@
     "nprogress": "^0.2.0",
     "pinia": "^2.1.7",
     "store": "^2.0.12",
-    "viser-vue": "^2.4.8",
     "vue": "^3.4.21",
     "vue-clipboard3": "^2.0.0",
     "vue-i18n": "^9.10.1",
@@ -38,13 +36,13 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
-    "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "@vitejs/plugin-vue-jsx": "^5.1.6",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.22.0",
     "less": "^4.2.0",
     "unplugin-vue-components": "^0.26.0",
-    "vite": "^5.1.4"
+    "vite": "^8.1.0"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

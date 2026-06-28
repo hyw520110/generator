@@ -92,7 +92,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>${project.name}</finalName>
+		<finalName>${project.name}${tool.runtime.suffix}</finalName>
 		<resources>
 			<resource>
 				<directory>${project.basedir}</directory>
@@ -222,4 +222,52 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>tool-boot3</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>generate-jakarta-sources</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<delete dir="${project.build.directory}/generated-sources/jakarta" />
+										<mkdir dir="${project.build.directory}/generated-sources/jakarta" />
+										<copy todir="${project.build.directory}/generated-sources/jakarta">
+											<fileset dir="${project.basedir}/src/main/java" />
+										</copy>
+										<replace dir="${project.build.directory}/generated-sources/jakarta"
+												token="javax.servlet"
+												value="jakarta.servlet" />
+										<replace dir="${project.build.directory}/generated-sources/jakarta"
+												token="javax.annotation"
+												value="jakarta.annotation" />
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<release>${maven.compiler.release}</release>
+							<encoding>${project.build.sourceEncoding}</encoding>
+							<compileSourceRoots>
+								<compileSourceRoot>${project.build.directory}/generated-sources/jakarta</compileSourceRoot>
+							</compileSourceRoots>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

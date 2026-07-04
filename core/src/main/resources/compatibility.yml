@@ -126,3 +126,54 @@ profiles:
     extends: java17-boot3
     name: Java 21 / Spring Boot 3
     release: 21
+
+  # Linghang 中台项目专用档位：与 linghang-platform 主工程版本口径保持一致。
+  # 需在 generator.yaml 中显式配置 global.platformId=linghang-java21-boot3 才会启用。
+  - java: 21
+    id: linghang-java21-boot3
+    defaultProfile: false
+    extends: java21-boot3
+    name: Linghang Platform / Java 21 / Spring Boot 3.2
+    templateFamily: boot3
+    namespace: jakarta
+    release: 21
+    versions:
+      SPRINGBOOT:
+        springboot_version: 3.2.4
+        lombok_version: 1.18.30
+      SPRINGCLOUD:
+        springcloud_version: 2023.0.1
+        springcloud_alibaba_version: 2023.0.1.0
+        spring_cloud_zookeeper_version: 4.1.0
+      DUBBO:
+        dubbo_version: 3.3.2
+      SENTINEL:
+        sentinel_version: 1.8.8
+      JWT:
+        jwt_version: 0.12.5
+      MYBATIS:
+        mybatis_spring_boot_version: 3.0.3
+        mybatis_plus_version: 3.5.5
+        mybatis_plus_starter_artifact: mybatis-plus-spring-boot3-starter
+        pagehelper_version: 2.1.0
+        druid_version: 1.2.27
+        mysql_connector_version: 8.0.33
+        postgresql_version: 42.7.3
+        oracle_version: 21.13.0.0
+        mssql_version: 12.6.1.jre11
+      ROCKETMQ:
+        spring_boot_starter_rocketmq_version: 2.3.0
+      SWAGGER2:
+        api_doc_family: openapi3
+        knife4j_version: 4.5.0
+        knife4j_starter_artifact: knife4j-openapi3-jakarta-spring-boot-starter
+    allowOverride:
+      SPRINGBOOT.springboot_version: 3.2.*
+      SPRINGCLOUD.springcloud_version: 2023.0.*
+      SPRINGCLOUD.springcloud_alibaba_version: 2023.0.*
+      MYBATIS.mybatis_plus_version: 3.5.*
+      MYBATIS.druid_version: 1.2.*
+      MYBATIS.mysql_connector_version: 8.0.*
+      DUBBO.dubbo_version: 3.3.*
+      SENTINEL.sentinel_version: 1.8.*
+      ROCKETMQ.spring_boot_starter_rocketmq_version: 2.3.*

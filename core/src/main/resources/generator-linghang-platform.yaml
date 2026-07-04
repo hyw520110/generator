@@ -1,0 +1,93 @@
+# Linghang 中台工程生成样例配置。
+# generator 是独立参考项目，本文件只作为生成器侧 preset；实际数据库连接、输出目录和表范围请按现场环境调整。
+
+dataSource:
+  driverClassName: com.mysql.cj.jdbc.Driver
+  url: jdbc:mysql://127.0.0.1:3306/linghang_platform?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+  username: root
+  pwd: ""
+
+global:
+  outputDir: /tmp/linghang-generator-output/domain-service
+  description: Linghang 中台领域服务骨架
+  delOutputDir: false
+  fileOverride: false
+  openDir: false
+  rootPackage: com.linghang
+  projectName: platform
+  modules: ['api','service']
+  include:
+  exclude:
+  tablePrefix: ['tb_','sys_']
+  components: [MYBATIS,SPRINGBOOT,SPRINGCLOUD,DUBBO,NACOS,REDIS,ROCKETMQ,SENTINEL,OPENAPI,SWAGGER2,SPRINGSECURITY,JWT]
+  features: [LINGHANG,TENANT,VALIDATION,AUDITLOG,IDEMPOTENCY,UNITTEST,CICD,DEVOPS,OAUTH2]
+  security: SPRING_SECURITY_OAUTH2
+  projectBuilder: MAVEN
+  version: 1.0.0-SNAPSHOT
+  author: linghang
+  copyright: Linghang Platform
+  javaVersion: 21
+  platformId: linghang-java21-boot3
+  separators: [_,-]
+  capitalMode: false
+  naming: TOCAMEL
+  columnConstant: false
+  encoding: UTF-8
+  templateDir: /templates
+  sourceDirectory: src/main/java
+  resourceDirectory: src/main/resources
+  testSourceDirectory: src/test/java
+  testResourceDirectory: src/test/resources
+  templateEngine: freemarker
+
+components:
+  DUBBO:
+    dubbo_registry: nacos://localhost:8848
+    dubbo_port: 20880
+    dubbo_protocol: dubbo
+  NACOS:
+    server_addr: localhost:8848
+    namespace: ''
+    group: DEFAULT_GROUP
+    username: nacos
+    password: nacos
+  ROCKETMQ:
+    name_server_address: localhost:9876
+  SPRINGBOOT:
+    server_port: 8080
+    ssl: false
+    write_null_value: true
+  MYBATIS:
+    sqlType: plus
+    superMapperClass: mybatis-plus
+    superEntityClass: com.linghang.platform.core.entity.BaseEntity
+    superServiceClass: com.baomidou.mybatisplus.extension.service.IService
+    superServiceImplClass: com.baomidou.mybatisplus.extension.service.impl.ServiceImpl
+    enableCache: false
+    baseResultMap: true
+    columns: true
+    insert: true
+    update: true
+    findById: true
+    findOne: true
+    count: true
+    findPage: true
+    deleteById: true
+    findAll: true
+  SPRINGMVC:
+    controllerName: '%sController'
+    controllerPackage: controller
+    rest: true
+    crud: false
+    json_type: jackson
+    jsonp: false
+  SWAGGER2:
+    title: "Linghang Platform API"
+    desc: "Linghang 中台接口契约"
+  SENTINEL:
+    dashboard.server: localhost:7030
+    dashboard.port: 8719
+    api:
+      port: 8719
+    app:
+      type: 1

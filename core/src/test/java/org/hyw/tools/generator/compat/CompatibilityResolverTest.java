@@ -56,6 +56,26 @@ public class CompatibilityResolverTest {
 	}
 
 	@Test
+	public void shouldApplyLinghangJava21Boot3ProfileById() {
+		GlobalConf global = new GlobalConf();
+		global.setJavaVersion("21");
+		global.setPlatformId("linghang-java21-boot3");
+		Map<Component, Map<String, Object>> components = new HashMap<>();
+
+		ResolvedPlatform resolved = new CompatibilityResolver().apply(global, components, null);
+
+		assertEquals("linghang-java21-boot3", resolved.getId());
+		assertEquals("boot3", global.getTemplateFamily());
+		assertEquals("jakarta", global.getNamespace());
+		assertEquals("21", global.getBytecodeRelease());
+		assertEquals("3.2.4", components.get(Component.SPRINGBOOT).get("springboot_version"));
+		assertEquals("2023.0.1", components.get(Component.SPRINGCLOUD).get("springcloud_version"));
+		assertEquals("3.3.2", components.get(Component.DUBBO).get("dubbo_version"));
+		assertEquals("3.5.5", components.get(Component.MYBATIS).get("mybatis_plus_version"));
+		assertEquals("1.2.27", components.get(Component.MYBATIS).get("druid_version"));
+	}
+
+	@Test
 	public void shouldAllowWhitelistedPatchOverride() {
 		GlobalConf global = new GlobalConf();
 		global.setJavaVersion("17");

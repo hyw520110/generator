@@ -29,7 +29,9 @@ public enum Feature {
     MULTICACHE,
     XSS,
     WORKFLOW,
-    JOB;
+    JOB,
+    // Linghang 中台工程约束与模板
+    LINGHANG;
 
     private String alias;
 

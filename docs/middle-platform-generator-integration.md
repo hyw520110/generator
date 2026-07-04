@@ -1,15 +1,15 @@
-# Linghang Platform Generator Integration
+# Middle Platform Generator Integration
 
-`linghang-platform` 主仓库不直接纳入 generator 参考项目。本文件记录 generator 侧已经集成的中台适配能力。
+本文件记录 generator 侧已经集成的通用中台适配能力，不绑定具体项目品牌、应用名或仓库名。
 
 ## 已集成
 
 | 能力 | 落地点 | 用法 |
 |------|--------|------|
-| 中台版本档 | `core/src/main/resources/compatibility.yml` | `global.platformId: linghang-java21-boot3` |
-| 中台配置样例 | `core/src/main/resources/generator-linghang-platform.yaml` | 复制为实际运行配置后调整数据源、输出目录和表范围 |
-| 中台生成约束 Feature | `Feature.LINGHANG` | 在 `global.features` 中加入 `LINGHANG` |
-| 生成后检查清单 | `templates/freemarker/modules/{1}/#linghang#/LINGHANG_GENERATOR_CONVENTIONS.md.ftl` | 生成服务模块时输出中台工程约束清单 |
+| 中台版本档 | `core/src/main/resources/compatibility.yml` | `global.platformId: middle-platform-java21-boot3` |
+| 中台配置样例 | `core/src/main/resources/generator-middle-platform.yaml` | 复制为实际运行配置后调整数据源、输出目录和表范围 |
+| 中台生成约束 Feature | `Feature.MIDDLE_PLATFORM` | 在 `global.features` 中加入 `MIDDLE_PLATFORM` |
+| 生成后检查清单 | `templates/freemarker/modules/{1}/#middle_platform#/MIDDLE_PLATFORM_GENERATOR_CONVENTIONS.md.ftl` | 生成服务模块时输出中台工程约束清单 |
 
 ## 当前适合生成的内容
 

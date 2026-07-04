@@ -30,8 +30,8 @@ public enum Feature {
     XSS,
     WORKFLOW,
     JOB,
-    // Linghang 中台工程约束与模板
-    LINGHANG;
+    // 通用中台工程约束与模板
+    MIDDLE_PLATFORM;
 
     private String alias;
 

@@ -1,6 +1,6 @@
-# Linghang 中台生成约束
+# 通用中台生成约束
 
-> 本文件由 generator 的 `LINGHANG` Feature 生成，用于提醒研发在生成后对照中台工程规范做二次收口。
+> 本文件由 generator 的 `MIDDLE_PLATFORM` Feature 生成，用于提醒研发在生成后对照中台工程规范做二次收口。
 
 ## 工程口径
 

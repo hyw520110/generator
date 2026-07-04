@@ -56,15 +56,15 @@ public class CompatibilityResolverTest {
 	}
 
 	@Test
-	public void shouldApplyLinghangJava21Boot3ProfileById() {
+	public void shouldApplyMiddlePlatformJava21Boot3ProfileById() {
 		GlobalConf global = new GlobalConf();
 		global.setJavaVersion("21");
-		global.setPlatformId("linghang-java21-boot3");
+		global.setPlatformId("middle-platform-java21-boot3");
 		Map<Component, Map<String, Object>> components = new HashMap<>();
 
 		ResolvedPlatform resolved = new CompatibilityResolver().apply(global, components, null);
 
-		assertEquals("linghang-java21-boot3", resolved.getId());
+		assertEquals("middle-platform-java21-boot3", resolved.getId());
 		assertEquals("boot3", global.getTemplateFamily());
 		assertEquals("jakarta", global.getNamespace());
 		assertEquals("21", global.getBytecodeRelease());

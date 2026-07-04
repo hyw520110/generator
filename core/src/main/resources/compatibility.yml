@@ -127,13 +127,13 @@ profiles:
     name: Java 21 / Spring Boot 3
     release: 21
 
-  # 通用中台项目档位：适用于 Java 21 + Spring Boot 3.2 + Dubbo 3.3 的中台工程。
-  # 需在 generator.yaml 中显式配置 global.platformId=middle-platform-java21-boot3 才会启用。
+  # Java 21 + Spring Boot 3.2 + Dubbo 3.3 通用工程档位。
+  # 需在 generator.yaml 中显式配置 global.platformId=java21-boot3-dubbo 才会启用。
   - java: 21
-    id: middle-platform-java21-boot3
+    id: java21-boot3-dubbo
     defaultProfile: false
     extends: java21-boot3
-    name: Middle Platform / Java 21 / Spring Boot 3.2
+    name: Java 21 / Spring Boot 3.2 / Dubbo 3.3
     templateFamily: boot3
     namespace: jakarta
     release: 21

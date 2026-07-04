@@ -1,15 +1,15 @@
-# Middle Platform Generator Integration
+# Java 21 Boot 3 Dubbo Generator Preset
 
-本文件记录 generator 侧已经集成的通用中台适配能力，不绑定具体项目品牌、应用名或仓库名。
+本文件记录 generator 侧已经集成的通用 Java 21 + Spring Boot 3 + Dubbo 工程预设，不绑定具体项目品牌、应用名或仓库名。
 
 ## 已集成
 
 | 能力 | 落地点 | 用法 |
 |------|--------|------|
-| 中台版本档 | `core/src/main/resources/compatibility.yml` | `global.platformId: middle-platform-java21-boot3` |
-| 中台配置样例 | `core/src/main/resources/generator-middle-platform.yaml` | 复制为实际运行配置后调整数据源、输出目录和表范围 |
-| 中台生成约束 Feature | `Feature.MIDDLE_PLATFORM` | 在 `global.features` 中加入 `MIDDLE_PLATFORM` |
-| 生成后检查清单 | `templates/freemarker/modules/{1}/#middle_platform#/MIDDLE_PLATFORM_GENERATOR_CONVENTIONS.md.ftl` | 生成服务模块时输出中台工程约束清单 |
+| 版本档 | `core/src/main/resources/compatibility.yml` | `global.platformId: java21-boot3-dubbo` |
+| 配置样例 | `core/src/main/resources/generator-java21-boot3-dubbo.yaml` | 复制为实际运行配置后调整数据源、输出目录和表范围 |
+| 工程约束 Feature | `Feature.ARCHITECTURE_CONVENTIONS` | 在 `global.features` 中加入 `ARCHITECTURE_CONVENTIONS` |
+| 生成后检查清单 | `templates/freemarker/modules/{1}/#architecture_conventions#/ARCHITECTURE_GENERATOR_CONVENTIONS.md.ftl` | 生成服务模块时输出工程约束清单 |
 
 ## 当前适合生成的内容
 

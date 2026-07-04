@@ -1,15 +1,15 @@
-# 通用中台工程生成样例配置。
+# Java 21 + Spring Boot 3 + Dubbo 通用工程生成样例配置。
 # 本文件只作为生成器侧 preset；实际数据库连接、输出目录和表范围请按现场环境调整。
 
 dataSource:
   driverClassName: com.mysql.cj.jdbc.Driver
-  url: jdbc:mysql://127.0.0.1:3306/middle_platform?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+  url: jdbc:mysql://127.0.0.1:3306/app_db?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
   username: root
   pwd: ""
 
 global:
-  outputDir: /tmp/middle-platform-generator-output/domain-service
-  description: 通用中台领域服务骨架
+  outputDir: /tmp/java21-boot3-dubbo-generator-output/domain-service
+  description: Java 21 Dubbo 服务工程骨架
   delOutputDir: false
   fileOverride: false
   openDir: false
@@ -20,14 +20,14 @@ global:
   exclude:
   tablePrefix: ['tb_','sys_']
   components: [MYBATIS,SPRINGBOOT,SPRINGCLOUD,DUBBO,NACOS,REDIS,ROCKETMQ,SENTINEL,OPENAPI,SWAGGER2,SPRINGSECURITY,JWT]
-  features: [MIDDLE_PLATFORM,TENANT,VALIDATION,AUDITLOG,IDEMPOTENCY,UNITTEST,CICD,DEVOPS,OAUTH2]
+  features: [ARCHITECTURE_CONVENTIONS,TENANT,VALIDATION,AUDITLOG,IDEMPOTENCY,UNITTEST,CICD,DEVOPS,OAUTH2]
   security: SPRING_SECURITY_OAUTH2
   projectBuilder: MAVEN
   version: 1.0.0-SNAPSHOT
   author: platform-team
-  copyright: Middle Platform
+  copyright: Platform Team
   javaVersion: 21
-  platformId: middle-platform-java21-boot3
+  platformId: java21-boot3-dubbo
   separators: [_,-]
   capitalMode: false
   naming: TOCAMEL
@@ -82,8 +82,8 @@ components:
     json_type: jackson
     jsonp: false
   SWAGGER2:
-    title: "Middle Platform API"
-    desc: "通用中台接口契约"
+    title: "Java 21 Dubbo API"
+    desc: "通用服务接口契约"
   SENTINEL:
     dashboard.server: localhost:7030
     dashboard.port: 8719

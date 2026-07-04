@@ -30,8 +30,8 @@ public enum Feature {
     XSS,
     WORKFLOW,
     JOB,
-    // 通用中台工程约束与模板
-    MIDDLE_PLATFORM;
+    // 通用工程架构约束与检查清单
+    ARCHITECTURE_CONVENTIONS;
 
     private String alias;
 

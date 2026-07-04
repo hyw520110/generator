@@ -1,6 +1,6 @@
-# 通用中台生成约束
+# 通用工程生成约束
 
-> 本文件由 generator 的 `MIDDLE_PLATFORM` Feature 生成，用于提醒研发在生成后对照中台工程规范做二次收口。
+> 本文件由 generator 的 `ARCHITECTURE_CONVENTIONS` Feature 生成，用于提醒研发在生成后对照工程规范做二次收口。
 
 ## 工程口径
 
@@ -9,7 +9,7 @@
 - 当前模块：`${moduleName!}`。
 - 多模块建议：领域服务优先使用 `api` + `service`，BFF 聚合层单独在应用服务中落地。
 
-## 必须保留的中台约束
+## 必须保留的工程约束
 
 - Dubbo 对外接口命名为 `*Service`，实现类命名为 `*ServiceImpl`。
 - 领域服务实现类必须同时具备 `@DubboService` 和 `@Service`。

@@ -8,13 +8,13 @@ dataSource:
   pwd: ""
 
 global:
-  outputDir: /tmp/java21-boot3-dubbo-generator-output/domain-service
+  outputDir: /tmp/java21-boot3-dubbo-generator-output/sample-service
   description: Java 21 Dubbo 服务工程骨架
   delOutputDir: false
   fileOverride: false
   openDir: false
-  rootPackage: com.company.platform
-  projectName: middle
+  rootPackage: com.example.service
+  projectName: sample
   modules: ['api','service']
   include:
   exclude:
@@ -24,8 +24,8 @@ global:
   security: SPRING_SECURITY_OAUTH2
   projectBuilder: MAVEN
   version: 1.0.0-SNAPSHOT
-  author: platform-team
-  copyright: Platform Team
+  author: dev-team
+  copyright: Dev Team
   javaVersion: 21
   platformId: java21-boot3-dubbo
   separators: [_,-]

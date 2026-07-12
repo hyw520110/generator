@@ -2,36 +2,25 @@ package org.hyw.tools.generator;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.conf.GlobalConf;
-import org.hyw.tools.generator.conf.KeyPair;
 import org.hyw.tools.generator.conf.dao.DataSourceConf;
-import org.hyw.tools.generator.conf.dao.QuerySQL;
-import org.hyw.tools.generator.conf.db.TabField;
+import org.hyw.tools.generator.metadata.MetadataReader;
+import org.hyw.tools.generator.metadata.MetadataReaderFactory;
+import org.hyw.tools.generator.metadata.TableFilter;
 import org.hyw.tools.generator.conf.db.Table;
 import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
-import org.hyw.tools.generator.exception.GeneratorException;
-import org.hyw.tools.generator.enums.FieldType;
 import org.hyw.tools.generator.enums.Naming;
-import org.hyw.tools.generator.enums.db.DBType;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,11 +60,20 @@ public abstract class AbstractGenerator extends BaseBean {
 			.recordStats()
 			.build();
 
+	private List<Table> mockedTables = null;
+
+	public void setTablesForTest(List<Table> tables) {
+		this.mockedTables = tables;
+	}
+
 	public List<Table> getTables() {
 		return getTables(false);
 	}
 
 	public List<Table> getTables(boolean all) {
+		if (mockedTables != null) {
+			return mockedTables;
+		}
 		logger.debug("获取表列表，全部表: {}, 数据库: {}", all, dataSource.getDbName());
 		// 缓存开关：未启用时直接走 DB，避免表结构变更后读到旧元数据
 		if (global == null || !global.isEnableCache()) {
@@ -121,56 +119,23 @@ public abstract class AbstractGenerator extends BaseBean {
 	}
 	
 	private List<Table> queryTablesFromDatabase(boolean all) {
-		ArrayList<Table> tables = new ArrayList<>();
-		QuerySQL sql = dataSource.getQuerySQL();
-		String dbName = dataSource.getDbName();
-		logger.debug("开始从数据库读取表元数据... 数据库: {}, 包含表: {}, 排除表: {}", 
-				dbName, 
-				all ? "ALL" : Arrays.toString(global.getInclude()),
-				all ? "NONE" : Arrays.toString(global.getExclude()));
+		logger.debug("开始从数据源读取表元数据... 来源类型: {}", dataSource.getSourceType());
 		
-		try (Connection con = dataSource.getConnection(dbName);
-			 PreparedStatement pst = con.prepareStatement(sql.getTabComments());
-			 Statement st = con.createStatement()) {
-			
-			try (ResultSet results = pst.executeQuery()) {
-				while (results.next()) {
-					String tabName = results.getString(sql.getTbName());
-					if (StringUtils.isEmpty(tabName)) {
-						logger.warn("数据库表名为空，include={}, 终止读取", Arrays.toString(global.getInclude()));
-						break;
-					}
-					if (!all && (!match(global.getInclude(), tabName, true)
-							|| match(global.getExclude(), tabName, false))) {
-						continue;
-					}
-					Table table = new Table(tabName, results.getString(sql.getTbComment()));
-					table.setBeanName(StringUtils.capitalFirst(processName(tabName)));
-					table.setCreateTime(results.getString(sql.getTbCreateTime()));
-					tables.add(this.setTableFields(table, st));
-				}
-			}
-			logger.debug("从数据库读取表元数据完成，共读取 {} 个表", tables.size());
-		} catch (Exception e) {
-			logger.error("查询数据库表失败: {}", dataSource.getDbName(), e);
-			throw new GeneratorException("查询数据库表失败", e);
+		MetadataReader metadataReader = MetadataReaderFactory.create(dataSource, global);
+		
+		if (all) {
+			return metadataReader.readAllTables();
+		} else {
+			TableFilter filter = new TableFilter();
+			filter.setInclude(global.getInclude());
+			filter.setExclude(global.getExclude());
+			filter.setMatchMode(global.isMatchMode());
+			filter.setTablePrefix(global.getTablePrefix());
+			return metadataReader.readTables(filter);
 		}
-		
-		return tables;
 	}
 
-	private  boolean match(String[] array,String tabName,boolean bDefault) {
-		if (array == null || array.length == 0) {
-			return bDefault;
-		}
-		for (String item : array) {
-			if(StringUtils.isBlank(item)||tabName.equalsIgnoreCase(item)||(global.isMatchMode()&&tabName.startsWith(item))) {
-				return true;
-			}
-		}
-		return false;
-	}
-	public List<String> getAllTableNames() {
+public List<String> getAllTableNames() {
 		logger.debug("获取所有表名");
 		List<String> list = new ArrayList<>();
 		try {
@@ -186,49 +151,7 @@ public abstract class AbstractGenerator extends BaseBean {
 		return list;
 	}
 
-	/**
-	 * 设置表字段信息
-	 * 
-	 * @param table 表信息
-	 * @param st    数据库Statement对象
-	 * @return
-	 * @throws SQLException
-	 */
-	private Table setTableFields(Table table, Statement st) throws SQLException {
-//		logger.debug("开始读取表字段信息: {}", table.getName());
-		QuerySQL sql = dataSource.getQuerySQL();
-		try (ResultSet results = st.executeQuery(String.format(sql.getTbFields(), table.getName()))) {
-			while (results.next()) {
-				TabField field = new TabField(results.getString(sql.getFieldName()),
-						results.getString(sql.getFieldType()));
-				field.setComment(results.getString(sql.getFieldComment()));
-				// 转换字段类型
-				KeyPair<String, FieldType> pair = dataSource.getTypeConvertor().convert(field.getType());
-				field.setJdbcType(pair.getKey());
-				field.setFieldType(pair.getValue());
-				// 处理字段名
-				field.setPropertyName(processName(field.getName()));
-				String key = results.getString(sql.getFieldKeyValue().getKey());
-				// 是否主键
-				field.setPrimarykey(StringUtils.equals(key, sql.getFieldKeyValue().getValue()));
-				// 其他数据库的字段是否为空以及自增 处理
-				if (DBType.MYSQL == this.dataSource.getDBType()) {
-					field.setNullAble(BooleanUtils.toBoolean(results.getString(sql.getFieldNull())));
-					field.setIdentity(StringUtils.equals(results.getString(sql.getExtraKeyValue().getKey()),
-							sql.getExtraKeyValue().getValue()));
-				}
-				table.addField(field);
-				// 字段名处理后是否重名
-				if (table.containField(field)) {
-					field.setPropertyName(StringUtils.toCamelCase(field.getName(), global.getSeparators(), false));
-				}
-			}
-//			logger.debug("读取表字段信息完成: {}, 字段数量: {}", table.getName(), table.getFields().size());
-		} catch (SQLException e) {
-			logger.error("SQL Exception：{}", e.getMessage());
-		}
-		return table;
-	}
+
 
 	/**
 	 * 处理字段名称

@@ -129,9 +129,9 @@ components:
     zipkin_version: '1.0.2'
     zipkin_baseUrl: http://zipkin-server:9411
   MYBATIS: 
-    # TODO mapperType改为sqlType: xml(XML mapper文件) / annotation(SQL注解)
+    # TODO sqlType改为sqlType: xml(XML mapper文件) / annotation(SQL注解)
     #sqlType: xml
-    mapperType: plus
+    sqlType: plus
     #版本号配置
     mybatis_spring_boot_version: 3.0.3
     mybatis_plus_version: 3.5.8

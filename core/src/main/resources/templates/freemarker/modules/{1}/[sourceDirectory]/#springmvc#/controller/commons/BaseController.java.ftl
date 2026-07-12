@@ -1,11 +1,11 @@
-<#if StringUtils.indexOf("${superControllerClass}", '.')==-1>
+<#if superControllerClass?has_content && StringUtils.indexOf(superControllerClass, '.')==-1>
 package ${controllerPackage!}.commons;
 
 import java.io.Serializable;
 import java.util.List;
 <#if springboot_version?has_content>
 import org.springframework.web.bind.annotation.RestController;
-<#if mapperType == "plus">
+<#if sqlType == "plus">
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -24,7 +24,7 @@ import ${entityPackage}.BaseEntity;
 <#else>
 // No entityPackage found
 </#if>
-<#if global.modules?? && global.modules?size gt 1>
+<#if global.modules?? && global.modules?size gt 1 && api_servicePackage?? && api_servicePackage != ''>
 <#if jpa?? && jpa>
 import ${api_servicePackage!}.BaseJpaService;
 <#else>
@@ -38,7 +38,7 @@ import ${servicePackage!}.BaseService;
 </#if>
 </#if>
 <#if VUE>
-<#if global.modules?? && global.modules?size gt 1>
+<#if global.modules?? && global.modules?size gt 1 && api_dtoPackage?? && api_dtoPackage != ''>
 import ${api_dtoPackage!}.Result;
 import ${api_dtoPackage!}.PageResult;
 <#else>
@@ -107,7 +107,7 @@ public class BaseController<BizService extends BaseService, Entity extends BaseE
 	    return new Result<>();
 	}
 	
-<#if mapperType == "plus">
+<#if sqlType == "plus">
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	@Operation(summary = "获取列表", description = "获取列表")
 	@ResponseBody

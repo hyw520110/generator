@@ -17,7 +17,10 @@
 					<artifactId>spring-boot-maven-plugin</artifactId>
 					<version><#noparse>${spring-boot.version}</#noparse></version>
 					<configuration>
+						<mainClass><#noparse>${mainClass}</#noparse></mainClass>
+					<#if (springBootMajor!'3')?string != '4'>
 						<fork>true</fork>
+					</#if>
 					</configuration>
 			</plugin>
 </#if>

@@ -2,12 +2,15 @@ package ${implPackage};
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import ${annotationPackage}.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
@@ -27,8 +30,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 @Service
 public class TokenServiceImpl implements TokenService {
 	private static final Logger logger = LoggerFactory.getLogger(TokenServiceImpl.class);
-    //TODO redis
-    private Map<String, Object> cacheMap=new HashMap<String, Object>();
+    
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 #set($express="jwt.token.redis.key:user_%s_token_%s")
     @Value("${${express}}")
     private String tokenRedisKey;
@@ -72,19 +76,18 @@ public class TokenServiceImpl implements TokenService {
         tokenVo.setType(type);
 
         String token = createToken(JSON.toJSONString(tokenVo));
-        //TODO redis
-        cacheMap.put(getRedisKey(userId, type), token);
+        stringRedisTemplate.opsForValue().set(getRedisKey(userId, type), token, timeout, TimeUnit.MILLISECONDS);
         return token;
     }
 
     @Override
     public void clearToken(String userId, String type) {
-        cacheMap.remove(getRedisKey(userId, type));
+        stringRedisTemplate.delete(getRedisKey(userId, type));
     }
 
     @Override
     public String getCacheToken(String userId, String type) {
-        return (String) cacheMap.get(getRedisKey(userId, type));
+        return stringRedisTemplate.opsForValue().get(getRedisKey(userId, type));
     }
 
     @Override

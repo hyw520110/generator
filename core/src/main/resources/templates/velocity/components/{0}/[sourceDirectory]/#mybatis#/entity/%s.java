@@ -55,7 +55,7 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
     
 #end    
 #end
-## TODO  外键关联配置 引用对象
+## 外键关联配置与引用对象机制说明：
 ##
 ## 使用说明：
 ## 在此处添加外键关联的对象属性，用于关联查询和级联操作

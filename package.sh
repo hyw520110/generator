@@ -837,12 +837,10 @@ execute_build() {
     # 执行命令
     # 注意：mvn 可能会产生大量输出，tee 保证用户能看到实时进度
     CMD_ARRAY=($maven_command)
-    "${CMD_ARRAY[@]}" 2>&1 | tee "$BUILD_LOG_FILE"
-    
-    # 获取 pipe 的返回状态 (这里依靠 set -e -o pipefail)
-    # 但由于 set -e，如果命令失败脚本会直接退出到 cleanup
-    # 我们想要手动处理错误，所以暂时关闭 set -e
     set +e
+    "${CMD_ARRAY[@]}" 2>&1 | tee "$BUILD_LOG_FILE"
+
+    # 必须紧跟管道读取；执行任何其他命令都会覆盖 PIPESTATUS。
     maven_exit_code=${PIPESTATUS[0]}
     set -e
 

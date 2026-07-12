@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  cmd 模块复用 core 的 logback-spring.xml；
-  仅做差异化覆盖：cmd 默认开启 generator DEBUG 级别（便于排查命令行执行问题）。
-  通过 -Dlog.generator.level=INFO 可还原为安静模式。
--->
 <configuration scan="false" debug="false">
-    <include resource="logback-spring.xml"/>
-    <logger name="org.hyw.tools.generator" level="${log.generator.level:-DEBUG}" />
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%-15d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Generator 自身日志（默认 INFO，调试时通过 -Dlog.generator.level=DEBUG 切换） -->
+    <logger name="org.hyw.tools.generator" level="${log.generator.level:-INFO}" />
+
+    <root level="WARN">
+        <appender-ref ref="stdout" />
+    </root>
 </configuration>

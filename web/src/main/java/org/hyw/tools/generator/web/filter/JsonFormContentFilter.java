@@ -31,8 +31,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.FormContentFilter;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 
 public class JsonFormContentFilter extends FormContentFilter {
 
@@ -61,12 +59,18 @@ public class JsonFormContentFilter extends FormContentFilter {
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(new InputStreamReader(request.getInputStream()), writer);
 		try {
-			JSONObject json = JSON.parseObject(writer.toString());
-			result = new LinkedMultiValueMap<>(json.keySet().size());
-			for (String name : json.keySet()) {
-				result.add(name, json.getString(name));
+			com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+			com.fasterxml.jackson.databind.JsonNode json = mapper.readTree(writer.toString());
+			if (json != null && json.isObject()) {
+				result = new LinkedMultiValueMap<>(json.size());
+				java.util.Iterator<String> fieldNames = json.fieldNames();
+				while (fieldNames.hasNext()) {
+					String name = fieldNames.next();
+					com.fasterxml.jackson.databind.JsonNode valueNode = json.get(name);
+					result.add(name, valueNode != null && !valueNode.isNull() ? valueNode.asText() : null);
+				}
+				logger.debug("JSON 表单解析成功，参数: {}", result.keySet());
 			}
-			logger.debug("JSON 表单解析成功，参数: {}", result.keySet());
 		} catch (Exception e) {
 			logger.error("JSON 表单解析失败: {}, 错误: {}", request.getRequestURI(), e.getMessage(), e);
 		}

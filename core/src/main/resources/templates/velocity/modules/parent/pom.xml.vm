@@ -23,15 +23,15 @@
 #if($MYBATIS)
 		<mybatis-spring-boot.version>${mybatis_spring_boot_version!'3.0.3'}</mybatis-spring-boot.version>
 		<pagehelper.version>${pagehelper_version!'2.1.0'}</pagehelper.version>
+#if($sqlType == "plus")
+		<mybatis.plus.version>${mybatis_plus_version!'3.5.8'}</mybatis.plus.version>
+#end
+#end
 		<druid.version>${druid_version!'1.2.23'}</druid.version>
 		<mysql-connector.version>${mysql_connector_version!'8.0.33'}</mysql-connector.version>
 		<postgresql.version>${postgresql_version!'42.7.3'}</postgresql.version>
 		<oracle.version>${oracle_version!'21.13.0.0'}</oracle.version>
 		<mssql.version>${mssql_version!'12.6.1.jre8'}</mssql.version>
-#if($mapperType == "plus")
-		<mybatis.plus.version>${mybatis_plus_version!'3.5.8'}</mybatis.plus.version>
-#end
-#end
 #if($DUBBO)
 		<dubbo.version>${dubbo_version}</dubbo.version>
 #end
@@ -121,6 +121,7 @@
 				<version>${sentinel.version}</version>
 			</dependency>
 #end
+#if($MYBATIS)
 			<!-- mybatis -->
 			<dependency>
 				<groupId>org.mybatis.spring.boot</groupId>
@@ -133,6 +134,7 @@
 				<artifactId>pagehelper-spring-boot-starter</artifactId>
 				<version>${pagehelper.version}</version>
 			</dependency>
+#end
 			<!-- druid 数据库连接池 -->
 			<dependency>
 				<groupId>com.alibaba</groupId>
@@ -237,7 +239,8 @@
 				<classifier>${shiroClassifier}</classifier>
 				#end
 			</dependency>
-#if("plus"=="$mapperType")
+#if($MYBATIS)
+#if("plus" == $sqlType)
 			<dependency>
 				<groupId>com.baomidou</groupId>
 				<artifactId>mybatis-plus-core</artifactId>
@@ -258,6 +261,7 @@
 	            <artifactId>${mybatis_plus_starter_artifact}</artifactId>
 	            <version>${mybatis.plus.version}</version>
 		    </dependency>
+#end
 #end
 		</dependencies>
  	</dependencyManagement>

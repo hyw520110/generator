@@ -534,12 +534,33 @@ run_git_push() {
     local output
 
     if [[ "$VERBOSE" -eq 1 ]]; then
-        run_git_network_command push "$@"
+        output=$(run_git_network_command push "$@" 2>&1)
         status=$?
+        printf '%s\n' "$output"
     else
         output=$(run_git_network_command push "$@" 2>&1)
         status=$?
-        if [[ "$status" -ne 0 && "$status" -ne 124 ]]; then
+    fi
+
+    if [[ "$status" -ne 0 && "$status" -ne 124 ]]; then
+        if printf '%s\n' "$output" | grep -q "\[rejected\]" && printf '%s\n' "$output" | grep -qiE "non-fast-forward|fetch first"; then
+            local target_remote=""
+            local arg
+            for arg in "$@"; do
+                if [[ "$arg" != -* ]]; then
+                    target_remote="$arg"
+                    break
+                fi
+            done
+            [[ -z "$target_remote" ]] && target_remote="远端"
+            log_error "推送到 ${target_remote} 失败（被拒绝: non-fast-forward）。"
+            log_error "原因: ${target_remote} 包含了本地没有的新提交，通常因为多端独立开发导致了历史分叉。"
+            log_error "建议修复步骤（请在本地终端手动执行）:"
+            log_error "  git fetch ${target_remote}"
+            log_error "  git merge ${target_remote}/$(git branch --show-current 2>/dev/null || echo "main")"
+            log_error "（如果出现冲突，请在编辑器中解决冲突 -> git add -> git commit，然后再执行本脚本即可）"
+            echo "" >&2
+        else
             log_error "推送失败详细原因:\n$output"
         fi
     fi

@@ -137,8 +137,11 @@ public class CompatibilityResolver {
 		variables.put("jaxbApiVersion", "jakarta".equals(namespace) ? "4.0.0" : "2.3.1");
 		variables.put("jaxbRuntimeVersion", "jakarta".equals(namespace) ? "4.0.2" : "2.3.8");
 		variables.put("shiroClassifier", "jakarta".equals(namespace) ? "jakarta" : "");
-		variables.put("springBootMajor", "boot3".equals(profile.getTemplateFamily()) ? "3" : "2");
-		variables.put("apiDocFamily", "boot3".equals(profile.getTemplateFamily()) ? "openapi3" : "swagger2");
+		String templateFamily = profile.getTemplateFamily();
+		String springBootMajor = "boot4".equals(templateFamily) ? "4"
+				: ("boot3".equals(templateFamily) ? "3" : "2");
+		variables.put("springBootMajor", springBootMajor);
+		variables.put("apiDocFamily", "2".equals(springBootMajor) ? "swagger2" : "openapi3");
 		variables.put("testFramework", "junit5");
 		return variables;
 	}

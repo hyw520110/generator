@@ -1,18 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+<#if modules?? && modules?size <= 1>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>${springboot_version!'3.2.1'}</version>
+		<relativePath/>
+	</parent>
+	<groupId>${rootPackage!}</groupId>
+<#else>
 	<parent>
 		<groupId>${rootPackage!}</groupId>
 		<artifactId>${projectName!}-parent</artifactId>
 		<version>${version!}</version>
 		<relativePath>../parent</relativePath>
 	</parent>
+</#if>
 	<artifactId>${projectName!}-${moduleName!}</artifactId>
+<#if modules?? && modules?size <= 1>
+	<version>${version!}</version>
+</#if>
 	<packaging>jar</packaging>
 	<properties>
+<#if modules?? && modules?size <= 1>
+		<#include "modules/parent/_pom-properties.xml.ftl">
+</#if>
 		<mainClass>${rootPackage!}.${projectName!}.${moduleName!}.Booter</mainClass>
 	</properties>
+<#if modules?? && modules?size <= 1>
+	<#include "modules/parent/_pom-dependencies.xml.ftl">
+</#if>
 	<dependencies>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
 <#if SPRINGBOOT?? && SPRINGBOOT>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -87,6 +110,11 @@
 			<groupId>com.alibaba.cloud</groupId>
 			<artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.alibaba.csp</groupId>
+			<artifactId>${sentinel_webmvc_adapter_artifact!'sentinel-spring-webmvc-adapter'}</artifactId>
+			<version>${sentinel_version!'1.8.6'}</version>
+		</dependency>
 </#if>
 <#if DUBBO?? && DUBBO>
 		<!-- Dubbo Spring Boot Starter (Apache Dubbo 原生 starter，版本由 dubbo-bom 管理) -->
@@ -95,16 +123,23 @@
 			<artifactId>dubbo-spring-boot-starter</artifactId>
 		</dependency>
 </#if>
-<#if mapperType?? && mapperType == "plus">
+<#if (sqlType!'xml') == "plus">
 		<!-- mybatis-plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>${mybatis_plus_starter_artifact!'mybatis-plus-spring-boot3-starter'}</artifactId>
+            <version><#noparse>${mybatis.plus.version}</#noparse></version>
         </dependency>
+		<dependency>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-jsqlparser</artifactId>
+			<version><#noparse>${mybatis.plus.version}</#noparse></version>
+		</dependency>
     	<!-- mybatis plus generator -->
 		<dependency>
 		    <groupId>com.baomidou</groupId>
 		    <artifactId>mybatis-plus-generator</artifactId>
+		    <version><#noparse>${mybatis.plus.version}</#noparse></version>
 		    <scope>test</scope>
 		</dependency>
 		<dependency>
@@ -120,11 +155,13 @@
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 		</dependency>
 </#if>		
-		<!--pagehelper -->
+<#if (sqlType!'xml') != "plus">
+		<!-- pagehelper -->
 		<dependency>
 			<groupId>com.github.pagehelper</groupId>
 			<artifactId>pagehelper-spring-boot-starter</artifactId>
 		</dependency>
+</#if>
 <#if enableCache?has_content>
 		 <dependency>
             <groupId>net.sf.ehcache</groupId>
@@ -179,7 +216,7 @@
 </#if>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>druid-spring-boot-starter</artifactId>
+			<artifactId>${druid_starter_artifact!'druid-spring-boot-starter'}</artifactId>
 		</dependency>
 <#if SPRINGBOOT?? && SPRINGBOOT>
 		<!-- 
@@ -196,12 +233,14 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+<#if (springBootMajor!'3')?string != '4'>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
 				</exclusion>
 			</exclusions>
+</#if>
 		</dependency>
 <#if THYMELEAF?? && THYMELEAF>
 		<dependency>
@@ -221,11 +260,13 @@
 		    <artifactId>spring-boot-starter-data-redis</artifactId>  
 		</dependency>  
 </#if>
-		<!-- Undertow是红帽公司的java开源高性能web服务器(Wildfly默认的Web服务器)-->  
+<#if (springBootMajor!'3')?string != '4'>
+		<!-- Undertow Web 服务器 -->
 		<dependency>
 	        <groupId>org.springframework.boot</groupId>
 	        <artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
+</#if>
 <#if "fastjson"=="${json_type!}">
 		<dependency>
 		  <groupId>com.alibaba</groupId>
@@ -270,6 +311,20 @@
 		    <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
 		</dependency>
 </#if>
+</#if>
+<#if KAFKA?? && KAFKA>
+		<!-- kafka -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+</#if>
+<#if ELASTICSEARCH?? && ELASTICSEARCH>
+		<!-- elasticsearch -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+		</dependency>
 </#if>
 	    <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -410,7 +465,7 @@
 		<#if GATEWAY?? && GATEWAY>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-gateway</artifactId>
+			<artifactId>${gateway_starter_artifact!'spring-cloud-starter-gateway'}</artifactId>
 		</dependency>
 		</#if>
 
@@ -418,7 +473,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version>
+			<version>${springdoc_version!'2.8.17'}</version>
 		</dependency>
 		</#if>
 
@@ -566,7 +621,7 @@
 		<#if GATEWAY?? && GATEWAY>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-gateway</artifactId>
+			<artifactId>${gateway_starter_artifact!'spring-cloud-starter-gateway'}</artifactId>
 		</dependency>
 		</#if>
 
@@ -574,7 +629,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version>
+			<version>${springdoc_version!'2.8.17'}</version>
 		</dependency>
 		</#if>
 
@@ -678,7 +733,10 @@
 				</executions> -->
 				<!-- spring-boot-devtools -->
 				<configuration>
+					<mainClass>${r"${mainClass}"}</mainClass>
+				<#if (springBootMajor!'3')?string != '4'>
 					<fork>true</fork>
+				</#if>
 					<!-- <jvmArguments>
                         -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
                     </jvmArguments> -->

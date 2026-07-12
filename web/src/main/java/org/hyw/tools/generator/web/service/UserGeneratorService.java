@@ -20,6 +20,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class UserGeneratorService {
 
@@ -45,8 +49,17 @@ public class UserGeneratorService {
 	private boolean trustedProxyEnabled;
 
 	private Generator defaultGenerator;
-	private final Map<String, Generator> userGenerators = new ConcurrentHashMap<>();
-	private final Map<String, Object> userLocks = new ConcurrentHashMap<>();
+	
+	// Cache expiration set to 2 hours of inactivity
+	private final Cache<String, Generator> userGenerators = Caffeine.newBuilder()
+			.expireAfterAccess(2, TimeUnit.HOURS)
+			.maximumSize(1000)
+			.build();
+			
+	private final Cache<String, Object> userLocks = Caffeine.newBuilder()
+			.expireAfterAccess(2, TimeUnit.HOURS)
+			.maximumSize(1000)
+			.build();
 
 	@PostConstruct
 	public void init() {
@@ -56,7 +69,7 @@ public class UserGeneratorService {
 
 	public Generator getGenerator(HttpServletRequest request) {
 		String clientKey = resolveClientKey(request);
-		return userGenerators.computeIfAbsent(clientKey, this::loadUserGenerator);
+		return userGenerators.get(clientKey, this::loadUserGenerator);
 	}
 
 	public void saveGenerator(HttpServletRequest request) {
@@ -80,7 +93,7 @@ public class UserGeneratorService {
 	}
 
 	public Object lockFor(HttpServletRequest request) {
-		return userLocks.computeIfAbsent(resolveClientKey(request), key -> new Object());
+		return userLocks.get(resolveClientKey(request), key -> new Object());
 	}
 
 	public File userConfigFile(String clientKey) {

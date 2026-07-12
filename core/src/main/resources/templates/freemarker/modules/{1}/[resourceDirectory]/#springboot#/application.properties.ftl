@@ -159,7 +159,7 @@ spring.datasource.druid.filter.config.enabled=true
 spring.datasource.druid.connection-properties=${dataSource.propertiesStr}
 </#if>
 
-<#if (mapperType!'plus') == 'plus'>
+<#if (sqlType!'plus') == 'plus'>
 mybatis-plus.mapper-locations=classpath:mybatis/mappers/*.xml
 mybatis-plus.type-aliases-package=${entityPackage!""}
 mybatis-plus.configuration.log-impl=org.apache.ibatis.logging.log4j2.Log4j2Impl

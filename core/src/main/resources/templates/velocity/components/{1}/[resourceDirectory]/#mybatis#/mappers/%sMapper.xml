@@ -58,7 +58,7 @@
 #end
 #end	
 #if($insert)
-	<!-- TODO 	1. 返回复合主键 	2. 主键处理 -->
+	<!-- 复合主键返回与处理机制说明： -->
 	<!-- 返回主键：
 	1. insert节点中添加useGeneratedKey和keyProperty属性
 	2. insert节点下添加selectKey子节点的方式

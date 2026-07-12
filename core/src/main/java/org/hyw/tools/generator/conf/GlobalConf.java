@@ -154,7 +154,7 @@ public class GlobalConf extends BaseBean {
 	private String platformId;
 
 	/**
-	 * 模板代际，如 boot2 / boot3
+	 * 模板代际，如 boot2 / boot3 / boot4
 	 */
 	private String templateFamily;
 

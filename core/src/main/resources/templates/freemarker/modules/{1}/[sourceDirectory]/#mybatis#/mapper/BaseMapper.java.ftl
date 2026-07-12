@@ -1,4 +1,4 @@
-<#if mapperType != "plus">
+<#if sqlType != "plus">
 <#if StringUtils.indexOf("${superMapperClass}", '.')==-1>
 package ${mapperPackage!};
 

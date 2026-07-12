@@ -3,7 +3,7 @@ package ${servicePackage};
 
 import java.util.List;
 import java.util.Map;
-#if("plus" == "$mapperType")
+#if("plus" == "$sqlType")
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 
 #set($comment="公共接口")
 #parse('/templates/comments/comment.vm')
-#if("plus"=="$mapperType")
+#if("plus"=="$sqlType")
 public interface BaseService<T> extends com.baomidou.mybatisplus.extension.service.IService<T>{
 #else
 public interface BaseService<T, PK> {

@@ -76,6 +76,32 @@ public class CompatibilityResolverTest {
 	}
 
 	@Test
+	public void shouldApplyExperimentalJava21Boot4ProfileById() {
+		GlobalConf global = new GlobalConf();
+		global.setJavaVersion("21");
+		global.setPlatformId("java21-boot4");
+		Map<Component, Map<String, Object>> components = new HashMap<>();
+
+		ResolvedPlatform resolved = new CompatibilityResolver().apply(global, components, null);
+
+		assertEquals("java21-boot4", resolved.getId());
+		assertEquals("boot4", global.getTemplateFamily());
+		assertEquals("jakarta", global.getNamespace());
+		assertEquals("21", global.getBytecodeRelease());
+		assertEquals("4.0.7", components.get(Component.SPRINGBOOT).get("springboot_version"));
+		assertEquals("2025.1.2", components.get(Component.SPRINGCLOUD).get("springcloud_version"));
+		assertEquals("spring-cloud-starter-gateway-server-webflux",
+				components.get(Component.SPRINGCLOUD).get("gateway_starter_artifact"));
+		assertEquals("3.5.16", components.get(Component.MYBATIS).get("mybatis_plus_version"));
+		assertEquals("mybatis-plus-spring-boot4-starter",
+				components.get(Component.MYBATIS).get("mybatis_plus_starter_artifact"));
+		assertEquals("druid-spring-boot-4-starter",
+				components.get(Component.MYBATIS).get("druid_starter_artifact"));
+		assertEquals("4", global.getPlatformVariables().get("springBootMajor"));
+		assertEquals("openapi3", global.getPlatformVariables().get("apiDocFamily"));
+	}
+
+	@Test
 	public void shouldAllowWhitelistedPatchOverride() {
 		GlobalConf global = new GlobalConf();
 		global.setJavaVersion("17");

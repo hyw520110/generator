@@ -59,7 +59,13 @@ public class ContextInterceptor extends HandlerInterceptorAdapter {
         processTime.set(System.currentTimeMillis());
         HttpSession session = request.getSession();
         Object userName = session.getAttribute(userNameKey);
-        //TODO 
+        
+        // 尝试从 Header 或 Token 中获取 User 信息，作为上下文字段补充
+        String headerUserId = request.getHeader("X-User-Id");
+        if (StringUtils.isNotBlank(headerUserId)) {
+            userName = headerUserId;
+        }
+
         MDC.put("_sessionId", session.getId());
         MDC.put("_ip", HttpUtils.getIpAddr(request));
         MDC.put("userId", null == userName ? "" : userName.toString());
@@ -107,6 +113,8 @@ public class ContextInterceptor extends HandlerInterceptorAdapter {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         processTime(request);
+        // 清理 MDC 上下文，防止内存泄漏和线程复用导致的数据串行
+        MDC.clear();
     }
 
     /**

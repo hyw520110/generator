@@ -1,0 +1,72 @@
+# Java 21 + Spring Boot 4 前台领域服务生成样例。
+# api/service 是领域服务的契约与实现模块；Gateway 应作为独立基础设施工程维护，
+# 不在每个领域服务内重复生成，也不与业务服务启动类放在同一模块。
+
+dataSource:
+  driverClassName: com.mysql.cj.jdbc.Driver
+  url: jdbc:mysql://127.0.0.1:3306/app_db?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+  username: root
+  pwd: ""
+
+global:
+  outputDir: /tmp/java21-boot4-generator-output/sample-service
+  description: Java 21 Spring Boot 4 领域服务工程骨架
+  delOutputDir: false
+  fileOverride: false
+  openDir: false
+  rootPackage: com.example.service
+  projectName: sample
+  modules: ['api','service']
+  include:
+  exclude:
+  tablePrefix: ['tb_','sys_']
+  components: [MYBATIS,SPRINGBOOT,SPRINGMVC,SPRINGCLOUD,SPRINGSECURITY,JWT]
+  features: [ARCHITECTURE_CONVENTIONS,VALIDATION,UNITTEST,CICD,DEVOPS,OAUTH2]
+  security: SPRING_SECURITY_OAUTH2
+  projectBuilder: MAVEN
+  version: 1.0.0-SNAPSHOT
+  author: dev-team
+  copyright: Dev Team
+  javaVersion: 21
+  platformId: java21-boot4
+  separators: [_,-]
+  capitalMode: false
+  naming: TOCAMEL
+  columnConstant: false
+  encoding: UTF-8
+  templateDir: /templates
+  sourceDirectory: src/main/java
+  resourceDirectory: src/main/resources
+  testSourceDirectory: src/test/java
+  testResourceDirectory: src/test/resources
+  templateEngine: freemarker
+
+components:
+  SPRINGBOOT:
+    server_port: 8080
+    ssl: false
+    write_null_value: true
+  MYBATIS:
+    sqlType: plus
+    superMapperClass: BaseMapper
+    superEntityClass: BaseEntity
+    superServiceClass: com.baomidou.mybatisplus.extension.service.IService
+    superServiceImplClass: com.baomidou.mybatisplus.extension.service.impl.ServiceImpl
+    enableCache: false
+    baseResultMap: true
+    columns: true
+    insert: true
+    update: true
+    findById: true
+    findOne: true
+    count: true
+    findPage: true
+    deleteById: true
+    findAll: true
+  SPRINGMVC:
+    controllerName: '%sController'
+    controllerPackage: controller
+    rest: true
+    crud: false
+    json_type: jackson
+    jsonp: false

@@ -20,20 +20,27 @@
 			<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
+	<#if (sqlType!'xml') == "plus">
 		<dependency>
-		 	<groupId>commons-lang</groupId>
-		  	<artifactId>commons-lang</artifactId>
-		  	<version>2.4</version>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-spring</artifactId>
+			<version>${mybatis_plus_version!'3.5.16'}</version>
+		</dependency>
+	</#if>
+		<dependency>
+		 	<groupId>org.apache.commons</groupId>
+		  	<artifactId>commons-lang3</artifactId>
+		  	<version>${commons_lang3_version!'3.14.0'}</version>
 		</dependency>
 		<dependency>
-			    <groupId>org.hibernate</groupId>
+			    <groupId>org.hibernate.validator</groupId>
 			    <artifactId>hibernate-validator</artifactId>
-			    <#if springboot?has_content><version>8.0.1.Final</version></#if>
+			    <#if !(SPRINGBOOT?? && SPRINGBOOT)><version>6.2.5.Final</version></#if>
 			</dependency>
 			<dependency>
 			    <groupId>${validationApiGroupId}</groupId>
 			    <artifactId>${validationApiArtifactId}</artifactId>
-			</dependency><#if springboot && !jpa?has_content>		
+			</dependency><#if JPA?? && JPA>		
 		<dependency>
 		  <groupId>org.springframework.boot</groupId>
 		  <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -50,7 +57,8 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
-<#if mapperType?? && mapperType == "plus">
+<#if MYBATIS?? && MYBATIS>
+<#if sqlType?? && sqlType == "plus">
 		<dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-core</artifactId>
@@ -59,6 +67,7 @@
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-extension</artifactId>
 		</dependency>
+</#if>
 </#if>				
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>

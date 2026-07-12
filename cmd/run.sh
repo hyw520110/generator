@@ -143,14 +143,14 @@ if [ $IS_DEV_MODE -eq 0 ]; then
     rm $TEMP_CP
     
     # 添加classes目录到classpath
-    FULL_CP="$APP_DIR/target/classes:$CP"
+    FULL_CP="$APP_DIR/target/classes:$APP_DIR/../core/target/classes:$CP"
     # 从pom.xml动态获取主类
     MAIN_CLASS=$(grep -oP '(?<=<main.class>)[^<]+' "$APP_DIR/../pom.xml" 2>/dev/null || grep -oP '(?<=<main.class>)[^<]+' "$APP_DIR/pom.xml" 2>/dev/null || echo "org.hyw.tools.generator.cmd.CmdGenerator")
     
     # 重置终端stty设置，确保输入正确处理（修复^M回车问题）
-    stty sane
-    stty icrnl
-    stty icanon
+    stty sane 2>/dev/null || true
+    stty icrnl 2>/dev/null || true
+    stty icanon 2>/dev/null || true
     
     # 直接运行java程序
     if [ ${#JAVA_CMD_ARGS[@]} -gt 0 ]; then

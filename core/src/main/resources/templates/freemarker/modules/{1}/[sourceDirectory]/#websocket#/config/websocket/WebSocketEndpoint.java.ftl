@@ -1,7 +1,12 @@
 package ${packagePath};
 import org.springframework.stereotype.Component;
+<#if global.javaVersion == '8' || global.javaVersion == '11'>
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
+<#else>
+import jakarta.websocket.*;
+import jakarta.websocket.server.ServerEndpoint;
+</#if>
 @ServerEndpoint("/ws/{userId}")
 @Component
 public class WebSocketEndpoint {

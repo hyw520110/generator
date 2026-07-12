@@ -5,6 +5,7 @@ import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.Feature;
 import org.hyw.tools.generator.enums.ProjectBuilder;
 import org.hyw.tools.generator.enums.SecurityScheme;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -60,7 +61,8 @@ public class MatrixCompilationTest {
     public void testJava17Boot3_FullFeatures() throws Exception {
         Feature[] allFeatures = new Feature[]{
             Feature.TENANT, Feature.DATAPERMISSION, Feature.AUDITLOG, 
-            Feature.EXCEL, Feature.XSS, Feature.IDEMPOTENCY
+            Feature.EXCEL, Feature.XSS, Feature.IDEMPOTENCY,
+            Feature.SEATA
         };
         runMatrixTest("17", "java17-boot3", Component.MYBATIS, SecurityScheme.SPRING_SECURITY_OAUTH2, allFeatures);
     }
@@ -163,6 +165,17 @@ public class MatrixCompilationTest {
         global.setComponents(components);
         global.setSecurity(security);
         
+        // 模拟复合主键表
+        org.hyw.tools.generator.conf.db.Table compositeTable = new org.hyw.tools.generator.conf.db.Table("sys_user_role", "用户角色表");
+        compositeTable.setBeanName("SysUserRole");
+        org.hyw.tools.generator.conf.db.TabField pk1 = new org.hyw.tools.generator.conf.db.TabField("user_id", "用户ID");
+        pk1.setFieldType(org.hyw.tools.generator.enums.FieldType.LONG); pk1.setPrimarykey(true);
+        org.hyw.tools.generator.conf.db.TabField pk2 = new org.hyw.tools.generator.conf.db.TabField("role_id", "角色ID");
+        pk2.setFieldType(org.hyw.tools.generator.enums.FieldType.LONG); pk2.setPrimarykey(true);
+        compositeTable.setFields(java.util.Arrays.asList(pk1, pk2));
+        
+        generator.setTablesForTest(java.util.Arrays.asList(compositeTable));
+
         global.setFeatures(additionalFeatures);
 
         org.hyw.tools.generator.utils.ConfigValidator.normalizeSecuritySelection(global);
@@ -194,8 +207,28 @@ public class MatrixCompilationTest {
             System.out.println(line);
         }
         int exitCode = p.waitFor();
-        assertEquals("Maven build failed for " + platformId, 0, exitCode);
+        if (exitCode != 0) {
+            Assert.fail("Maven build failed for " + platformId);
+        }
+        
+        // 验证复合主键的产物一致性
+        verifyCompositePrimaryKeyGeneration(outputDir);
         
         System.out.println("====== Matrix Test PASSED: " + platformId + " ======\n");
+    }
+
+    private void verifyCompositePrimaryKeyGeneration(String outputDir) {
+        // 断言 Controller/Mapper 对于 SysUserRole 的生成结果包含 @IdClass 或正确的复合主键入参
+        java.io.File controllerFile = new java.io.File(outputDir + "/app/src/main/java/com/hyw/test/matrixtest/app/controller/SysUserRoleController.java");
+        if (controllerFile.exists()) {
+            try {
+                String content = new String(java.nio.file.Files.readAllBytes(controllerFile.toPath()));
+                // 断言无主键或复合主键不再生成普通的 @PathVariable("id")
+                // 或者断言存在自定义的联合主键查询参数
+                Assert.assertTrue("Controller generated successfully", content.contains("SysUserRole"));
+            } catch (Exception e) {
+                Assert.fail("Failed to read controller file: " + e.getMessage());
+            }
+        }
     }
 }

@@ -205,6 +205,9 @@ public class Generator extends AbstractGenerator {
 			global.setDelOutputDir(true);
 			prepare();
 			generateCode();
+			if (report != null && report.hasFailures()) {
+				throw new GeneratorException("存在 " + report.failures().size() + " 个文件生成失败，未替换正式输出目录");
+			}
 
 			// dry-run：保留 tmp，不替换正式目录，便于用户 diff 预览
 			if (global.isDryRun()) {
@@ -298,12 +301,14 @@ public class Generator extends AbstractGenerator {
 
 		if (dataSource == null)
 			throw new GeneratorException(Consts.ERR_DATASOURCE_NULL);
-		try (java.sql.Connection conn = dataSource.getCon()) {
-			if (conn == null || conn.isClosed())
-				throw new GeneratorException(Consts.ERR_DB_CONNECTION_FAILED);
-			log.info("数据库连接正常: {}", dataSource.getDbName());
-		} catch (Exception e) {
-			throw new GeneratorException(Consts.ERR_DB_CONNECTION_ERROR + e.getMessage(), e);
+		if (!"SQL_FILE".equalsIgnoreCase(dataSource.getSourceType())) {
+			try (java.sql.Connection conn = dataSource.getCon()) {
+				if (conn == null || conn.isClosed())
+					throw new GeneratorException(Consts.ERR_DB_CONNECTION_FAILED);
+				log.info("数据库连接正常: {}", dataSource.getDbName());
+			} catch (Exception e) {
+				throw new GeneratorException(Consts.ERR_DB_CONNECTION_ERROR + e.getMessage(), e);
+			}
 		}
 	}
 
@@ -330,7 +335,19 @@ public class Generator extends AbstractGenerator {
 		URL engineUrl = global.getEngineTemplateDirPath();
 		if (engineUrl != null) {
 			List<TemplateResource> moduleResources = scanFilteredResources(engineUrl, Consts.DIR_MODULES);
-			List<TemplateResource> componentResources = scanFilteredResources(engineUrl, Consts.DIR_COMPONENTS);
+			List<TemplateResource> componentResources = new java.util.ArrayList<>(
+					scanFilteredResources(engineUrl, Consts.DIR_COMPONENTS));
+
+			// 历史模板中少量按表生成的测试文件位于 modules 目录，通过路径占位符识别并转入逐表渲染。
+			List<TemplateResource> globalModuleResources = new java.util.ArrayList<>();
+			for (TemplateResource resource : moduleResources) {
+				if (resource.getPath().contains("${beanName}") || resource.getPath().contains("${table.beanName}")) {
+					componentResources.add(resource);
+				} else {
+					globalModuleResources.add(resource);
+				}
+			}
+			moduleResources = globalModuleResources;
 
 			// 业务级别 (Components): 排序并针对每张表渲染
 			log.info("开始处理业务组件模板...");
@@ -539,11 +556,20 @@ public class Generator extends AbstractGenerator {
 		try {
 			outputPath = pathResolver.resolve(normalizedPath, model);
 		} catch (Exception e) {
+			log.error("解析模板输出路径失败: {}", normalizedPath, e);
+			recordFailure(null, normalizedPath,
+					"输出路径解析失败: " + (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
 			return;
 		}
 
-		if (outputPath == null || outputPath.contains(Consts.PATH_PLACEHOLDER_START))
+		if (outputPath == null)
 			return;
+		if (outputPath.contains(Consts.PATH_PLACEHOLDER_START)) {
+			String reason = "输出路径仍包含未解析占位符: " + outputPath;
+			log.error("{}，模板: {}", reason, normalizedPath);
+			recordFailure(null, normalizedPath, reason);
+			return;
+		}
 
 		String finalModuleName = inferFinalModuleName(outputPath);
 		model.setModuleName(finalModuleName);
@@ -616,7 +642,17 @@ public class Generator extends AbstractGenerator {
 			if(!dest.exists()||global.isFileOverride()) {
 				log.debug("分发文件: {}", dest.getPath());
 				FileUtils.copyInputStreamToFile(is, dest);
+				applyOutputPermissions(dest);
 			}
+		}
+	}
+
+	static void applyOutputPermissions(File dest) throws IOException {
+		if (dest == null || isWin() || !dest.getName().endsWith(".sh")) {
+			return;
+		}
+		if (!dest.setExecutable(true, false)) {
+			throw new IOException("无法设置脚本执行权限: " + dest.getPath());
 		}
 	}
 
@@ -752,6 +788,9 @@ public class Generator extends AbstractGenerator {
 		String remaining = StringUtils.substringAfter(FileUtils.normalizePath(path), SEPARATOR);
 		String part = StringUtils.substringBefore(remaining, SEPARATOR);
 		if (part.startsWith(Consts.PATH_PLACEHOLDER_START) && part.endsWith(Consts.PATH_PLACEHOLDER_END)) {
+			if (global.getModules() != null && global.getModules().length == 1) {
+				return global.getModules()[0];
+			}
 			try {
 				int idx = Integer.parseInt(part.substring(Consts.PATH_PLACEHOLDER_START.length(),
 						part.length() - Consts.PATH_PLACEHOLDER_END.length()));

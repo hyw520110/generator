@@ -10,16 +10,18 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+<#if (springBootMajor!'3')?string != '4'>
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+</#if>
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -36,11 +38,13 @@ import com.alibaba.fastjson.serializer.ValueFilter;
 import com.alibaba.fastjson.serializer.ToStringSerializer;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
-<#if mapperType?? && mapperType == "plus">
+<#if sqlType?? && sqlType == "plus">
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 </#if>
+<#if (springBootMajor!'3')?string != '4'>
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+</#if>
 
 import ${interceptorPackage!}.ContextInterceptor;
 
@@ -75,6 +79,7 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
     }
 </#if>
 
+<#if (springBootMajor!'3')?string != '4'>
 	@Override
 	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
 		// 添加 ByteArrayHttpMessageConverter，解决 Knife4j 4.x Base64 编码问题
@@ -90,6 +95,7 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 			}
 		}
 	}
+</#if>
 
 	/*
 	 * @Override protected void addCorsMappings(CorsRegistry registry) {
@@ -141,7 +147,7 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 //		serializeConfig.put(Long.class, ToStringSerializer.instance);
 //		serializeConfig.put(Long.TYPE, ToStringSerializer.instance);
 //		conf.setSerializeConfig(serializeConfig);
-<#if mapperType?? && mapperType == "plus">	
+<#if sqlType?? && sqlType == "plus">	
 //		NameFilter nameFilter = new NameFilter() {
 //			@Override
 //			public String process(Object object, String name, Object value) {
@@ -187,9 +193,11 @@ public class WebMvcConfigurer extends org.springframework.web.servlet.config.ann
 	 * @author: heyiwu
 	 * @return
 	 */
+<#if (springBootMajor!'3')?string != '4'>
 	public ObjectMapper objectMapper() {
 		ObjectMapper objMapper = new ObjectMapper();
 		objMapper.enable(SerializationFeature.INDENT_OUTPUT);
 		return objMapper;
 	}
+</#if>
 }

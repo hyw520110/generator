@@ -122,7 +122,7 @@ create /config/${projectName},dev/rocketmq.name-server-address ${name-server-add
 
 create /config/${projectName},dev/context.slow-time 1000
 create /config/${projectName},dev/context.userName user_name
-#if("plus"=="$mapperType")
+#if("plus"=="$sqlType")
 create /config/${projectName}/mybatis-plus.mapper-locations classpath:mappers/*.xml
 create /config/${projectName}/mybatis-plus.type-aliases-package ${entityPackage}
 create /config/${projectName}/mybatis-plus.configuration.log-impl org.apache.ibatis.logging.log4j2.Log4j2Impl

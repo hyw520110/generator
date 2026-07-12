@@ -51,6 +51,19 @@ public class ConfigValidatorSecurityTest {
     }
 
     @Test
+    public void shiroIsRejectedForExplicitBoot4Target() {
+        GlobalConf config = baseConfig();
+        config.setJavaVersion("21");
+        config.setPlatformId("java21-boot4");
+        config.setComponents(new Component[] { Component.MYBATIS, Component.SPRINGBOOT, Component.SHIRO });
+
+        ConfigValidator.ValidationResult result = ConfigValidator.validateWithResult(config);
+
+        assertTrue(result.getErrorMessage(), result.hasErrors());
+        assertTrue(result.getErrorMessage(), result.getErrorMessage().contains("Boot3 及以上"));
+    }
+
+    @Test
     public void shiroIsAllowedForExplicitJava17Boot2Target() {
         GlobalConf config = baseConfig();
         config.setJavaVersion("17");

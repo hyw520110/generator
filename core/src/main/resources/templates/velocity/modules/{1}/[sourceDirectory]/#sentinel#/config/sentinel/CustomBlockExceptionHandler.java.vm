@@ -1,0 +1,52 @@
+package ${packagePath};
+
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.BlockExceptionHandler;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.authority.AuthorityException;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowException;
+import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Component;
+
+#if($global.javaVersion == '8' || $global.javaVersion == '11')
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+#else
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+#end
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 自定义 Sentinel 流控异常处理器
+ */
+@Component
+public class CustomBlockExceptionHandler implements BlockExceptionHandler {
+
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response, BlockException e) throws Exception {
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", 429);
+        
+        if (e instanceof FlowException) {
+            result.put("msg", "接口被限流了");
+        } else if (e instanceof DegradeException) {
+            result.put("msg", "服务降级了");
+        } else if (e instanceof ParamFlowException) {
+            result.put("msg", "热点参数限流了");
+        } else if (e instanceof SystemBlockException) {
+            result.put("msg", "触发系统保护规则");
+        } else if (e instanceof AuthorityException) {
+            result.put("msg", "授权规则不通过");
+        }
+
+        response.setStatus(429);
+        response.setCharacterEncoding("utf-8");
+        response.setContentType("application/json;charset=utf-8");
+        new ObjectMapper().writeValue(response.getWriter(), result);
+    }
+}

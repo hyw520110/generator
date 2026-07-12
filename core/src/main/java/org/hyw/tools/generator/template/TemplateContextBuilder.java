@@ -57,6 +57,7 @@ public class TemplateContextBuilder {
 				.variable("projectPackage", global.getRootPackage() + "." + global.getProjectName())
 				.variable("date", LocalDateTime.now().format(DATE_FORMATTER))
 				.variable("StringUtils", new StringUtilsBean())
+				.variable("mapperPackage", global.getRootPackage() + "." + global.getProjectName() + ".mapper")
 				.variable(Consts.CTX_GLOBAL, global)
 				.variable(Consts.CTX_DATA_SOURCE, dataSource);
 
@@ -66,7 +67,10 @@ public class TemplateContextBuilder {
 
 		String dbType = (dataSource.getDBType() != null) ? dataSource.getDBType().getName() : "mysql";
 		builder.variable("dbType", dbType);
-		builder.variable("sqlType", dbType);
+		String sqlType = resolveMybatisSqlType();
+		builder.variable("sqlType", sqlType);
+		// 兼容旧模板和历史配置，统一指向同一持久层生成模式。
+		builder.variable("mapperType", sqlType);
 		builder.variable("projectBuilder", global.getProjectBuilder().name());
         
         // Inject validation API coordinates based on namespace
@@ -100,6 +104,19 @@ public class TemplateContextBuilder {
 		injectDynamicComponentConfigs(builder);
 
 		return builder.build();
+	}
+
+	private String resolveMybatisSqlType() {
+		Map<String, Object> mybatis = components == null ? null : components.get(Component.MYBATIS);
+		if (mybatis == null) {
+			return "xml";
+		}
+		Object configured = mybatis.get("sqlType");
+		if (configured == null || StringUtils.isBlank(String.valueOf(configured))) {
+			configured = mybatis.get("mapperType");
+		}
+		return configured == null || StringUtils.isBlank(String.valueOf(configured))
+				? "xml" : String.valueOf(configured).trim().toLowerCase();
 	}
 
 	private void injectDynamicComponentConfigs(RenderContext.Builder builder) {

@@ -96,7 +96,8 @@
 			<artifactId>dubbo-spring-boot-starter</artifactId>
 		</dependency>
 #end
-#if("plus"=="$mapperType")
+#if($MYBATIS)
+#if("plus"=="$sqlType")
 		<!-- mybatis-plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
@@ -139,7 +140,10 @@
 			<artifactId>mybatis-ehcache</artifactId>
 			<version>1.1.0</version>
 		</dependency>
+#end
+#end
 #if($!{SPRINGBOOT})
+#if($!{enableCache})
 #if(!${REDIS})
 		<!-- https://www.jianshu.com/p/15d0a9ce37dd -->
 		 <dependency>
@@ -399,7 +403,7 @@
 		#if($GATEWAY)
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-gateway</artifactId>
+			<artifactId>$!{gateway_starter_artifact}</artifactId>
 		</dependency>
 		#end
 
@@ -555,7 +559,7 @@
 		#if($GATEWAY)
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-gateway</artifactId>
+			<artifactId>$!{gateway_starter_artifact}</artifactId>
 		</dependency>
 		#end
 

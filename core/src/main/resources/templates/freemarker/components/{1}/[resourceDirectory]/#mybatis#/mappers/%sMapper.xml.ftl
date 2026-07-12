@@ -1,4 +1,4 @@
-<#if mapperType=="xml"  ||  mapperType?? && mapperType == "plus">
+<#if sqlType=="xml"  ||  sqlType?? && sqlType == "plus">
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="${mapperPackage!}.${mapperName!}">
@@ -30,7 +30,7 @@
 	    SELECT <#if columns?has_content> <include refid="columns"/> <#else>  ${table.fieldNames!} </#if> from ${table.name!} WHERE <#list table.primarykeyFields as field> ${field.name!} = <#assign paramPlaceholder = "#{" + field.propertyName + ",jdbcType=" + field.jdbcType + "}">${paramPlaceholder} <#if field?has_next> and </#if> </#list> 
 	</select>	
 </#if>
-<#if "plus"!=mapperType>
+<#if "plus"!=sqlType>
 
 <#if findOne?has_content>
 	<select id="findOne" resultMap="BaseResultMap" parameterType="java.util.Map">
@@ -58,7 +58,7 @@
 </#if>
 </#if>	
 <#if insert?has_content>
-	<!-- TODO 	1. 返回复合主键 	2. 主键处理 -->
+	<!-- 复合主键返回与处理机制说明： -->
 	<!-- 返回主键：
 	1. insert节点中添加useGeneratedKey和keyProperty属性
 	2. insert节点下添加selectKey子节点的方式
@@ -81,7 +81,7 @@
 	</insert>
 </#if>
 
-<#if "plus"!=mapperType>
+<#if "plus"!=sqlType>
 <#if update?has_content && table.hasPrimarykeys()>
 
 	<update id="update" parameterType="${entityPackage!}.${entityName!}">

@@ -16,6 +16,39 @@
 - **DevOps 与云原生部署**：自动化生成 Dockerfile、K8s 清单与 Github Actions / Gitlab-CI 流水线脚本 (`CICD` & `DEVOPS` 支持)。
 - **前端 Vue 深度整合**：Vue 前端模板已深度打通业务流，自动生成带图标的“导出 Excel”与“发起审批”业务入口，自动按需装载 API 接口。
 
+### 🚀 近期重大架构升级 (Enterprise Hardening)
+
+为了应对企业级复杂业务场景，生成器核心引擎近期完成了深度“夯实”：
+
+1.  **认证与动态权限 (Spring Security / OAuth2)**
+    *   **动态 RBAC 引擎**：自动注入 `CustomPermissionEvaluator`，并在配置中启用 `@EnableMethodSecurity`，接口权限校验 (`@PreAuthorize`) 无缝挂载。
+    *   **多端登录入口**：开箱即用的 `AuthController` 统一接管账号密码、短信验证码等认证方式，标准内置 JWT 生成。
+2.  **分布式事务落地 (Seata)**
+    *   在 `#seata#` 模块中预置 AT 模式所需的 `undo_log` 表结构 SQL 脚本，一键初始化分布式事务环境。
+3.  **熔断降级容灾 (Sentinel)**
+    *   内置 `CustomBlockExceptionHandler` 全局流控异常处理器，将降级、限流与热点参数拦截等异常优雅转换为 JSON 响应体，避免前端抛出 500 错误。
+4.  **消息队列中间件 (RocketMQ)**
+    *   自动生成标准的 `RocketMQProducer` 封装组件，统一管理所有 Topic 投递入口，规避业务层直接依赖三方模板。
+5.  **多数据源与读写分离动态切面 (MultiDataSource)**
+    *   纯手写提供无依赖的 `@TargetDataSource` 注解与 AOP 动态切面 (`DynamicDataSourceAspect`)，配合 ThreadLocal 轻松实现方法级 / 类级别的数据源无感切换。
+6.  **操作审计日志 (AuditLog) 增强**
+    *   完善了 `AuditLogAspect` 切面逻辑，新增自动解析 HTTP Request、获取客户端 IP、HTTP Method、URI 及当前登录用户能力，并实现了标准化日志采集模型构建。
+7.  **接口幂等性 (Idempotency) 保证**
+    *   完善了 `IdempotentInterceptor`，与 `StringRedisTemplate` 深度集成，实现基于 Token 的防重放攻击与重复提交控制，保证接口幂等性。
+8.  **多租户隔离 (Tenant) 完善**
+    *   注入了 MyBatis Plus 的 `TenantLineInnerInterceptor`，并实现了可扩展的表级别白名单机制（如过滤 `sys_user`、`sys_role` 等系统表不进行租户隔离）。
+9.  **动态数据权限 (DataPermission) 增强**
+    *   在 `CustomDataPermissionHandler` 中新增基于反射和缓存的 `mappedStatementId` 解析引擎，自动提取 `@DataPermission` 注解元数据，实现无侵入的部门/数据权限 SQL 动态拼装。
+10. **缓存与分布式会话 (Token / Context)**
+    *   **Token 存储升级**：`TokenServiceImpl` 已废弃原有的本地 `HashMap` 缓存机制，全面接入 `StringRedisTemplate` 进行 Token 存储、登出失效和续期，真正支持分布式集群部署。
+    *   **全局上下文增强**：完善了 `ContextInterceptor` 拦截器，除了拦截解析 Header 中的用户信息外，特别增加了针对 `MDC` 的清空处理 (`MDC.clear()`)，彻底解决了线程池复用导致的上下文数据泄露问题。
+11. **数据库与 ORM 代码生成增强**
+    *   **主键与外键机制**：在 MyBatis 的 XML 模板中增强了对复合主键的原生支持说明与处理机制；在生成的实体类中添加了标准化外键关联配置和对象引用指南，支持复杂的对象关系映射开发。
+    *   **自动审计字段填充**：重构了 `MybatisPlusMetaObjectHandler`，打通了 `MDC` 中的用户上下文 (`userId`)，实现了 `createTime`、`updateTime` 及 `createBy`、`updateBy` 等通用审计字段的自动安全填充。
+12. **生成器引擎优化**
+    *   **配置语义升级**：对 `generator.yaml` 及底层的数十处引擎模板进行了重构，将混淆的 `mapperType` 全面升级为 `sqlType` (支持 `xml` / `annotation` / `plus`)，语义更加清晰准确。
+    *   **冗余资源清理**：扫描并移除了早期的 `HelloController` 等用于测试的无用桩代码（若存在），使生成的代码架构更加干净纯粹。
+
 ### 基础功能：
 
 - **数据库支持**：主流关系型数据库 (MySQL、Oracle、PostgreSQL、SQLServer)
@@ -244,6 +277,18 @@ rootPackage: com.test
 
 生成器通过 `core/src/main/resources/compatibility.yml` 统一维护 Java 版本和框架/组件版本的兼容关系。命令行版、Web 版和模板渲染共用同一份矩阵。
 
+配置文件按职责分为三层：`generator.yaml` 是默认运行配置，`compatibility.yml` 是唯一版本兼容矩阵，`core/src/main/resources/presets/*.yaml` 是需要显式选择或复制调整的组合样例。preset 不替代默认配置，也不重复维护框架版本。
+
+默认 `generator.yaml` 面向后台管理系统：生成一个后端 `server` 工程和一个独立前端工程，不生成 Gateway。前台业务采用多模块/领域服务时，使用 `presets/java21-boot4.yaml` 的 `api/service` 结构；Gateway 属于跨领域服务共享的独立基础设施工程，不应嵌入后台单体或每个领域服务。
+
+```bash
+# 后台管理系统：单后端工程 + 独立前端，不生成 Gateway
+./run.sh --quick --sql-dir ../sql
+
+# 前台领域服务：api/service 多模块工程
+./run.sh --quick --config ../core/src/main/resources/presets/java21-boot4.yaml --sql-dir ../sql
+```
+
 用户通常只需要配置：
 
 ```yaml
@@ -253,12 +298,14 @@ global:
 
 支持 `8`、`11`、`17`、`21`。生成器会自动匹配 Spring Boot、Spring Cloud、MyBatis、MyBatis-Plus、Knife4j、Shiro 等版本，并向模板注入 `templateFamily`、`namespace`、`servletPackage`、`validationPackage` 等变量。
 
-当前默认档位：
+当前可用档位：
 - `java8-boot2`：Java 8 / Spring Boot 2 / `javax`
 - `java11-boot2`：Java 11 / Spring Boot 2 / `javax`
 - `java17-boot3`：Java 17 / Spring Boot 3 / `jakarta`
 - `java21-boot3`：Java 21 / Spring Boot 3 / `jakarta`
 - `java17-boot2`：Java 17 / Spring Boot 2 过渡档，需显式配置 `platformId`
+- `java21-boot3-dubbo`：Java 21 / Spring Boot 3 / Dubbo 组合档，需显式配置 `platformId`
+- `java21-boot4`：Java 21 / Spring Boot 4 实验档，需显式配置 `platformId`；默认仍使用 `java21-boot3`
 
 需要明确指定兼容档位时，可配置 `platformId`。不配置时，生成器会按 `javaVersion` 使用默认档位：
 
@@ -275,14 +322,15 @@ global:
   # Boot2 后台管理可选
   security: SHIRO
 
-  # Boot3 默认推荐
+  # Boot3 / Boot4 默认推荐
   security: SPRING_SECURITY_OAUTH2
 ```
 
 推荐策略：
 - `java8-boot2` / `java11-boot2`：可选 `SHIRO` 或 `SPRING_SECURITY_OAUTH2`
 - `java17-boot3` / `java21-boot3`：默认推荐 `SPRING_SECURITY_OAUTH2`
-- `SHIRO` 作为 Boot2 方案保留；Boot3 场景如需 Shiro 2.x，建议作为后续高级兼容档单独验证
+- `java21-boot4`：仅使用 `SPRING_SECURITY_OAUTH2`，当前按实验档验证
+- `SHIRO` 作为 Boot2 方案保留；Boot3 及以上场景如需 Shiro 2.x，建议作为后续高级兼容档单独验证
 
 如需小版本覆盖，只能覆盖 `compatibility.yml` 中 `allowOverride` 允许的版本项：
 
@@ -492,3 +540,37 @@ java.lang.UnsupportedClassVersionError cannot be cast to [Ljava.lang.Object;
 3. 可以安装额外字体或将字体文件复制到配置的目录
 
 ---
+
+## 八、未来高价值迭代路线图 (Top 10 High-Value TODOs)
+
+针对企业级中后台系统与云原生发展趋势，系统已规划以下 10 项高价值、高优先级的核心迭代任务，以持续保持代码生成器在技术生态中的先进性：
+
+### 1. 前端架构全面升级 (Vue3 + Vite + TypeScript)
+随着 Vue 2 的退役，将现有的前端模板底座全面重构升级至 **Vue 3 + Vite + Composition API + TypeScript** 生态，搭配最新版的 Ant Design Vue 或 Element Plus，大幅提升前端开发体验、类型安全与打包性能。
+
+### 2. 国产化信创生态适配 (DM & Kingbase)
+顺应信创趋势，在现有的 MySQL/Oracle/PostgreSQL 基础上，深度适配**达梦 (DM)**、**人大金仓 (Kingbase)** 甚至 OceanBase 等国产数据库，保障生成的代码在信创环境中“开箱即用”。
+
+### 3. AI 辅助智能建表与代码优化 (LLM 赋能)
+接入大语言模型 (LLM)，允许开发者通过**自然语言描述**直接生成规范的 DDL SQL 语句；并在复杂查询场景下，AI 智能预测并生成包含复杂 Join 的 MyBatis XML 片段。
+
+### 4. 多租户隔离架构进阶 (Schema / Database 级别隔离)
+当前已实现基于字段（`tenant_id`）的逻辑多租户。未来需增加架构选项，支持更严格的**物理多租户隔离**：动态多数据源路由实现的按 Schema 隔离或按 Database 隔离机制，满足大型企业更严格的数据合规需求。
+
+### 5. 高阶云原生微服务网关层 (Gateway) 自动生成
+为 Spring Cloud 微服务架构自动生成功能强大的 **Spring Cloud Gateway** 工程。不仅负责基础路由，还内置无缝对接 OAuth2 认证中心的校验逻辑、动态黑白名单防御、基于 Redis 的网关级 Sentinel 细粒度限流策略。
+
+### 6. 前后端字典与枚举状态自动双向映射 (Type-Sync)
+在后端统一定义的业务 `Enum` 枚举或数据库状态字典，能够在生成阶段（或运行时 API）自动同步并转换为前端的 **TypeScript 类型定义**及下拉框 UI 渲染组件，彻底消灭前后端协同中的“魔术常量”。
+
+### 7. 自动化集成测试与测试覆盖率保障 (Testcontainers)
+不再仅生成简单的测试桩（Stub），而是集成 **Testcontainers** 技术，为核心 Service 层和 API 层自动生成基于 Docker 容器的真实数据库/Redis 依赖启动测试环境，实现生成代码即具备高集成测试覆盖率。
+
+### 8. 低代码表单引擎动态集成 (Form-Engine)
+传统的代码生成仅解决“静态界面”问题，高价值扩展在于集成如 FormCreate 等**低代码/动态表单渲染引擎**。不仅生成基础 CRUD 代码，更将页面布局及校验规则入库，通过一套模板渲染多变的企业动态表单。
+
+### 9. GraphQL / gRPC 微服务高性能 API 选项
+除了标准的 RESTful API 外，提供接口生成维度的**双协议扩展**。内部微服务密集通讯可选择生成 gRPC (Protobuf) 接口，而面对多端复杂数据聚合查询可一键生成 GraphQL 服务端架构。
+
+### 10. 云原生 DevOps 高级编排 (Helm Charts & CI/CD)
+当前包含基础 Dockerfile 构建，未来需生成生产级的 **Helm Charts** 部署清单，以及完整的 GitHub Actions / GitLab-CI 全自动部署流水线，涵盖编译、镜像推送、K8s 滚动更新的全链路自动化。

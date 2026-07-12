@@ -59,7 +59,7 @@ components:
     write_null_value: true
   MYBATIS:
     sqlType: plus
-    superMapperClass: mybatis-plus
+    superMapperClass: BaseMapper
     superEntityClass: BaseEntity
     superServiceClass: com.baomidou.mybatisplus.extension.service.IService
     superServiceImplClass: com.baomidou.mybatisplus.extension.service.impl.ServiceImpl

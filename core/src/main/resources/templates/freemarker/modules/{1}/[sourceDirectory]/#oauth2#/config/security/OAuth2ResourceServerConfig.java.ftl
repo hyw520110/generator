@@ -12,7 +12,7 @@ public class OAuth2ResourceServerConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> {
-                <#if platformId?? && platformId?contains("boot3")>
+                <#if springBootMajor?? && springBootMajor != "2">
                 authorize.requestMatchers("/public/**").permitAll()
                     .anyRequest().authenticated();
                 <#else>

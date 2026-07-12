@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: generator-web
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
 
 # Knife4j 配置
 springdoc:

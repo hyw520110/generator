@@ -59,4 +59,26 @@ public class TemplateContextBuilderTest {
         
         // 兼容矩阵变量由全局配置解析后注入；未解析时不强制要求包名派生变量存在。
     }
+
+    @Test
+    public void shouldKeepDatabaseTypeSeparateFromMybatisGenerationMode() {
+        GlobalConf global = new GlobalConf();
+        global.setRootPackage("com.example");
+        global.setOutputDir("./demo");
+        global.setComponents(new Component[]{Component.MYBATIS});
+
+        DataSourceConf dataSource = new DataSourceConf();
+        dataSource.setDBType(DBType.MYSQL);
+
+        Map<Component, Map<String, Object>> components = new HashMap<>();
+        Map<String, Object> mybatis = new HashMap<>();
+        mybatis.put("mapperType", "plus");
+        components.put(Component.MYBATIS, mybatis);
+
+        RenderContext context = new TemplateContextBuilder(global, dataSource, components).buildGlobalContext();
+
+        assertEquals("mysql", context.get("dbType"));
+        assertEquals("plus", context.get("sqlType"));
+        assertEquals("plus", context.get("mapperType"));
+    }
 }

@@ -1,6 +1,8 @@
 package ${packagePath};
 
 import ${global.rootPackage}.${global.projectName}.${moduleName}.annotation.Idempotent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
@@ -20,6 +22,9 @@ import java.lang.reflect.Method;
  */
 @Component
 public class IdempotentInterceptor implements HandlerInterceptor {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -47,11 +52,10 @@ public class IdempotentInterceptor implements HandlerInterceptor {
             throw new RuntimeException("幂等Token不能为空");
         }
         
-        // TODO: 结合 Redis 验证 Token 是否存在，如果不存在抛出异常，如果存在则删除
-        // 伪代码：
-        // boolean success = redisTemplate.delete(token);
-        // if (!success) {
-        //     throw new RuntimeException(idempotent.message());
-        // }
+        // 结合 Redis 验证 Token 是否存在，如果存在则删除
+        Boolean success = stringRedisTemplate.delete("idempotent_token:" + token);
+        if (success == null || !success) {
+            throw new RuntimeException(idempotent.message());
+        }
     }
 }

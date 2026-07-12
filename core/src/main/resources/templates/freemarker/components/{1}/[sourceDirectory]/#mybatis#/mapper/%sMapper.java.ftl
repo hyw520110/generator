@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import ${entityPackage!}.${entityName!};
 <#if superMapperClass?? && superMapperClass?has_content>
-<#if mapperType=="plus">
+<#if sqlType=="plus">
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 <#else>
 <#if superMapperClass?contains('.')>
@@ -16,29 +16,29 @@ import ${mapperPackage!}.${superMapperClass!};
 </#if>
 </#if>
 </#if>
-<#if REDIS?? && mapperType!="plus">
+<#if REDIS?? && sqlType!="plus">
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 </#if>
-<#if mapperType=="SQL">
+<#if sqlType=="SQL">
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 </#if>
 
 <#include 'comments/comment.ftl'>
-<#if mapperType=="SQL">
+<#if sqlType=="SQL">
 @Mapper
 </#if>
-<#if "annotation"==mapperType!>
+<#if "annotation"==sqlType!>
 @Repository
 </#if>
-<#if REDIS?? && "plus"!=mapperType!>
+<#if REDIS?? && "plus"!=sqlType!>
 @CacheConfig(cacheNames = "${entityName!?lower_case}")
 </#if>
 public interface ${mapperName!} <#if superMapperClass?? && superMapperClass?has_content> extends ${superMapperClass!}<${entityName!}> </#if>{
 
-<#if "plus"!=mapperType!>
+<#if "plus"!=sqlType!>
 <#if table.hasPrimarykeys()>
 <#if REDIS??>
     @Cacheable(key = "#p0")

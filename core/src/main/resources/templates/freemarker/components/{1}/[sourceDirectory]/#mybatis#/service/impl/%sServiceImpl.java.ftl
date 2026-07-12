@@ -19,7 +19,7 @@ import java.io.Serializable;
 @org.apache.dubbo.config.annotation.DubboService
 </#if>
 public class ${implName!} <#if superServiceImplClass??> extends ${superServiceImplClass!}<${mapperName!},${entityName!}> </#if> implements ${serviceName!} {
-<#if "plus"!=mapperType!>
+<#if "plus"!=sqlType!>
 <#assign sName = StringUtils.lowercaseFirst(mapperName)!>
 
 	@Autowired
@@ -59,7 +59,7 @@ public class ${implName!} <#if superServiceImplClass??> extends ${superServiceIm
 		return dtos;
 	}
 
-<#if "plus"==mapperType!>
+<#if "plus"==sqlType!>
     @Override
     <#if SEATA?? && SEATA>@io.seata.spring.annotation.GlobalTransactional</#if>
     public boolean save(${entityName!} entity) {

@@ -1,4 +1,4 @@
-<#if mapperType?? && mapperType == "plus">
+<#if sqlType?? && sqlType == "plus">
 package ${plusPackage!};
 
 import com.baomidou.mybatisplus.core.injector.ISqlInjector;
@@ -15,6 +15,8 @@ import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import ${global.rootPackage}.${global.projectName}.${moduleName}.config.tenant.TenantContextHolder;
+import java.util.Arrays;
+import java.util.List;
 </#if>
 <#if global.features?seq_contains('DATAPERMISSION')>
 import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionInterceptor;
@@ -60,8 +62,10 @@ public class MybatisPlusConfiguration {
             }
             @Override
             public boolean ignoreTable(String tableName) {
-                // TODO: 可以在这里配置哪些表不需要租户隔离
-                return "sys_tenant".equalsIgnoreCase(tableName);
+                List<String> ignoreTables = Arrays.asList(
+                    "sys_tenant", "sys_user", "sys_role", "sys_menu", "sys_dict", "sys_log", "sys_audit_log"
+                );
+                return ignoreTables.stream().anyMatch(t -> t.equalsIgnoreCase(tableName));
             }
         }));
 </#if>

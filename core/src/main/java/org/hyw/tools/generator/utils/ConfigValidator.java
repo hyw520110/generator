@@ -198,8 +198,8 @@ public class ConfigValidator {
         if (oauth2 && shiro) {
             errors.add("OAUTH2 特性与 SHIRO 组件存在冲突，请选择 SPRINGSECURITY/OAUTH2 方案");
         }
-        if (shiro && isBoot3Target(config)) {
-            errors.add("SHIRO 仅作为 Boot2 安全方案保留；Boot3 请使用 SPRINGSECURITY/OAUTH2");
+        if (shiro && isBoot3OrNewerTarget(config)) {
+            errors.add("SHIRO 仅作为 Boot2 安全方案保留；Boot3 及以上请使用 SPRINGSECURITY/OAUTH2");
         }
     }
 
@@ -260,10 +260,11 @@ public class ConfigValidator {
         return SecurityScheme.NONE;
     }
 
-    private static boolean isBoot3Target(GlobalConf config) {
+    private static boolean isBoot3OrNewerTarget(GlobalConf config) {
         String platformId = config.getPlatformId();
         if (StringUtils.isNotBlank(platformId)) {
-            return platformId.toLowerCase().contains("boot3");
+            String normalized = platformId.toLowerCase();
+            return normalized.contains("boot3") || normalized.contains("boot4");
         }
         String javaVersion = config.getJavaVersion();
         return "17".equals(javaVersion) || "21".equals(javaVersion);

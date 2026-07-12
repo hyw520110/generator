@@ -4,6 +4,7 @@ const modulePath = '/v1/gen'
 
 const api = {
   tableList: modulePath + '/tables',
+  sqlFiles: modulePath + '/sql-files',
   databases: modulePath + '/databases',
   step1: modulePath + '/step1',
   step2: modulePath + '/step2',
@@ -22,6 +23,17 @@ export function getTableList (parameter) {
     method: 'post',
     params: parameter,
     timeout: 10000
+  })
+}
+
+export function uploadSqlFiles (files) {
+  const data = new FormData()
+  files.forEach(file => data.append('files', file))
+  return axios({
+    url: api.sqlFiles,
+    method: 'post',
+    data,
+    timeout: 120000
   })
 }
 

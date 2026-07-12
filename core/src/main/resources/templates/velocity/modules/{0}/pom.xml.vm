@@ -20,13 +20,20 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
+	#if($sqlType == "plus")
 		<dependency>
-		 	<groupId>commons-lang</groupId>
-		  	<artifactId>commons-lang</artifactId>
-		  	<version>2.4</version>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-spring</artifactId>
+			<version>$!{mybatis_plus_version}</version>
+		</dependency>
+	#end
+		<dependency>
+		 	<groupId>org.apache.commons</groupId>
+		  	<artifactId>commons-lang3</artifactId>
+		  	<version>3.14.0</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.hibernate</groupId>
+		    <groupId>org.hibernate.validator</groupId>
 		    <artifactId>hibernate-validator</artifactId>
 		    #if(!$!{springboot})<version>6.0.17.Final</version>#end
 		</dependency>
@@ -47,7 +54,8 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
-#if("plus"=="$mapperType")
+#if($MYBATIS)
+#if("plus"=="$sqlType")
 		<dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-core</artifactId>
@@ -57,6 +65,7 @@
 			<artifactId>mybatis-plus-extension</artifactId>
 		</dependency>
 #end				
+#end
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>

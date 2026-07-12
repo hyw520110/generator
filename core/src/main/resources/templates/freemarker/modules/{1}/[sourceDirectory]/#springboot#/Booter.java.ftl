@@ -24,8 +24,6 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 </#if>
-import io.undertow.Undertow.Builder;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ImportResource;
@@ -40,10 +38,10 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 <#if OPENFEIGN?? && OPENFEIGN>
 @EnableFeignClients
 </#if>
-@SpringBootApplication(exclude = {org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration.class})
+@SpringBootApplication
 @EnableCaching
 @EnableAsync
-<#if mapperPackage?? && "plus"!=(mapperType!"")>
+<#if mapperPackage?? && "plus"!=(sqlType!"")>
 @MapperScan("${mapperPackage}")
 </#if>
 public class Booter{

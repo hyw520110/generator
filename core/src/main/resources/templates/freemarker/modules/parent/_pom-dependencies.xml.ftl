@@ -9,6 +9,7 @@
 				<scope>import</scope>
 			</dependency>
 <#if springcloud_version?has_content>
+	<#if springcloud_alibaba_version?has_content>
 			<!-- spring cloud alibaba -->
 			<dependency>
 				<groupId>com.alibaba.cloud</groupId>
@@ -17,6 +18,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+	</#if>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
@@ -62,22 +64,25 @@
 				<version><#noparse>${sentinel.version}</#noparse></version>
 			</dependency>
 </#if>
+	<#if MYBATIS?? && MYBATIS>
 			<!-- mybatis -->
 			<dependency>
 				<groupId>org.mybatis.spring.boot</groupId>
 				<artifactId>mybatis-spring-boot-starter</artifactId>
 				<version><#noparse>${mybatis-spring-boot.version}</#noparse></version>
 			</dependency>
-			<!-- 分页插件 -->
+		<#if (sqlType!'xml') != "plus">
+			<!-- 分页插件（MyBatis-Plus 使用自身分页能力） -->
 			<dependency>
 				<groupId>com.github.pagehelper</groupId>
 				<artifactId>pagehelper-spring-boot-starter</artifactId>
 				<version><#noparse>${pagehelper.version}</#noparse></version>
 			</dependency>
+		</#if>
 			<!-- druid 数据库连接池 -->
 			<dependency>
 				<groupId>com.alibaba</groupId>
-				<artifactId>druid-spring-boot-starter</artifactId>
+				<artifactId>${druid_starter_artifact!'druid-spring-boot-starter'}</artifactId>
 				<version><#noparse>${druid.version}</#noparse></version>
 			</dependency>
 <#if dbType == "mysql">
@@ -109,7 +114,8 @@
 				<version><#noparse>${mssql.version}</#noparse></version>
 			</dependency>
 </#if>
-<#if SWAGGER2??>
+	</#if>
+<#if SWAGGER2?? && SWAGGER2>
 			<!-- Knife4j for Spring Boot 3 -->
 				<dependency>
 					<groupId>com.github.xiaoymin</groupId>
@@ -176,7 +182,7 @@
 					<version><#noparse>${lombok.version}</#noparse></version>
 				</dependency>
 </#if>
-	<#if mapperType?? && mapperType == "plus">
+	<#if MYBATIS?? && MYBATIS && (sqlType!'xml') == "plus">
 			<!-- mybatis-plus -->
 			<dependency>
 				<groupId>com.baomidou</groupId>

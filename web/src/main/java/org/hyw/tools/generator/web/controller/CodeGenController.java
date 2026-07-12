@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
+import java.io.InputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,9 +50,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
+
 
 /**
  * 代码生成器
@@ -65,6 +66,9 @@ import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 public class CodeGenController {
 
 	private static final Logger logger = LoggerFactory.getLogger(CodeGenController.class);
+	private static final int MAX_SQL_FILE_COUNT = 200;
+	private static final long MAX_SQL_FILE_SIZE = 20L * 1024 * 1024;
+	private static final long MAX_SQL_TOTAL_SIZE = 100L * 1024 * 1024;
 
 	/** 默认输出目录（从配置文件读取） */
 	@Value("${app.output-dir:${user.home}/output/demo}")
@@ -180,13 +184,13 @@ public class CodeGenController {
 	}
 
 	@PostMapping("/tables")
-	public Result<String> getTables(@RequestParam(name = "ipAndPort") String ipAndPort,
-			@RequestParam(name = "dbName") String dbName,
-			@RequestParam(name = "username") String username,
-			@RequestParam(name = "pwd") String pwd,
-			@RequestParam(name = "include") String include,
-			@RequestParam(name = "exclude") String exclude,
-			@RequestParam(name = "tablePrefix") String tablePrefix) {
+	public Result<String> getTables(@RequestParam(name = "ipAndPort", defaultValue = "") String ipAndPort,
+			@RequestParam(name = "dbName", defaultValue = "") String dbName,
+			@RequestParam(name = "username", defaultValue = "") String username,
+			@RequestParam(name = "pwd", defaultValue = "") String pwd,
+			@RequestParam(name = "include", defaultValue = "") String include,
+			@RequestParam(name = "exclude", defaultValue = "") String exclude,
+			@RequestParam(name = "tablePrefix", defaultValue = "") String tablePrefix) {
 		Generator generator = currentGenerator();
 		logger.info("[tables] 输入 - ipAndPort: {}, dbName: {}, username: {}, include: {}, exclude: {}, tablePrefix: {}",
 				ipAndPort, dbName, username, include, exclude, tablePrefix);
@@ -197,10 +201,13 @@ public class CodeGenController {
 		generator.getGlobal().setMatchMode(true);
 		generator.getGlobal().setInclude(StringUtils.isNotBlank(include) ? include.split(",") : null);
 		generator.getGlobal().setExclude(StringUtils.isNotBlank(exclude) ? exclude.split(",") : null);
-		if (StringUtils.isBlank(ipAndPort)) {
+		if ("SQL_FILE".equalsIgnoreCase(generator.getDataSource().getSourceType())) {
 			Result<String> result = toJson();
 			logger.info("[tables] 输出 - 表数量: {}", generator.getTables() != null ? generator.getTables().size() : 0);
 			return result;
+		}
+		if (StringUtils.isBlank(ipAndPort)) {
+			return Result.error("数据库地址不能为空；使用 SQL 文件时请先上传文件");
 		}
 		DataSourceConf ds = generator.getDataSource();
 		ds.setIpAndPort(ipAndPort);
@@ -211,6 +218,83 @@ public class CodeGenController {
 		logger.info("[tables] 输出 - 表数量: {}", generator.getTables() != null ? generator.getTables().size() : 0);
 		return result;
 		}
+	}
+
+	@PostMapping("/sql-files")
+	public Result<?> uploadSqlFiles(@RequestParam("files") MultipartFile[] files) {
+		if (files == null || files.length == 0) {
+			return Result.error("请选择 SQL 文件");
+		}
+		if (files.length > MAX_SQL_FILE_COUNT) {
+			return Result.error("SQL 文件数量不能超过 " + MAX_SQL_FILE_COUNT + " 个");
+		}
+
+		String clientKey = resolveClientKey(currentRequest());
+		File configParent = userConfigFile(clientKey).getAbsoluteFile().getParentFile();
+		File sqlDir = new File(new File(configParent, "sql-sources"), clientKey);
+		long totalSize = 0L;
+		List<String> savedFiles = new ArrayList<>();
+
+		synchronized (userGeneratorService.lockFor(currentRequest())) {
+			try {
+				org.apache.commons.io.FileUtils.deleteDirectory(sqlDir);
+				if (!sqlDir.mkdirs() && !sqlDir.isDirectory()) {
+					return Result.error("无法创建 SQL 文件目录");
+				}
+				for (MultipartFile file : files) {
+					if (file == null || file.isEmpty()) {
+						continue;
+					}
+					String originalName = StringUtils.defaultString(file.getOriginalFilename(), "schema.sql");
+					String fileName = new File(originalName).getName();
+					if (!fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".sql")) {
+						return Result.error("仅支持 .sql 文件: " + fileName);
+					}
+					if (file.getSize() > MAX_SQL_FILE_SIZE) {
+						return Result.error("单个 SQL 文件不能超过 20MB: " + fileName);
+					}
+					totalSize += file.getSize();
+					if (totalSize > MAX_SQL_TOTAL_SIZE) {
+						return Result.error("SQL 文件总大小不能超过 100MB");
+					}
+					File target = uniqueSqlFile(sqlDir, fileName);
+					try (InputStream input = file.getInputStream()) {
+						org.apache.commons.io.FileUtils.copyInputStreamToFile(input, target);
+					}
+					savedFiles.add(target.getName());
+				}
+				if (savedFiles.isEmpty()) {
+					return Result.error("没有可解析的 SQL 文件");
+				}
+
+				Generator generator = currentGenerator();
+				DataSourceConf ds = generator.getDataSource();
+				ds.setSourceType("SQL_FILE");
+				ds.setSqlPath(sqlDir.getCanonicalPath());
+				ds.setDbName("sql-files");
+				saveCurrentGenerator();
+
+				Map<String, Object> result = new HashMap<>();
+				result.put("sourceType", ds.getSourceType());
+				result.put("sqlPath", ds.getSqlPath());
+				result.put("files", savedFiles);
+				result.put("tableCount", generator.getTables(true).size());
+				return Result.ok(result);
+			} catch (Exception e) {
+				logger.error("上传并解析 SQL 文件失败", e);
+				return Result.error("SQL 文件解析失败: " + e.getMessage());
+			}
+		}
+	}
+
+	private File uniqueSqlFile(File directory, String fileName) {
+		File target = new File(directory, fileName);
+		int sequence = 1;
+		String base = StringUtils.substringBeforeLast(fileName, ".");
+		while (target.exists()) {
+			target = new File(directory, base + "_" + sequence++ + ".sql");
+		}
+		return target;
 	}
 
 	/**
@@ -250,8 +334,39 @@ public class CodeGenController {
 	 */
 	private Result<String> toJson() {
 		Generator generator = currentGenerator();
-		return new Result<>(JSON.toJSONString(generator, new SimplePropertyPreFilter("dataSource", "ipAndPort",
-				"dbName", "username", "pwd", "tables", "name", "comment", "createTime")));
+		try {
+			com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+			Map<String, Object> map = new HashMap<>();
+			
+			DataSourceConf ds = generator.getDataSource();
+			if (ds != null) {
+				Map<String, Object> dsMap = new HashMap<>();
+				dsMap.put("ipAndPort", ds.getIpAndPort());
+				dsMap.put("dbName", ds.getDbName());
+				dsMap.put("username", ds.getUsername());
+				dsMap.put("pwd", ds.getPwd());
+				dsMap.put("sourceType", ds.getSourceType());
+				dsMap.put("sqlPath", ds.getSqlPath());
+				map.put("dataSource", dsMap);
+			}
+			
+			List<Map<String, Object>> tablesList = new ArrayList<>();
+			if (generator.getTables() != null) {
+				for (org.hyw.tools.generator.conf.db.Table table : generator.getTables()) {
+					Map<String, Object> tableMap = new HashMap<>();
+					tableMap.put("name", table.getName());
+					tableMap.put("comment", table.getComment());
+					tableMap.put("createTime", table.getCreateTime());
+					tablesList.add(tableMap);
+				}
+			}
+			map.put("tables", tablesList);
+			
+			return new Result<>(mapper.writeValueAsString(map));
+		} catch (Exception e) {
+			logger.error("JSON 序列化失败", e);
+			return Result.error("JSON 序列化失败");
+		}
 	}
 
 	/**
@@ -305,6 +420,8 @@ public class CodeGenController {
 		dataSource.put("username", ds.getUsername());
 		dataSource.put("pwd", userGeneratorService.isPersistPassword() ? ds.getPwd() : "");
 		dataSource.put("dbType", ds.getDBType() != null ? ds.getDBType().name() : null);
+		dataSource.put("sourceType", ds.getSourceType());
+		dataSource.put("sqlPath", ds.getSqlPath());
 		config.put("dataSource", dataSource);
 
 		Map<String, Object> client = new HashMap<>();
@@ -571,25 +688,16 @@ public class CodeGenController {
 		// projectBuilder 保持 MAVEN 或 GRADLE
 		global.setProjectBuilder(ProjectBuilder.valueOf(projectBuilder));
 		Map<Component, Map<String, Object>> map = generator.getComponents();
-		if (StringUtils.isNotBlank(springBootVersion)) {
-			versionOverride(generator, Component.SPRINGBOOT).put("springboot_version", springBootVersion);
-		}
-		if (StringUtils.isNotBlank(springCloudVersion)) {
-			versionOverride(generator, Component.SPRINGCLOUD).put("springcloud_version", springCloudVersion);
-		}
-		if (StringUtils.isNotBlank(springCloudAlibabaVersion)) {
-			versionOverride(generator, Component.SPRINGCLOUD).put("springcloud_alibaba_version", springCloudAlibabaVersion);
-		}
-		map.get(Component.SPRINGBOOT).put(Component.SPRINGBOOT.name().toLowerCase() + "_version", springBootVersion);
-		map.get(Component.SPRINGCLOUD).put(Component.SPRINGCLOUD.name().toLowerCase() + "_version", springCloudVersion);
-		map.get(Component.SPRINGCLOUD).put("springcloud_alibaba_version", springCloudAlibabaVersion);
+		org.hyw.tools.generator.compat.CompatibilityProfile profile = new org.hyw.tools.generator.compat.CompatibilityResolver().getMatrix().resolveByJava(global.getJavaVersion());
+		checkAndOverride(generator, profile, Component.SPRINGBOOT, "springboot_version", springBootVersion);
+		checkAndOverride(generator, profile, Component.SPRINGCLOUD, "springcloud_version", springCloudVersion);
+		checkAndOverride(generator, profile, Component.SPRINGCLOUD, "springcloud_alibaba_version", springCloudAlibabaVersion);
 
 		// 处理 Dubbo
 		if (StringUtils.isBlank(dubboVersion)) {
 			global.setComponents(removeComponents(global.getComponents(), Component.DUBBO));
 		} else {
-			versionOverride(generator, Component.DUBBO).put("dubbo_version", dubboVersion);
-			map.get(Component.DUBBO).put(Component.DUBBO.name().toLowerCase() + "_version", dubboVersion);
+			checkAndOverride(generator, profile, Component.DUBBO, "dubbo_version", dubboVersion);
 		}
 
 		// 处理注册中心/配置中心
@@ -612,14 +720,34 @@ public class CodeGenController {
 		map.get(Component.REDIS).put("spring_redis_cluster_nodes", redisHost);
 		map.get(Component.REDIS).put("spring_redis_password", redisPassword);
 		if (StringUtils.isNotBlank(sentinelVersion)) {
-			versionOverride(generator, Component.SENTINEL).put("sentinel_version", sentinelVersion);
+			checkAndOverride(generator, profile, Component.SENTINEL, "sentinel_version", sentinelVersion);
 		}
-		map.get(Component.SENTINEL).put("sentinel_version", sentinelVersion);
-		map.get(Component.SENTINEL).put("dashboard.server", sentinelAddr);
-		map.get(Component.SKYWALKING).put("skywalking.addr", skywalkingAddr);
+		if (StringUtils.isNotBlank(sentinelAddr)) {
+			map.get(Component.SENTINEL).put("dashboard.server", sentinelAddr);
+		}
+		if (StringUtils.isNotBlank(skywalkingAddr)) {
+			map.get(Component.SKYWALKING).put("skywalking.addr", skywalkingAddr);
+		}
+		
+		// 校验并应用兼容性矩阵
+		generator.applyCompatibility();
+		
 		saveCurrentGenerator(); // 持久化当前用户配置
 		logger.info("[step2] 输出 - 成功, viewComponent: {}, registryCenter: {}", viewComponent, registryCenter);
 		return Result.ok();
+		}
+	}
+
+	private void checkAndOverride(Generator generator, org.hyw.tools.generator.compat.CompatibilityProfile profile, Component component, String key, String value) {
+		if (StringUtils.isBlank(value)) return;
+		Map<String, Object> defaults = profile.getVersions().get(component);
+		if (defaults == null || !value.equals(String.valueOf(defaults.get(key)))) {
+			versionOverride(generator, component).put(key, value);
+		} else {
+		    // 移除可能之前被写入的同版本号（防止残留覆盖）
+		    if (generator.getVersionOverrides().containsKey(component)) {
+		        generator.getVersionOverrides().get(component).remove(key);
+		    }
 		}
 	}
 

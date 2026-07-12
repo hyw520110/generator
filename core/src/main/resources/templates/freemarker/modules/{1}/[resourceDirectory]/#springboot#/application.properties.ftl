@@ -100,7 +100,7 @@ spring.zipkin.baseUrl=${zipkin_baseUrl!'http://localhost:9411'}
 </#if>
 
 #spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-spring.datasource.url=${dataSource.url}
+spring.datasource.url=${dataSource.url}?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
 spring.datasource.username=${dataSource.username}
 spring.datasource.password=${dataSource.password}
 spring.datasource.druid.initial-size=1

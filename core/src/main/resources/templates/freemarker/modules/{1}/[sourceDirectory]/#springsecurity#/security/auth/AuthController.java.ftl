@@ -16,7 +16,7 @@ import java.util.Map;
  * 多端认证授权端点
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     @Autowired(required = false)

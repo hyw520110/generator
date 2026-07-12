@@ -15,7 +15,7 @@ import { axios } from '@/utils/request'
 export function login (parameter) {
   return axios({
     url: api.Login,
-    method: 'put',
+    method: 'post',
     data: parameter  // 改用 data 发送 JSON body
   })
 }
@@ -41,6 +41,6 @@ export function getInfo (userId) {
 export function logout () {
   return axios({
     url: api.Logout,
-    method: 'put'
+    method: 'post'
   })
 }

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 自定义错误控制器，处理 /error 路径并返回 JSON 响应
  */
-@RestController
+// @RestController
 public class ErrorController {
 	private static final String ERROR_PATH = "/error";
 	

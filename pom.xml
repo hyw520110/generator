@@ -36,7 +36,7 @@
 		<mssql.version>12.6.1.jre8</mssql.version>
 		<exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
 		<fastjson.version>2.0.53</fastjson.version>
-		<jackson.version>2.15.2</jackson.version>
+		<jackson.version>2.18.9</jackson.version>
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>

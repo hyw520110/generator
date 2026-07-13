@@ -33,7 +33,7 @@
 		<mysql.version>8.0.33</mysql.version>
 		<postgresql.version>42.7.3</postgresql.version>
 		<oracle.version>21.13.0.0</oracle.version>
-		<mssql.version>12.6.1.jre8</mssql.version>
+		<mssql.version>12.8.0.jre8</mssql.version>
 		<exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
 		<fastjson.version>2.0.53</fastjson.version>
 		<jackson.version>2.15.2</jackson.version>

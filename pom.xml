@@ -30,7 +30,7 @@
 		<log4j.version>2.22.0</log4j.version>
 		<druid.version>1.2.20</druid.version>
 		<junit.version>4.13.2</junit.version>
-		<mysql.version>8.0.33</mysql.version>
+		<mysql.version>8.2.0</mysql.version>
 		<postgresql.version>42.7.3</postgresql.version>
 		<oracle.version>21.13.0.0</oracle.version>
 		<mssql.version>12.6.1.jre8</mssql.version>

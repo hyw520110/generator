@@ -130,12 +130,7 @@
             <artifactId>${mybatis_plus_starter_artifact!'mybatis-plus-spring-boot3-starter'}</artifactId>
             <version><#noparse>${mybatis.plus.version}</#noparse></version>
         </dependency>
-		<dependency>
-			<groupId>com.baomidou</groupId>
-			<artifactId>mybatis-plus-jsqlparser</artifactId>
-			<version><#noparse>${mybatis.plus.version}</#noparse></version>
-		</dependency>
-    	<!-- mybatis plus generator -->
+		<!-- mybatis plus generator -->
 		<dependency>
 		    <groupId>com.baomidou</groupId>
 		    <artifactId>mybatis-plus-generator</artifactId>

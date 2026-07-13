@@ -35,19 +35,28 @@ public class CompatibilityMatrix {
 
 	public CompatibilityProfile resolveByJava(int javaVersion) {
 		CompatibilityProfile firstMatch = null;
+		System.out.println("[CompatibilityMatrix] resolveByJava: javaVersion=" + javaVersion + ", searching profiles...");
 		for (CompatibilityProfile profile : profiles) {
 			if (profile.getJava() != javaVersion) {
 				continue;
 			}
+			System.out.println("[CompatibilityMatrix] resolveByJava: matched profile.id=" + profile.getId()
+				+ ", defaultProfile=" + profile.isDefaultProfile());
 			if (profile.isDefaultProfile()) {
-				return resolve(profile);
+				CompatibilityProfile resolved = resolve(profile);
+				System.out.println("[CompatibilityMatrix] resolveByJava: default match → resolved.id=" + resolved.getId()
+					+ ", templateFamily=" + resolved.getTemplateFamily());
+				return resolved;
 			}
 			if (firstMatch == null) {
 				firstMatch = profile;
 			}
 		}
 		if (firstMatch != null) {
-			return resolve(firstMatch);
+			CompatibilityProfile resolved = resolve(firstMatch);
+			System.out.println("[CompatibilityMatrix] resolveByJava: firstMatch fallback → resolved.id=" + resolved.getId()
+				+ ", templateFamily=" + resolved.getTemplateFamily());
+			return resolved;
 		}
 		throw new IllegalArgumentException("未配置 Java " + javaVersion + " 的兼容性矩阵");
 	}
@@ -55,7 +64,12 @@ public class CompatibilityMatrix {
 	public CompatibilityProfile resolveById(String id) {
 		for (CompatibilityProfile profile : profiles) {
 			if (id != null && id.equals(profile.getId())) {
-				return resolve(profile);
+				System.out.println("[CompatibilityMatrix] resolveById: id=" + id + " → found profile, calling resolve()");
+				CompatibilityProfile resolved = resolve(profile);
+				System.out.println("[CompatibilityMatrix] resolveById: id=" + id + " → resolved.id=" + resolved.getId()
+					+ ", templateFamily=" + resolved.getTemplateFamily() + ", java=" + resolved.getJava()
+					+ ", namespace=" + resolved.getNamespace() + ", defaultProfile=" + resolved.isDefaultProfile());
+				return resolved;
 			}
 		}
 		throw new IllegalArgumentException("未配置兼容性档位: " + id);
@@ -63,11 +77,16 @@ public class CompatibilityMatrix {
 
 	private CompatibilityProfile resolve(CompatibilityProfile profile) {
 		String parentId = profile.getExtends();
+		System.out.println("[CompatibilityMatrix] resolve: profile.id=" + profile.getId() + ", parentId=" + parentId);
 		if (parentId == null || parentId.trim().isEmpty()) {
+			System.out.println("[CompatibilityMatrix] resolve: no parent, returning copy of " + profile.getId());
 			return profile.copy();
 		}
+		System.out.println("[CompatibilityMatrix] resolve: merging into parent " + parentId);
 		CompatibilityProfile parent = resolveById(parentId);
 		parent.mergeFrom(profile);
+		System.out.println("[CompatibilityMatrix] resolve: after merge → id=" + parent.getId()
+			+ ", templateFamily=" + parent.getTemplateFamily() + ", namespace=" + parent.getNamespace());
 		return parent;
 	}
 

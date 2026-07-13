@@ -493,7 +493,7 @@ export default {
       } catch (err) {
         stopTimer()
         generating.value = false
-        errorMessage.value = err.response ? err.response.data.message : '生成代码时发生错误'
+        errorMessage.value = err.response?.data?.message || err.message || '生成代码时发生错误'
         errorType.value = 'error'
       }
     }

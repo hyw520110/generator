@@ -40,22 +40,17 @@ public class CompatibilityProfile {
 		if (child == null) {
 			return;
 		}
-		if (child.java > 0) {
-			this.java = child.java;
-		}
-		if (child.id != null) {
-			this.id = child.id;
-		}
-		if (child.name != null) {
-			this.name = child.name;
-		}
+		System.out.println("[CompatibilityProfile] mergeFrom: child.id=" + child.getId() + " into parent.id=" + this.id);
 		if (child.templateFamily != null) {
+			System.out.println("[CompatibilityProfile] mergeFrom: child.templateFamily='" + child.templateFamily + "' → override parent.templateFamily='" + this.templateFamily + "'");
 			this.templateFamily = child.templateFamily;
 		}
 		if (child.namespace != null) {
+			System.out.println("[CompatibilityProfile] mergeFrom: child.namespace='" + child.namespace + "' → override parent.namespace='" + this.namespace + "'");
 			this.namespace = child.namespace;
 		}
 		if (child.release != null) {
+			System.out.println("[CompatibilityProfile] mergeFrom: child.release=" + child.release + " → override parent.release=" + this.release);
 			this.release = child.release;
 		}
 		if (child.versions != null) {
@@ -66,21 +61,23 @@ public class CompatibilityProfile {
 					this.versions.put(entry.getKey(), target);
 				}
 				if (entry.getValue() != null) {
+					System.out.println("[CompatibilityProfile] mergeFrom: child.versions[" + entry.getKey() + "]=" + entry.getValue());
 					target.putAll(entry.getValue());
 				}
 			}
 		}
 		if (child.allowOverride != null) {
+			System.out.println("[CompatibilityProfile] mergeFrom: child.allowOverride added: " + child.allowOverride.size() + " entries");
 			this.allowOverride.putAll(child.allowOverride);
 		}
 		if (child.componentConstraints != null && !child.componentConstraints.isEmpty()) {
 			if (this.componentConstraints == null) {
 				this.componentConstraints = new HashMap<>();
 			}
+			System.out.println("[CompatibilityProfile] mergeFrom: child.componentConstraints added: " + child.componentConstraints.size() + " entries");
 			this.componentConstraints.putAll(child.componentConstraints);
 		}
 	}
-
 	private static Map<Component, Map<String, Object>> deepCopy(Map<Component, Map<String, Object>> source) {
 		Map<Component, Map<String, Object>> copy = new HashMap<>();
 		if (source == null) {

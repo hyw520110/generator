@@ -13,7 +13,11 @@ NETWORK_PREFERRED=eth0
 
 # --- 全局变量定义 ---
 readonly CURRENT_DIR="$(cd "$(dirname "$0")" && pwd)"
-readonly BASE_DIR="${CURRENT_DIR%/*}"
+if [ "$(basename "$CURRENT_DIR")" = "bin" ]; then
+    readonly BASE_DIR="${CURRENT_DIR%/*}"
+else
+    readonly BASE_DIR="$CURRENT_DIR"
+fi
 readonly SERVICES_BASE_DIR="$HOME/webapps"
 readonly APP_NAME="$(basename "${BASE_DIR}")"
 readonly LOG_DIR="$HOME/logs"
@@ -118,13 +122,14 @@ setup_directories() {
 # 查找JAR文件
 find_jar_file() {
     local jar_file
-    jar_file=$(find "$BASE_DIR/lib" -maxdepth 1 -name "*${APP_NAME}*.jar" -type f | head -n 1)
+    jar_file=$(find "$BASE_DIR/lib" -maxdepth 1 -name "*${APP_NAME}*.jar" -type f 2>/dev/null | head -n 1)
 
     if [ -z "$jar_file" ]; then
         # 尝试查找其他可能的JAR文件
-        jar_file=$(find "$BASE_DIR/lib" -maxdepth 1 -name "*.jar" -type f | head -n 1)
+        jar_file=$(find "$BASE_DIR/lib" -maxdepth 1 -name "*.jar" -type f 2>/dev/null | head -n 1)
         if [ -z "$jar_file" ]; then
-            die "在 $BASE_DIR/lib 目录下未找到任何 JAR 文件"
+            log_error "在 $BASE_DIR/lib 目录下未找到任何 JAR 文件，请先执行 ./package.sh 并解压 target/*-bin.tar.gz 后从 bin/start.sh 启动"
+            return 1
         fi
         log_warn "未找到匹配应用名的JAR文件，使用: $jar_file"
     fi
@@ -658,28 +663,31 @@ main() {
 	        fi
 	    fi
 	fi
-    # --- 1. 参数解析 ---
-    local all_args=("$@")
-    local batch_mode=false
-    
-    # 优先检查批量模式 --all
-    for arg in "${all_args[@]}"; do
+	    # --- 1. 参数解析 ---
+	    local batch_mode=false
+
+	    # 优先检查批量模式 --all
+	    for arg in "$@"; do
         if [[ "$arg" == "--all" ]]; then
             batch_mode=true
             break
         fi
     done
 
-    # 如果是批量模式，则委托给批量启动函数
-    if [ "$batch_mode" = true ]; then
-        local passthrough_args=()
-        for arg in "${all_args[@]}"; do
+	    # 如果是批量模式，则委托给批量启动函数
+	    if [ "$batch_mode" = true ]; then
+	        local passthrough_args=()
+	        for arg in "$@"; do
             # 过滤掉 --all 参数本身
             if [[ "$arg" != "--all" ]]; then
                 passthrough_args+=("$arg")
             fi
         done
-        batch_start_all_services "${passthrough_args[@]:-}"
+	        if [ "${#passthrough_args[@]}" -gt 0 ]; then
+	            batch_start_all_services "${passthrough_args[@]}"
+	        else
+	            batch_start_all_services
+	        fi
         exit $?
     fi
 
@@ -718,7 +726,10 @@ main() {
     setup_directories
     check_if_running "$force_restart"
     
-    local jar_file=$(find_jar_file)
+    local jar_file
+    if ! jar_file=$(find_jar_file); then
+        die "启动应用失败：缺少部署 JAR"
+    fi
 
     local final_jvm_opts=$(build_jvm_opts "$jvm_opts")
 

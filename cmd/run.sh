@@ -48,6 +48,24 @@ echo_info() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
 echo_warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
 echo_error() { printf "${RED}[ERROR]${NC} %s\n" "$1"; }
 
+show_help() {
+    echo "用法: ./run.sh [选项] [附加参数...]"
+    echo ""
+    echo "选项:"
+    echo "  -h, --help       显示此帮助信息并退出"
+    echo "  --debug-port     指定 Java 远程调试端口 (例如: --debug-port 5005)"
+    echo ""
+    echo "附加参数 (直接传递给底层生成器程序):"
+    echo "  --sql-dir <路径>  指定 SQL 文件所在目录 (用于基于 SQL 文件生成代码)"
+    echo "  --db-name <名称>  指定要连接的数据库名称"
+    echo "  --db-password <密码> 指定数据库密码"
+    echo "  --config <路径>   指定自定义配置文件路径"
+    echo "  --quick          快速模式（跳过交互式菜单，直接生成代码）"
+    echo ""
+    echo "此脚本用于运行生成器命令行工具（支持开发/部署模式）。"
+    exit 0
+}
+
 # 检测运行模式
 detect_mode() {
     if [ -d "$APP_DIR/src" ] || [ -f "$APP_DIR/pom.xml" ]; then echo 0; else echo 1; fi
@@ -113,7 +131,9 @@ while [ $i -lt $# ]; do
     i=$((i+1))
     eval "arg=\${$i}"
     
-    if [ "$arg" = "--debug-port" ]; then
+    if [ "$arg" = "-h" ] || [ "$arg" = "--help" ]; then
+        show_help
+    elif [ "$arg" = "--debug-port" ]; then
         i=$((i+1))
         eval "DEBUG_PORT=\${$i}"
     else

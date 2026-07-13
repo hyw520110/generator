@@ -145,12 +145,14 @@ find_adl_downloader() {
         candidates+=("$(command -v adl)")
     fi
 
-    for candidate in "${candidates[@]}"; do
-        if [ -n "$candidate" ] && [ -x "$candidate" ]; then
-            echo "$candidate"
-            return 0
-        fi
-    done
+	    if [ "${#candidates[@]}" -gt 0 ]; then
+	        for candidate in "${candidates[@]}"; do
+	            if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+	                echo "$candidate"
+	                return 0
+	            fi
+	        done
+	    fi
 
     return 1
 }

@@ -257,7 +257,9 @@ public class Generator extends AbstractGenerator {
 	}
 
 	public ResolvedPlatform applyCompatibility() {
+		log.debug("[applyCompatibility] global={}, components={}, versionOverrides={}", global == null ? "null" : "non-null", components == null ? "null" : "non-null", versionOverrides == null ? "null" : versionOverrides.size() + " entries");
 		if (global == null || components == null) {
+			log.warn("[applyCompatibility] SKIP - global={}, components={}", global == null, components == null);
 			return null;
 		}
 		org.hyw.tools.generator.utils.ConfigValidator.normalizeSecuritySelection(global);

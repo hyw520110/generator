@@ -64,6 +64,7 @@ public class TemplateContextBuilder {
 		if (global.getModules() != null) {
 			builder.variable("modules", Arrays.asList(global.getModules()));
 		}
+		injectDeterministicPackageVariables(builder);
 
 		String dbType = (dataSource.getDBType() != null) ? dataSource.getDBType().getName() : "mysql";
 		builder.variable("dbType", dbType);
@@ -104,6 +105,32 @@ public class TemplateContextBuilder {
 		injectDynamicComponentConfigs(builder);
 
 		return builder.build();
+	}
+
+	/**
+	 * 根据稳定配置预先计算模板包名，避免并行渲染依赖其他文件先注册包变量。
+	 */
+	private void injectDeterministicPackageVariables(RenderContext.Builder builder) {
+		String[] modules = global.getModules();
+		if (modules == null || modules.length == 0) {
+			return;
+		}
+		String projectBasePackage = global.getRootPackage() + "." + global.getProjectName();
+		String apiBasePackage = projectBasePackage + "." + modules[0];
+		String implementationModule = modules.length > 1 ? modules[1] : modules[0];
+		String implementationBasePackage = projectBasePackage + "." + implementationModule;
+
+		builder.variable("entityPackage", apiBasePackage + ".entity")
+				.variable("dtoPackage", apiBasePackage + ".dto")
+				.variable("servicePackage", apiBasePackage + ".service")
+				.variable("BaseServicePackage", apiBasePackage + ".service")
+				.variable("api_entityPackage", apiBasePackage + ".entity")
+				.variable("api_dtoPackage", apiBasePackage + ".dto")
+				.variable("api_servicePackage", apiBasePackage + ".service")
+				.variable("mapperPackage", implementationBasePackage + ".mapper")
+				.variable("implPackage", implementationBasePackage + ".service.impl")
+				.variable("controllerPackage", implementationBasePackage + ".controller")
+				.variable("commonsPackage", implementationBasePackage + ".controller.commons");
 	}
 
 	private String resolveMybatisSqlType() {

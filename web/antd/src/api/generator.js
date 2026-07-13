@@ -1,6 +1,8 @@
 import { axios } from '@/utils/request'
 
 const modulePath = '/v1/gen'
+/** 全量代码生成允许的最长等待时间（10 分钟）。 */
+const CODE_GENERATION_TIMEOUT_MS = 10 * 60 * 1000
 
 const api = {
   tableList: modulePath + '/tables',
@@ -66,7 +68,8 @@ export function genCode (parameter) {
   return axios({
     url: api.genCode,
     method: 'post',
-    params: parameter
+    params: parameter,
+    timeout: CODE_GENERATION_TIMEOUT_MS
   })
 }
 

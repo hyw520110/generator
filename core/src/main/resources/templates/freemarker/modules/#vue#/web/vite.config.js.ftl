@@ -95,33 +95,10 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 8000,
       proxy: {
-        '/v1': {
+        '/api': {
           target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/auth': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/user': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/resource': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/Sys': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/sys': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/druid': {
-          target: apiBaseUrl,
-          changeOrigin: true
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, '')
         }
       }
     }

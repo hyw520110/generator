@@ -639,10 +639,13 @@ check_java_version() {
     local current_version
     current_version=$(echo "$current_raw" | awk -F. '{ if ($1 == "1") print $2; else print $1 }')
 
-    local required_version=""
-    if [ -f "$PROJECT_ROOT_DIR/pom.xml" ]; then
-        required_version=$(grep -E "<java.version>" "$PROJECT_ROOT_DIR/pom.xml" | head -1 | sed -E 's/.*<java.version>([^<]+)<\/java.version>.*/\1/')
-    fi
+	    local required_version=""
+	    if [ -f "$PROJECT_ROOT_DIR/pom.xml" ]; then
+	        required_version=$(grep -E "<(java.version|maven.compiler.release)>" "$PROJECT_ROOT_DIR/pom.xml" \
+	            | head -1 \
+	            | sed -E 's/.*<(java.version|maven.compiler.release)>([^<]+)<\/(java.version|maven.compiler.release)>.*/\2/' \
+	            || true)
+	    fi
 
     if [ -z "${current_version}" ]; then
         die "无法检测 Java 版本"

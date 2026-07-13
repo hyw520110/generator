@@ -141,6 +141,7 @@ export default {
         title,
         dataIndex,
         ellipsis: true,
+        sorter: true,
         ...(fullTitle && { fullTitle }),
         ...options
       }
@@ -154,7 +155,7 @@ export default {
         fixed: 'left'
       },
 #foreach($field in $table.fields)
-#if(!$field.sensitive)
+#if(!$field.sensitive && !$field.primarykey)
       createColumn('#if("${field.comment}"=="")${field.name}#else${field.comment}#end', '${field.propertyName}'#if($table.getFieldWidthConfig($field) != "" || $table.getFieldFixedConfig($field, $foreach.index) != ""), { #if($table.getFieldWidthConfig($field) != "")${table.getFieldWidthConfig($field)}#end#if($table.getFieldWidthConfig($field) != "" && $table.getFieldFixedConfig($field, $foreach.index) != ""), #end#if($table.getFieldFixedConfig($field, $foreach.index) != "")${table.getFieldFixedConfig($field, $foreach.index)}#end }#end),
 #end
 #end

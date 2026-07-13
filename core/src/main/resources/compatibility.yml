@@ -104,9 +104,9 @@ profiles:
       OPENAPI:
         springdoc_version: 2.8.17
     allowOverride:
-      SPRINGBOOT.springboot_version: 3.2.*
-      SPRINGCLOUD.springcloud_version: 2023.0.*
-      SPRINGCLOUD.springcloud_alibaba_version: 2023.0.*
+      SPRINGBOOT.springboot_version: 3.[0-4].*
+      SPRINGCLOUD.springcloud_version: 202[2-4].*
+      SPRINGCLOUD.springcloud_alibaba_version: 202[2-4].*
       MYBATIS.mybatis_plus_version: 3.5.*
       MYBATIS.druid_version: 1.2.*
       MYBATIS.mysql_connector_version: 8.0.*
@@ -177,9 +177,9 @@ profiles:
         knife4j_version: 4.5.0
         knife4j_starter_artifact: knife4j-openapi3-jakarta-spring-boot-starter
     allowOverride:
-      SPRINGBOOT.springboot_version: 3.2.*
-      SPRINGCLOUD.springcloud_version: 2023.0.*
-      SPRINGCLOUD.springcloud_alibaba_version: 2023.0.*
+      SPRINGBOOT.springboot_version: 3.[2-4].*
+      SPRINGCLOUD.springcloud_version: 202[3-4].0.*
+      SPRINGCLOUD.springcloud_alibaba_version: 202[3-4].*
       MYBATIS.mybatis_plus_version: 3.5.*
       MYBATIS.druid_version: 1.2.*
       MYBATIS.mysql_connector_version: 8.0.*

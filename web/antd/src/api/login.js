@@ -1,17 +1,5 @@
-import request from '@/utils/request'
-
-const userApi = {
-  Login: '/auth/login',
-  Logout: '/auth/logout',
-  ForgePassword: '/auth/forge-password',
-  Register: '/auth/register',
-  twoStepCode: '/auth/2step-code',
-  SendSms: '/account/sms',
-  SendSmsErr: '/account/sms_err',
-  // get my info
-  UserInfo: '/user/info',
-  UserMenu: '/user/nav'
-}
+import api from './index'
+import { axios } from '@/utils/request'
 
 /**
  * login func
@@ -25,24 +13,24 @@ const userApi = {
  * @returns {*}
  */
 export function login (parameter) {
-  return request({
-    url: userApi.Login,
+  return axios({
+    url: api.Login,
     method: 'post',
-    data: parameter
+    data: parameter  // 改用 data 发送 JSON body
   })
 }
 
 export function getSmsCaptcha (parameter) {
-  return request({
-    url: userApi.SendSms,
+  return axios({
+    url: api.SendSms,
     method: 'post',
     data: parameter
   })
 }
 
-export function getInfo () {
-  return request({
-    url: userApi.UserInfo,
+export function getInfo (userId) {
+  return axios({
+    url: api.UserInfo + '/' + userId,
     method: 'get',
     headers: {
       'Content-Type': 'application/json;charset=UTF-8'
@@ -50,31 +38,9 @@ export function getInfo () {
   })
 }
 
-export function getCurrentUserNav () {
-  return request({
-    url: userApi.UserMenu,
-    method: 'get'
-  })
-}
-
 export function logout () {
-  return request({
-    url: userApi.Logout,
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json;charset=UTF-8'
-    }
-  })
-}
-
-/**
- * get user 2step code open?
- * @param parameter {*}
- */
-export function get2step (parameter) {
-  return request({
-    url: userApi.twoStepCode,
-    method: 'post',
-    data: parameter
+  return axios({
+    url: api.Logout,
+    method: 'put'
   })
 }

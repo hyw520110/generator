@@ -156,8 +156,11 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { step2, getConfig } from '@/api/generator'
+
+/** 第 2 步表单的会话草稿存储键。 */
+const STEP2_DRAFT_KEY = 'generator.step2Draft'
 
 // Java版本对应的组件版本组合
 const JAVA_VERSION_PRESETS = {
@@ -198,14 +201,14 @@ const JAVA_VERSION_PRESETS = {
     }
   },
   '21': {
-    springBoot: ['3.2.12', '3.4.0'],
-    springCloud: ['2023.0.0', '2024.0.0'],
-    springCloudAlibaba: ['2023.0.1.0', '2023.0.3.2'],
-    dubbo: ['3.3.0', ''],
+    springBoot: ['3.2.4', '3.2.12', '3.4.0', '4.0.7'],
+    springCloud: ['2023.0.0', '2023.0.1', '2024.0.0', '2025.1.2'],
+    springCloudAlibaba: ['2023.0.1.0', '2023.0.3.2', '2025.1.0.0'],
+    dubbo: ['3.3.0', '3.3.2', ''],
     defaults: {
-      springBoot: '3.4.0',
-      springCloud: '2024.0.0',
-      springCloudAlibaba: '2023.0.3.2',
+      springBoot: '4.0.7',
+      springCloud: '2025.1.2',
+      springCloudAlibaba: '2025.1.0.0',
       dubbo: ''
     }
   }
@@ -316,6 +319,9 @@ const advancedFeatures = [
   { value: 'IDEMPOTENCY', label: '接口防重放/幂等' }
 ]
 
+/** 高级特性的默认值：首次进入第 2 步时全部选中。 */
+const DEFAULT_ADVANCED_FEATURES = advancedFeatures.map(feature => feature.value)
+
 // 安全方案选项（二选一）
 const authOptions = [
   { value: 'SPRINGSECURITY_OAUTH2', label: 'Spring Security / OAuth2' },
@@ -333,13 +339,13 @@ export default {
     const wrapperCol = { lg: { span: 19 }, sm: { span: 19 } }
 
     const formState = reactive({
-      javaVersion: '17',
+      javaVersion: '21',
       view: 'VUE',
       projectBuilder: 'MAVEN',
       microservice: '',
-      springBootVersion: '3.2.12',
-      springCloudVersion: '2023.0.0',
-      springCloudAlibabaVersion: '2023.0.1.0',
+      springBootVersion: '4.0.7',
+      springCloudVersion: '2025.1.2',
+      springCloudAlibabaVersion: '2025.1.0.0',
       dubboVersion: '',
       registryCenter: '',
       mybatisType: 'plus',
@@ -357,8 +363,28 @@ export default {
       sentinelEnabled: '',
       swaggerEnabled: '',
       secure: 'SPRINGSECURITY_OAUTH2',
-      features: []
+      features: [...DEFAULT_ADVANCED_FEATURES]
     })
+
+    const readDraft = () => {
+      try {
+        const draft = JSON.parse(sessionStorage.getItem(STEP2_DRAFT_KEY) || 'null')
+        return draft && typeof draft === 'object' ? draft : null
+      } catch (error) {
+        console.warn('读取第2步配置草稿失败:', error)
+        return null
+      }
+    }
+
+    const savedDraft = readDraft()
+
+    watch(formState, state => {
+      try {
+        sessionStorage.setItem(STEP2_DRAFT_KEY, JSON.stringify(state))
+      } catch (error) {
+        console.warn('保存第2步配置草稿失败:', error)
+      }
+    }, { deep: true })
 
     // 根据Java版本计算可选版本
     const versionOptions = computed(() => {
@@ -465,7 +491,10 @@ export default {
 
           // 安全方案与高级特性
           const globalFeatures = global.features || []
-          formState.features = globalFeatures
+          const configuredAdvancedFeatures = globalFeatures.filter(feature => DEFAULT_ADVANCED_FEATURES.includes(feature))
+          if (configuredAdvancedFeatures.length > 0) {
+            formState.features = configuredAdvancedFeatures
+          }
           
           if (globalComps.includes('SHIRO')) {
             formState.secure = 'SHIRO'
@@ -473,8 +502,16 @@ export default {
             formState.secure = 'SPRINGSECURITY_OAUTH2'
           }
         }
+
+        // 会话草稿优先于服务端已保存配置，确保刷新后保留尚未提交的选择（包括全不选）。
+        if (savedDraft) {
+          Object.assign(formState, savedDraft)
+        }
       } catch (err) {
         console.error('获取配置失败:', err)
+        if (savedDraft) {
+          Object.assign(formState, savedDraft)
+        }
       }
     })
 
@@ -486,6 +523,11 @@ export default {
         emit('nextStep')
       } catch (error) {
         loading.value = false
+        // 显示具体的后端报错信息，否则显示默认错误
+        const errorMsg = error.response?.data?.message || error.message || '保存配置失败，请检查所选版本组合是否兼容'
+        import('ant-design-vue').then(({ message }) => {
+          message.error(errorMsg)
+        })
       }
     }
 

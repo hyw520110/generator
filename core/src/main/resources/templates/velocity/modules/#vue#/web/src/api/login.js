@@ -41,6 +41,6 @@ export function getInfo (userId) {
 export function logout () {
   return axios({
     url: api.Logout,
-    method: 'post'
+    method: 'put'
   })
 }

@@ -155,6 +155,7 @@ export default {
         title,
         dataIndex,
         ellipsis: true,
+        sorter: true,
         ...(fullTitle && { fullTitle }),
         ...options
       }
@@ -168,7 +169,7 @@ export default {
         fixed: 'left'
       },
 <#list table.fields as field>
-<#if !field.sensitive>
+<#if !field.sensitive && !field.primarykey>
       createColumn('${field.comment?default(field.name)?js_string}', '${field.propertyName}'<#if table.getFieldWidthConfig(field) != "" || table.getFieldFixedConfig(field, field?index) != "">, { <#if table.getFieldWidthConfig(field) != "">${table.getFieldWidthConfig(field)}</#if><#if table.getFieldWidthConfig(field) != "" && table.getFieldFixedConfig(field, field?index) != "">, </#if><#if table.getFieldFixedConfig(field, field?index) != "">${table.getFieldFixedConfig(field, field?index)}</#if> }</#if>),
 </#if>
 </#list>

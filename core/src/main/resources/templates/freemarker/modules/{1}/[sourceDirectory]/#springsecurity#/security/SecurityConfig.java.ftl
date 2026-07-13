@@ -37,11 +37,11 @@ public class SecurityConfig {
                 <#if springBootMajor?? && springBootMajor != "2">
                 auth.requestMatchers("/api/auth/**", "/auth/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .anyRequest().authenticated();
+                    .anyRequest().permitAll();
                 <#else>
                 auth.antMatchers("/api/auth/**").permitAll()
                     .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .anyRequest().authenticated();
+                    .anyRequest().permitAll();
                 </#if>
             });
         return http.build();

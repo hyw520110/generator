@@ -26,23 +26,38 @@ public class CompatibilityResolver {
 		// 优先按 platformId 选档（用户显式指定栈），否则回退到 javaVersion 默认档
 		CompatibilityProfile profile;
 		String platformId = global.getPlatformId();
+		System.out.println("[CompatibilityResolver] apply() ENTRY: platformId=" + platformId
+			+ ", javaVersion=" + global.getJavaVersion()
+			+ ", versionOverrides=" + (versionOverrides == null ? "null" : versionOverrides));
 		if (platformId != null && !platformId.trim().isEmpty()) {
+			System.out.println("[CompatibilityResolver] apply: using explicit platformId=" + platformId.trim());
 			profile = matrix.resolveById(platformId.trim());
 		} else {
+			System.out.println("[CompatibilityResolver] apply: no platformId, falling back to javaVersion=" + global.getJavaVersion());
 			profile = matrix.resolveByJava(global.getJavaVersion());
 		}
+		System.out.println("[CompatibilityResolver] apply: selected profile.id=" + profile.getId()
+			+ ", templateFamily=" + profile.getTemplateFamily()
+			+ ", namespace=" + profile.getNamespace() + ", defaultProfile=" + profile.isDefaultProfile());
 		applyProfileVersions(profile, components);
+		System.out.println("[CompatibilityResolver] apply: after applyProfileVersions, components=" + components);
 		applyOverrides(profile, components, versionOverrides);
+		System.out.println("[CompatibilityResolver] apply: after applyOverrides, components=" + components);
 		validateConstraints(profile, global, components);
 
 		int release = profile.getRelease() == null ? profile.getJava() : profile.getRelease();
 		Map<String, Object> variables = buildVariables(profile, release);
+		System.out.println("[CompatibilityResolver] apply: about to set global: javaVersion=" + profile.getJava()
+			+ ", platformId=" + profile.getId() + ", templateFamily=" + profile.getTemplateFamily()
+			+ ", namespace=" + profile.getNamespace());
 		global.setJavaVersion(String.valueOf(profile.getJava()));
 		global.setPlatformId(profile.getId());
 		global.setTemplateFamily(profile.getTemplateFamily());
 		global.setNamespace(profile.getNamespace());
 		global.setBytecodeRelease(String.valueOf(release));
 		global.setPlatformVariables(variables);
+		System.out.println("[CompatibilityResolver] apply() EXIT: global.platformId=" + global.getPlatformId()
+			+ ", templateFamily=" + global.getTemplateFamily() + ", namespace=" + global.getNamespace());
 
 		return new ResolvedPlatform(profile.getId(), profile.getName(), profile.getJava(), release,
 				profile.getTemplateFamily(), profile.getNamespace(), variables);
@@ -63,6 +78,8 @@ public class CompatibilityResolver {
 				components.put(entry.getKey(), target);
 			}
 			if (entry.getValue() != null) {
+				System.out.println("[CompatibilityResolver] applyProfileVersions: profile=" + profile.getId()
+					+ ", component=" + entry.getKey() + ", applying versions=" + entry.getValue());
 				target.putAll(entry.getValue());
 			}
 		}
@@ -71,8 +88,10 @@ public class CompatibilityResolver {
 	private void applyOverrides(CompatibilityProfile profile, Map<Component, Map<String, Object>> components,
 			Map<Component, Map<String, Object>> versionOverrides) {
 		if (components == null || versionOverrides == null || versionOverrides.isEmpty()) {
+			System.out.println("[CompatibilityResolver] applyOverrides: SKIP - no overrides");
 			return;
 		}
+		System.out.println("[CompatibilityResolver] applyOverrides: profile=" + profile.getId() + ", overrides=" + versionOverrides);
 		for (Map.Entry<Component, Map<String, Object>> componentEntry : versionOverrides.entrySet()) {
 			Component component = componentEntry.getKey();
 			Map<String, Object> values = componentEntry.getValue();
@@ -143,6 +162,14 @@ public class CompatibilityResolver {
 		variables.put("springBootMajor", springBootMajor);
 		variables.put("apiDocFamily", "2".equals(springBootMajor) ? "swagger2" : "openapi3");
 		variables.put("testFramework", "junit5");
+
+		// 将 SPRINGBOOT 组件版本中的 springboot_version 也加入 variables（模板直接引用该变量）
+		Map<String, Object> springbootVersions = profile.getVersions() == null ? null
+				: profile.getVersions().get(Component.SPRINGBOOT);
+		if (springbootVersions != null && springbootVersions.get("springboot_version") != null) {
+			variables.put("springboot_version", springbootVersions.get("springboot_version"));
+		}
+
 		return variables;
 	}
 

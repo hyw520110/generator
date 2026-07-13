@@ -5,8 +5,9 @@ import notification from 'ant-design-vue/es/notification'
 import { VueAxios } from './axios'
 import { ACCESS_TOKEN } from '@/store/mutation-types'
 
-// 开发环境使用代理，生产环境使用绝对路径
-const baseHost = import.meta.env.VITE_API_BASE_URL || ''
+// 开发环境使用相对路径，通过 Vite 代理转发；生产环境使用完整 URL
+const isDev = import.meta.env.DEV
+const baseHost = isDev ? '/api' : (import.meta.env.VITE_API_BASE_URL || '')
 const generatorClientIdKey = 'GENERATOR_CLIENT_ID'
 
 const createClientId = () => {

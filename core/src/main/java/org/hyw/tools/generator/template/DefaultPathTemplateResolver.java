@@ -29,8 +29,20 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
     public String resolve(String path, TemplateModel model) {
         if (StringUtils.isBlank(path)) return path;
 
-        // 1. 预处理：归一化并剥离分类前缀 (assets/, modules/, components/)
-        String resolvedPath = FileUtils.normalizePath(path);
+	    // 1. 预处理：归一化并剥离分类前缀 (assets/, modules/, components/)
+	    String resolvedPath = FileUtils.normalizePath(path);
+
+	    // 单模块工程只跳过 API 模块的根构建文件；DTO、Entity、Service 等基础类型仍需合并进唯一模块。
+	    String[] configuredModules = model.getConfig() == null ? null : model.getConfig().getModules();
+	    if (configuredModules != null && configuredModules.length == 1
+	            && resolvedPath.startsWith(Consts.DIR_MODULES + SEPARATOR + "{0}" + SEPARATOR)) {
+	        String apiModuleRelativePath = StringUtils.substringAfter(
+	                resolvedPath, Consts.DIR_MODULES + SEPARATOR + "{0}" + SEPARATOR);
+	        if ("pom.xml.ftl".equals(apiModuleRelativePath) || "pom.xml.vm".equals(apiModuleRelativePath)
+	                || "build.gradle.ftl".equals(apiModuleRelativePath) || "build.gradle.vm".equals(apiModuleRelativePath)) {
+	            return null;
+	        }
+	    }
 
         // 智能剥离：剥离 modules/ 和 components/ 前缀
         if (resolvedPath.startsWith(Consts.DIR_MODULES + SEPARATOR) || resolvedPath.startsWith(Consts.DIR_COMPONENTS + SEPARATOR)) {

@@ -23,7 +23,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         // 实际项目中密码应当从数据库查询出来（已经被 BCrypt 等加密）
-        String encodedPassword = encoder.encode("123456");
+        // 前端会传 md5 后的字符串，"admin" 的 md5 是 21232f297a57a5a743894a0e4a801fc3
+        String encodedPassword = encoder.encode("21232f297a57a5a743894a0e4a801fc3");
 
         return User.builder()
                 .username(username)

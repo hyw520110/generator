@@ -108,7 +108,7 @@ export default defineComponent({
         await store.dispatch('ClearUser')
 
         const loginParams = {
-          userName: formState.username,
+          username: formState.username,
           loginType: '1',
           password: md5(formState.password)
         }

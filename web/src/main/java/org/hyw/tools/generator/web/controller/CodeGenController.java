@@ -69,6 +69,8 @@ public class CodeGenController {
 	private static final int MAX_SQL_FILE_COUNT = 200;
 	private static final long MAX_SQL_FILE_SIZE = 20L * 1024 * 1024;
 	private static final long MAX_SQL_TOTAL_SIZE = 100L * 1024 * 1024;
+	/** 前端单选项或复选项已启用时提交的标识。 */
+	private static final String ENABLED_FLAG = "true";
 
 	/** 默认输出目录（从配置文件读取） */
 	@Value("${app.output-dir:${user.home}/output/demo}")
@@ -544,9 +546,9 @@ public class CodeGenController {
 
 		logger.info("[validateOutputDir] 输入 - outputDir: {}", outputDir);
 
-		// 检查非法字符
-		if (outputDir.contains("..") || outputDir.contains("~")) {
-			return Result.error("目录路径包含非法字符");
+		// 支持 ~ 表示用户主目录
+		if (outputDir.startsWith("~")) {
+			outputDir = outputDir.replaceFirst("^~", userHome);
 		}
 
 		File dir = new File(outputDir);
@@ -634,6 +636,7 @@ public class CodeGenController {
 			@RequestParam(name = "nacosPassword") String nacosPassword,
 			@RequestParam(name = "redisHost") String redisHost,
 			@RequestParam(name = "redisPassword") String redisPassword,
+			@RequestParam(name = "sentinelEnabled", required = false, defaultValue = "") String sentinelEnabled,
 			@RequestParam(name = "sentinelVersion") String sentinelVersion,
 			@RequestParam(name = "sentinelAddr") String sentinelAddr,
 			@RequestParam(name = "skywalkingAddr") String skywalkingAddr,
@@ -641,8 +644,8 @@ public class CodeGenController {
 			@RequestParam(name = "features", required = false) String[] features) {
 		Generator generator = currentGenerator();
 		logger.info(
-				"[step2] 输入 - view: {}, projectBuilder: {}, microservice: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}",
-				view, projectBuilder, microservice, springBootVersion, dubboVersion, mybatisType, registryCenter);
+				"[step2] 输入 - view: {}, projectBuilder: {}, javaVersion: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}",
+				view, projectBuilder, javaVersion, springBootVersion, dubboVersion, mybatisType, registryCenter);
 		synchronized (userGeneratorService.lockFor(currentRequest())) {
 		GlobalConf global = generator.getGlobal();
 		if (StringUtils.isNotBlank(javaVersion)) {
@@ -688,7 +691,16 @@ public class CodeGenController {
 		// projectBuilder 保持 MAVEN 或 GRADLE
 		global.setProjectBuilder(ProjectBuilder.valueOf(projectBuilder));
 		Map<Component, Map<String, Object>> map = generator.getComponents();
-		org.hyw.tools.generator.compat.CompatibilityProfile profile = new org.hyw.tools.generator.compat.CompatibilityResolver().getMatrix().resolveByJava(global.getJavaVersion());
+		org.hyw.tools.generator.compat.CompatibilityMatrix matrix = new org.hyw.tools.generator.compat.CompatibilityResolver().getMatrix();
+		org.hyw.tools.generator.compat.CompatibilityProfile profile;
+		if ("21".equals(global.getJavaVersion()) && springBootVersion != null && springBootVersion.startsWith("4.")) {
+			profile = matrix.resolveById("java21-boot4");
+			global.setPlatformId("java21-boot4");
+			logger.info("[step2] 命中 java21-boot4: springBootVersion={}", springBootVersion);
+		} else {
+			profile = matrix.resolveByJava(global.getJavaVersion());
+			logger.info("[step2] 未命中 java21-boot4，走默认: javaVersion={}, springBootVersion={}", global.getJavaVersion(), springBootVersion);
+		}
 		checkAndOverride(generator, profile, Component.SPRINGBOOT, "springboot_version", springBootVersion);
 		checkAndOverride(generator, profile, Component.SPRINGCLOUD, "springcloud_version", springCloudVersion);
 		checkAndOverride(generator, profile, Component.SPRINGCLOUD, "springcloud_alibaba_version", springCloudAlibabaVersion);
@@ -719,7 +731,7 @@ public class CodeGenController {
 		map.get(Component.MYBATIS).put("mapperType", mybatisType);
 		map.get(Component.REDIS).put("spring_redis_cluster_nodes", redisHost);
 		map.get(Component.REDIS).put("spring_redis_password", redisPassword);
-		if (StringUtils.isNotBlank(sentinelVersion)) {
+		if (ENABLED_FLAG.equals(sentinelEnabled) && StringUtils.isNotBlank(sentinelVersion)) {
 			checkAndOverride(generator, profile, Component.SENTINEL, "sentinel_version", sentinelVersion);
 		}
 		if (StringUtils.isNotBlank(sentinelAddr)) {
@@ -744,10 +756,14 @@ public class CodeGenController {
 		if (defaults == null || !value.equals(String.valueOf(defaults.get(key)))) {
 			versionOverride(generator, component).put(key, value);
 		} else {
-		    // 移除可能之前被写入的同版本号（防止残留覆盖）
-		    if (generator.getVersionOverrides().containsKey(component)) {
-		        generator.getVersionOverrides().get(component).remove(key);
-		    }
+			// 移除可能之前被写入的同版本号（防止残留覆盖）；首次配置时覆盖项可能尚未初始化
+			Map<Component, Map<String, Object>> overrides = generator.getVersionOverrides();
+			if (overrides != null && overrides.containsKey(component)) {
+				Map<String, Object> componentOverrides = overrides.get(component);
+				if (componentOverrides != null) {
+					componentOverrides.remove(key);
+				}
+			}
 		}
 	}
 
@@ -784,6 +800,8 @@ public class CodeGenController {
 			Generator generator = currentGenerator();
 			generator.getGlobal().setInclude(tables);
 			generator.getGlobal().setMatchMode(false);
+			generator.applyCompatibility(); // 应用平台兼容性（step2设置的platformId）
+			logger.info("[exec] applyCompatibility后 - platformId: {}, templateFamily: {}", generator.getGlobal().getPlatformId(), generator.getGlobal().getTemplateFamily());
 			saveCurrentGenerator(); // 持久化当前用户配置
 			jobGenerator = generator.copy();
 		}

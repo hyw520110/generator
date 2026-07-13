@@ -9,13 +9,11 @@ const login = (options) => {
   // 登录 API 使用 data 发送 JSON body
   const body = getBody(options)
   
-  console.log('[Mock] login body:', body)
   
   // 支持 userName 或 username
   const user = body?.userName || body?.username
   const pass = body?.password
   
-  console.log('[Mock] user:', user, 'pass:', pass ? '***' : 'empty')
   
   if (!user || !pass || !username.includes(user) || !password.includes(pass)) {
     return builder({}, '账户或密码错误', 401)
@@ -54,5 +52,3 @@ Mock.mock(/\/auth\/logout/, 'put', logout)
 Mock.mock(/\/account\/sms/, 'post', smsCaptcha)
 Mock.mock(/\/auth\/2step-code/, 'post', twofactor)
 Mock.mock(/\/user\/authcache/, 'put', refreshUserAuthCache)
-
-console.log('[Mock] auth 服务已注册')

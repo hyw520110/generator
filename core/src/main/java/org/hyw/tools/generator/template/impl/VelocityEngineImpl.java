@@ -37,28 +37,28 @@ public class VelocityEngineImpl implements TemplateEngine {
 	}
 
 	/**
-	 * 创建并配置 Velocity 引擎
+	 * 创建并配置 Velocity 引擎（兼容 Velocity 2.x 配置 key）
 	 */
 	private VelocityEngine createEngine() {
 		Properties props = new Properties();
 
-		// 基础配置
-		props.setProperty("resource.loader", "class");
-		props.setProperty("class.resource.loader.class",
+		// Velocity 2.x：声明 loader 列表 + 具体 loader 类
+		props.setProperty("resource.loaders", "class");
+		props.setProperty("resource.loader.class.class",
 				"org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-		props.setProperty("input.encoding", Consts.DEFAULT_ENCODING);
-		props.setProperty("output.encoding", Consts.DEFAULT_ENCODING);
-		props.setProperty("encoding.default", Consts.DEFAULT_ENCODING);
+		props.setProperty("resource.default_encoding", Consts.DEFAULT_ENCODING);
 
-		// 日志配置
-		props.setProperty("runtime.log.reference.log.invalid", "false");
+		// 日志：忽略未定义引用警告（2.x 仍支持该配置 key）
+		props.setProperty("runtime.log.reference.log_invalid", "false");
 
-		// 安全配置（防止模板注入攻击）
-		props.setProperty("uberspector.classname", "org.apache.velocity.util.introspection.SecureUberspector");
+		// 安全配置（防止模板注入攻击）—— 2.x 使用 introspector.uberspect 列表
+		props.setProperty("introspector.uberspect.class",
+				"org.apache.velocity.util.introspection.SecureUberspector");
 
 		// 性能优化配置
-		props.setProperty("parse.directive.maxdepth", "10");
-		props.setProperty("max.number.loops", "10000");
+		props.setProperty("parser.allow_hyphen_in_identifiers", "false");
+		props.setProperty("directive.foreach.max_loops", "10000");
+		props.setProperty("parser.space_gobbling", "bc");
 
 		VelocityEngine engine = new VelocityEngine(props);
 		engine.init();

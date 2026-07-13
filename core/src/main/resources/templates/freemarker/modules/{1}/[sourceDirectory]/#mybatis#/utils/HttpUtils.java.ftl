@@ -3,7 +3,7 @@ package ${utilsPackage!};
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import jakarta.servlet.http.HttpServletRequest;
+import ${servletPackage}.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

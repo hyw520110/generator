@@ -3,7 +3,7 @@ package ${implPackage!};
 
 import ${BaseServicePackage!}.BaseService;
 
-<#if mapperType?? && mapperType == "plus">
+<#if sqlType?? && sqlType == "plus">
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 <#else>
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 </#if>
 <#assign comment ="公共接口默认实现">
 <#include 'comments/comment.ftl'>
-<#if mapperType?? && mapperType == "plus">
+<#if sqlType?? && sqlType == "plus">
 public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<BaseMapper<T>, T> implements BaseService<T> {
 <#else>	
 public class BaseServiceImpl<T,PK> implements BaseService<T,PK>{

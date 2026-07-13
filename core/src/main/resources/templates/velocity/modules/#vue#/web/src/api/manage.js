@@ -28,7 +28,6 @@ export function getRoleList (parameter) {
 }
 
 export function getServiceList (parameter) {
-  console.log('getServiceList', parameter)
   return axios({
     url: api.service,
     method: 'get',

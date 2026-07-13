@@ -29,8 +29,20 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
     public String resolve(String path, TemplateModel model) {
         if (StringUtils.isBlank(path)) return path;
 
-        // 1. 预处理：归一化并剥离分类前缀 (assets/, modules/, components/)
-        String resolvedPath = FileUtils.normalizePath(path);
+	    // 1. 预处理：归一化并剥离分类前缀 (assets/, modules/, components/)
+	    String resolvedPath = FileUtils.normalizePath(path);
+
+	    // 单模块工程只跳过 API 模块的根构建文件；DTO、Entity、Service 等基础类型仍需合并进唯一模块。
+	    String[] configuredModules = model.getConfig() == null ? null : model.getConfig().getModules();
+	    if (configuredModules != null && configuredModules.length == 1
+	            && resolvedPath.startsWith(Consts.DIR_MODULES + SEPARATOR + "{0}" + SEPARATOR)) {
+	        String apiModuleRelativePath = StringUtils.substringAfter(
+	                resolvedPath, Consts.DIR_MODULES + SEPARATOR + "{0}" + SEPARATOR);
+	        if ("pom.xml.ftl".equals(apiModuleRelativePath) || "pom.xml.vm".equals(apiModuleRelativePath)
+	                || "build.gradle.ftl".equals(apiModuleRelativePath) || "build.gradle.vm".equals(apiModuleRelativePath)) {
+	            return null;
+	        }
+	    }
 
         // 智能剥离：剥离 modules/ 和 components/ 前缀
         if (resolvedPath.startsWith(Consts.DIR_MODULES + SEPARATOR) || resolvedPath.startsWith(Consts.DIR_COMPONENTS + SEPARATOR)) {
@@ -43,6 +55,14 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
         // 3. 智能剥离：剥离公共静态资源目录的 assets/ 前缀（在占位符替换后）
         if (resolvedPath.startsWith(Consts.ASSETS_DIR + SEPARATOR)) {
             resolvedPath = StringUtils.substringAfter(resolvedPath, SEPARATOR);
+            
+            // 将 assets 根目录下的通用脚本路由到后端工程根目录，以符合单体/多模块统一的工程结构习惯
+            if (!resolvedPath.contains(SEPARATOR) && !resolvedPath.startsWith("web") && !resolvedPath.startsWith("#vue#")) {
+                if (model.getConfig() != null && model.getConfig().getModules() != null && model.getConfig().getModules().length > 0) {
+                    String backendRoot = model.getConfig().getModules().length > 1 ? Consts.DIR_PARENT : model.getConfig().getModules()[0];
+                    resolvedPath = backendRoot + SEPARATOR + resolvedPath;
+                }
+            }
         }
 
         // 4. 标准化处理：移除模板后缀（保留 ## 标记）
@@ -91,6 +111,9 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
         }
         
         // C. 兜底逻辑：返回处理后的路径
+        if (modules != null && modules.length == 1 && !cleanPath.contains(SEPARATOR)) {
+            cleanPath = modules[0] + SEPARATOR + cleanPath;
+        }
         String finalPath = FileUtils.normalizePath(cleanPath);
         log.debug("路径解析 - [完成]: {} -> {}", path, finalPath);
         return finalPath;
@@ -193,6 +216,11 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
             if (comp != null && !hasComponentOrImplicit(model, comp)) {
                 return true;
             }
+
+            org.hyw.tools.generator.enums.Feature feature = org.hyw.tools.generator.enums.Feature.getFeature(componentName.toLowerCase());
+            if (feature != null && !model.hasFeature(feature)) {
+                return true;
+            }
         }
         return false;
     }
@@ -213,9 +241,15 @@ public class DefaultPathTemplateResolver implements PathTemplateResolver {
         
         // 1. 处理模块占位符 {0}, {1}...
         if (modules != null && modules.length > 0) {
-            for (int i = 0; i < modules.length; i++) {
-                path = path.replace(Consts.PATH_PLACEHOLDER_START + i + Consts.PATH_PLACEHOLDER_END, modules[i]);
-                path = path.replace(Consts.MODULE_PLACEHOLDER_PREFIX + i + Consts.MODULE_PLACEHOLDER_SUFFIX, modules[i]);
+            if (modules.length == 1) {
+                // 单模块工程：将所有的 {idx} 和 [module:idx] 都替换为该唯一模块名
+                path = path.replaceAll("\\{\\d+\\}", modules[0]);
+                path = path.replaceAll("\\[module:\\d+\\]", modules[0]);
+            } else {
+                for (int i = 0; i < modules.length; i++) {
+                    path = path.replace(Consts.PATH_PLACEHOLDER_START + i + Consts.PATH_PLACEHOLDER_END, modules[i]);
+                    path = path.replace(Consts.MODULE_PLACEHOLDER_PREFIX + i + Consts.MODULE_PLACEHOLDER_SUFFIX, modules[i]);
+                }
             }
         } else {
             path = path.replaceAll(Consts.NUMBER_PLACEHOLDER_REGEX, "");

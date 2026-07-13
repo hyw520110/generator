@@ -1,0 +1,56 @@
+name: build
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
+
+jobs:
+  build:
+    name: Build & Test (JDK ${{ matrix.java }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '11', '17', '21' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      - name: Show Java version
+        run: java -version
+
+      - name: Build with Maven
+        run: mvn -B -ntp clean verify
+
+      - name: Verify MRJAR layout (only on Java 17+)
+        if: matrix.java != '11'
+        run: |
+          jar tf core/target/generator-core.jar | grep -E "META-INF/versions/17" || (echo "MRJAR layout missing" && exit 1)
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web/antd/package-lock.json
+
+      - name: Build and Audit Frontend (Antd)
+        run: |
+          cd web/antd
+          npm ci
+          npm audit --audit-level=moderate
+          npm run build
+
+      - name: Run Matrix Tests (Template Compatibility)
+        if: matrix.java != '11'
+        run: mvn -B -ntp clean test -Dtest=MatrixCompilationTest

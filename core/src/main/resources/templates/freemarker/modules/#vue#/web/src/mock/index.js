@@ -15,5 +15,4 @@ if (import.meta.env.DEV) {
   Mock.setup({
     timeout: 200
   })
-  console.log('[Mock] 服务已启动')
 }

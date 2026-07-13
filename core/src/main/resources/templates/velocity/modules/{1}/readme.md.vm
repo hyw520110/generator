@@ -1,20 +1,67 @@
-#[[# 说明]]#
+# ${projectName}-${moduleName}
+
+后端应用模块，包含 Spring Boot 启动类、Controller、Service、Mapper、资源配置和可选组件集成。
+
+## 平台
+
+- Java: ${javaVersion}
+- Bytecode release: ${bytecodeRelease}
+- Spring Boot: ${springboot_version}
+- JSON mapper: ${json_type}
+- Namespace: ${namespace}
+- Security: ${security}
+
+## 本地启动
+
+IDE 中直接运行 `Booter`，或执行：
+
+```bash
+mvn clean package
+```
+
+打包完成后解压 `target` 目录中的应用包，进入 `bin` 目录运行：
+
+```bash
+sh startup.sh
+```
+
+## 配置
+
+数据库连接在 `src/main/resources/application.properties` 或 `application.yml` 中维护。生产环境建议通过环境变量或外部配置覆盖账号密码。
+
+## 安全方案
+
+#if($!SHIRO)
+当前工程启用 Shiro + JWT，适合 Boot2 后台管理场景。默认 token 请求头为 `X-USER-TOKEN`，上线前应替换密钥、收紧白名单，并只开放真实匿名接口。
+#elseif($!SPRINGSECURITY && $!OAUTH2)
+当前工程启用 Spring Security / OAuth2 Resource Server，适合 Boot3 和标准 OAuth2/JWT 资源服务场景。请在运行环境中配置 issuer、JWK 或 token 校验策略。
+#elseif($!SPRINGSECURITY)
+当前工程启用 Spring Security。请根据业务补充登录、鉴权、匿名接口和会话策略。
+#else
+当前工程未启用安全模板。生产环境上线前应补充认证、授权和接口访问控制。
+#end
 
 #if($!ZOOKEEPER)
-#[[## 初始化分布式配置数据(非必须)：]]#
-建议把可能会调整的配置，初始化到zookeeper分布式配置中(个性化配置除外，如权重数据)，当应用集群部署时，方便集中管理配置数据，实现实时加载动态配置，避免逐台服务器手工修改配置文件
+## Zookeeper 配置
 
-- 利用zookeeper客户端zkCli导入zookeeper.data脚本数据
-- 或者执行ZkTool类,从zookeeper.data脚本文件或application.yml配置文件,导入初始到zookeeper
-			
+如启用 Zookeeper，可用 `zookeeper.data` 初始化分布式配置：
+
+```bash
+zkCli.sh < zookeeper.data
+```
+
+也可以运行 `ZkTool` 从配置文件导入初始数据。
 #end
 
-#if($!SPRINGBOOT)
-#[[## 启动：]]#
-导入源码到IDE中执行Booter类
+#if($!JWT && $!SHIRO)
+## JWT
 
-或执行：
-	
-	mvn clean package
-打包源码,在target中找到应用zip包，解压任意路径,进入bin目录执行startup.sh启动
+默认 token 请求头为 `X-USER-TOKEN`。上线前应替换密钥、收紧白名单，并只开放真实匿名接口。
 #end
+
+## 验证
+
+```bash
+mvn test
+mvn clean package
+```

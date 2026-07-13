@@ -23,7 +23,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.template.TemplateResource;
 import org.hyw.tools.generator.template.impl.FileTemplateResource;

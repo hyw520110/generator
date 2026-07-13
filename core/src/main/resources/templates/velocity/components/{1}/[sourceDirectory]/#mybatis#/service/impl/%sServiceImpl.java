@@ -8,7 +8,7 @@ import ${servicePackage}.${serviceName};
 import #if($StringUtils.indexOf("$superServiceImplClass",'.')==-1)${implPackage}.#end${superServiceImplClass};
 #end
 #if($table.isCompositePrimaryKey())
-import ${entityPackage}.key.${table.beanName}Key;
+import ${rootPackage}.key.${table.beanName}Key;
 #end
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.BeanUtils;
@@ -18,7 +18,7 @@ import org.springframework.beans.BeanUtils;
 #if($!{DUBBO})
 @org.apache.dubbo.config.annotation.DubboService
 #end
-public class ${implName} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})}<#if("plus"=="$mapperType")${StringUtils.capitalFirst("$entityName")}Mapper,${dtoName}#else ${StringUtils.capitalFirst("$entityName")},${table.primaryKeyClass}#end> #end implements ${serviceName} {
+public class ${implName} #if(${superServiceImplClass}) extends ${StringUtils.getClassName(${superServiceImplClass})}#if("plus"=="$mapperType")<${StringUtils.capitalFirst("$entityName")}Mapper,${dtoName}>#else<${StringUtils.capitalFirst("$entityName")},${table.primaryKeyClass}>#end #end implements ${serviceName} {
 #if("plus"!="$mapperType")
 #set($sName=${StringUtils.lowercaseFirst($mapperName)})
 

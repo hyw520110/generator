@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hyw.tools.generator.conf.BaseBean;
 import org.hyw.tools.generator.enums.FieldType;
 import org.hyw.tools.generator.utils.StringUtils;
@@ -83,7 +83,7 @@ public class Table extends BaseBean {
 	public String getPrimaryKeyClass() {
 		List<TabField> list = getPrimarykeyFields();
 		if (null == list || list.isEmpty()) {
-			return "Long"; // 默认主键类型
+			return "java.io.Serializable";
 		}
 		if (list.size() == 1) {
 			// 单主键：返回主键字段类型
@@ -94,11 +94,26 @@ public class Table extends BaseBean {
 	}
 	/**
 	 * 是否有主键
-	 * TODO 无主键
 	 * @return
 	 */
 	public boolean hasPrimarykeys() {
 		return !getPrimarykeyFields().isEmpty();
+	}
+
+	/**
+	 * 是否无主键
+	 * @return
+	 */
+	public boolean isNoPrimaryKey() {
+		return !hasPrimarykeys();
+	}
+
+	/**
+	 * 主键字段数量
+	 * @return
+	 */
+	public int getPrimaryKeyCount() {
+		return getPrimarykeyFields().size();
 	}
 
 	/**
@@ -112,6 +127,21 @@ public class Table extends BaseBean {
 		List<TabField> fields = getFields();
 		for (TabField tabField : fields) {
 			if (tabField.isPrimarykey()) {
+				list.add(tabField);
+			}
+		}
+		return list;
+	}
+
+	/**
+	 * 获取可插入字段（排除数据库自增字段）
+	 *
+	 * @return
+	 */
+	public List<TabField> getInsertableFields() {
+		List<TabField> list = new LinkedList<>();
+		for (TabField tabField : getFields()) {
+			if (!tabField.isIdentity()) {
 				list.add(tabField);
 			}
 		}
@@ -134,6 +164,63 @@ public class Table extends BaseBean {
 			builder.append(propName).append(",");
 		}
 		return builder.length() > 0 ? builder.deleteCharAt(builder.length()-1).toString() : "";
+	}
+
+	public String getPrimaryKeyJsArray() {
+		if (!hasPrimarykeys()) {
+			return "[]";
+		}
+		StringBuilder builder = new StringBuilder("[");
+		List<TabField> list = getPrimarykeyFields();
+		for (TabField tabField : list) {
+			builder.append("'").append(tabField.getPropertyName()).append("'");
+			if (list.indexOf(tabField) < list.size() - 1) {
+				builder.append(", ");
+			}
+		}
+		return builder.append("]").toString();
+	}
+
+	public String getPrimaryKeyPathPattern() {
+		if (!hasPrimarykeys()) {
+			return "";
+		}
+		StringBuilder builder = new StringBuilder();
+		for (TabField field : getPrimarykeyFields()) {
+			builder.append("/{").append(field.getPropertyName()).append("}");
+		}
+		return builder.toString();
+	}
+
+	public String getPrimaryKeyMethodParameters() {
+		if (!hasPrimarykeys()) {
+			return "";
+		}
+		StringBuilder builder = new StringBuilder();
+		List<TabField> list = getPrimarykeyFields();
+		for (TabField field : list) {
+			builder.append("@PathVariable(\"").append(field.getPropertyName()).append("\") final ")
+					.append(field.getFieldType().getType()).append(" ").append(field.getPropertyName());
+			if (list.indexOf(field) < list.size() - 1) {
+				builder.append(", ");
+			}
+		}
+		return builder.toString();
+	}
+
+	public String getPrimaryKeyArgumentList() {
+		if (!hasPrimarykeys()) {
+			return "";
+		}
+		StringBuilder builder = new StringBuilder();
+		List<TabField> list = getPrimarykeyFields();
+		for (TabField field : list) {
+			builder.append(field.getPropertyName());
+			if (list.indexOf(field) < list.size() - 1) {
+				builder.append(", ");
+			}
+		}
+		return builder.toString();
 	}
 
 	/**
@@ -292,7 +379,7 @@ public class Table extends BaseBean {
 	public Class<?> getPrimaryKeyClassType() {
 		List<TabField> pkFields = getPrimarykeyFields();
 		if (pkFields.isEmpty()) {
-			return Long.class;
+			return java.io.Serializable.class;
 		}
 		if (pkFields.size() == 1) {
 			return pkFields.get(0).getFieldType().getClaz();

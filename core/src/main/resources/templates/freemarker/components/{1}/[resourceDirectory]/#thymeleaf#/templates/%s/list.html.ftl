@@ -78,9 +78,13 @@
 							<span class="yg-checkbox" onselectstart="return false"></span>
 				</td>
 				<td  class="jqgrow ui-row-ltr ui-widget-content action-buttons">
+<#if table.hasPrimarykeys()>
 					<a th:href="@{/${table.beanName!}/view/{id}/view(id=<#list table.primarykeyFields as field>*{item.${field.propertyName!}}<#if field?index + 1 lt table.primarykeyFields?size>,</#if></#list>)}" class="ace-icon fa fa-search-plus bigger-130 blue" name="layerBtn" data-title="查看"></a>
 					<a th:href="@{/${table.beanName!}/view/{id}/update(id=<#list table.primarykeyFields as field>*{item.${field.propertyName!}}<#if field?index + 1 lt table.primarykeyFields?size>,</#if></#list>)}" class="ace-icon fa fa-pencil bigger-130 green" name="layerBtn" data-title="编辑"></a>
 					<a th:href="@{/${table.beanName!}/del/{id}(id=<#list table.primarykeyFields as field>*{item.${field.propertyName!}}<#if field?index + 1 lt table.primarykeyFields?size>,</#if></#list>)}" class="ace-icon fa fa-trash-o bigger-120 red" onclick="return delFun(this)"></a>
+<#else>
+					<span>无主键</span>
+</#if>
 				</td> 
 				<#list table.fields as field>
 				<td th:text="*{item.${field.propertyName!}}" th:class="<#noparse>${stats.even?string('jqgrow ui-row-ltr ui-widget-content', 'jqgrow ui-row-ltr ui-widget-content ui-priority-secondary')}</#noparse>" data-name="id">字段名${field?index!0 + 1}</td>

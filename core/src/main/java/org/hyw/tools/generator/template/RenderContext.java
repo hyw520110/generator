@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.hyw.tools.generator.conf.db.Table;
+import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
 
 public class RenderContext implements Serializable {
@@ -38,7 +39,7 @@ public class RenderContext implements Serializable {
 
     public RenderContext table(Table table) {
         this.model.setTable(table);
-        this.variables.put("table", table);
+        this.variables.put(Consts.CTX_TABLE, table);
         return this;
     }
 
@@ -53,11 +54,11 @@ public class RenderContext implements Serializable {
         
         // 显式将 model 中的属性平铺到 context 中，确保模板可以直接访问 ${entityPackage} 等
         if (model != null) {
-            if (model.getTable() != null) context.put("table", model.getTable());
-            if (model.getConfig() != null) context.put("config", model.getConfig());
+            if (model.getTable() != null) context.put(Consts.CTX_TABLE, model.getTable());
+            if (model.getConfig() != null) context.put(Consts.CTX_CONFIG, model.getConfig());
             if (model.getProjectName() != null) context.put("projectName", model.getProjectName());
             if (model.getRootPackage() != null) context.put("rootPackage", model.getRootPackage());
-            if (model.getModuleName() != null) context.put("moduleName", model.getModuleName());
+            if (model.getModuleName() != null) context.put(Consts.CTX_MODULE_NAME, model.getModuleName());
             if (model.getAuthor() != null) context.put("author", model.getAuthor());
             if (model.getDate() != null) context.put("date", model.getDate());
             if (model.getCopyright() != null) context.put("copyright", model.getCopyright());
@@ -78,6 +79,14 @@ public class RenderContext implements Serializable {
             child.model = this.model.copy();
         }
         return child;
+    }
+
+    /**
+     * 创建当前上下文的隔离快照，用于并行渲染。
+     * 等价于 {@link #createChildContext()}，但语义聚焦于"并行隔离"场景。
+     */
+    public RenderContext snapshot() {
+        return createChildContext();
     }
 
     public TemplateModel getModel() {

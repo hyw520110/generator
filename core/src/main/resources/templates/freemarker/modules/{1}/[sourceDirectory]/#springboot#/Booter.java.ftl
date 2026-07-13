@@ -5,24 +5,25 @@ import java.util.Map;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
+<#if OPENFEIGN?? && OPENFEIGN>
+import org.springframework.cloud.openfeign.EnableFeignClients;
+</#if>
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-<#if "fastjson"=="${json_type}">
 import org.springframework.context.annotation.Bean;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.scheduling.annotation.EnableAsync;
+<#if "fastjson"=="${json_type}">
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.scheduling.annotation.EnableAsync;
 
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 </#if>
-import io.undertow.Undertow.Builder;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ImportResource;
@@ -30,14 +31,17 @@ import org.springframework.http.MediaType;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import jakarta.validation.Validator;
+import ${validationPackage}.Validator;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-@SpringBootApplication(exclude = {org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration.class})
+<#if OPENFEIGN?? && OPENFEIGN>
+@EnableFeignClients
+</#if>
+@SpringBootApplication
 @EnableCaching
 @EnableAsync
-<#if "plus"!="mapperType">
+<#if mapperPackage?? && "plus"!=(sqlType!"")>
 @MapperScan("${mapperPackage}")
 </#if>
 public class Booter{

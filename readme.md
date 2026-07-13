@@ -1,13 +1,55 @@
 ## 一、简介
 
-**代码生成器/脚手架**，可全自动生成前后台工程和代码，提高开发效率。
+**代码生成器/脚手架**，可全自动生成前后台工程和代码，提高开发效率。只需配置数据源和生成参数，即可一键生成完整的前后端项目代码，包含：
 
-只需配置数据源和生成参数，即可一键生成完整的前后端项目代码，包含：
 - **后端工程**：Spring Boot/Spring Cloud 微服务架构
 - **前端工程**：Vue + Ant Design Pro 或 Thymeleaf 模板
 - **完整功能**：用户认证、权限管理、CRUD 接口、页面、API 文档等
 
-### 主要功能：
+###  核心架构与特性
+
+不仅支持基础 CRUD，更能一键拼装 17+ 项顶级微服务特性：
+
+- **底层安全与鉴权**：全面拥抱 `Spring Security 6.x` + `OAuth2` 现代安全架构体系（或 `Shiro` 排他性选型），无状态 `JWT` 认证。
+- **高阶业务能力 (Feature)**：内置 `WORKFLOW` (Flowable 工作流与发起接口)、`EXCEL` (海量报表一键导出)、`AUDITLOG` (AOP 自动操作日志)、`TENANT` (多租户隔离)、`DATAPERMISSION` (数据权限过滤)。
+- **微服务治理与高并发**：深度整合 `SEATA` (Service 层 `@GlobalTransactional` 自动绑定)、`MULTIDATASOURCE` (自动化的 `@DS("slave")` 读写分离路由)、`MULTICACHE` (阿里 JetCache 双路高并发缓存)、`SENTINEL` (限流降级)。
+- **DevOps 与云原生部署**：自动化生成 Dockerfile、K8s 清单与 Github Actions / Gitlab-CI 流水线脚本 (`CICD` & `DEVOPS` 支持)。
+- **前端 Vue 深度整合**：Vue 前端模板已深度打通业务流，自动生成带图标的“导出 Excel”与“发起审批”业务入口，自动按需装载 API 接口。
+
+### 🚀 近期重大架构升级 (Enterprise Hardening)
+
+为了应对企业级复杂业务场景，生成器核心引擎近期完成了深度“夯实”：
+
+1.  **认证与动态权限 (Spring Security / OAuth2)**
+    *   **动态 RBAC 引擎**：自动注入 `CustomPermissionEvaluator`，并在配置中启用 `@EnableMethodSecurity`，接口权限校验 (`@PreAuthorize`) 无缝挂载。
+    *   **多端登录入口**：开箱即用的 `AuthController` 统一接管账号密码、短信验证码等认证方式，标准内置 JWT 生成。
+2.  **分布式事务落地 (Seata)**
+    *   在 `#seata#` 模块中预置 AT 模式所需的 `undo_log` 表结构 SQL 脚本，一键初始化分布式事务环境。
+3.  **熔断降级容灾 (Sentinel)**
+    *   内置 `CustomBlockExceptionHandler` 全局流控异常处理器，将降级、限流与热点参数拦截等异常优雅转换为 JSON 响应体，避免前端抛出 500 错误。
+4.  **消息队列中间件 (RocketMQ)**
+    *   自动生成标准的 `RocketMQProducer` 封装组件，统一管理所有 Topic 投递入口，规避业务层直接依赖三方模板。
+5.  **多数据源与读写分离动态切面 (MultiDataSource)**
+    *   纯手写提供无依赖的 `@TargetDataSource` 注解与 AOP 动态切面 (`DynamicDataSourceAspect`)，配合 ThreadLocal 轻松实现方法级 / 类级别的数据源无感切换。
+6.  **操作审计日志 (AuditLog) 增强**
+    *   完善了 `AuditLogAspect` 切面逻辑，新增自动解析 HTTP Request、获取客户端 IP、HTTP Method、URI 及当前登录用户能力，并实现了标准化日志采集模型构建。
+7.  **接口幂等性 (Idempotency) 保证**
+    *   完善了 `IdempotentInterceptor`，与 `StringRedisTemplate` 深度集成，实现基于 Token 的防重放攻击与重复提交控制，保证接口幂等性。
+8.  **多租户隔离 (Tenant) 完善**
+    *   注入了 MyBatis Plus 的 `TenantLineInnerInterceptor`，并实现了可扩展的表级别白名单机制（如过滤 `sys_user`、`sys_role` 等系统表不进行租户隔离）。
+9.  **动态数据权限 (DataPermission) 增强**
+    *   在 `CustomDataPermissionHandler` 中新增基于反射和缓存的 `mappedStatementId` 解析引擎，自动提取 `@DataPermission` 注解元数据，实现无侵入的部门/数据权限 SQL 动态拼装。
+10. **缓存与分布式会话 (Token / Context)**
+    *   **Token 存储升级**：`TokenServiceImpl` 已废弃原有的本地 `HashMap` 缓存机制，全面接入 `StringRedisTemplate` 进行 Token 存储、登出失效和续期，真正支持分布式集群部署。
+    *   **全局上下文增强**：完善了 `ContextInterceptor` 拦截器，除了拦截解析 Header 中的用户信息外，特别增加了针对 `MDC` 的清空处理 (`MDC.clear()`)，彻底解决了线程池复用导致的上下文数据泄露问题。
+11. **数据库与 ORM 代码生成增强**
+    *   **主键与外键机制**：在 MyBatis 的 XML 模板中增强了对复合主键的原生支持说明与处理机制；在生成的实体类中添加了标准化外键关联配置和对象引用指南，支持复杂的对象关系映射开发。
+    *   **自动审计字段填充**：重构了 `MybatisPlusMetaObjectHandler`，打通了 `MDC` 中的用户上下文 (`userId`)，实现了 `createTime`、`updateTime` 及 `createBy`、`updateBy` 等通用审计字段的自动安全填充。
+12. **生成器引擎优化**
+    *   **配置语义升级**：对 `generator.yaml` 及底层的数十处引擎模板进行了重构，将混淆的 `mapperType` 全面升级为 `sqlType` (支持 `xml` / `annotation` / `plus`)，语义更加清晰准确。
+    *   **冗余资源清理**：扫描并移除了早期的 `HelloController` 等用于测试的无用桩代码（若存在），使生成的代码架构更加干净纯粹。
+
+### 基础功能：
 
 - **数据库支持**：主流关系型数据库 (MySQL、Oracle、PostgreSQL、SQLServer)
 - **表生成策略**：整库生成、指定部分表生成、排除指定表生成 (支持复合主键)
@@ -59,7 +101,7 @@ global:
 
 ### Web 版操作说明
 
-1. **启动服务**后访问：`http://localhost:8000/generator/code`
+1. **启动服务**后访问 Web 前端：`http://localhost:9000/generator/code`（后端 API 默认端口：`8081`）
 
 2. **三步完成代码生成**：
    - **步骤 1：全局设置** - 配置生成目录、包名、工程模块等（带 * 为必填项）
@@ -107,10 +149,11 @@ global:
 
 ### 环境要求
 
-- **JDK 版本**：JDK 17 或更高版本
+- **运行默认生成器包**：JDK 8+
+- **源码构建生成器**：JDK 17+（core 使用 MRJAR 编译 Java 17 增强实现，推荐 JDK 21）
 - **构建工具**：Maven 3.6+ 或 Gradle 7.0+
 - **数据库**：MySQL 5.7+ / Oracle 11g+ / PostgreSQL 9.6+ / SQL Server 2016+
-- **Node.js**：14.0+（生成 Vue 前端工程时需要）
+- **Node.js**：17.9.1+（运行 Web 前端或生成 Vue 前端工程时需要）
 
 ---
 
@@ -141,17 +184,70 @@ global:
    # 进入项目根目录
    cd generator
    
-   # 方式一：使用 Docker（推荐）
+   # 方式一：使用 Docker 启动后端 API
    docker-compose up -d
    
    # 方式二：直接运行
-   ./package.sh  # 打包
-   java -jar cmd/target/generator-*.jar  # 启动
+   ./package.sh  # 默认打包 generator-web.jar（Java 8 / Spring Boot 2 运行包）
+   java -jar web/target/generator-web.jar  # 启动后端 API，默认端口 8081
+   
+   # 前端开发服务
+   cd web/antd
+   yarn install
+   yarn dev
    ```
+
+   生成器自身支持按运行时分代打包：
+
+   ```bash
+   # 显式生成 Java 8 / Spring Boot 2 运行包
+   ./package.sh --tool-runtime=boot2 -m web
+   java -jar web/target/generator-web-boot2.jar
+   
+   # 生成 Java 17+ / Spring Boot 3 运行包
+   ./package.sh --tool-runtime=boot3 -m web
+   java -jar web/target/generator-web-boot3.jar
+   
+   # 依次生成 boot2 和 boot3 两个运行包
+   ./package.sh --tool-runtime=all -m web
+   ```
+
+   说明：
+   - 默认构建保持 Java 8 / Spring Boot 2，降低本地运行门槛。
+   - `tool-boot3` 使用同一套 `javax` 源码，在构建期生成临时 Jakarta 源码到 `web/target/generated-sources/jakarta`，再用 Spring Boot 3 依赖打包；不会修改源码目录。
+   - 生成器自身的运行 JDK 与生成出来的目标工程 JDK 解耦：Java 8 运行的生成器也可以生成 Java 17/21 + Spring Boot 3 工程。
 
 2. **访问页面：**
    ```
-   http://localhost:8000/generator/code
+   http://localhost:9000/generator/code
+   ```
+
+   后端健康检查/API 配置地址：
+   ```
+   http://localhost:8081/v1/gen/health
+   http://localhost:8081/v1/gen/config
+   ```
+
+   Web 版默认使用“全局默认配置 + 用户配置”的方式保存配置：
+   - 全局默认配置：`${user.home}/.generator/default.yml`
+   - 用户配置目录：`${user.home}/.generator/users`
+   - 默认用户识别策略：`app.user-config-strategy=ip`
+   - 可选策略：`ip`、`client`、`session`
+   - 密码默认不落盘：`app.persist-password=false`
+
+   局域网多人使用时，推荐配置：
+   ```yaml
+   app:
+     user-config-strategy: client
+     persist-password: false
+   ```
+   前端会为浏览器生成稳定 `GENERATOR_CLIENT_ID`，并通过请求头和 Cookie 传给后端；下载文件也会按用户配置隔离。
+
+   Docker 部署时可挂载持久化目录：
+   ```yaml
+   volumes:
+     - ./data:/app/data
+     - ./downloads:/app/downloads
    ```
 
 3. **操作步骤：**
@@ -177,7 +273,96 @@ rootPackage: com.test
 
 以上为必须修改的配置项，其他均为可选修改项，更多可选配置项说明见配置文件注释
 
-#### 3.2 生成代码：
+#### 3.2 Java 兼容版本矩阵
+
+生成器通过 `core/src/main/resources/compatibility.yml` 统一维护 Java 版本和框架/组件版本的兼容关系。命令行版、Web 版和模板渲染共用同一份矩阵。
+
+配置文件按职责分为三层：`generator.yaml` 是默认运行配置，`compatibility.yml` 是唯一版本兼容矩阵，`core/src/main/resources/presets/*.yaml` 是需要显式选择或复制调整的组合样例。preset 不替代默认配置，也不重复维护框架版本。
+
+默认 `generator.yaml` 面向后台管理系统：生成一个后端 `server` 工程和一个独立前端工程，不生成 Gateway。前台业务采用多模块/领域服务时，使用 `presets/java21-boot4.yaml` 的 `api/service` 结构；Gateway 属于跨领域服务共享的独立基础设施工程，不应嵌入后台单体或每个领域服务。
+
+```bash
+# 后台管理系统：单后端工程 + 独立前端，不生成 Gateway
+./run.sh --quick --sql-dir ../sql
+
+# 前台领域服务：api/service 多模块工程
+./run.sh --quick --config ../core/src/main/resources/presets/java21-boot4.yaml --sql-dir ../sql
+```
+
+用户通常只需要配置：
+
+```yaml
+global:
+  javaVersion: 17
+```
+
+支持 `8`、`11`、`17`、`21`。生成器会自动匹配 Spring Boot、Spring Cloud、MyBatis、MyBatis-Plus、Knife4j、Shiro 等版本，并向模板注入 `templateFamily`、`namespace`、`servletPackage`、`validationPackage` 等变量。
+
+当前可用档位：
+- `java8-boot2`：Java 8 / Spring Boot 2 / `javax`
+- `java11-boot2`：Java 11 / Spring Boot 2 / `javax`
+- `java17-boot3`：Java 17 / Spring Boot 3 / `jakarta`
+- `java21-boot3`：Java 21 / Spring Boot 3 / `jakarta`
+- `java17-boot2`：Java 17 / Spring Boot 2 过渡档，需显式配置 `platformId`
+- `java21-boot3-dubbo`：Java 21 / Spring Boot 3 / Dubbo 组合档，需显式配置 `platformId`
+- `java21-boot4`：Java 21 / Spring Boot 4 实验档，需显式配置 `platformId`；默认仍使用 `java21-boot3`
+
+需要明确指定兼容档位时，可配置 `platformId`。不配置时，生成器会按 `javaVersion` 使用默认档位：
+
+```yaml
+global:
+  javaVersion: 21
+  platformId: java21-boot3
+```
+
+安全方案推荐通过 `security` 表达用户意图，由生成器自动映射到 `components` / `features`：
+
+```yaml
+global:
+  # Boot2 后台管理可选
+  security: SHIRO
+
+  # Boot3 / Boot4 默认推荐
+  security: SPRING_SECURITY_OAUTH2
+```
+
+推荐策略：
+- `java8-boot2` / `java11-boot2`：可选 `SHIRO` 或 `SPRING_SECURITY_OAUTH2`
+- `java17-boot3` / `java21-boot3`：默认推荐 `SPRING_SECURITY_OAUTH2`
+- `java21-boot4`：仅使用 `SPRING_SECURITY_OAUTH2`，当前按实验档验证
+- `SHIRO` 作为 Boot2 方案保留；Boot3 及以上场景如需 Shiro 2.x，建议作为后续高级兼容档单独验证
+
+如需小版本覆盖，只能覆盖 `compatibility.yml` 中 `allowOverride` 允许的版本项：
+
+```yaml
+versionOverrides:
+  SPRINGBOOT:
+    springboot_version: 3.2.13
+  MYBATIS:
+    mybatis_plus_version: 3.5.8
+```
+
+#### 3.3 常用高级配置
+
+```yaml
+# 顶层 include 用于拆分配置文件，被 include 的配置先加载，当前文件覆盖同名配置
+include:
+  - ./conf/datasource.yml
+  - ./conf/components.yml
+
+global:
+  # 只生成指定表；exclude 优先级更高
+  include: [user, order]
+  exclude: [sys_log]
+
+  # 多表并行渲染，默认 true；排查模板副作用或希望稳定串行输出时可关闭
+  parallelTables: true
+
+  # 模拟生成，执行完整解析和渲染流程但不写入文件，适合验证配置和模板
+  dryRun: false
+```
+
+#### 3.4 生成代码：
 
 1. 导入源码到 IDE(安装配置好 maven/gradle)
 2. 修改生成器配置文件 `generator.yaml`
@@ -307,13 +492,7 @@ app:
 
 ---
 
-# 六、TODO LIST
 
-1. 各主流关系型数据库驱动包集成及验证（默认只集成 mysql 驱动包，其他数据库集成相应的数据库驱动包即可）
-2. 增加分布式消息中间件 rocketmq、kafka
-3. redis 切片缓存 key 优化：示例设置过于简单，需考虑唯一性以及序列化与反序列化
-
----
 
 # 七、FAQ
 
@@ -362,73 +541,36 @@ java.lang.UnsupportedClassVersionError cannot be cast to [Ljava.lang.Object;
 
 ---
 
-## 八、架构设计与优化建议
+## 八、未来高价值迭代路线图 (Top 10 High-Value TODOs)
 
-为了持续提升生成器的专业性、健壮性与执行效率，本项目在架构层面遵循以下优化准则：
+针对企业级中后台系统与云原生发展趋势，系统已规划以下 10 项高价值、高优先级的核心迭代任务，以持续保持代码生成器在技术生态中的先进性：
 
-> **实现进度：8/12 (67%)**
+### 1. 前端架构全面升级 (Vue3 + Vite + TypeScript)
+随着 Vue 2 的退役，将现有的前端模板底座全面重构升级至 **Vue 3 + Vite + Composition API + TypeScript** 生态，搭配最新版的 Ant Design Vue 或 Element Plus，大幅提升前端开发体验、类型安全与打包性能。
 
-### ✅ 已实现
+### 2. 国产化信创生态适配 (DM & Kingbase)
+顺应信创趋势，在现有的 MySQL/Oracle/PostgreSQL 基础上，深度适配**达梦 (DM)**、**人大金仓 (Kingbase)** 甚至 OceanBase 等国产数据库，保障生成的代码在信创环境中“开箱即用”。
 
-#### 1. 模板引擎抽象化与按需加载 ✅
-- **细节**：通过定义 `TemplateEngine` 接口解耦具体的渲染引擎，并引入延迟初始化策略。
-- **逻辑**：只有在渲染过程中真正需要特定引擎（Velocity/FreeMarker）时才通过工厂创建实例，显著降低了系统的启动内存消耗。
-- **实现位置**：`TemplateEngineFactory` + `TemplateRenderer`
+### 3. AI 辅助智能建表与代码优化 (LLM 赋能)
+接入大语言模型 (LLM)，允许开发者通过**自然语言描述**直接生成规范的 DDL SQL 语句；并在复杂查询场景下，AI 智能预测并生成包含复杂 Join 的 MyBatis XML 片段。
 
-#### 5. 统一路径解析协议 (PathResolver) ✅
-- **细节**：废弃了 `Generator.java` 中硬编码的路径解析逻辑，统一采用 `PathTemplateResolver` 接口及其实现。
-- **逻辑**：全面支持 `${table.beanName}` 等语义化占位符，使输出路径的配置与模板解析逻辑彻底解耦，极大提升了代码的维护性。
-- **实现位置**：`DefaultPathTemplateResolver.java` + `Generator.java`
+### 4. 多租户隔离架构进阶 (Schema / Database 级别隔离)
+当前已实现基于字段（`tenant_id`）的逻辑多租户。未来需增加架构选项，支持更严格的**物理多租户隔离**：动态多数据源路由实现的按 Schema 隔离或按 Database 隔离机制，满足大型企业更严格的数据合规需求。
 
-#### 6. 智能资源识别与二进制安全 ✅
-- **细节**：在 `FileUtils` 中集成了基于魔数（Magic Number）的二进制判定逻辑。
-- **逻辑**：系统能自动识别非文本文件（如图片、静态库等）并执行二进制流式拷贝，规避了非文本文件进入渲染引擎导致的乱码或损坏风险。
-- **实现位置**：`FileUtils.java` + `Generator.java`
+### 5. 高阶云原生微服务网关层 (Gateway) 自动生成
+为 Spring Cloud 微服务架构自动生成功能强大的 **Spring Cloud Gateway** 工程。不仅负责基础路由，还内置无缝对接 OAuth2 认证中心的校验逻辑、动态黑白名单防御、基于 Redis 的网关级 Sentinel 细粒度限流策略。
 
-#### 12. 静态资源共享与多态分发 ✅
-- **细节**：在 `templates/assets` 下建立了统一的静态资产库，彻底从 `freemarker` 和 `velocity` 目录中剥离了图片、脚本等二进制文件。
-- **逻辑**：引入了 **“虚拟资源映射”** 机制：
-    *   **脚本类 (assets/scripts/)**：自动解析映射到目标工程的 **模块根目录**。
-    *   **根资源 (assets/root/)**：映射到模块根目录。
-    *   **组件资源 (assets/commons/...)**：自动映射到 **src/main/resources/static** 等资源目录。
-- **价值**：实现了资源的一处存放、两处共用。避免了二进制资源因误入渲染引擎导致的损坏，且极大简化了脚本文件的复用逻辑。
-- **实现位置**：`Generator.java` + `DefaultPathTemplateResolver.java`
+### 6. 前后端字典与枚举状态自动双向映射 (Type-Sync)
+在后端统一定义的业务 `Enum` 枚举或数据库状态字典，能够在生成阶段（或运行时 API）自动同步并转换为前端的 **TypeScript 类型定义**及下拉框 UI 渲染组件，彻底消灭前后端协同中的“魔术常量”。
 
-#### 4. 元数据缓存策略 ✅
-- **细节**：集成 Caffeine 缓存并提供可配置的开关机制。
-- **逻辑**：通过 `global.enableCache` 配置，平衡"频繁修改表结构"与"快速重复生成"的性能需求。
-- **实现位置**：`AbstractGenerator.java`
+### 7. 自动化集成测试与测试覆盖率保障 (Testcontainers)
+不再仅生成简单的测试桩（Stub），而是集成 **Testcontainers** 技术，为核心 Service 层和 API 层自动生成基于 Docker 容器的真实数据库/Redis 依赖启动测试环境，实现生成代码即具备高集成测试覆盖率。
 
-#### 7. 模板预编译缓存 ✅
-- **细节**：在执行生成前，预先解析 `components` 下的常驻模板并缓存在内存中。
-- **逻辑**：消除循环渲染各表时的重复磁盘 IO 与语法解析开销，显著提升吞吐量。
-- **实现位置**：`Generator.java`
+### 8. 低代码表单引擎动态集成 (Form-Engine)
+传统的代码生成仅解决“静态界面”问题，高价值扩展在于集成如 FormCreate 等**低代码/动态表单渲染引擎**。不仅生成基础 CRUD 代码，更将页面布局及校验规则入库，通过一套模板渲染多变的企业动态表单。
 
-#### 9. 依赖版本中心化管理 ✅
-- **细节**：在项目根目录 `pom.xml` 中集中定义版本及依赖管理。
-- **逻辑**：确保生成的所有子模块引用的版本严格一致，消除潜在的版本冲突。
-- **实现位置**：项目根目录 `pom.xml`
+### 9. GraphQL / gRPC 微服务高性能 API 选项
+除了标准的 RESTful API 外，提供接口生成维度的**双协议扩展**。内部微服务密集通讯可选择生成 gRPC (Protobuf) 接口，而面对多端复杂数据聚合查询可一键生成 GraphQL 服务端架构。
 
----
-
-### ❌ 未实现 (按优先级排序)
-
-#### 2. 并行化渲染驱动 (P0) ❌
-- **细节**：利用 Java 8+ 的 `ParallelStream` 或 `CompletableFuture` 对表元数据进行并发处理。
-- **逻辑**：在多核 CPU 环境下，将百级别表的生成耗时从秒级降低至毫秒级，协同处理 IO 与 CPU 密集型任务。
-
-#### 10. 原子性生成保护 (P0) ❌
-- **细节**：引入临时目录生成与最终替换机制。
-- **逻辑**：生成过程中的任何异常均不会污染目标目录，只有全部渲染任务成功后才会更新输出结果，保证生成工程的原子性。
-
-#### 11. 跨平台诊断工具 (EnvChecker) (P2) ❌
-- **细节**：内置环境预检逻辑。
-- **逻辑**：启动时自动检查 JDK 版本 (>=17)、系统字符集、目录写权限等关键指标，提供精准的故障诊断提示。
-
-#### 8. 配置模块化 (Include Config) (P3) ❌
-- **细节**：支持 `include: [sub-configs]` 语法。
-- **逻辑**：允许将庞大的 `generator.yaml` 拆分为数据库配置、组件配置等多个模块，提高大型项目配置的可维护性。
-
-#### 3. 数据源深度配置透传 (P3) ❌
-- **细节**：在 `generator.yaml` 中开放 Druid 连接池的高级参数（如 `maxActive`, `minIdle`）。
-- **逻辑**：针对大型数据库或复杂元数据场景，优化连接持有效率，防止在并发生成时连接枯竭。
+### 10. 云原生 DevOps 高级编排 (Helm Charts & CI/CD)
+当前包含基础 Dockerfile 构建，未来需生成生产级的 **Helm Charts** 部署清单，以及完整的 GitHub Actions / GitLab-CI 全自动部署流水线，涵盖编译、镜像推送、K8s 滚动更新的全链路自动化。

@@ -8,38 +8,41 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipOutputStream;
+import java.io.InputStream;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hyw.tools.generator.Generator;
+import org.hyw.tools.generator.compat.CompatibilityMatrix;
+import org.hyw.tools.generator.compat.CompatibilityProfile;
+import org.hyw.tools.generator.compat.ResolvedPlatform;
 import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.conf.dao.DataSourceConf;
-import org.hyw.tools.generator.conf.db.Table;
-import org.hyw.tools.generator.conf.db.TableRelation;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.ComponentGroup;
 import org.hyw.tools.generator.enums.ExportFormat;
-import org.hyw.tools.generator.metadata.DatabaseMetadataReader;
+import org.hyw.tools.generator.enums.Feature;
 import org.hyw.tools.generator.enums.ProjectBuilder;
 import org.hyw.tools.generator.utils.FileUtils;
-import org.hyw.tools.generator.web.enums.StatusCode;
 import org.hyw.tools.generator.web.model.Result;
+import org.hyw.tools.generator.web.service.DatabaseMetadataService;
+import org.hyw.tools.generator.web.service.DownloadFileService;
+import org.hyw.tools.generator.web.service.UserGeneratorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,9 +50,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
+
 
 /**
  * 代码生成器
@@ -63,42 +66,150 @@ import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 public class CodeGenController {
 
 	private static final Logger logger = LoggerFactory.getLogger(CodeGenController.class);
-
-	/** 下载目录（从配置文件读取） */
-	@Value("${app.download-dir:${user.home}/Downloads/generator}")
-	private String downloadDir;
+	private static final int MAX_SQL_FILE_COUNT = 200;
+	private static final long MAX_SQL_FILE_SIZE = 20L * 1024 * 1024;
+	private static final long MAX_SQL_TOTAL_SIZE = 100L * 1024 * 1024;
+	/** 前端单选项或复选项已启用时提交的标识。 */
+	private static final String ENABLED_FLAG = "true";
 
 	/** 默认输出目录（从配置文件读取） */
 	@Value("${app.output-dir:${user.home}/output/demo}")
 	private String defaultOutputDir;
 
-	private Generator generator;
+	@Autowired
+	private UserGeneratorService userGeneratorService;
 
-	@PostConstruct
-	public void init() {
-		generator = Generator.getInstance();
+	@Autowired
+	private DownloadFileService downloadFileService;
+
+	@Autowired
+	private DatabaseMetadataService databaseMetadataService;
+
+	private Generator currentGenerator() {
+		return userGeneratorService.getGenerator(currentRequest());
+	}
+
+	private HttpServletRequest currentRequest() {
+		ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		return attrs != null ? attrs.getRequest() : null;
+	}
+
+	private void saveCurrentGenerator() {
+		userGeneratorService.saveGenerator(currentRequest());
+	}
+
+	private File userConfigFile(String clientKey) {
+		return userGeneratorService.userConfigFile(clientKey);
+	}
+
+	private String resolveClientKey(HttpServletRequest request) {
+		return userGeneratorService.resolveClientKey(request);
+	}
+
+	private Component[] addComponents(Component[] components, Component... additions) {
+		Set<Component> result = new LinkedHashSet<>();
+		if (components != null) {
+			result.addAll(Arrays.asList(components));
+		}
+		if (additions != null) {
+			for (Component component : additions) {
+				if (component != null) {
+					result.add(component);
+				}
+			}
+		}
+		return result.toArray(new Component[0]);
+	}
+
+	private Component[] removeComponents(Component[] components, Component... removals) {
+		Set<Component> result = new LinkedHashSet<>();
+		if (components != null) {
+			result.addAll(Arrays.asList(components));
+		}
+		if (removals != null) {
+			for (Component component : removals) {
+				result.remove(component);
+			}
+		}
+		return result.toArray(new Component[0]);
+	}
+
+	private Feature[] addFeatures(Feature[] features, Feature... additions) {
+		Set<Feature> result = new LinkedHashSet<>();
+		if (features != null) {
+			result.addAll(Arrays.asList(features));
+		}
+		if (additions != null) {
+			for (Feature feature : additions) {
+				if (feature != null) {
+					result.add(feature);
+				}
+			}
+		}
+		return result.toArray(new Feature[0]);
+	}
+
+	private Feature[] removeFeatures(Feature[] features, Feature... removals) {
+		Set<Feature> result = new LinkedHashSet<>();
+		if (features != null) {
+			result.addAll(Arrays.asList(features));
+		}
+		if (removals != null) {
+			for (Feature feature : removals) {
+				result.remove(feature);
+			}
+		}
+		return result.toArray(new Feature[0]);
+	}
+
+	private Map<String, Object> versionOverride(Generator generator, Component component) {
+		Map<Component, Map<String, Object>> overrides = generator.getVersionOverrides();
+		if (overrides == null) {
+			overrides = new HashMap<>();
+			generator.setVersionOverrides(overrides);
+		}
+		Map<String, Object> values = overrides.get(component);
+		if (values == null) {
+			values = new HashMap<>();
+			overrides.put(component, values);
+		}
+		return values;
+	}
+
+	private File resolveDownloadFile(String path) throws IOException {
+		return downloadFileService.resolveUserFile(resolveClientKey(currentRequest()), path);
+	}
+
+	@GetMapping("/health")
+	public Result<?> health() {
+		return Result.ok("ok");
 	}
 
 	@PostMapping("/tables")
-	public Result<String> getTables(@RequestParam(name = "ipAndPort") String ipAndPort,
-			@RequestParam(name = "dbName") String dbName,
-			@RequestParam(name = "username") String username,
-			@RequestParam(name = "pwd") String pwd,
-			@RequestParam(name = "include") String include,
-			@RequestParam(name = "exclude") String exclude,
-			@RequestParam(name = "tablePrefix") String tablePrefix) {
+	public Result<String> getTables(@RequestParam(name = "ipAndPort", defaultValue = "") String ipAndPort,
+			@RequestParam(name = "dbName", defaultValue = "") String dbName,
+			@RequestParam(name = "username", defaultValue = "") String username,
+			@RequestParam(name = "pwd", defaultValue = "") String pwd,
+			@RequestParam(name = "include", defaultValue = "") String include,
+			@RequestParam(name = "exclude", defaultValue = "") String exclude,
+			@RequestParam(name = "tablePrefix", defaultValue = "") String tablePrefix) {
+		Generator generator = currentGenerator();
 		logger.info("[tables] 输入 - ipAndPort: {}, dbName: {}, username: {}, include: {}, exclude: {}, tablePrefix: {}",
 				ipAndPort, dbName, username, include, exclude, tablePrefix);
+		synchronized (userGeneratorService.lockFor(currentRequest())) {
 		if (StringUtils.isNotBlank(tablePrefix)) {
 			generator.getGlobal().setTablePrefix(StringUtils.split(tablePrefix, ","));
 		}
 		generator.getGlobal().setMatchMode(true);
 		generator.getGlobal().setInclude(StringUtils.isNotBlank(include) ? include.split(",") : null);
 		generator.getGlobal().setExclude(StringUtils.isNotBlank(exclude) ? exclude.split(",") : null);
-		if (StringUtils.isBlank(ipAndPort)) {
+		if ("SQL_FILE".equalsIgnoreCase(generator.getDataSource().getSourceType())) {
 			Result<String> result = toJson();
 			logger.info("[tables] 输出 - 表数量: {}", generator.getTables() != null ? generator.getTables().size() : 0);
 			return result;
+		}
+		if (StringUtils.isBlank(ipAndPort)) {
+			return Result.error("数据库地址不能为空；使用 SQL 文件时请先上传文件");
 		}
 		DataSourceConf ds = generator.getDataSource();
 		ds.setIpAndPort(ipAndPort);
@@ -108,6 +219,84 @@ public class CodeGenController {
 		Result<String> result = toJson();
 		logger.info("[tables] 输出 - 表数量: {}", generator.getTables() != null ? generator.getTables().size() : 0);
 		return result;
+		}
+	}
+
+	@PostMapping("/sql-files")
+	public Result<?> uploadSqlFiles(@RequestParam("files") MultipartFile[] files) {
+		if (files == null || files.length == 0) {
+			return Result.error("请选择 SQL 文件");
+		}
+		if (files.length > MAX_SQL_FILE_COUNT) {
+			return Result.error("SQL 文件数量不能超过 " + MAX_SQL_FILE_COUNT + " 个");
+		}
+
+		String clientKey = resolveClientKey(currentRequest());
+		File configParent = userConfigFile(clientKey).getAbsoluteFile().getParentFile();
+		File sqlDir = new File(new File(configParent, "sql-sources"), clientKey);
+		long totalSize = 0L;
+		List<String> savedFiles = new ArrayList<>();
+
+		synchronized (userGeneratorService.lockFor(currentRequest())) {
+			try {
+				org.apache.commons.io.FileUtils.deleteDirectory(sqlDir);
+				if (!sqlDir.mkdirs() && !sqlDir.isDirectory()) {
+					return Result.error("无法创建 SQL 文件目录");
+				}
+				for (MultipartFile file : files) {
+					if (file == null || file.isEmpty()) {
+						continue;
+					}
+					String originalName = StringUtils.defaultString(file.getOriginalFilename(), "schema.sql");
+					String fileName = new File(originalName).getName();
+					if (!fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".sql")) {
+						return Result.error("仅支持 .sql 文件: " + fileName);
+					}
+					if (file.getSize() > MAX_SQL_FILE_SIZE) {
+						return Result.error("单个 SQL 文件不能超过 20MB: " + fileName);
+					}
+					totalSize += file.getSize();
+					if (totalSize > MAX_SQL_TOTAL_SIZE) {
+						return Result.error("SQL 文件总大小不能超过 100MB");
+					}
+					File target = uniqueSqlFile(sqlDir, fileName);
+					try (InputStream input = file.getInputStream()) {
+						org.apache.commons.io.FileUtils.copyInputStreamToFile(input, target);
+					}
+					savedFiles.add(target.getName());
+				}
+				if (savedFiles.isEmpty()) {
+					return Result.error("没有可解析的 SQL 文件");
+				}
+
+				Generator generator = currentGenerator();
+				DataSourceConf ds = generator.getDataSource();
+				ds.setSourceType("SQL_FILE");
+				ds.setSqlPath(sqlDir.getCanonicalPath());
+				ds.setDbName("sql-files");
+				saveCurrentGenerator();
+
+				Map<String, Object> result = new HashMap<>();
+				result.put("sourceType", ds.getSourceType());
+				result.put("sqlPath", ds.getSqlPath());
+				result.put("files", savedFiles);
+				result.put("tableCount", generator.getTables(true).size());
+				return Result.ok(result);
+			} catch (Exception e) {
+				logger.error("上传并解析 SQL 文件失败", e);
+				return Result.error("SQL 文件解析失败: " + e.getMessage());
+			}
+		}
+	}
+
+	private File uniqueSqlFile(File directory, String fileName) {
+		File target = new File(directory, fileName);
+		int sequence = 1;
+		String base = StringUtils.substringBeforeLast(fileName, ".");
+		while (target.exists()) {
+			target = new File(directory, base + "_" + sequence++ + ".sql");
+		}
+		return target;
 	}
 
 	/**
@@ -122,24 +311,21 @@ public class CodeGenController {
 	public Result<List<String>> getDatabases(@RequestParam(name = "ipAndPort") String ipAndPort,
 			@RequestParam(name = "username") String username,
 			@RequestParam(name = "pwd") String pwd) {
+		Generator generator = currentGenerator();
 		logger.info("[databases] 输入 - ipAndPort: {}, username: {}", ipAndPort, username);
 		if (StringUtils.isBlank(ipAndPort)) {
 			logger.warn("[databases] 输出 - 错误: 数据库地址不能为空");
 			return Result.error("数据库地址不能为空");
 		}
-		DataSourceConf ds = generator.getDataSource();
-		ds.setIpAndPort(ipAndPort);
-		ds.setUsername(username);
-		ds.setPwd(pwd);
-		// 不指定数据库名连接数据库实例
-		ds.setDbName("");
-		try {
-			List<String> databases = ds.getDataBaseNames();
-			logger.info("[databases] 输出 - 数据库数量: {}, 列表: {}", databases.size(), databases);
-			return Result.ok(databases);
-		} catch (Exception e) {
-			logger.error("[databases] 输出 - 错误: {}", e.getMessage());
-			return Result.error("连接数据库失败: " + e.getMessage());
+		synchronized (userGeneratorService.lockFor(currentRequest())) {
+			try {
+				List<String> databases = databaseMetadataService.getDatabases(generator, ipAndPort, username, pwd);
+				logger.info("[databases] 输出 - 数据库数量: {}, 列表: {}", databases.size(), databases);
+				return Result.ok(databases);
+			} catch (Exception e) {
+				logger.error("[databases] 输出 - 错误: {}", e.getMessage());
+				return Result.error("连接数据库失败: " + e.getMessage());
+			}
 		}
 	}
 
@@ -149,8 +335,40 @@ public class CodeGenController {
 	 * @return
 	 */
 	private Result<String> toJson() {
-		return new Result<>(JSON.toJSONString(generator, new SimplePropertyPreFilter("dataSource", "ipAndPort",
-				"dbName", "username", "pwd", "tables", "name", "comment", "createTime")));
+		Generator generator = currentGenerator();
+		try {
+			com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+			Map<String, Object> map = new HashMap<>();
+			
+			DataSourceConf ds = generator.getDataSource();
+			if (ds != null) {
+				Map<String, Object> dsMap = new HashMap<>();
+				dsMap.put("ipAndPort", ds.getIpAndPort());
+				dsMap.put("dbName", ds.getDbName());
+				dsMap.put("username", ds.getUsername());
+				dsMap.put("pwd", ds.getPwd());
+				dsMap.put("sourceType", ds.getSourceType());
+				dsMap.put("sqlPath", ds.getSqlPath());
+				map.put("dataSource", dsMap);
+			}
+			
+			List<Map<String, Object>> tablesList = new ArrayList<>();
+			if (generator.getTables() != null) {
+				for (org.hyw.tools.generator.conf.db.Table table : generator.getTables()) {
+					Map<String, Object> tableMap = new HashMap<>();
+					tableMap.put("name", table.getName());
+					tableMap.put("comment", table.getComment());
+					tableMap.put("createTime", table.getCreateTime());
+					tablesList.add(tableMap);
+				}
+			}
+			map.put("tables", tablesList);
+			
+			return new Result<>(mapper.writeValueAsString(map));
+		} catch (Exception e) {
+			logger.error("JSON 序列化失败", e);
+			return Result.error("JSON 序列化失败");
+		}
 	}
 
 	/**
@@ -160,7 +378,11 @@ public class CodeGenController {
 	 */
 	@GetMapping("/config")
 	public Result<?> getConfig() {
+		Generator generator = currentGenerator();
+		HttpServletRequest request = currentRequest();
+		String clientKey = resolveClientKey(request);
 		Map<String, Object> config = new HashMap<>();
+		ResolvedPlatform resolvedPlatform = generator.applyCompatibility();
 
 		GlobalConf global = generator.getGlobal();
 		Map<Component, Map<String, Object>> allComponents = generator.getComponents();
@@ -180,15 +402,37 @@ public class CodeGenController {
 
 		config.put("global", global);
 		config.put("components", enabledComponents);
+		config.put("versionOverrides", generator.getVersionOverrides());
+		if (resolvedPlatform != null) {
+			Map<String, Object> platform = new HashMap<>();
+			platform.put("id", resolvedPlatform.getId());
+			platform.put("name", resolvedPlatform.getName());
+			platform.put("javaVersion", resolvedPlatform.getJavaVersion());
+			platform.put("release", resolvedPlatform.getRelease());
+			platform.put("templateFamily", resolvedPlatform.getTemplateFamily());
+			platform.put("namespace", resolvedPlatform.getNamespace());
+			platform.put("variables", resolvedPlatform.getVariables());
+			config.put("platform", platform);
+		}
 
 		// DataSourceConf 中有些字段无法序列化，只返回需要的字段
 		Map<String, Object> dataSource = new HashMap<>();
 		dataSource.put("ipAndPort", ds.getIpAndPort());
 		dataSource.put("dbName", ds.getDbName());
 		dataSource.put("username", ds.getUsername());
-		dataSource.put("pwd", ds.getPwd());
+		dataSource.put("pwd", userGeneratorService.isPersistPassword() ? ds.getPwd() : "");
 		dataSource.put("dbType", ds.getDBType() != null ? ds.getDBType().name() : null);
+		dataSource.put("sourceType", ds.getSourceType());
+		dataSource.put("sqlPath", ds.getSqlPath());
 		config.put("dataSource", dataSource);
+
+		Map<String, Object> client = new HashMap<>();
+		client.put("key", clientKey);
+		client.put("strategy", userGeneratorService.getUserConfigStrategy());
+		client.put("configFile", userConfigFile(clientKey).getAbsolutePath());
+		client.put("persistPassword", userGeneratorService.isPersistPassword());
+		client.put("trustedProxyEnabled", userGeneratorService.isTrustedProxyEnabled());
+		config.put("client", client);
 
 		// 默认值（用于初始化）
 		Map<String, Object> defaults = new HashMap<>();
@@ -198,6 +442,36 @@ public class CodeGenController {
 
 		logger.info("[config] 输出 - 成功");
 		return Result.ok(config);
+	}
+
+	@GetMapping("/platforms")
+	public Result<?> getPlatforms() {
+		CompatibilityMatrix matrix = CompatibilityMatrix.loadDefault();
+		List<Map<String, Object>> profiles = new ArrayList<>();
+		for (CompatibilityProfile raw : matrix.getProfiles()) {
+			CompatibilityProfile profile = matrix.resolveByJava(raw.getJava());
+			Map<String, Object> item = new HashMap<>();
+			item.put("javaVersion", profile.getJava());
+			item.put("id", profile.getId());
+			item.put("name", profile.getName());
+			item.put("templateFamily", profile.getTemplateFamily());
+			item.put("namespace", profile.getNamespace());
+			item.put("release", profile.getRelease());
+			item.put("versions", profile.getVersions());
+			item.put("allowOverride", profile.getAllowOverride());
+			profiles.add(item);
+		}
+		Map<String, Object> result = new HashMap<>();
+		result.put("defaultJava", matrix.getDefaultJava());
+		result.put("profiles", profiles);
+		return Result.ok(result);
+	}
+
+	@PostMapping("/config/default")
+	public Result<?> saveAsGlobalDefault() {
+		userGeneratorService.saveGlobalDefault(currentRequest());
+		logger.info("[config/default] 输出 - 已保存全局默认配置");
+		return Result.ok("全局默认配置已保存");
 	}
 
 	/**
@@ -272,9 +546,9 @@ public class CodeGenController {
 
 		logger.info("[validateOutputDir] 输入 - outputDir: {}", outputDir);
 
-		// 检查非法字符
-		if (outputDir.contains("..") || outputDir.contains("~")) {
-			return Result.error("目录路径包含非法字符");
+		// 支持 ~ 表示用户主目录
+		if (outputDir.startsWith("~")) {
+			outputDir = outputDir.replaceFirst("^~", userHome);
 		}
 
 		File dir = new File(outputDir);
@@ -325,9 +599,11 @@ public class CodeGenController {
 			@RequestParam(name = "delOutputDir") boolean delOutputDir,
 			@RequestParam(name = "fileOverride") boolean fileOverride,
 			@RequestParam(name = "openDir") boolean openDir) {
+		Generator generator = currentGenerator();
 		logger.info(
 				"[step1] 输入 - outputDir: {}, description: {}, rootPackage: {}, modules: {}, delOutputDir: {}, fileOverride: {}, openDir: {}",
 				outputDir, description, rootPackage, modules, delOutputDir, fileOverride, openDir);
+		synchronized (userGeneratorService.lockFor(currentRequest())) {
 		GlobalConf global = generator.getGlobal();
 		global.setOutputDir(outputDir);
 		global.setDescription(description);
@@ -337,14 +613,16 @@ public class CodeGenController {
 		global.setDelOutputDir(delOutputDir);
 		global.setFileOverride(fileOverride);
 		global.setOpenDir(openDir);
-		generator.save(); // 持久化配置
+		saveCurrentGenerator(); // 持久化当前用户配置
 		logger.info("[step1] 输出 - 成功");
 		return Result.ok();
+		}
 	}
 
 	@PostMapping("/step2")
 	public Result<Object> step2(@RequestParam(name = "view") String view,
 			@RequestParam(name = "projectBuilder", required = false, defaultValue = "MAVEN") String projectBuilder,
+			@RequestParam(name = "javaVersion", required = false) String javaVersion,
 			@RequestParam(name = "microservice", required = false, defaultValue = "") String microservice,
 			@RequestParam(name = "springBootVersion") String springBootVersion,
 			@RequestParam(name = "springCloudVersion") String springCloudVersion,
@@ -358,44 +636,80 @@ public class CodeGenController {
 			@RequestParam(name = "nacosPassword") String nacosPassword,
 			@RequestParam(name = "redisHost") String redisHost,
 			@RequestParam(name = "redisPassword") String redisPassword,
+			@RequestParam(name = "sentinelEnabled", required = false, defaultValue = "") String sentinelEnabled,
 			@RequestParam(name = "sentinelVersion") String sentinelVersion,
 			@RequestParam(name = "sentinelAddr") String sentinelAddr,
 			@RequestParam(name = "skywalkingAddr") String skywalkingAddr,
-			@RequestParam(name = "secure") String secure) {
+			@RequestParam(name = "secure", required = false) String[] secure,
+			@RequestParam(name = "features", required = false) String[] features) {
+		Generator generator = currentGenerator();
 		logger.info(
-				"[step2] 输入 - view: {}, projectBuilder: {}, microservice: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}",
-				view, projectBuilder, microservice, springBootVersion, dubboVersion, mybatisType, registryCenter);
+				"[step2] 输入 - view: {}, projectBuilder: {}, javaVersion: {}, springBootVersion: {}, dubboVersion: {}, mybatisType: {}, registryCenter: {}",
+				view, projectBuilder, javaVersion, springBootVersion, dubboVersion, mybatisType, registryCenter);
+		synchronized (userGeneratorService.lockFor(currentRequest())) {
 		GlobalConf global = generator.getGlobal();
-		ArrayUtils.removeElement(global.getComponents(), Component.VUE);
-		ArrayUtils.removeElement(global.getComponents(), Component.THYMELEAF);
-		Component viewComponent = Component.getComonent(view);
-		global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), viewComponent));
-		if (viewComponent == Component.VUE) {
-			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.SHIRO));
-			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.JWT));
+		if (StringUtils.isNotBlank(javaVersion)) {
+			global.setJavaVersion(javaVersion);
 		}
+		global.setComponents(removeComponents(global.getComponents(), Component.VUE, Component.THYMELEAF));
+		Component viewComponent = Component.getComonent(view);
+		global.setComponents(addComponents(global.getComponents(), viewComponent));
+
+			// 处理高级特性
+			global.setFeatures(new Feature[0]);
+			if (features != null) {
+				for (String f : features) {
+					if (StringUtils.isNotBlank(f)) {
+						for (String token : f.split(",")) {
+							Feature feat = Feature.getFeature(token.trim());
+							if (feat != null) {
+								global.setFeatures(addFeatures(global.getFeatures(), feat));
+							}
+						}
+					}
+				}
+			}
+
+			global.setComponents(removeComponents(global.getComponents(), Component.SPRINGSECURITY, Component.SHIRO, Component.JWT));
+			global.setFeatures(removeFeatures(global.getFeatures(), Feature.OAUTH2));
+			String securityScheme = resolveSecurityScheme(secure);
+			if ("SHIRO".equals(securityScheme)) {
+				global.setComponents(addComponents(global.getComponents(), Component.SHIRO, Component.JWT));
+			} else if ("SPRINGSECURITY_OAUTH2".equals(securityScheme)) {
+				global.setComponents(addComponents(global.getComponents(), Component.SPRINGSECURITY));
+				global.setFeatures(addFeatures(global.getFeatures(), Feature.OAUTH2));
+			}
 
 		// 处理微服务框架选择
-		ArrayUtils.removeElement(global.getComponents(), Component.SPRINGCLOUD);
-		ArrayUtils.removeElement(global.getComponents(), Component.DUBBO);
+		global.setComponents(removeComponents(global.getComponents(), Component.SPRINGCLOUD, Component.DUBBO));
 		if ("SPRINGCLOUD".equals(microservice)) {
-			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.SPRINGCLOUD));
+			global.setComponents(addComponents(global.getComponents(), Component.SPRINGCLOUD));
 		} else if ("DUBBO".equals(microservice)) {
-			global.setComponents((Component[]) ArrayUtils.add(global.getComponents(), Component.DUBBO));
+			global.setComponents(addComponents(global.getComponents(), Component.DUBBO));
 		}
 
 		// projectBuilder 保持 MAVEN 或 GRADLE
 		global.setProjectBuilder(ProjectBuilder.valueOf(projectBuilder));
 		Map<Component, Map<String, Object>> map = generator.getComponents();
-		map.get(Component.SPRINGBOOT).put(Component.SPRINGBOOT.name().toLowerCase() + "_version", springBootVersion);
-		map.get(Component.SPRINGCLOUD).put(Component.SPRINGCLOUD.name().toLowerCase() + "_version", springCloudVersion);
-		map.get(Component.SPRINGCLOUD).put("springcloud_alibaba_version", springCloudAlibabaVersion);
+		org.hyw.tools.generator.compat.CompatibilityMatrix matrix = new org.hyw.tools.generator.compat.CompatibilityResolver().getMatrix();
+		org.hyw.tools.generator.compat.CompatibilityProfile profile;
+		if ("21".equals(global.getJavaVersion()) && springBootVersion != null && springBootVersion.startsWith("4.")) {
+			profile = matrix.resolveById("java21-boot4");
+			global.setPlatformId("java21-boot4");
+			logger.info("[step2] 命中 java21-boot4: springBootVersion={}", springBootVersion);
+		} else {
+			profile = matrix.resolveByJava(global.getJavaVersion());
+			logger.info("[step2] 未命中 java21-boot4，走默认: javaVersion={}, springBootVersion={}", global.getJavaVersion(), springBootVersion);
+		}
+		checkAndOverride(generator, profile, Component.SPRINGBOOT, "springboot_version", springBootVersion);
+		checkAndOverride(generator, profile, Component.SPRINGCLOUD, "springcloud_version", springCloudVersion);
+		checkAndOverride(generator, profile, Component.SPRINGCLOUD, "springcloud_alibaba_version", springCloudAlibabaVersion);
 
 		// 处理 Dubbo
 		if (StringUtils.isBlank(dubboVersion)) {
-			ArrayUtils.removeElement(global.getComponents(), Component.DUBBO);
+			global.setComponents(removeComponents(global.getComponents(), Component.DUBBO));
 		} else {
-			map.get(Component.DUBBO).put(Component.DUBBO.name().toLowerCase() + "_version", dubboVersion);
+			checkAndOverride(generator, profile, Component.DUBBO, "dubbo_version", dubboVersion);
 		}
 
 		// 处理注册中心/配置中心
@@ -403,25 +717,76 @@ public class CodeGenController {
 			map.get(Component.NACOS).put("nacos.addr", nacosAddr);
 			map.get(Component.NACOS).put("nacos.username", nacosUsername);
 			map.get(Component.NACOS).put("nacos.password", nacosPassword);
-			ArrayUtils.removeElement(global.getComponents(), Component.ZOOKEEPER);
+			global.setComponents(removeComponents(global.getComponents(), Component.ZOOKEEPER));
+			global.setComponents(addComponents(global.getComponents(), Component.NACOS));
 		} else if ("zookeeper".equals(registryCenter)) {
 			map.get(Component.ZOOKEEPER).put("connect-string", zookeeperAddr);
-			ArrayUtils.removeElement(global.getComponents(), Component.NACOS);
+			global.setComponents(removeComponents(global.getComponents(), Component.NACOS));
+			global.setComponents(addComponents(global.getComponents(), Component.ZOOKEEPER));
 		} else {
 			// 不需要注册中心
-			ArrayUtils.removeElement(global.getComponents(), Component.NACOS);
-			ArrayUtils.removeElement(global.getComponents(), Component.ZOOKEEPER);
+			global.setComponents(removeComponents(global.getComponents(), Component.NACOS, Component.ZOOKEEPER));
 		}
 
 		map.get(Component.MYBATIS).put("mapperType", mybatisType);
 		map.get(Component.REDIS).put("spring_redis_cluster_nodes", redisHost);
 		map.get(Component.REDIS).put("spring_redis_password", redisPassword);
-		map.get(Component.SENTINEL).put("sentinel_version", sentinelVersion);
-		map.get(Component.SENTINEL).put("dashboard.server", sentinelAddr);
-		map.get(Component.SKYWALKING).put("skywalking.addr", skywalkingAddr);
-		generator.save(); // 持久化配置
+		if (ENABLED_FLAG.equals(sentinelEnabled) && StringUtils.isNotBlank(sentinelVersion)) {
+			checkAndOverride(generator, profile, Component.SENTINEL, "sentinel_version", sentinelVersion);
+		}
+		if (StringUtils.isNotBlank(sentinelAddr)) {
+			map.get(Component.SENTINEL).put("dashboard.server", sentinelAddr);
+		}
+		if (StringUtils.isNotBlank(skywalkingAddr)) {
+			map.get(Component.SKYWALKING).put("skywalking.addr", skywalkingAddr);
+		}
+		
+		// 校验并应用兼容性矩阵
+		generator.applyCompatibility();
+		
+		saveCurrentGenerator(); // 持久化当前用户配置
 		logger.info("[step2] 输出 - 成功, viewComponent: {}, registryCenter: {}", viewComponent, registryCenter);
 		return Result.ok();
+		}
+	}
+
+	private void checkAndOverride(Generator generator, org.hyw.tools.generator.compat.CompatibilityProfile profile, Component component, String key, String value) {
+		if (StringUtils.isBlank(value)) return;
+		Map<String, Object> defaults = profile.getVersions().get(component);
+		if (defaults == null || !value.equals(String.valueOf(defaults.get(key)))) {
+			versionOverride(generator, component).put(key, value);
+		} else {
+			// 移除可能之前被写入的同版本号（防止残留覆盖）；首次配置时覆盖项可能尚未初始化
+			Map<Component, Map<String, Object>> overrides = generator.getVersionOverrides();
+			if (overrides != null && overrides.containsKey(component)) {
+				Map<String, Object> componentOverrides = overrides.get(component);
+				if (componentOverrides != null) {
+					componentOverrides.remove(key);
+				}
+			}
+		}
+	}
+
+	private String resolveSecurityScheme(String[] secure) {
+		if (secure == null || secure.length == 0) {
+			return "";
+		}
+		for (String value : secure) {
+			if (StringUtils.isBlank(value)) {
+				continue;
+			}
+			for (String token : value.split(",")) {
+				String normalized = token.trim().toUpperCase();
+				if ("SPRINGSECURITY_OAUTH2".equals(normalized) || "SPRING_SECURITY_OAUTH2".equals(normalized)
+						|| "OAUTH2".equals(normalized) || "SPRINGSECURITY".equals(normalized)) {
+					return "SPRINGSECURITY_OAUTH2";
+				}
+				if ("SHIRO".equals(normalized)) {
+					return "SHIRO";
+				}
+			}
+		}
+		return "";
 	}
 
 	@PostMapping("/exec")
@@ -430,15 +795,22 @@ public class CodeGenController {
 			@RequestParam(name = "pack") Boolean pack) throws IOException {
 		logger.info("[exec] 输入 - tabName: {}, pack: {}", tabName, pack);
 		String[] tables = StringUtils.isBlank(tabName) ? null : tabName.split(",");
-		generator.getGlobal().setInclude(tables);
-		generator.getGlobal().setMatchMode(false);
-		generator.save(); // 持久化配置
+		Generator jobGenerator;
+		synchronized (userGeneratorService.lockFor(currentRequest())) {
+			Generator generator = currentGenerator();
+			generator.getGlobal().setInclude(tables);
+			generator.getGlobal().setMatchMode(false);
+			generator.applyCompatibility(); // 应用平台兼容性（step2设置的platformId）
+			logger.info("[exec] applyCompatibility后 - platformId: {}, templateFamily: {}", generator.getGlobal().getPlatformId(), generator.getGlobal().getTemplateFamily());
+			saveCurrentGenerator(); // 持久化当前用户配置
+			jobGenerator = generator.copy();
+		}
 
 		long startTime = System.currentTimeMillis();
-		generator.execute();
+		jobGenerator.execute();
 		long duration = System.currentTimeMillis() - startTime;
 
-		String outputDir = generator.getGlobal().getOutputDir();
+		String outputDir = jobGenerator.getGlobal().getOutputDir();
 		File outputFolder = new File(outputDir);
 
 		// 检查输出目录是否存在且有内容
@@ -455,10 +827,10 @@ public class CodeGenController {
 		logger.info("[exec] 输出目录文件数: {}", fileCount);
 
 		// 获取数据库连接信息
-		DataSourceConf ds = generator.getDataSource();
+		DataSourceConf ds = jobGenerator.getDataSource();
 		String ipAndPort = ds.getIpAndPort();
 		String dbName = StringUtils.defaultString(ds.getDbName(), "unknown");
-		int tableCount = tables != null ? tables.length : generator.getTables().size();
+		int tableCount = tables != null ? tables.length : jobGenerator.getTables().size();
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("tableCount", tableCount);
@@ -473,11 +845,8 @@ public class CodeGenController {
 			String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 			String zipFileName = String.format("%s_%dt_%s.zip", dbName, tableCount, timestamp);
 
-			String subDir = ipAndPort.replace(":", "_") + "/" + dbName;
-			File targetDir = new File(downloadDir, subDir);
-			if (!targetDir.exists()) {
-				targetDir.mkdirs();
-			}
+			String clientKey = resolveClientKey(currentRequest());
+			File targetDir = downloadFileService.createTargetDir(clientKey, ipAndPort, dbName);
 
 			File zipFile = new File(targetDir, zipFileName);
 
@@ -499,9 +868,9 @@ public class CodeGenController {
 			logger.info("已删除生成目录: {}", outputDir);
 
 			result.put("zipFile", zipFileName);
-			result.put("zipPath", subDir + "/" + zipFileName);
+			result.put("zipPath", downloadFileService.relativePath(clientKey, ipAndPort, dbName, zipFileName));
 			result.put("packed", true);
-			logger.info("代码已打包: {}/{}, 表数量: {}, 耗时: {}ms", subDir, zipFileName, tableCount, duration);
+			logger.info("代码已打包: {}, 表数量: {}, 耗时: {}ms", zipFile.getAbsolutePath(), tableCount, duration);
 		} else {
 			// 不打包模式
 			result.put("packed", false);
@@ -542,31 +911,31 @@ public class CodeGenController {
 		long startTime = System.currentTimeMillis();
 
 		try {
-			// 获取数据库连接信息
-			DataSourceConf ds = generator.getDataSource();
-			String ipAndPort = ds.getIpAndPort();
-			String dbName = StringUtils.defaultString(ds.getDbName(), "unknown");
+			String ipAndPort;
+			String dbName;
+			Generator jobGenerator;
+			synchronized (userGeneratorService.lockFor(currentRequest())) {
+				Generator generator = currentGenerator();
+				DataSourceConf ds = generator.getDataSource();
+				ipAndPort = ds.getIpAndPort();
+				dbName = StringUtils.defaultString(ds.getDbName(), "unknown");
+				generator.getGlobal().setInclude(tables);
+				generator.getGlobal().setMatchMode(false);
+				saveCurrentGenerator();
+				jobGenerator = generator.copy();
+			}
 			int tableCount = tables.length;
 			String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
-			// 下载子目录：ip_port/数据库名/
-			String subDir = ipAndPort.replace(":", "_") + "/" + dbName;
-			File targetDir = new File(downloadDir, subDir);
-			if (!targetDir.exists()) {
-				targetDir.mkdirs();
-			}
+			String clientKey = resolveClientKey(currentRequest());
+			File targetDir = downloadFileService.createTargetDir(clientKey, ipAndPort, dbName);
 
 			// 文档文件名：与 zip 文件命名前缀一致（数据库名_N表_日期时间）
 			String docFileName = String.format("%s_%dt_%s.%s", dbName, tableCount, timestamp,
 					exportFormat.getExtension());
 			File docFile = new File(targetDir, docFileName);
 
-			// 设置要生成文档的表
-			generator.getGlobal().setInclude(tables);
-			generator.getGlobal().setMatchMode(false);
-
-			// 生成文档
-			generator.generateDoc(docFile, docFormat, null);
+			jobGenerator.generateDoc(docFile, docFormat, null);
 
 			long duration = System.currentTimeMillis() - startTime;
 
@@ -575,9 +944,9 @@ public class CodeGenController {
 			result.put("format", docFormat);
 			result.put("duration", duration);
 			result.put("docFile", docFileName);
-			result.put("docPath", subDir + "/" + docFileName);
+			result.put("docPath", downloadFileService.relativePath(clientKey, ipAndPort, dbName, docFileName));
 
-			logger.info("[doc] 输出 - docPath: {}, 表数量: {}, 耗时: {}ms", subDir + "/" + docFileName, tableCount, duration);
+			logger.info("[doc] 输出 - docPath: {}, 表数量: {}, 耗时: {}ms", docFile.getAbsolutePath(), tableCount, duration);
 			return Result.ok(result);
 
 		} catch (Exception e) {
@@ -600,6 +969,7 @@ public class CodeGenController {
 			@RequestParam(name = "dbName") String dbName,
 			@RequestParam(name = "username") String username,
 			@RequestParam(name = "pwd") String pwd) {
+		Generator generator = currentGenerator().copy();
 		logger.info("[downloads] 输入 - ipAndPort: {}, dbName: {}, username: {}", ipAndPort, dbName, username);
 
 		// 参数校验
@@ -609,32 +979,20 @@ public class CodeGenController {
 		}
 
 		// 验证数据库连接
-		DataSourceConf ds = generator.getDataSource();
-		String originalIpAndPort = ds.getIpAndPort();
-		String originalDbName = ds.getDbName();
-		String originalUsername = ds.getUsername();
-		String originalPwd = ds.getPwd();
-
 		try {
-			ds.setIpAndPort(ipAndPort);
-			ds.setUsername(username);
-			ds.setPwd(pwd);
-			ds.setDbName(dbName);
-			// 尝试连接验证
-			ds.getDataBaseNames();
+			databaseMetadataService.validateConnection(generator, ipAndPort, dbName, username, pwd);
 		} catch (Exception e) {
-			// 恢复原连接信息
-			ds.setIpAndPort(originalIpAndPort);
-			ds.setDbName(originalDbName);
-			ds.setUsername(originalUsername);
-			ds.setPwd(originalPwd);
 			logger.error("[downloads] 输出 - 数据库连接失败: {}", e.getMessage());
 			return Result.error("数据库连接失败: " + e.getMessage());
 		}
 
-		// 构建子目录路径：ip_port/数据库名/
-		String subDir = ipAndPort.replace(":", "_") + "/" + dbName;
-		File targetDir = new File(downloadDir, subDir);
+		File targetDir;
+		String clientKey = resolveClientKey(currentRequest());
+		try {
+			targetDir = downloadFileService.listTargetDir(clientKey, ipAndPort, dbName);
+		} catch (IOException e) {
+			return Result.error(e.getMessage());
+		}
 
 		if (!targetDir.exists() || !targetDir.isDirectory()) {
 			return Result.ok(new ArrayList<>());
@@ -658,7 +1016,12 @@ public class CodeGenController {
 			item.put("name", file.getName());
 			item.put("size", formatFileSize(file.length()));
 			item.put("time", sdf.format(new Date(file.lastModified())));
-			item.put("path", subDir + "/" + file.getName());
+			try {
+				item.put("path", downloadFileService.relativePath(clientKey, file));
+			} catch (IOException e) {
+				logger.warn("[downloads] 跳过非法文件: {}", file.getAbsolutePath());
+				continue;
+			}
 			result.add(item);
 		}
 
@@ -689,11 +1052,15 @@ public class CodeGenController {
 		File zipFile = null;
 
 		if (StringUtils.isNotBlank(path)) {
-			// 下载指定文件（路径已包含 ip_port/dbname/）
-			zipFile = new File(downloadDir, path);
-			String fileName = zipFile.getName().toLowerCase();
-			if (!zipFile.exists()
-					|| (!fileName.endsWith(".zip") && !fileName.endsWith(".docx") && !fileName.endsWith(".pdf"))) {
+			try {
+				// 下载指定文件（路径已包含 ip_port/dbname/）
+				zipFile = resolveDownloadFile(path);
+			} catch (IOException e) {
+				logger.warn("[download] 输出 - 非法路径: {}", path);
+				sendErrorResponse(response, e.getMessage());
+				return;
+			}
+			if (!zipFile.exists()) {
 				logger.warn("[download] 输出 - 文件不存在: {}", path);
 				sendErrorResponse(response, "文件不存在");
 				return;
@@ -747,30 +1114,16 @@ public class CodeGenController {
 	public Result<?> deleteFile(@RequestParam String path) {
 		logger.info("[delete] 输入 - path: {}", path);
 
-		if (StringUtils.isBlank(path)) {
-			return Result.error("请指定要删除的文件");
+		File file;
+		try {
+			file = resolveDownloadFile(path);
+		} catch (IOException e) {
+			return Result.error(e.getMessage());
 		}
-
-		File file = new File(downloadDir, path);
-		String fileName = file.getName().toLowerCase();
 
 		// 安全校验：只允许删除 zip、docx、pdf 文件
 		if (!file.exists()) {
 			return Result.error("文件不存在");
-		}
-		if (!fileName.endsWith(".zip") && !fileName.endsWith(".docx") && !fileName.endsWith(".pdf")) {
-			return Result.error("不支持的文件类型");
-		}
-
-		// 确保文件在下载目录内（防止路径遍历攻击）
-		try {
-			String canonicalPath = file.getCanonicalPath();
-			String canonicalDownloadDir = new File(downloadDir).getCanonicalPath();
-			if (!canonicalPath.startsWith(canonicalDownloadDir)) {
-				return Result.error("非法路径");
-			}
-		} catch (IOException e) {
-			return Result.error("路径解析失败");
 		}
 
 		// 删除文件
@@ -811,6 +1164,10 @@ public class CodeGenController {
 			@RequestParam(name = "username") String username,
 			@RequestParam(name = "pwd") String pwd,
 			@RequestParam(name = "tabNames") String tabNames) {
+		Generator generator;
+		synchronized (userGeneratorService.lockFor(currentRequest())) {
+			generator = currentGenerator().copy();
+		}
 		logger.info("[relations] 输入 - ipAndPort: {}, dbName: {}, tabNames: {}", ipAndPort, dbName, tabNames);
 		long startTime = System.currentTimeMillis();
 
@@ -821,169 +1178,11 @@ public class CodeGenController {
 		}
 
 		try {
-			// 设置数据源连接参数
-			DataSourceConf ds = generator.getDataSource();
-			ds.setIpAndPort(ipAndPort);
-			ds.setDbName(dbName);
-			ds.setUsername(username);
-			ds.setPwd(pwd);
-
-			// 创建 DatabaseMetadataReader
-			DatabaseMetadataReader metadataReader = new DatabaseMetadataReader(ds, generator.getGlobal());
-
-			// 确定要查询关系的表
-			List<String> tableNames;
-			if (StringUtils.isNotBlank(tabNames)) {
-				tableNames = Arrays.asList(tabNames.split(","));
-			} else {
-				// 获取所有表名
-				tableNames = generator.getAllTableNames();
-			}
-
-			// 获取表关系
-			List<TableRelation> relations = metadataReader.getTableRelations(tableNames);
-
-			// 构建节点数据
-			List<Map<String, Object>> nodes = new ArrayList<>();
-			Map<String, Boolean> addedTables = new HashMap<>();
-
-			// 获取所有表信息用于显示注释
-			Map<String, Table> tableMap = new HashMap<>();
-			for (Table table : generator.getTables(true)) {
-				tableMap.put(table.getName(), table);
-			}
-
-			for (String tableName : tableNames) {
-				if (!addedTables.containsKey(tableName)) {
-					Map<String, Object> node = new HashMap<>();
-					node.put("id", tableName);
-					Table table = tableMap.get(tableName);
-					String comment = table != null ? table.getComment() : "";
-					node.put("label", StringUtils.isNotBlank(comment) ? comment : tableName);
-					node.put("tableName", tableName);
-					node.put("comment", comment);
-					nodes.add(node);
-					addedTables.put(tableName, true);
-				}
-			}
-
-			// 添加关系中的表（如果有不在列表中的表）
-			for (TableRelation rel : relations) {
-				if (!addedTables.containsKey(rel.getTargetTable())) {
-					Map<String, Object> node = new HashMap<>();
-					node.put("id", rel.getTargetTable());
-					Table table = tableMap.get(rel.getTargetTable());
-					String comment = table != null ? table.getComment() : "";
-					node.put("label", StringUtils.isNotBlank(comment) ? comment : rel.getTargetTable());
-					node.put("tableName", rel.getTargetTable());
-					node.put("comment", comment);
-					nodes.add(node);
-					addedTables.put(rel.getTargetTable(), true);
-				}
-			}
-
-			// 构建边数据
-			List<Map<String, Object>> edges = new ArrayList<>();
-			for (TableRelation rel : relations) {
-				Map<String, Object> edge = new HashMap<>();
-				edge.put("source", rel.getSourceTable());
-				edge.put("target", rel.getTargetTable());
-				edge.put("label", rel.getFkColumn());
-				edge.put("fkColumn", rel.getFkColumn());
-				edge.put("pkColumn", rel.getPkColumn());
-				edge.put("fkName", rel.getFkName());
-				edge.put("nullable", rel.isNullable());
-				edges.add(edge);
-			}
-
-			// 获取所有表的字段信息（用于右侧详情面板）
-			// 使用 DriverManager 获取独立连接，避免占用连接池
-			Map<String, List<Map<String, Object>>> tableColumnsMap = new HashMap<>();
-			Map<String, List<Map<String, Object>>> tableForeignKeysMap = new HashMap<>();
-
-			java.sql.Connection directConn = null;
-			try {
-				String jdbcUrl = ds.getDBType().buildUrl(ds.getIp(), ds.getPort(), dbName);
-				directConn = java.sql.DriverManager.getConnection(jdbcUrl, username, pwd);
-				logger.info("[relations] 直连数据库获取元数据 - URL: {}", jdbcUrl);
-
-				DatabaseMetaData metaData = directConn.getMetaData();
-				String catalog = dbName;
-				String schema = null;
-
-				for (String tableName : addedTables.keySet()) {
-					// 获取列信息
-					List<Map<String, Object>> columns = new ArrayList<>();
-					try (ResultSet rs = metaData.getColumns(catalog, schema, tableName, null)) {
-						while (rs.next()) {
-							Map<String, Object> column = new HashMap<>();
-							String columnName = rs.getString("COLUMN_NAME");
-							String dataType = rs.getString("TYPE_NAME");
-							int columnSize = rs.getInt("COLUMN_SIZE");
-							int nullable = rs.getInt("NULLABLE");
-							String defaultValue = rs.getString("COLUMN_DEF");
-							String remark = rs.getString("REMARKS");
-							boolean isPrimaryKey = false;
-
-							// 检查是否是主键
-							try (ResultSet pkRs = metaData.getPrimaryKeys(catalog, schema, tableName)) {
-								while (pkRs.next()) {
-									if (columnName.equals(pkRs.getString("COLUMN_NAME"))) {
-										isPrimaryKey = true;
-										break;
-									}
-								}
-							}
-
-							column.put("columnName", columnName);
-							column.put("dataType", dataType + (columnSize > 0 ? "(" + columnSize + ")" : ""));
-							column.put("isPrimary", isPrimaryKey);
-							column.put("isForeignKey", false);
-							column.put("isNullable", nullable == DatabaseMetaData.columnNullable);
-							column.put("comment", StringUtils.defaultString(remark, ""));
-							column.put("defaultValue", defaultValue);
-
-							columns.add(column);
-						}
-					}
-					tableColumnsMap.put(tableName, columns);
-
-					// 获取外键关系
-					List<Map<String, Object>> foreignKeys = new ArrayList<>();
-					try (ResultSet rs = metaData.getImportedKeys(catalog, schema, tableName)) {
-						while (rs.next()) {
-							Map<String, Object> fk = new HashMap<>();
-							fk.put("column", rs.getString("FKCOLUMN_NAME"));
-							fk.put("referenceTable", rs.getString("PKTABLE_NAME"));
-							fk.put("referenceColumn", rs.getString("PKCOLUMN_NAME"));
-							fk.put("fkName", rs.getString("FK_NAME"));
-							foreignKeys.add(fk);
-						}
-					}
-					tableForeignKeysMap.put(tableName, foreignKeys);
-				}
-			} finally {
-				// 关闭独立连接
-				if (directConn != null && !directConn.isClosed()) {
-					try {
-						directConn.close();
-					} catch (SQLException e) {
-						logger.warn("关闭直连连接失败", e);
-					}
-				}
-			}
-
-			// 返回结果
-			Map<String, Object> result = new HashMap<>();
-			result.put("nodes", nodes);
-			result.put("edges", edges);
-			result.put("tableCount", tableNames.size());
-			result.put("relationCount", relations.size());
-			// 添加表详情数据（字段列表和外键关系）
-			result.put("tableDetails", tableColumnsMap);
-			result.put("tableForeignKeys", tableForeignKeysMap);
-
+			Map<String, Object> result = databaseMetadataService.buildTableRelations(generator, ipAndPort, dbName,
+					username, pwd, tabNames);
 			long duration = System.currentTimeMillis() - startTime;
+			List<?> nodes = (List<?>) result.get("nodes");
+			List<?> edges = (List<?>) result.get("edges");
 			logger.info("[relations] 输出 - 节点数: {}, 边数: {}, 耗时: {}ms", nodes.size(), edges.size(), duration);
 
 			return Result.ok(result);

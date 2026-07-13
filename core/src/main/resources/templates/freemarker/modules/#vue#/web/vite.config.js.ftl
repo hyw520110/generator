@@ -5,6 +5,16 @@ import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 import path from 'path'
 
+function vendorChunk (id) {
+  if (!id.includes('node_modules')) return undefined
+  if (id.includes('/vue/') || id.includes('/vue-router/') || id.includes('/pinia/') || id.includes('/vue-i18n/')) {
+    return 'vue'
+  }
+  if (id.includes('/@ant-design/icons-vue/')) return 'antd-icons'
+  if (id.includes('/ant-design-vue/')) return 'antd'
+  return 'vendor'
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   const apiHost = env.VITE_API_HOST || 'localhost'
@@ -18,6 +28,7 @@ export default defineConfig(({ mode }) => {
       vue(),
       vueJsx(),
       Components({
+        globs: ['src/components/**/*.vue', '!src/components/Charts/Trend.vue'],
         resolvers: [
           AntDesignVueResolver({
             importStyle: false, // Ant Design Vue 4.x 默认使用 CSS-in-JS
@@ -55,7 +66,6 @@ export default defineConfig(({ mode }) => {
         'dayjs/plugin/localeData',
         'nprogress',
         'vue-i18n',
-        '@antv/data-set',
         'store',
         'webpack-theme-color-replacer/client',
         'md5',
@@ -64,6 +74,14 @@ export default defineConfig(({ mode }) => {
       esbuildOptions: {
         loader: {
           '.js': 'jsx'
+        }
+      }
+    },
+    build: {
+      chunkSizeWarningLimit: 2500,
+      rollupOptions: {
+        output: {
+          manualChunks: vendorChunk
         }
       }
     },
@@ -77,33 +95,10 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 8000,
       proxy: {
-        '/v1': {
+        '/api': {
           target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/auth': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/user': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/resource': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/Sys': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/sys': {
-          target: apiBaseUrl,
-          changeOrigin: true
-        },
-        '/druid': {
-          target: apiBaseUrl,
-          changeOrigin: true
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, '')
         }
       }
     }

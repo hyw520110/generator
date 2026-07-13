@@ -64,8 +64,24 @@
 
     <a-card :bordered="false">
       <div class="table-page-search-wrapper">
+        <a-form-item label="数据来源" style="margin-bottom: 16px;">
+          <a-radio-group v-model:value="sourceType" button-style="solid" @change="handleSourceTypeChange">
+            <a-radio-button value="JDBC">数据库</a-radio-button>
+            <a-radio-button value="SQL_FILE">SQL 文件</a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+
+        <div v-if="sourceType === 'SQL_FILE'" class="sql-source-panel">
+          <input ref="sqlFileInput" type="file" accept=".sql" multiple hidden @change="handleSqlFileSelect" />
+          <input ref="sqlDirectoryInput" type="file" accept=".sql" multiple webkitdirectory hidden @change="handleSqlFileSelect" />
+          <a-button type="primary" :loading="sqlUploading" @click="sqlFileInput.click()">选择 SQL 文件</a-button>
+          <a-button :loading="sqlUploading" style="margin-left: 8px" @click="sqlDirectoryInput.click()">选择 SQL 目录</a-button>
+          <span v-if="sqlSourceSummary" class="sql-source-summary">{{ sqlSourceSummary }}</span>
+        </div>
+
         <a-form layout="inline" :model="formState" @submit="handQuery" ref="formRef">
           <a-row :gutter="48">
+            <template v-if="sourceType === 'JDBC'">
             <a-col :md="5" :sm="24">
               <a-form-item label="数据库IP" name="ipAndPort">
                 <a-input v-model:value="formState.ipAndPort" placeholder="数据库IP:端口" @change="onDbConfigChange"/>
@@ -92,6 +108,7 @@
                 <a-input v-model:value="formState.pwd" placeholder="数据库密码" type="password" @change="onDbConfigChange"/>
               </a-form-item>
             </a-col>
+            </template>
             <a-col :md="5" :sm="24">
               <a-form-item label="表名称" name="include">
                 <a-input v-model:value="formState.include" placeholder="需生成的表名或表名前缀,多个表逗号分隔"/>
@@ -155,7 +172,7 @@
             </a-menu>
           </template>
         </a-dropdown>
-        <a-dropdown style="margin-left: 8px;">
+        <a-dropdown :disabled="sourceType === 'SQL_FILE'" style="margin-left: 8px;">
           <a-button>
             <apartment-outlined />
             关系图
@@ -248,7 +265,7 @@
 
 <script>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { getTableList, getDatabases, genCode, getDownloads, genDoc, getTableRelations, getConfig, deleteFile } from '@/api/generator'
+import { getTableList, getDatabases, uploadSqlFiles, genCode, getDownloads, genDoc, getTableRelations, getConfig, deleteFile } from '@/api/generator'
 import { SyncOutlined, DownloadOutlined, FileWordOutlined, FilePdfOutlined, DownOutlined, ApartmentOutlined } from '@ant-design/icons-vue'
 import RelationGraph from '@/components/RelationGraph/index.vue'
 
@@ -270,6 +287,11 @@ export default {
     const generating = ref(false)
     const elapsedTime = ref(0)
     const genResult = ref(null)
+    const sourceType = ref('JDBC')
+    const sqlFileInput = ref()
+    const sqlDirectoryInput = ref()
+    const sqlUploading = ref(false)
+    const sqlSourceSummary = ref('')
 
     // 生成文档相关
     const docGenerating = ref(false)
@@ -383,6 +405,7 @@ export default {
     // 数据库配置变更时重新加载
     let dbLoadTimer = null
     const onDbConfigChange = () => {
+      if (sourceType.value !== 'JDBC') return
       if (dbLoadTimer) {
         clearTimeout(dbLoadTimer)
       }
@@ -391,16 +414,44 @@ export default {
         loadDatabases()
       }, 500)
     }
+
+    const handleSourceTypeChange = () => {
+      data.value = []
+      selectedRowKeys.value = []
+      errorMessage.value = ''
+      if (sourceType.value === 'JDBC') loadDatabases()
+    }
+
+    const handleSqlFileSelect = async (event) => {
+      const files = Array.from(event.target.files || []).filter(file => file.name.toLowerCase().endsWith('.sql'))
+      event.target.value = ''
+      if (!files.length) {
+        errorMessage.value = '请选择 .sql 文件'
+        errorType.value = 'warning'
+        return
+      }
+      sqlUploading.value = true
+      errorMessage.value = ''
+      try {
+        const res = await uploadSqlFiles(files)
+        if (res.status !== 10000) throw new Error(res.message || 'SQL 文件上传失败')
+        sqlSourceSummary.value = `${res.data.files.length} 个文件，解析到 ${res.data.tableCount} 张表`
+        await loadData(formState)
+      } catch (error) {
+        errorMessage.value = error.message || 'SQL 文件上传失败'
+        errorType.value = 'error'
+      } finally {
+        sqlUploading.value = false
+      }
+    }
     
     const loadData = async (parameter) => {
-      console.log(parameter)
       loading.value = true
       errorMessage.value = ''
       errorType.value = 'error'
       genResult.value = null
       try {
         const res = await getTableList(parameter || formState)
-        console.log(res)
         loading.value = false
         const resData = JSON.parse(res.data)
         data.value = resData.tables
@@ -442,7 +493,7 @@ export default {
       } catch (err) {
         stopTimer()
         generating.value = false
-        errorMessage.value = err.response ? err.response.data.message : '生成代码时发生错误'
+        errorMessage.value = err.response?.data?.message || err.message || '生成代码时发生错误'
         errorType.value = 'error'
       }
     }
@@ -624,7 +675,6 @@ export default {
     }
     
     const handleCreate = async (record) => {
-      console.log('re', record)
       generating.value = true
       genResult.value = null
       startTimer()
@@ -651,7 +701,6 @@ export default {
     const onSelectChange = (keys, rows) => {
       selectedRowKeys.value = keys
       selectedRows.value = rows
-      console.log('selectedRowKeys', keys, 'selectedRows', rows)
     }
     
     const resetSearchForm = () => {
@@ -682,6 +731,8 @@ export default {
         const res = await getConfig()
         if (res.status === 10000 && res.data) {
           const ds = res.data.dataSource || {}
+          sourceType.value = ds.sourceType || 'JDBC'
+          if (sourceType.value === 'SQL_FILE' && ds.sqlPath) sqlSourceSummary.value = ds.sqlPath
           if (ds.ipAndPort) formState.ipAndPort = ds.ipAndPort
           if (ds.dbName) formState.dbName = ds.dbName
           if (ds.username) formState.username = ds.username
@@ -690,7 +741,7 @@ export default {
       } catch (err) {
         console.error('获取配置失败:', err)
       }
-      loadDatabases()
+      if (sourceType.value === 'JDBC') loadDatabases()
     })
 
     // 组件卸载时清理定时器
@@ -700,6 +751,11 @@ export default {
     
     return {
       formRef,
+      sourceType,
+      sqlFileInput,
+      sqlDirectoryInput,
+      sqlUploading,
+      sqlSourceSummary,
       table,
       formState,
       columns,
@@ -735,6 +791,8 @@ export default {
       resetSearchForm,
       prevStep,
       onDbConfigChange,
+      handleSourceTypeChange,
+      handleSqlFileSelect,
       filterOption,
       formatDuration,
       downloadCode,
@@ -755,6 +813,18 @@ export default {
   top: 16px;
   right: 16px;
   z-index: 100;
+}
+
+.sql-source-panel {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px dashed #d9d9d9;
+  background: #fafafa;
+}
+
+.sql-source-summary {
+  margin-left: 12px;
+  color: rgba(0, 0, 0, 0.65);
 }
 
 .download-item-name {

@@ -1,10 +1,10 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/resource'
+const modulePath = '/resource'
 
 const api = {
-  resourceList: moudulePath + '/list',
-  addResource: moudulePath
+  resourceList: modulePath + '/list',
+  addResource: modulePath
 }
 
 export default api
@@ -19,7 +19,7 @@ export function getResourceList (parameter) {
 
 export function getResourceInfo (resourceId) {
   return axios({
-    url: api.moudulePath + '/' + resourceId,
+    url: modulePath + '/' + resourceId,
     method: 'get'
   })
 }
@@ -33,33 +33,30 @@ export function addResource (parameter) {
 }
 
 export function editResource (resourceId, parameter) {
-  console.log('resourceId', resourceId)
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath + '/' + resourceId,
+    url: modulePath + '/' + resourceId,
     method: 'put',
     params: parameter
   })
 }
 
 export function delResource (resourceId) {
-  console.log('resourceId', resourceId)
   return axios({
-    url: moudulePath + '/' + resourceId,
+    url: modulePath + '/' + resourceId,
     method: 'delete'
   })
 }
 
 export function getUserResources (userId) {
   return axios({
-    url: moudulePath + '/' + userId + '/list',
+    url: modulePath + '/' + userId + '/list',
     method: 'get'
   })
 }
 
 export function getRoleResources (roleId) {
   return axios({
-    url: moudulePath + '/role/' + roleId + '/list',
+    url: modulePath + '/role/' + roleId + '/list',
     method: 'get'
   })
 }

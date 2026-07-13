@@ -8,30 +8,28 @@ import ${pkg!};
 import ${entityPackage!}.${superEntityClass!};
 <#else>
 import java.io.Serializable;
-import jakarta.validation.constraints.NotNull;
-import org.apache.commons.lang3.StringUtils;
 </#if>
-<#if mapperType?? && mapperType == "plus">
+<#if sqlType?? && sqlType == "plus">
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 </#if>
-import jakarta.validation.constraints.NotNull;
+import ${validationPackage}.constraints.NotBlank;
+import ${validationPackage}.constraints.NotNull;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 <#include 'comments/comment.ftl'>
 <#if table.comment??>
-@Schema(name = "${className!}", description = "${table.comment!}")
+@Schema(name = "${(className!'')?j_string}", description = "${(table.comment!'')?j_string}")
 </#if>
-<#if mapperType?? && mapperType == "plus">
+<#if sqlType?? && sqlType == "plus">
 @TableName("${table.name!}")
 </#if>
-public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}<#if mapperType?? && mapperType == "plus"><${className!}></#if><#else> implements Serializable </#if>{
+public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}<#if sqlType?? && sqlType == "plus"><${className!}></#if><#else> implements Serializable </#if>{
 
     private static final long serialVersionUID = 1L;
 
-<#assign firstPrimaryKey = true>
 <#list table.fields as field>
 
 <#if field.comment?has_content>
@@ -46,11 +44,10 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
 
 
 
-<#if mapperType?? && mapperType == "plus">
+<#if sqlType?? && sqlType == "plus">
 <#if field.primarykey>
-<#if firstPrimaryKey>
+<#if table.primaryKeyCount == 1>
 	@TableId(value = "${field.name!}", type = IdType.AUTO)
-	<#assign firstPrimaryKey = false>
 <#else>
 	@TableField(value = "${field.name!}")
 </#if>
@@ -58,15 +55,18 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
 	@TableField(value = "${field.name!}")
 </#if>
 </#if>
-	@Schema(name = "${field.propertyName!}", description = <#if field.comment?has_content>"${field.comment!}"<#else>"${field.name!}"</#if>, required = <#if field.isNullAble()>false <#else> true </#if>)
+	@Schema(name = "${(field.propertyName!'')?j_string}", description = <#if field.comment?has_content>"${field.comment?j_string}"<#else>"${(field.name!'')?j_string}"</#if>, required = <#if field.isNullAble()>false <#else> true </#if>)
 <#if !field.commonField || (superEntityClass?? && superEntityClass?contains('.'))>
-<#if field.isNullAble()?has_content>    @NotNull
+<#if !field.isNullAble()>
+<#if field.fieldType.type == "String">    @NotBlank
+<#else>    @NotNull
+</#if>
 </#if>
     private ${field.fieldType.type!} ${field.propertyName!};
     
 </#if>    
 </#list>
-<#--  TODO  外键关联配置 引用对象 -->
+<#--  外键关联配置与引用对象机制说明： -->
 <#--  -->
 <#--  使用说明： -->
 <#--  在此处添加外键关联的对象属性，用于关联查询和级联操作 -->
@@ -112,8 +112,8 @@ public class ${className!} <#if superEntityClass??> extends ${superEntityClass!}
         this.${field.propertyName!} = ${field.propertyName!};
     }
 </#list>
-<#if mapperType?? && mapperType == "plus">
-<#if table.hasPrimarykeys()>
+<#if sqlType?? && sqlType == "plus">
+<#if table.primaryKeyCount == 1>
 	@Override
 	public ${table.primaryKeyField.propertyType!} pkVal() {
 	    return this.${table.primaryKeyField.propertyName!};

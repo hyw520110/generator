@@ -15,7 +15,6 @@ export default {
       colors.forEach((c, i) => {
         document.documentElement.style.setProperty(`--primary-${i + 1}`, c)
       })
-      console.log('主题色已更改为:', newColor)
       resolve()
     })
   }

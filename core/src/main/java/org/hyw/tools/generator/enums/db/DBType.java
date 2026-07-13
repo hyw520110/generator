@@ -4,7 +4,7 @@ import org.hyw.tools.generator.conf.converts.TypeConvertor;
 import org.hyw.tools.generator.conf.converts.TypeConvertStrategyFactory;
 
 public enum DBType {
-	MYSQL("mysql", "com.mysql.jdbc.Driver","jdbc:mysql://%s:%s/%s?connectTimeout=3000&socketTimeout=10000&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false","jdbc:mysql://%s:%s?connectTimeout=3000&socketTimeout=10000&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false"), 
+	MYSQL("mysql", "com.mysql.cj.jdbc.Driver","jdbc:mysql://%s:%s/%s?connectTimeout=3000&socketTimeout=10000&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false","jdbc:mysql://%s:%s?connectTimeout=3000&socketTimeout=10000&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false"), 
 	ORACLE("oracle", "oracle.jdbc.driver.OracleDriver","jdbc:oracle:thin:@%s:%s:%s","jdbc:oracle:thin:@%s:%s"),
 	SQL_SERVER("sqlserver","com.microsoft.sqlserver.jdbc.SQLServerDriver","jdbc:sqlserver://%s:%s;databaseName=%s","jdbc:sqlserver://%s:%s"), 
 	POSTGRE_SQL("postgresql","org.postgresql.Driver","jdbc:postgresql://%s/%s","jdbc:postgresql://%s");

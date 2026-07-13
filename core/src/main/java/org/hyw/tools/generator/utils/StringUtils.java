@@ -2,7 +2,7 @@ package org.hyw.tools.generator.utils;
 
 import java.io.File;
 
-public class StringUtils extends org.apache.commons.lang.StringUtils {
+public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	/**
 	 * 去掉下划线前缀
 	 * 
@@ -252,7 +252,7 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
 		if (null == sDefault || sDefault.length == 0) {
 			return true;
 		}
-		return sDefault.length == 1 ? org.apache.commons.lang.StringUtils.isEmpty(sDefault[0]) : false;
+		return sDefault.length == 1 ? org.apache.commons.lang3.StringUtils.isEmpty(sDefault[0]) : false;
 	}
 	
 	

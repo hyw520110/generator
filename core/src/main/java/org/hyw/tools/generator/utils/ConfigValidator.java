@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 import org.hyw.tools.generator.conf.GlobalConf;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.Feature;
+import org.hyw.tools.generator.enums.SecurityScheme;
 import org.hyw.tools.generator.exception.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +49,8 @@ public class ConfigValidator {
         if (config == null) {
             throw new ConfigurationException("配置不能为空");
         }
+
+        normalizeSecuritySelection(config);
 
         List<String> errors = new ArrayList<>();
 
@@ -93,6 +97,8 @@ public class ConfigValidator {
             }
         }
 
+        validateSecuritySelection(config, errors);
+
         // 如果有错误，抛出异常
         if (!errors.isEmpty()) {
             String errorMessage = "配置验证失败：" + String.join(", ", errors);
@@ -116,6 +122,8 @@ public class ConfigValidator {
             result.addError("配置不能为空");
             return result;
         }
+
+        normalizeSecuritySelection(config);
 
         // 验证输出目录
         if (StringUtils.isBlank(config.getOutputDir())) {
@@ -160,7 +168,106 @@ public class ConfigValidator {
             }
         }
 
+        List<String> securityErrors = new ArrayList<>();
+        validateSecuritySelection(config, securityErrors);
+        for (String error : securityErrors) {
+            result.addError(error);
+        }
+
         return result;
+    }
+
+    private static void validateSecuritySelection(GlobalConf config, List<String> errors) {
+        List<Feature> features = config.getFeatures() == null
+                ? java.util.Collections.emptyList()
+                : java.util.Arrays.asList(config.getFeatures());
+        List<Component> components = config.getComponents() == null
+                ? java.util.Collections.emptyList()
+                : java.util.Arrays.asList(config.getComponents());
+
+        boolean shiro = components.contains(Component.SHIRO);
+        boolean springSecurity = components.contains(Component.SPRINGSECURITY);
+        boolean oauth2 = features.contains(Feature.OAUTH2);
+
+        if (shiro && springSecurity) {
+            errors.add("SHIRO 与 SPRINGSECURITY 只能二选一");
+        }
+        if (oauth2 && !springSecurity) {
+            errors.add("启用 OAUTH2 特性必须选择 SPRINGSECURITY 组件");
+        }
+        if (oauth2 && shiro) {
+            errors.add("OAUTH2 特性与 SHIRO 组件存在冲突，请选择 SPRINGSECURITY/OAUTH2 方案");
+        }
+        if (shiro && isBoot3OrNewerTarget(config)) {
+            errors.add("SHIRO 仅作为 Boot2 安全方案保留；Boot3 及以上请使用 SPRINGSECURITY/OAUTH2");
+        }
+    }
+
+    public static void normalizeSecuritySelection(GlobalConf config) {
+        if (config == null) {
+            return;
+        }
+        SecurityScheme security = config.getSecurity();
+        if (security == null) {
+            security = inferSecurityScheme(config);
+            config.setSecurity(security);
+            return;
+        }
+
+        List<Component> components = config.getComponents() == null
+                ? new ArrayList<Component>()
+                : new ArrayList<Component>(java.util.Arrays.asList(config.getComponents()));
+        List<Feature> features = config.getFeatures() == null
+                ? new ArrayList<Feature>()
+                : new ArrayList<Feature>(java.util.Arrays.asList(config.getFeatures()));
+
+        components.remove(Component.SHIRO);
+        components.remove(Component.SPRINGSECURITY);
+        components.remove(Component.JWT);
+        features.remove(Feature.OAUTH2);
+
+        if (security.isShiro()) {
+            components.add(Component.SHIRO);
+            components.add(Component.JWT);
+        } else if (security.isSpringSecurity()) {
+            components.add(Component.SPRINGSECURITY);
+            if (security.isOauth2()) {
+                features.add(Feature.OAUTH2);
+            }
+        }
+
+        config.setComponents(components.toArray(new Component[0]));
+        config.setFeatures(features.toArray(new Feature[0]));
+    }
+
+    private static SecurityScheme inferSecurityScheme(GlobalConf config) {
+        List<Feature> features = config.getFeatures() == null
+                ? java.util.Collections.emptyList()
+                : java.util.Arrays.asList(config.getFeatures());
+        List<Component> components = config.getComponents() == null
+                ? java.util.Collections.emptyList()
+                : java.util.Arrays.asList(config.getComponents());
+
+        if (components.contains(Component.SHIRO)) {
+            return SecurityScheme.SHIRO;
+        }
+        if (features.contains(Feature.OAUTH2)) {
+            return SecurityScheme.SPRING_SECURITY_OAUTH2;
+        }
+        if (components.contains(Component.SPRINGSECURITY)) {
+            return SecurityScheme.SPRING_SECURITY;
+        }
+        return SecurityScheme.NONE;
+    }
+
+    private static boolean isBoot3OrNewerTarget(GlobalConf config) {
+        String platformId = config.getPlatformId();
+        if (StringUtils.isNotBlank(platformId)) {
+            String normalized = platformId.toLowerCase();
+            return normalized.contains("boot3") || normalized.contains("boot4");
+        }
+        String javaVersion = config.getJavaVersion();
+        return "17".equals(javaVersion) || "21".equals(javaVersion);
     }
 
     /**

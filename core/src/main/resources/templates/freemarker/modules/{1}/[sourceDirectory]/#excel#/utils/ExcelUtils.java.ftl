@@ -1,0 +1,42 @@
+package ${packagePath};
+
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
+
+<#if global.javaVersion == '8' || global.javaVersion == '11'>
+import javax.servlet.http.HttpServletResponse;
+<#else>
+import jakarta.servlet.http.HttpServletResponse;
+</#if>
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.List;
+
+/**
+ * Excel 导入导出工具类
+ */
+public class ExcelUtils {
+
+    /**
+     * 导出 Excel
+     *
+     * @param response  HttpServletResponse
+     * @param data      数据列表
+     * @param fileName  文件名
+     * @param sheetName sheet名
+     * @param clazz     类类型
+     */
+    public static <T> void exportExcel(HttpServletResponse response, List<T> data, String fileName, String sheetName, Class<T> clazz) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        // 这里URLEncoder.encode可以防止中文乱码 当然和vue结合的时候有可能会有一点问题
+        String encodedFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + encodedFileName + ".xlsx");
+        
+        EasyExcel.write(response.getOutputStream(), clazz)
+                .autoCloseStream(Boolean.FALSE)
+                .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
+                .sheet(sheetName)
+                .doWrite(data);
+    }
+}

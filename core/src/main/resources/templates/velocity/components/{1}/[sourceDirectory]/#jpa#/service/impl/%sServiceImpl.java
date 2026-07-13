@@ -4,7 +4,8 @@ import ${dtoPackage}.${dtoName};
 import ${entityPackage}.${entityName};
 #if(${table.primaryKeyField.fieldType.claz}) 
 import ${table.primaryKeyField.fieldType.claz};	
-#end	
+#end
+#end
 import ${repositoryPackage}.${repositoryName};
 import ${servicePackage}.${serviceName};
 import java.io.Serializable;
@@ -26,10 +27,12 @@ public class ${implName}  implements ${serviceName} {
 		return null!=repository.save(entity);
 	}
 
-	public ${dtoName} findById(${table.primaryKeyField.fieldType.type} id) {
+#if($table.hasPrimarykeys())
+	public ${dtoName} findById(${table.primaryKeyClass} id) {
 		${entityName} entity = repository.findOne(id);
 		return toDto(entity);
 	}
+#end
 
 	public Long count() {
 		return repository.count();
@@ -38,7 +41,8 @@ public class ${implName}  implements ${serviceName} {
 		Iterable<${entityName}> entities = repository.findAll();
 		return toDtoList(entities);
 	}
-	public Boolean deleteById(${table.primaryKeyField.fieldType.type} id) {
+#if($table.hasPrimarykeys())
+	public Boolean deleteById(${table.primaryKeyClass} id) {
 		  try {
 			  repository.delete(id);
 		} catch (Exception e) {

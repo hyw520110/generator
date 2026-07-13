@@ -1,9 +1,8 @@
 <#if REDIS?? && REDIS> 
 package ${testPackage!};
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.HashOperations;
@@ -13,12 +12,10 @@ import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StopWatch;
 
 import ${rootPackage!}.${projectName!}<#if moduleName?has_content>.${moduleName!}</#if>.Booter;
 
-@RunWith(SpringRunner.class)
 //@ContextConfiguration or @SpringBootTest(classes=Booter.class)
 @SpringBootTest(classes=Booter.class)
 public class RedisTemplateTest {
@@ -44,10 +41,10 @@ public class RedisTemplateTest {
             operation.set(key, value);
             watch.stop();
             watch.start("get");
-            Assert.assertEquals(value, operation.get(key));
+            assertEquals(value, operation.get(key));
             watch.stop();
             watch.start("get2");
-            Assert.assertEquals(value,stringRedisTemplate.opsForValue().get(key));
+            assertEquals(value,stringRedisTemplate.opsForValue().get(key));
             watch.stop();
             watch.start("del");
             stringRedisTemplate.delete(key);
@@ -72,7 +69,7 @@ public class RedisTemplateTest {
             operation.put(key,s, s);
             watch.stop();
             watch.start("get");
-            Assert.assertEquals(s, operation.get(key,s));
+            assertEquals(s, operation.get(key,s));
             watch.stop();
         }
         System.out.println(watch.shortSummary());
@@ -89,8 +86,8 @@ public class RedisTemplateTest {
         String value="sfd";
         operater.leftPush("List", value);
         operater.rightPush("list2", value + "2");
-        Assert.assertEquals(value, operater.leftPop("List"));
-        Assert.assertEquals(value + "2", operater.leftPop("list2"));
+        assertEquals(value, operater.leftPop("List"));
+        assertEquals(value + "2", operater.leftPop("list2"));
     }
     
     /**
@@ -104,7 +101,7 @@ public class RedisTemplateTest {
         operater.add("Set", "2", "1");
 
         String value = "2";
-        Assert.assertEquals(value, operater.pop("Set"));
+        assertEquals(value, operater.pop("Set"));
     }
     
     /**

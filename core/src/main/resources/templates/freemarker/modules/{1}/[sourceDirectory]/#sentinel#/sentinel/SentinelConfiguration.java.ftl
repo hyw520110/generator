@@ -5,7 +5,7 @@ package ${sentinelPackage!};
 
 import java.util.List;
 
-import jakarta.annotation.PostConstruct;
+import ${annotationPackage}.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

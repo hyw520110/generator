@@ -1,31 +1,119 @@
-// Vue 3 兼容层 - viser-vue 暂不兼容 Vue 3，使用空对象替代
-// import Viser from 'viser-vue'
+// Vue 3 插件注册 - 按需加载组件
 
 // base library
-import '@/core/lazy_lib/components_use'
+import {
+  ConfigProvider,
+  Layout,
+  Input,
+  InputNumber,
+  Button,
+  Switch,
+  Radio,
+  Checkbox,
+  Select,
+  Card,
+  Form,
+  Row,
+  Col,
+  Modal,
+  Table,
+  Tabs,
+  Badge,
+  Popover,
+  Dropdown,
+  List,
+  Avatar,
+  Breadcrumb,
+  Steps,
+  Spin,
+  Menu,
+  Drawer,
+  Tooltip,
+  Alert,
+  Tag,
+  Divider,
+  DatePicker,
+  TimePicker,
+  Upload,
+  Progress,
+  Skeleton,
+  Popconfirm,
+  PageHeader,
+  Statistic,
+  Descriptions,
+  message,
+  notification
+} from 'ant-design-vue'
 
 // ext library
-import VueClipboard from 'vue-clipboard2'
+// import VueCropper from 'vue-cropper' // Vue 2 only
+import Dialog from '@/components/Dialog'
+import MultiTab from '@/components/MultiTab'
+import PageLoading from '@/components/PageLoading'
 import PermissionHelper from '@/utils/helper/permission'
-import './directives/action'
-import config from '@/config/defaultSettings'
-import { createApp } from 'vue'
+import actionDirective from './directives/action'
 
-VueClipboard.config.autoSetContainer = true
-
-// Viser 暂不兼容 Vue 3，创建空插件
-const Viser = {
+export default {
   install (app) {
-    // viser-vue 暂不支持 Vue 3
-    console.warn('viser-vue is not compatible with Vue 3, chart components will not work')
+    // 注册 Ant Design 组件
+    app.use(ConfigProvider)
+    app.use(Layout)
+    app.use(Input)
+    app.use(InputNumber)
+    app.use(Button)
+    app.use(Switch)
+    app.use(Radio)
+    app.use(Checkbox)
+    app.use(Select)
+    app.use(Card)
+    app.use(Form)
+    app.use(Row)
+    app.use(Col)
+    app.use(Modal)
+    app.use(Table)
+    app.use(Tabs)
+    app.use(Badge)
+    app.use(Popover)
+    app.use(Dropdown)
+    app.use(List)
+    app.use(Avatar)
+    app.use(Breadcrumb)
+    app.use(Steps)
+    app.use(Spin)
+    app.use(Menu)
+    app.use(Drawer)
+    app.use(Tooltip)
+    app.use(Alert)
+    app.use(Tag)
+    app.use(Divider)
+    app.use(DatePicker)
+    app.use(TimePicker)
+    app.use(Upload)
+    app.use(Progress)
+    app.use(Skeleton)
+    app.use(Popconfirm)
+    app.use(PageHeader)
+    app.use(Statistic)
+    app.use(Descriptions)
+
+    // 全局属性
+    app.config.globalProperties.$confirm = Modal.confirm
+    app.config.globalProperties.$message = message
+    app.config.globalProperties.$notification = notification
+    app.config.globalProperties.$info = Modal.info
+    app.config.globalProperties.$success = Modal.success
+    app.config.globalProperties.$error = Modal.error
+    app.config.globalProperties.$warning = Modal.warning
+
+    // 其他库
+    // app.use(Viser) // Vue 2 only
+    app.use(Dialog)
+    app.use(MultiTab)
+    app.use(PageLoading)
+    app.use(PermissionHelper)
+    // app.use(VueCropper) // Vue 2 only
+    
+    // 注册指令
+    app.directive('action', actionDirective)
   }
 }
-
-// Vue 3 安装函数
-export function setupLazyUse (app) {
-  app.use(Viser)
-  app.use(VueClipboard)
-  app.use(PermissionHelper)
-}
-
-export default Viser

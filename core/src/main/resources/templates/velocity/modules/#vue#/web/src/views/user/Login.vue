@@ -108,13 +108,12 @@ export default defineComponent({
         await store.dispatch('ClearUser')
 
         const loginParams = {
-          userName: formState.username,
+          username: formState.username,
           loginType: '1',
           password: md5(formState.password)
         }
 
         const result = await store.dispatch('Login', loginParams)
-        console.log('登录成功，用户信息:', result)
 
         // 直接跳转到根路径，使用 window.location 确保页面刷新
         // 这样可以让路由守卫重新执行，加载动态路由

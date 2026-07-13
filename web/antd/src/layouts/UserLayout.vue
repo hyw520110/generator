@@ -4,7 +4,7 @@
       <div class="top">
         <div class="header">
           <a href="http://www.github.com/hyw520110/generator.git">
-            <img src="~@/assets/logo.svg" class="logo" alt="logo">
+            <img src="@/assets/logo.svg" class="logo" alt="logo">
             <span class="title">Generator</span>
           </a>
         </div>
@@ -70,7 +70,7 @@ export default {
     .container {
       width: 100%;
       min-height: 100%;
-      background: #f0f2f5 url(~@/assets/background.svg) no-repeat 50%;
+      background: #f0f2f5 url("@/assets/background.svg") no-repeat 50%;
       background-size: 100%;
       position: relative;
 

@@ -1,11 +1,11 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/role'
+const modulePath = '/v1/role'
 
 const api = {
-  roleList: moudulePath + '/page',
-  roleAll: moudulePath + '/all',
-  addRole: moudulePath
+  roleList: modulePath + '/page',
+  roleAll: modulePath + '/all',
+  addRole: modulePath
 }
 
 export default api
@@ -20,14 +20,14 @@ export function getRoleList (parameter) {
 
 export function getUserRoles (userId) {
   return axios({
-    url: moudulePath + '/' + userId + '/list',
+    url: modulePath + '/' + userId + '/list',
     method: 'get'
   })
 }
 
 export function getGroupRoles (groupId) {
   return axios({
-    url: moudulePath + '/group/' + groupId + '/list',
+    url: modulePath + '/group/' + groupId + '/list',
     method: 'get'
   })
 }
@@ -42,7 +42,7 @@ export function getRoleAll (parameter) {
 
 export function getRoleInfo (roleId) {
   return axios({
-    url: moudulePath + '/' + roleId,
+    url: modulePath + '/' + roleId,
     method: 'get'
   })
 }
@@ -56,18 +56,16 @@ export function addRole (parameter) {
 }
 
 export function editRole (parameter) {
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath,
+    url: modulePath,
     method: 'put',
     params: parameter
   })
 }
 
 export function delRole (roleId) {
-  console.log('roleId', roleId)
   return axios({
-    url: moudulePath + '/' + roleId,
+    url: modulePath + '/' + roleId,
     method: 'delete'
   })
 }

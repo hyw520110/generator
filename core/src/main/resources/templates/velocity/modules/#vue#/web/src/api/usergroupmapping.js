@@ -1,11 +1,11 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/userGroupMapping'
+const modulePath = '/v1/userGroupMapping'
 
 const api = {
-  usergroupmappingList: moudulePath + '/page',
-  usergroupmappingAll: moudulePath + '/all',
-  addUserGroupMapping: moudulePath
+  usergroupmappingList: modulePath + '/page',
+  usergroupmappingAll: modulePath + '/all',
+  addUserGroupMapping: modulePath
 }
 
 export default api
@@ -28,7 +28,7 @@ export function getUserGroupMappingAll (parameter) {
 
 export function getUserGroupMappingInfo (mappingId) {
   return axios({
-    url: moudulePath + '/' + mappingId,
+    url: modulePath + '/' + mappingId,
     method: 'get'
   })
 }
@@ -42,18 +42,16 @@ export function addUserGroupMapping (parameter) {
 }
 
 export function editUserGroupMapping (parameter) {
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath,
+    url: modulePath,
     method: 'put',
     params: parameter
   })
 }
 
 export function delUserGroupMapping (mappingId) {
-  console.log('mappingId', mappingId)
   return axios({
-    url: moudulePath + '/' + mappingId,
+    url: modulePath + '/' + mappingId,
     method: 'delete'
   })
 }

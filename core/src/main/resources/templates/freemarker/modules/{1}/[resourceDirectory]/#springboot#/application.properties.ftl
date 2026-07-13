@@ -37,7 +37,7 @@ spring.output.ansi.enabled=DETECT
 spring.http.encoding.charset=UTF-8
 spring.http.multipart.max-file-size=10MB
 spring.http.multipart.max-request-size=100MB
-spring.http.converters.preferred-json-mapper=fastjson
+spring.http.converters.preferred-json-mapper=${json_type!'jackson'}
 spring.messages.basename=conf/messages
 spring.messages.cache-seconds=60
 <#if REDIS!false>
@@ -87,13 +87,20 @@ context.userName=user_name
 rocketmq.name-server-address=${name_server_address!'localhost:9876'}
 rocketmq.producer-group=${projectName}_producer
 </#if>
+<#if KAFKA!false>
+spring.kafka.bootstrap-servers=localhost:9092
+spring.kafka.consumer.group-id=${projectName}_group
+</#if>
+<#if ELASTICSEARCH!false>
+spring.elasticsearch.uris=http://localhost:9200
+</#if>
 <#if ZIPKIN?has_content>
 dubbo.trace.enabled=true
 spring.zipkin.baseUrl=${zipkin_baseUrl!'http://localhost:9411'}
 </#if>
 
 #spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-spring.datasource.url=${dataSource.url}
+spring.datasource.url=${dataSource.url}?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
 spring.datasource.username=${dataSource.username}
 spring.datasource.password=${dataSource.password}
 spring.datasource.druid.initial-size=1
@@ -131,8 +138,9 @@ spring.datasource.druid.web-stat-filter.profile-enable=true
 spring.datasource.druid.stat-view-servlet.enabled=true
 spring.datasource.druid.stat-view-servlet.url-pattern=/druid/*
 spring.datasource.druid.stat-view-servlet.reset-enable=false
-spring.datasource.druid.stat-view-servlet.allow=''
-spring.datasource.druid.stat-view-servlet.deny=''
+spring.datasource.druid.stat-view-servlet.allow=${r"${druid.stat.allow:127.0.0.1,::1}"}
+spring.datasource.druid.stat-view-servlet.login-username=${r"${druid.stat.username:admin}"}
+spring.datasource.druid.stat-view-servlet.login-password=${r"${druid.stat.password:admin}"}
 
 spring.datasource.druid.filter.wall.enabled=true
 spring.datasource.druid.filter.wall.db-type=mysql
@@ -151,9 +159,9 @@ spring.datasource.druid.filter.config.enabled=true
 spring.datasource.druid.connection-properties=${dataSource.propertiesStr}
 </#if>
 
-<#if (mapperType!'plus') == 'plus'>
+<#if (sqlType!'plus') == 'plus'>
 mybatis-plus.mapper-locations=classpath:mybatis/mappers/*.xml
-mybatis-plus.type-aliases-package=${entityPackage}
+mybatis-plus.type-aliases-package=${entityPackage!""}
 mybatis-plus.configuration.log-impl=org.apache.ibatis.logging.log4j2.Log4j2Impl
 mybatis-plus.configuration.call-setters-on-nulls=true
 mybatis-plus.configuration.cache-enabled=true

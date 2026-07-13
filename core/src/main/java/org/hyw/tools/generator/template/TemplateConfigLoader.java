@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.EngineType;
+import org.hyw.tools.generator.platform.PlatformAdapters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -91,9 +92,8 @@ public class TemplateConfigLoader {
 
         if (configMap.containsKey("groups")) {
             List<Map<String, Object>> groupsMap = getList(configMap, "groups");
-            List<TemplateGroup> groups = groupsMap.stream()
-                .map(this::convertToGroup)
-                .collect(java.util.stream.Collectors.toList());
+            List<TemplateGroup> groups = PlatformAdapters.current().toList(groupsMap.stream()
+                .map(this::convertToGroup));
             config.setTemplateGroups(groups);
         }
 
@@ -118,17 +118,15 @@ public class TemplateConfigLoader {
 
         if (groupMap.containsKey("templates")) {
             List<Map<String, Object>> templatesMap = getList(groupMap, "templates");
-            List<TemplateDefinition> templates = templatesMap.stream()
-                .map(this::convertToTemplate)
-                .collect(java.util.stream.Collectors.toList());
+            List<TemplateDefinition> templates = PlatformAdapters.current().toList(templatesMap.stream()
+                .map(this::convertToTemplate));
             group.setTemplates(templates);
         }
 
         if (groupMap.containsKey("options")) {
             List<Map<String, Object>> optionsMap = getList(groupMap, "options");
-            List<TemplateOption> options = optionsMap.stream()
-                .map(this::convertToOption)
-                .collect(java.util.stream.Collectors.toList());
+            List<TemplateOption> options = PlatformAdapters.current().toList(optionsMap.stream()
+                .map(this::convertToOption));
             group.setOptions(options);
         }
 
@@ -156,9 +154,8 @@ public class TemplateConfigLoader {
 
         if (optionMap.containsKey("templates")) {
             List<Map<String, Object>> templatesMap = getList(optionMap, "templates");
-            List<TemplateDefinition> templates = templatesMap.stream()
-                .map(this::convertToTemplate)
-                .collect(java.util.stream.Collectors.toList());
+            List<TemplateDefinition> templates = PlatformAdapters.current().toList(templatesMap.stream()
+                .map(this::convertToTemplate));
             option.setTemplates(templates);
         }
 

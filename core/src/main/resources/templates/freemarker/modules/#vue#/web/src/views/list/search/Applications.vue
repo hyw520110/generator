@@ -131,11 +131,9 @@ export default {
   },
   methods: {
     handleChange (value) {
-      console.log(`selected ${value}`)
     },
     getList () {
       this.$http.get('/list/article', { params: { count: 8 } }).then(res => {
-        console.log('res', res)
         this.data = res.result
         this.loading = false
       })
@@ -146,7 +144,7 @@ export default {
 
 <style lang="less" scoped>
 .ant-pro-components-tag-select {
-  /deep/ .ant-pro-tag-select .ant-tag {
+  :deep(.ant-pro-tag-select .ant-tag) {
     margin-right: 24px;
     padding: 0 8px;
     font-size: 14px;
@@ -155,11 +153,11 @@ export default {
 .ant-pro-pages-list-projects-cardList {
   margin-top: 24px;
 
-  /deep/ .ant-card-meta-title {
+  :deep(.ant-card-meta-title) {
     margin-bottom: 4px;
   }
 
-  /deep/ .ant-card-meta-description {
+  :deep(.ant-card-meta-description) {
     height: 44px;
     overflow: hidden;
     line-height: 22px;
@@ -178,7 +176,7 @@ export default {
       font-size: 12px;
     }
 
-    /deep/ .ant-pro-avatar-list {
+    :deep(.ant-pro-avatar-list) {
       flex: 0 1 auto;
     }
   }

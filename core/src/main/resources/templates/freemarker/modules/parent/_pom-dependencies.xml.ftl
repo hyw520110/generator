@@ -8,6 +8,8 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+<#if springcloud_version?has_content>
+	<#if springcloud_alibaba_version?has_content>
 			<!-- spring cloud alibaba -->
 			<dependency>
 				<groupId>com.alibaba.cloud</groupId>
@@ -16,6 +18,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+	</#if>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
@@ -23,6 +26,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+</#if>
 <#if ZOOKEEPER?? && ZOOKEEPER>
 			<!-- spring cloud zookeeper -->
 			<dependency>
@@ -60,46 +64,77 @@
 				<version><#noparse>${sentinel.version}</#noparse></version>
 			</dependency>
 </#if>
+	<#if MYBATIS?? && MYBATIS>
 			<!-- mybatis -->
 			<dependency>
 				<groupId>org.mybatis.spring.boot</groupId>
 				<artifactId>mybatis-spring-boot-starter</artifactId>
 				<version><#noparse>${mybatis-spring-boot.version}</#noparse></version>
 			</dependency>
-			<!-- 分页插件 -->
+		<#if (sqlType!'xml') != "plus">
+			<!-- 分页插件（MyBatis-Plus 使用自身分页能力） -->
 			<dependency>
 				<groupId>com.github.pagehelper</groupId>
 				<artifactId>pagehelper-spring-boot-starter</artifactId>
 				<version><#noparse>${pagehelper.version}</#noparse></version>
 			</dependency>
+		</#if>
 			<!-- druid 数据库连接池 -->
 			<dependency>
 				<groupId>com.alibaba</groupId>
-				<artifactId>druid-spring-boot-starter</artifactId>
+				<artifactId>${druid_starter_artifact!'druid-spring-boot-starter'}</artifactId>
 				<version><#noparse>${druid.version}</#noparse></version>
 			</dependency>
+<#if dbType == "mysql">
 			<!-- mysql -->
 			<dependency>
 				<groupId>com.mysql</groupId>
 				<artifactId>mysql-connector-j</artifactId>
 				<version><#noparse>${mysql-connector.version}</#noparse></version>
 			</dependency>
-<#if SWAGGER2??>
+<#elseif dbType == "postgresql">
+			<!-- postgresql -->
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version><#noparse>${postgresql.version}</#noparse></version>
+			</dependency>
+<#elseif dbType == "oracle">
+			<!-- oracle -->
+			<dependency>
+				<groupId>com.oracle.database.jdbc</groupId>
+				<artifactId>ojdbc8</artifactId>
+				<version><#noparse>${oracle.version}</#noparse></version>
+			</dependency>
+<#elseif dbType == "sqlserver">
+			<!-- sqlserver -->
+			<dependency>
+				<groupId>com.microsoft.sqlserver</groupId>
+				<artifactId>mssql-jdbc</artifactId>
+				<version><#noparse>${mssql.version}</#noparse></version>
+			</dependency>
+</#if>
+	</#if>
+<#if SWAGGER2?? && SWAGGER2>
 			<!-- Knife4j for Spring Boot 3 -->
-			<dependency>
-				<groupId>com.github.xiaoymin</groupId>
-				<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
-				<version><#noparse>${knife4j.version}</#noparse></version>
-			</dependency>
-			<!-- 其他 -->
-			<dependency>
-				<groupId>com.lmax</groupId>
-				<artifactId>disruptor</artifactId>
-				<version><#noparse>${disruptor.version}</#noparse></version>
-			</dependency>
-			<dependency>
-				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt-api</artifactId>
+				<dependency>
+					<groupId>com.github.xiaoymin</groupId>
+					<artifactId>${knife4j_starter_artifact!'knife4j-openapi3-jakarta-spring-boot-starter'}</artifactId>
+					<version><#noparse>${knife4j.version}</#noparse></version>
+				</dependency>
+</#if>
+	<#if SPRINGBOOT?? && SPRINGBOOT>
+				<!-- 其他 -->
+				<dependency>
+					<groupId>com.lmax</groupId>
+					<artifactId>disruptor</artifactId>
+					<version><#noparse>${disruptor.version}</#noparse></version>
+				</dependency>
+</#if>
+	<#if JWT?? && JWT>
+				<dependency>
+					<groupId>io.jsonwebtoken</groupId>
+					<artifactId>jjwt-api</artifactId>
 				<version><#noparse>${jwt.version}</#noparse></version>
 			</dependency>
 			<dependency>
@@ -109,34 +144,45 @@
 			</dependency>
 			<dependency>
 				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt-jackson</artifactId>
-				<version><#noparse>${jwt.version}</#noparse></version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.shiro</groupId>
-				<artifactId>shiro-spring</artifactId>
+					<artifactId>jjwt-jackson</artifactId>
+					<version><#noparse>${jwt.version}</#noparse></version>
+				</dependency>
+</#if>
+	<#if SHIRO?? && SHIRO>
+				<dependency>
+					<groupId>org.apache.shiro</groupId>
+					<artifactId>shiro-spring</artifactId>
 				<version><#noparse>${shiro.version}</#noparse></version>
-				<classifier>jakarta</classifier>
+				<#if shiroClassifier?has_content>
+				<classifier>${shiroClassifier}</classifier>
+				</#if>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-core</artifactId>
 				<version><#noparse>${shiro.version}</#noparse></version>
-				<classifier>jakarta</classifier>
+				<#if shiroClassifier?has_content>
+				<classifier>${shiroClassifier}</classifier>
+				</#if>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.shiro</groupId>
 				<artifactId>shiro-web</artifactId>
 				<version><#noparse>${shiro.version}</#noparse></version>
-				<classifier>jakarta</classifier>
-			</dependency>
-			<!-- lombok -->
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version><#noparse>${lombok.version}</#noparse></version>
-			</dependency>
-<#if mapperType?? && mapperType == "plus">
+				<#if shiroClassifier?has_content>
+				<classifier>${shiroClassifier}</classifier>
+					</#if>
+				</dependency>
+</#if>
+	<#if SPRINGBOOT?? && SPRINGBOOT>
+				<!-- lombok -->
+				<dependency>
+					<groupId>org.projectlombok</groupId>
+					<artifactId>lombok</artifactId>
+					<version><#noparse>${lombok.version}</#noparse></version>
+				</dependency>
+</#if>
+	<#if MYBATIS?? && MYBATIS && (sqlType!'xml') == "plus">
 			<!-- mybatis-plus -->
 			<dependency>
 				<groupId>com.baomidou</groupId>
@@ -155,10 +201,9 @@
 			</dependency>
 			<dependency>
 				<groupId>com.baomidou</groupId>
-				<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+				<artifactId>${mybatis_plus_starter_artifact!'mybatis-plus-spring-boot3-starter'}</artifactId>
 				<version><#noparse>${mybatis.plus.version}</#noparse></version>
-			</dependency>
-</#if>
-</#if>
-		</dependencies>
+				</dependency>
+	</#if>
+			</dependencies>
 	</dependencyManagement>

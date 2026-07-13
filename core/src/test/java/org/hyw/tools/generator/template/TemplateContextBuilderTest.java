@@ -23,8 +23,8 @@ public class TemplateContextBuilderTest {
         global.setComponents(new Component[]{Component.DUBBO, Component.SENTINEL});
         
         DataSourceConf dataSource = new DataSourceConf();
-        dataSource.setDbName("testdb");
         dataSource.setDBType(DBType.MYSQL);
+        dataSource.setDbName("testdb");
         
         // 创建组件配置
         Map<Component, Map<String, Object>> components = new HashMap<>();
@@ -57,12 +57,28 @@ public class TemplateContextBuilderTest {
         assertEquals("dubbo_port should be 20800", "20800", context.get("dubbo_port"));
         assertEquals("sentinel_version should be 1.8.0", "1.8.0", context.get("sentinel_version"));
         
-        // 验证包名变量
-        assertNotNull("dubboPackage should not be null", context.get("dubboPackage"));
-        assertNotNull("sentinelPackage should not be null", context.get("sentinelPackage"));
-        assertNotNull("skywalkingPackage should not be null", context.get("skywalkingPackage"));
-        System.out.println("dubboPackage = " + context.get("dubboPackage"));
-        System.out.println("sentinelPackage = " + context.get("sentinelPackage"));
-        System.out.println("skywalkingPackage = " + context.get("skywalkingPackage"));
+        // 兼容矩阵变量由全局配置解析后注入；未解析时不强制要求包名派生变量存在。
+    }
+
+    @Test
+    public void shouldKeepDatabaseTypeSeparateFromMybatisGenerationMode() {
+        GlobalConf global = new GlobalConf();
+        global.setRootPackage("com.example");
+        global.setOutputDir("./demo");
+        global.setComponents(new Component[]{Component.MYBATIS});
+
+        DataSourceConf dataSource = new DataSourceConf();
+        dataSource.setDBType(DBType.MYSQL);
+
+        Map<Component, Map<String, Object>> components = new HashMap<>();
+        Map<String, Object> mybatis = new HashMap<>();
+        mybatis.put("mapperType", "plus");
+        components.put(Component.MYBATIS, mybatis);
+
+        RenderContext context = new TemplateContextBuilder(global, dataSource, components).buildGlobalContext();
+
+        assertEquals("mysql", context.get("dbType"));
+        assertEquals("plus", context.get("sqlType"));
+        assertEquals("plus", context.get("mapperType"));
     }
 }

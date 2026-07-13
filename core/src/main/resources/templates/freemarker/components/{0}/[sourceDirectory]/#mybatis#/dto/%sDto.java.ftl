@@ -2,16 +2,18 @@ package ${dtoPackage!};
 
 import java.io.Serializable;
 <#list table.importPackages as pkg>
-<#if pkg?has_content && !pkg?contains('jakarta.validation') && !pkg?contains('org.apache.commons')>
+<#if pkg?has_content && !pkg?contains(validationPackage) && !pkg?contains('org.apache.commons')>
 import ${pkg!};
 </#if>
 </#list>
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import ${validationPackage}.constraints.NotBlank;
+import ${validationPackage}.constraints.NotNull;
 
 <#include 'comments/comment.ftl'>
 <#if table.comment??>
-@Schema(name = "${dtoName!}", description = "${table.comment!}")
+@Schema(name = "${(dtoName!'')?j_string}", description = "${(table.comment!'')?j_string}")
 </#if>
 public class ${dtoName!} implements Serializable {
 
@@ -27,7 +29,12 @@ public class ${dtoName!} implements Serializable {
 
 </#if>
 
-	@Schema(name = "${field.propertyName!}", description = <#if field.comment?has_content>"${field.comment!}"<#else>"${field.name!}"</#if>)
+	@Schema(name = "${(field.propertyName!'')?j_string}", description = <#if field.comment?has_content>"${field.comment?j_string}"<#else>"${(field.name!'')?j_string}"</#if>)
+<#if !field.isNullAble() && !field.isPrimarykey()>
+<#if field.fieldType.type == "String">    @NotBlank
+<#else>    @NotNull
+</#if>
+</#if>
     private ${field.fieldType.type!} ${field.propertyName!};
     
 </#list>

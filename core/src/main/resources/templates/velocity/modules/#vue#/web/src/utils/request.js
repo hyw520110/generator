@@ -10,8 +10,8 @@ const apiHost = import.meta.env.VITE_API_HOST || 'localhost'
 const apiPort = import.meta.env.VITE_API_PORT || '8082'
 // 开发环境使用相对路径，通过 Vite 代理转发；生产环境使用完整 URL
 const isDev = import.meta.env.DEV
-const baseHost = isDev ? '' : `http://\${apiHost}:\${apiPort}`
-const uploadUrl = isDev ? '/v1/common/upload' : baseHost + '/v1/common/upload'
+const baseHost = isDev ? '/api' : `http://\${apiHost}:\${apiPort}`
+const uploadUrl = isDev ? '/api/v1/common/upload' : baseHost + '/v1/common/upload'
 
 // 创建 axios 实例，设置请求超时时间 (正式环境时长根据实际调整)
 const service = axios.create({

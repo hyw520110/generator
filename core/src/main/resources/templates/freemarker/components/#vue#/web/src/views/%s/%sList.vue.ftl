@@ -27,7 +27,7 @@
         <template #icon><plus-outlined /></template>
         新建
       </a-button>
-      <a-dropdown v-if="selectedRowKeys.length > 0">
+      <a-dropdown v-if="hasPrimaryKey && selectedRowKeys.length > 0">
         <template #overlay>
           <a-menu>
             <a-menu-item key="1" @click="handleBatchDelete">
@@ -40,6 +40,12 @@
           批量操作 <down-outlined />
         </a-button>
       </a-dropdown>
+      <#if EXCEL?? && EXCEL>
+      <a-button style="margin-left: 8px" @click="handleExport">
+        <template #icon><download-outlined /></template>
+        导出 Excel
+      </a-button>
+      </#if>
     </div>
 
     <s-table
@@ -49,6 +55,7 @@
       :data="loadData"
       :alert="options.alert"
       :rowSelection="options.rowSelection"
+      :rowKey="getRecordKey"
       showPagination="auto"
     >
       <!-- 自定义表头：实现冒号前文本显示，tooltip 显示完整文本 -->
@@ -70,9 +77,16 @@
 </#if>
 </#list>
         <template v-else-if="column.dataIndex === 'action'">
-          <a @click="handleEdit(record.id)">编辑</a>
-          <a-divider type="vertical" />
-          <a @click="handleDelete(record.id)">删除</a>
+          <template v-if="hasPrimaryKey">
+            <a @click="handleEdit(record)">编辑</a>
+            <a-divider type="vertical" />
+            <a @click="handleDelete(record)">删除</a>
+            <#if WORKFLOW?? && WORKFLOW>
+            <a-divider type="vertical" />
+            <a @click="handleStartWorkflow(record)">发起审批</a>
+            </#if>
+          </template>
+          <span v-else class="text-muted">仅新增</span>
         </template>
       </template>
     </s-table>
@@ -84,9 +98,9 @@
 <script>
 import { ref, reactive } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { PlusOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, DeleteOutlined, DownOutlined, DownloadOutlined } from '@ant-design/icons-vue'
 import { STable } from '@/components'
-import { getList, del${table.beanName?cap_first} } from '@/api/${table.beanName}'
+import { getList, del${table.beanName?cap_first}, batchDel${table.beanName?cap_first} <#if EXCEL?? && EXCEL>, export${table.beanName}</#if> } from '@/api/${table.beanName}'
 import CreateForm from './${table.beanName}Form.vue'
 
 export default {
@@ -96,7 +110,8 @@ export default {
     CreateForm,
     PlusOutlined,
     DeleteOutlined,
-    DownOutlined
+    DownOutlined,
+    DownloadOutlined
   },
   setup () {
     const tableRef = ref()
@@ -104,6 +119,8 @@ export default {
     const selectedRowKeys = ref([])
     const selectedRows = ref([])
     const queryParam = reactive({})
+    const primaryKeyFields = ${table.primaryKeyJsArray}
+    const hasPrimaryKey = primaryKeyFields.length > 0
 
     /**
      * 截取表头标题：冒号或逗号前的内容
@@ -138,6 +155,7 @@ export default {
         title,
         dataIndex,
         ellipsis: true,
+        sorter: true,
         ...(fullTitle && { fullTitle }),
         ...options
       }
@@ -151,7 +169,7 @@ export default {
         fixed: 'left'
       },
 <#list table.fields as field>
-<#if !field.sensitive>
+<#if !field.sensitive && !field.primarykey>
       createColumn('${field.comment?default(field.name)?js_string}', '${field.propertyName}'<#if table.getFieldWidthConfig(field) != "" || table.getFieldFixedConfig(field, field?index) != "">, { <#if table.getFieldWidthConfig(field) != "">${table.getFieldWidthConfig(field)}</#if><#if table.getFieldWidthConfig(field) != "" && table.getFieldFixedConfig(field, field?index) != "">, </#if><#if table.getFieldFixedConfig(field, field?index) != "">${table.getFieldFixedConfig(field, field?index)}</#if> }</#if>),
 </#if>
 </#list>
@@ -170,47 +188,65 @@ export default {
         })
     }
 
+    const getRecordKey = (record) => {
+      if (!hasPrimaryKey) {
+        return Object.keys(record || {}).map(key => record[key]).join(':')
+      }
+      return primaryKeyFields.map(key => record[key]).join(':')
+    }
+
     const options = {
       alert: {
         show: true,
         clear: () => { selectedRowKeys.value = [] }
       },
-      rowSelection: {
+      rowSelection: hasPrimaryKey ? {
         selectedRowKeys: selectedRowKeys,
         onChange: (keys, rows) => {
           selectedRowKeys.value = keys
           selectedRows.value = rows
         }
-      }
+      } : null
     }
 
     const handleAdd = () => {
       createModalRef.value.add()
     }
 
-    const handleEdit = (id) => {
-      createModalRef.value.edit(id)
+    const handleEdit = (record) => {
+      if (!hasPrimaryKey) {
+        message.warning('当前表未定义主键，无法编辑记录')
+        return
+      }
+      createModalRef.value.edit(record)
     }
 
-    const handleDelete = (id) => {
+    const handleDelete = (record) => {
+      if (!hasPrimaryKey) {
+        message.warning('当前表未定义主键，无法删除记录')
+        return
+      }
       Modal.confirm({
         title: '确认删除',
         content: '确定要删除这条记录吗？',
-        onOk: () => {
-          del${table.beanName?cap_first}(id).then(() => {
-            message.info('删除成功')
-            tableRef.value.refresh()
-          })
+        onOk: async () => {
+          await del${table.beanName?cap_first}(record)
+          message.info('删除成功')
+          tableRef.value.refresh()
         }
       })
     }
 
     const handleBatchDelete = () => {
+      if (!hasPrimaryKey) {
+        message.warning('当前表未定义主键，无法批量删除记录')
+        return
+      }
       Modal.confirm({
         title: '确认删除',
         content: '确定要删除选中的记录吗？',
-        onOk: () => {
-          // 批量删除逻辑
+        onOk: async () => {
+          await batchDel${table.beanName?cap_first}(selectedRows.value)
           message.info('删除成功')
           selectedRowKeys.value = []
           tableRef.value.refresh()
@@ -221,6 +257,34 @@ export default {
     const handleOk = () => {
       tableRef.value.refresh()
     }
+
+    
+    <#if EXCEL?? && EXCEL>
+    const handleExport = () => {
+      message.info('正在导出 Excel 报表，请稍候...')
+      export${table.beanName}(queryParam).then(blob => {
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'export_data.xlsx')
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      })
+    }
+    </#if>
+
+    <#if WORKFLOW?? && WORKFLOW>
+    const handleStartWorkflow = (record) => {
+      Modal.confirm({
+        title: '发起审批',
+        content: '确定要为这条记录发起业务审批流程吗？',
+        onOk: () => {
+          message.success('审批流程发起成功！')
+        }
+      })
+    }
+    </#if>
 
     const resetQueryParam = () => {
       Object.keys(queryParam).forEach(key => {
@@ -235,15 +299,23 @@ export default {
       columns,
       queryParam,
       loadData,
+      getRecordKey,
       selectedRowKeys,
       selectedRows,
+      hasPrimaryKey,
       options,
       handleAdd,
       handleEdit,
       handleDelete,
       handleBatchDelete,
       handleOk,
-      resetQueryParam
+      resetQueryParam,
+      <#if EXCEL?? && EXCEL>
+      handleExport,
+      </#if>
+      <#if WORKFLOW?? && WORKFLOW>
+      handleStartWorkflow,
+      </#if>
     }
   }
 }

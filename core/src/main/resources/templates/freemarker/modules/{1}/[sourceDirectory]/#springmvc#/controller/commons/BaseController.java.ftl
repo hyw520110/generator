@@ -1,16 +1,11 @@
-<#if StringUtils.indexOf("${superControllerClass}", '.')==-1>
+<#if superControllerClass?has_content && StringUtils.indexOf(superControllerClass, '.')==-1>
 package ${controllerPackage!}.commons;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
-import org.springframework.ui.Model;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 <#if springboot_version?has_content>
 import org.springframework.web.bind.annotation.RestController;
-import com.alibaba.fastjson.JSONObject;
-<#if mapperType == "plus">
+<#if sqlType == "plus">
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -24,23 +19,41 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import ${entityPackage!}.BaseEntity;
-<#if global.modules?? && global.modules?size gt 1>
+<#if entityPackage?? && entityPackage != "">
+import ${entityPackage}.BaseEntity;
+<#else>
+// No entityPackage found
+</#if>
+<#if global.modules?? && global.modules?size gt 1 && api_servicePackage?? && api_servicePackage != ''>
+<#if jpa?? && jpa>
+import ${api_servicePackage!}.BaseJpaService;
+<#else>
 import ${api_servicePackage!}.BaseService;
+</#if>
+<#else>
+<#if jpa?? && jpa>
+import ${servicePackage!}.BaseJpaService;
 <#else>
 import ${servicePackage!}.BaseService;
 </#if>
+</#if>
 <#if VUE>
-<#if global.modules?? && global.modules?size gt 1>
+<#if global.modules?? && global.modules?size gt 1 && api_dtoPackage?? && api_dtoPackage != ''>
 import ${api_dtoPackage!}.Result;
+import ${api_dtoPackage!}.PageResult;
 <#else>
 import ${dtoPackage!}.Result;
+import ${dtoPackage!}.PageResult;
 </#if>
 </#if>
 import io.swagger.v3.oas.annotations.Operation;
 <#assign comment ="公共接口实现">
 <#include 'comments/comment.ftl'>
-public class BaseController<BizService extends BaseService,Entity extends BaseEntity> {
+<#if jpa?? && jpa>
+public class BaseController<BizService extends BaseJpaService, Entity> {
+<#else>
+public class BaseController<BizService extends BaseService, Entity extends BaseEntity> {
+</#if>
 <#if VUE>	
     @Autowired
     protected BizService bizService;
@@ -50,9 +63,17 @@ public class BaseController<BizService extends BaseService,Entity extends BaseEn
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @Operation(summary = "添加", description = "添加")
 	@ResponseBody
-	public Result add(Entity entity) {
+	public Result<Entity> add(@RequestBody Entity entity) {
 	    bizService.save(entity);
-	    return new Result();
+	    return new Result<>(entity);
+	}
+	
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	@Operation(summary = "添加", description = "添加")
+	@ResponseBody
+	public Result<Entity> create(@RequestBody Entity entity) {
+	    bizService.save(entity);
+	    return new Result<>(entity);
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -65,9 +86,9 @@ public class BaseController<BizService extends BaseService,Entity extends BaseEn
 	@RequestMapping(value = "", method = RequestMethod.PUT)
 	@Operation(summary = "根据id更新数据", description = "根据id更新数据")
 	@ResponseBody
-	public Result update(Entity entity) {
+	public Result<Entity> update(@RequestBody Entity entity) {
 	    bizService.updateById(entity);
-	    return new Result<>();
+	    return new Result<>(entity);
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
@@ -78,6 +99,15 @@ public class BaseController<BizService extends BaseService,Entity extends BaseEn
 	    return new Result<>();
 	}
 	
+	@RequestMapping(value = "/batch", method = RequestMethod.DELETE)
+	@Operation(summary = "批量删除", description = "批量删除")
+	@ResponseBody
+	public Result<?> removeBatch(@RequestBody List<Serializable> ids) {
+	    bizService.removeByIds(ids);
+	    return new Result<>();
+	}
+	
+<#if sqlType == "plus">
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	@Operation(summary = "获取列表", description = "获取列表")
 	@ResponseBody
@@ -88,10 +118,11 @@ public class BaseController<BizService extends BaseService,Entity extends BaseEn
 	@RequestMapping(value = "/page", method = RequestMethod.GET)
 	@Operation(summary = "分页获取列表", description = "分页获取列表")
 	@ResponseBody
-	public Result<IPage<Entity>> page(@RequestParam(name = "pageNum",defaultValue = "1",required = false)Integer pageNo,@RequestParam(name = "pageSize",defaultValue = "10",required = false) Integer pageSize, Entity entity) {
+	public Result<PageResult<Entity>> page(@RequestParam(name = "pageNum",defaultValue = "1",required = false)Integer pageNo,@RequestParam(name = "pageSize",defaultValue = "10",required = false) Integer pageSize, Entity entity) {
 	    IPage<Entity> page = bizService.page(new Page(pageNo, pageSize),new QueryWrapper(entity));
-	    return new Result<>(page);
+	    return Result.ok(PageResult.of(page.getRecords(), page.getCurrent(), page.getSize(), page.getTotal()));
 	} 
+</#if>
 </#if>
 }
 </#if>

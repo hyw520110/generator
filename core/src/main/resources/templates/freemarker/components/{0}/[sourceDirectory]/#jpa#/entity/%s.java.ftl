@@ -4,13 +4,19 @@ package ${entityPackage!};
 import ${pkg!};
 </#list>
 import java.io.Serializable;    
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import ${persistencePackage}.Entity;
+import ${persistencePackage}.GeneratedValue;
+import ${persistencePackage}.GenerationType;
+import ${persistencePackage}.Id;
+import ${persistencePackage}.IdClass;
+import ${validationPackage}.constraints.NotBlank;
+import ${validationPackage}.constraints.NotNull;
 
 <#include 'comments/comment.ftl'>
 @Entity
+<#if table.isCompositePrimaryKey()>
+@IdClass(${rootPackage}.key.${table.beanName}Key.class)
+</#if>
 public class ${className!} implements Serializable{
 
     private static final long serialVersionUID = 1L;
@@ -23,6 +29,11 @@ public class ${className!} implements Serializable{
 </#if>
 <#if field.isPrimarykey()>
 	@Id @GeneratedValue(strategy=GenerationType.AUTO)
+</#if>
+<#if !field.isNullAble() && !field.isPrimarykey()>
+<#if field.fieldType.type == "String">    @NotBlank
+<#else>    @NotNull
+</#if>
 </#if>
     private ${field.fieldType.type!} ${field.propertyName!};
 </#list>

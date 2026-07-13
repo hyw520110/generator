@@ -8,8 +8,6 @@ import ${pkg};
 import #if($StringUtils.indexOf("$superEntityClass",'.')==-1)${entityPackage}.#end$superEntityClass;
 #else
 import java.io.Serializable;
-import jakarta.validation.constraints.NotNull;
-import org.apache.commons.lang3.StringUtils;
 #end
 #if("plus"=="$mapperType")
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -17,7 +15,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 #end
-import jakarta.validation.constraints.NotNull;
+import ${validationPackage}.constraints.NotBlank;
+import ${validationPackage}.constraints.NotNull;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 #parse('/templates/comments/comment.vm')
@@ -31,7 +30,6 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
 
     private static final long serialVersionUID = 1L;
 
-#set($firstPrimaryKey = true)
 #foreach($field in ${table.fields})
 #if("$!field.comment" != "")
     /**
@@ -40,9 +38,8 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
 #end
 #if("plus"=="$mapperType")
 #if($field.isPrimarykey)
-#if($firstPrimaryKey)
+#if($table.primaryKeyCount == 1)
 	@TableId(value = "${field.name}", type = IdType.AUTO)
-#set($firstPrimaryKey = false)
 #else
 	@TableField(value = "${field.name}")
 #end
@@ -52,13 +49,13 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
 #end
 	@Schema(name = "${field.propertyName}", description = #if("$!{field.comment}"!="")"$!{field.comment}"#else"${field.name}"#end, required = #if(${field.isNullAble()})false #else true #end)
 #if(!${field.isCommonField} || ${StringUtils.indexOf("$superEntityClass", '.')}!=-1)
-#if(!$field.isNullAble())    @NotNull
+#if(!$field.isNullAble())#if($field.propertyType == "String")    @NotBlank#else    @NotNull#end
 #end 
     private ${field.fieldType.type} ${field.propertyName};
     
 #end    
 #end
-## TODO  外键关联配置 引用对象
+## 外键关联配置与引用对象机制说明：
 ##
 ## 使用说明：
 ## 在此处添加外键关联的对象属性，用于关联查询和级联操作
@@ -105,7 +102,7 @@ public class ${className} #if(${superEntityClass}) extends ${StringUtils.getClas
     }
 #end
 #if("plus"=="$mapperType")
-#if($table.hasPrimarykeys())
+#if($table.primaryKeyCount == 1)
 	@Override
 	public $table.primaryKeyField.propertyType pkVal() {
 	    return this.$table.primaryKeyField.propertyName;

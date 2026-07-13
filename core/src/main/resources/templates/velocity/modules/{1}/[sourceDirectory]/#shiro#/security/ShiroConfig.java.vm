@@ -4,7 +4,7 @@ package ${securityPackage};
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import jakarta.servlet.Filter;
+import ${servletPackage}.Filter;
 
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.mgt.DefaultSubjectDAO;

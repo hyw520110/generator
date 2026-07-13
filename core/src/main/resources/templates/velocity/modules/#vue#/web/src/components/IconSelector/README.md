@@ -31,7 +31,6 @@ export default {
   },
   methods: {
     handleIconChange (icon) {
-      console.log('change Icon', icon)
     }
   }
 }

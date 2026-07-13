@@ -14,6 +14,7 @@ readonly MVND_DIR="${TOOLS_DIR}/mvnd"
 readonly DEP_FILE="$PROJECT_ROOT_DIR/.service-order.conf"
 # 全局变量
 MAVEN_PROFILE="${DEFAULT_MAVEN_PROFILE}"
+TOOL_RUNTIME="default"
 TARGET_MODULE=""
 OFFLINE_MODE=false
 CLEAN_BUILD=true
@@ -63,6 +64,7 @@ show_help() {
 选项:
   -m, --module=<modules>   指定要构建的模块（支持逗号分隔的多个模块名，支持模糊匹配）
   -P, --profile=<profile>  指定 Maven profile（默认: dev）
+  --tool-runtime=<runtime>  生成器自身运行包：default、boot2、boot3、all（默认: default）
   --offline           离线构建模式
   --no-clean          跳过清理阶段
   --with-tests        执行测试
@@ -75,6 +77,9 @@ show_help() {
 示例:
   $0                                    # 使用默认配置构建所有模块
   $0 -P prod                              # 使用 prod profile 构建
+  $0 --tool-runtime=boot2                 # 生成 generator-web-boot2.jar
+  $0 --tool-runtime=boot3                 # 生成 generator-web-boot3.jar（需要 JDK 17+）
+  $0 --tool-runtime=all                   # 依次生成 boot2 和 boot3 运行包
   $0 -m user                          # 构建 user 相关模块
   $0 -P prod --offline -m payment        # 离线构建 payment 模块
   $0 --no-clean --with-tests          # 不清理且执行测试
@@ -188,6 +193,17 @@ parse_arguments() {
                 MAVEN_PROFILE="${1#--profile=}"
                 shift
                 ;;
+            --tool-runtime=*)
+                TOOL_RUNTIME="${1#--tool-runtime=}"
+                case "$TOOL_RUNTIME" in
+                    default|boot2|boot3|all)
+                        ;;
+                    *)
+                        die "无效的生成器运行包类型: $TOOL_RUNTIME。可选值: default、boot2、boot3、all"
+                        ;;
+                esac
+                shift
+                ;;
             --offline)
                 OFFLINE_MODE=true
                 shift
@@ -257,10 +273,11 @@ parse_arguments() {
 
 # 统计可部署模块数量
 count_deployable_modules() {
-    local -n pom_files_ref=$1
+    local pom_files=$1
     local count=0
     
-    for pom_file in "${pom_files_ref[@]}"; do
+    while IFS= read -r pom_file; do
+        [ -z "$pom_file" ] && continue
         local module_dir=$(dirname "$pom_file")
         local relative_path=""
         if [ "$module_dir" != "$PROJECT_ROOT_DIR" ]; then
@@ -286,7 +303,7 @@ count_deployable_modules() {
                 count=$((count + 1))
             fi
         done < <(grep -E "<module>[^<]*</module>" "$pom_file" | sed -E "s/.*<module>([^<]+)<\/module>.*/\1/")
-    done
+    done <<< "$pom_files"
     
     echo $count
 }
@@ -296,15 +313,16 @@ list_available_modules() {
     log_info "应用服务模块列表:"
 
     # 查找所有包含模块定义的 pom.xml 文件
-    local pom_files=()
-    find_pom_files_with_modules pom_files
+    local pom_files
+    pom_files=$(find_pom_files_with_modules)
 
     # 先统计可部署模块数量
     local deployable_count
-    deployable_count=$(count_deployable_modules pom_files)
+    deployable_count=$(count_deployable_modules "$pom_files")
 
     # 遍历所有包含模块的 pom.xml 文件并显示
-    for pom_file in "${pom_files[@]}"; do
+    while IFS= read -r pom_file; do
+        [ -z "$pom_file" ] && continue
         local module_dir=$(dirname "$pom_file")
         local relative_path=""
         if [ "$module_dir" != "$PROJECT_ROOT_DIR" ]; then
@@ -334,7 +352,7 @@ list_available_modules() {
                 fi
             fi
         done < <(grep -E "<module>[^<]*</module>" "$pom_file" | sed -E "s/.*<module>([^<]+)<\/module>.*/\1/")
-    done
+    done <<< "$pom_files"
 
     # 显示统计信息
     echo "说明: [✓] = 包含 assembly plugin（$deployable_count 个可部署）"
@@ -345,6 +363,7 @@ perform_dry_run() {
     # 显示配置
     echo "构建配置:"
     echo "  Maven Profile: $MAVEN_PROFILE"
+    echo "  Tool Runtime: $TOOL_RUNTIME"
     #echo "  目标模块: ${TARGET_MODULE:-"所有模块"}"
     echo "  离线模式: $OFFLINE_MODE"
     echo "  清理构建: $CLEAN_BUILD"
@@ -354,12 +373,24 @@ perform_dry_run() {
     echo
 
     # 模拟构建命令构造
-    setup_build_environment
-    local maven_command
-    maven_command=$(build_maven_command)
-
-    echo "将要执行的命令:"
-    echo "  $maven_command"
+    if [[ "$TOOL_RUNTIME" == "all" ]]; then
+        local original_runtime="$TOOL_RUNTIME"
+        for runtime in boot2 boot3; do
+            TOOL_RUNTIME="$runtime"
+            setup_build_environment
+            local maven_command
+            maven_command=$(build_maven_command)
+            echo "将要执行的命令($runtime):"
+            echo "  $maven_command"
+        done
+        TOOL_RUNTIME="$original_runtime"
+    else
+        setup_build_environment
+        local maven_command
+        maven_command=$(build_maven_command)
+        echo "将要执行的命令:"
+        echo "  $maven_command"
+    fi
     echo
 
     if [ -n "$TARGET_MODULE" ]; then
@@ -376,6 +407,43 @@ perform_dry_run() {
     fi
 }
 
+# 追加 Maven profile，保留用户传入的业务 profile。
+append_maven_profile() {
+    local current="$1"
+    local extra="$2"
+    if [ -z "$extra" ]; then
+        echo "$current"
+        return 0
+    fi
+    if [ -z "$current" ] || [ "$current" == "$DEFAULT_MAVEN_PROFILE" ]; then
+        echo "$extra"
+    else
+        echo "$current,$extra"
+    fi
+}
+
+# 根据生成器运行包类型解析 Maven profile。
+resolve_maven_profiles() {
+    local profiles="$MAVEN_PROFILE"
+    case "$TOOL_RUNTIME" in
+        boot2)
+            profiles=$(append_maven_profile "$profiles" "tool-boot2")
+            ;;
+        boot3)
+            profiles=$(append_maven_profile "$profiles" "tool-boot3")
+            ;;
+        default)
+            ;;
+        all)
+            die "内部错误：tool-runtime=all 应在 main 中拆分执行"
+            ;;
+        *)
+            die "无效的生成器运行包类型: $TOOL_RUNTIME"
+            ;;
+    esac
+    echo "$profiles"
+}
+
 # 检查 Java 版本
 check_java_version() {
     log_debug "检查 Java 环境..."
@@ -388,15 +456,26 @@ check_java_version() {
 
     local required_version
     if [ -f "$PROJECT_ROOT_DIR/pom.xml" ]; then
-        required_version=$(grep -E "<java.version>" "$PROJECT_ROOT_DIR/pom.xml" | head -1 | sed -E 's/.*<java.version>([^<]+)<\/java.version>.*/\1/')
+        required_version=$(grep -E "<java.version>" "$PROJECT_ROOT_DIR/pom.xml" | head -1 | sed -E 's/.*<java.version>([^<]+)<\/java.version>.*/\1/' || true)
+        if [ -z "$required_version" ]; then
+            required_version=$(grep -E "<maven.compiler.source>" "$PROJECT_ROOT_DIR/pom.xml" | head -1 | sed -E 's/.*<maven.compiler.source>([^<]+)<\/maven.compiler.source>.*/\1/' || true)
+        fi
     fi
 
     if [ -z "$current_version" ]; then
         die "无法检测 Java 版本"
     fi
 
-    if [ -n "$required_version" ] && [ "$current_version" != "$required_version" ]; then
-        die "Java 版本不匹配: 当前 $current_version，需要 $required_version"
+    case "$TOOL_RUNTIME" in
+        boot3)
+            if [ -z "$required_version" ] || [ "$required_version" -lt 17 ]; then
+                required_version=17
+            fi
+            ;;
+    esac
+
+    if [ -n "$required_version" ] && [ "$current_version" -lt "$required_version" ]; then
+        die "Java 版本不匹配: 当前 $current_version，需要 >= $required_version"
     fi
 
     log_info "Java 版本检查通过: $current_version"
@@ -470,23 +549,19 @@ has_assembly_plugin() {
 
 # 查找所有包含模块定义的 pom.xml 文件
 find_pom_files_with_modules() {
-    local -n pom_files_ref=$1
-    mapfile -t pom_files_ref < <(
-        find "$PROJECT_ROOT_DIR" -type f -name "pom.xml" ! -path "*/target/*" -print0 |
-        xargs -0 grep -l "<module>" |
-        sort -u
-    )
-    log_debug "找到所有包含 <module> 的 pom.xml 文件数量: ${#pom_files_ref[@]}"
+    find "$PROJECT_ROOT_DIR" -type f -name "pom.xml" ! -path "*/target/*" -print0 |
+    xargs -0 grep -l "<module>" |
+    sort -u
 }
 
 # 处理单个模块的完全匹配
 match_module_exact() {
     local module_pattern=$1
-    local -n pom_files_ref=$2
-    local -n matched_modules_ref=$3
+    local pom_files=$2
     local found=false
 
-    for pom_file in "${pom_files_ref[@]}"; do
+    while IFS= read -r pom_file; do
+        [ -z "$pom_file" ] && continue
         local module_dir=$(dirname "$pom_file")
         local relative_path=""
         if [ "$module_dir" != "$PROJECT_ROOT_DIR" ]; then
@@ -501,12 +576,12 @@ match_module_exact() {
                 else
                     full_module_path="$relative_path/$module_name"
                 fi
-                matched_modules_ref+=("$full_module_path")
+                echo "$full_module_path"
                 found=true
                 log_debug "完全匹配到模块: '$module_name'，完整路径: '$full_module_path'"
             fi
         done < <(grep -E "<module>[^<]*</module>" "$pom_file" | sed -E "s/.*<module>([^<]+)<\/module>.*/\1/")
-    done
+    done <<< "$pom_files"
 
     if [[ "$found" == true ]]; then
         return 0  # 成功匹配
@@ -518,12 +593,12 @@ match_module_exact() {
 # 处理单个模块的模糊匹配
 match_module_fuzzy() {
     local module_pattern=$1
-    local -n pom_files_ref=$2
-    local -n matched_modules_ref=$3
+    local pom_files=$2
 
     log_debug "未完全匹配到 '$module_pattern'，尝试模糊匹配..."
     local found=false
-    for pom_file in "${pom_files_ref[@]}"; do
+    while IFS= read -r pom_file; do
+        [ -z "$pom_file" ] && continue
         local module_dir=$(dirname "$pom_file")
         local relative_path=""
         if [ "$module_dir" != "$PROJECT_ROOT_DIR" ]; then
@@ -539,7 +614,7 @@ match_module_fuzzy() {
                 else
                     full_module_path="$relative_path/$module_name"
                 fi
-                matched_modules_ref+=("$full_module_path")
+                echo "$full_module_path"
                 log_debug "模块名包含模式匹配到: '$module_name'，完整路径: '$full_module_path'"
                 found=true
             # 或者检查完整路径是否包含用户输入的模式（如 domain-services/user/user-api 包含 user-api）
@@ -551,13 +626,13 @@ match_module_fuzzy() {
                     full_module_path="$relative_path/$module_name"
                 fi
                 if [[ "$full_module_path" == *"$module_pattern"* ]]; then
-                    matched_modules_ref+=("$full_module_path")
+                    echo "$full_module_path"
                     log_debug "完整路径包含模式匹配到: '$module_name'，完整路径: '$full_module_path'"
                     found=true
                 fi
             fi
         done < <(grep -E "<module>[^<]*</module>" "$pom_file" | sed -E "s/.*<module>([^<]+)<\/module>.*/\1/")
-    done
+    done <<< "$pom_files"
 
     if [[ "$found" == true ]]; then
         return 0  # 成功匹配
@@ -583,8 +658,8 @@ find_matching_modules() {
     log_debug "待匹配的模块模式: ${MODULE_ARRAY[*]}"
 
     # 3. 获取所有包含 <module> 的 pom.xml 文件（绝对路径）
-    local all_pom_files=()
-    find_pom_files_with_modules all_pom_files
+    local all_pom_files
+    all_pom_files=$(find_pom_files_with_modules)
 
     # 4. 遍历每个模块名进行匹配
     for module_pattern in "${MODULE_ARRAY[@]}"; do
@@ -597,12 +672,20 @@ find_matching_modules() {
         log_debug "正在处理模块模式: '$module_pattern'"
     
         # 先尝试完全匹配模块名
-        if match_module_exact "$module_pattern" all_pom_files matched_modules; then
+        local matched
+        if matched=$(match_module_exact "$module_pattern" "$all_pom_files"); then
+            while IFS= read -r module; do
+                [ -n "$module" ] && matched_modules+=("$module")
+            done <<< "$matched"
             continue
         fi
     
         # 若未找到完全匹配，再启用模糊匹配
-        if ! match_module_fuzzy "$module_pattern" all_pom_files matched_modules; then
+        if matched=$(match_module_fuzzy "$module_pattern" "$all_pom_files"); then
+            while IFS= read -r module; do
+                [ -n "$module" ] && matched_modules+=("$module")
+            done <<< "$matched"
+        else
             log_error "⚠️ 未找到模块: $module_pattern"
             log_error "   可使用 --list-modules 查看所有可用模块"
             die "模块匹配失败"
@@ -642,9 +725,11 @@ build_maven_command() {
         fi
     fi
 
-    # Maven profile (总是添加，除非是默认的dev profile)
-    if [ "$MAVEN_PROFILE" != "$DEFAULT_MAVEN_PROFILE" ]; then
-        maven_args+=("-P$MAVEN_PROFILE")
+    # Maven profile：业务 profile + 可选生成器运行时 profile
+    local resolved_profiles
+    resolved_profiles=$(resolve_maven_profiles)
+    if [ -n "$resolved_profiles" ] && [ "$resolved_profiles" != "$DEFAULT_MAVEN_PROFILE" ]; then
+        maven_args+=("-P$resolved_profiles")
     fi
 
     # 离线模式
@@ -688,6 +773,7 @@ setup_build_environment() {
     export MAVEN_OPTS="${MAVEN_OPTS:-"-Xmx2048m"}"
 
     log_info "Maven Profile: $MAVEN_PROFILE"
+    log_info "Tool Runtime: $TOOL_RUNTIME"
     log_debug "构建工具: $BUILD_COMMAND"
     log_debug "目标模块: ${TARGET_MODULE:-"所有模块"}"
     log_info "离线模式: $OFFLINE_MODE"
@@ -751,12 +837,10 @@ execute_build() {
     # 执行命令
     # 注意：mvn 可能会产生大量输出，tee 保证用户能看到实时进度
     CMD_ARRAY=($maven_command)
-    "${CMD_ARRAY[@]}" 2>&1 | tee "$BUILD_LOG_FILE"
-    
-    # 获取 pipe 的返回状态 (这里依靠 set -e -o pipefail)
-    # 但由于 set -e，如果命令失败脚本会直接退出到 cleanup
-    # 我们想要手动处理错误，所以暂时关闭 set -e
     set +e
+    "${CMD_ARRAY[@]}" 2>&1 | tee "$BUILD_LOG_FILE"
+
+    # 必须紧跟管道读取；执行任何其他命令都会覆盖 PIPESTATUS。
     maven_exit_code=${PIPESTATUS[0]}
     set -e
 
@@ -875,21 +959,41 @@ main() {
     # 解析参数
     parse_arguments "$@"
 
-    # 设置构建环境
-    setup_build_environment
+    if [[ "$TOOL_RUNTIME" == "all" ]]; then
+        for runtime in boot2 boot3; do
+            log_info "开始构建生成器运行包: $runtime"
+            TOOL_RUNTIME="$runtime"
+            setup_build_environment
 
-    # 预处理配置文件
-    # preprocess_config_files
+            # 预处理配置文件
+            # preprocess_config_files
 
-    # 执行构建
-    if execute_build; then
-        # 根据开关决定是否执行依赖分析
-        if [[ "$ENABLE_DEPENDENCY_ANALYSIS" == true ]]; then
-            analyze_build_output
-        fi
+            if execute_build; then
+                if [[ "$ENABLE_DEPENDENCY_ANALYSIS" == true ]]; then
+                    analyze_build_output
+                fi
+            else
+                die "构建失败"
+            fi
+        done
         exit 0
     else
-        die "构建失败"
+        # 设置构建环境
+        setup_build_environment
+
+        # 预处理配置文件
+        # preprocess_config_files
+
+        # 执行构建
+        if execute_build; then
+            # 根据开关决定是否执行依赖分析
+            if [[ "$ENABLE_DEPENDENCY_ANALYSIS" == true ]]; then
+                analyze_build_output
+            fi
+            exit 0
+        else
+            die "构建失败"
+        fi
     fi
 }
 

@@ -4,22 +4,27 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
+import ${servletPackage}.http.HttpServletRequest;
+import ${validationPackage}.Valid;
 import org.springframework.web.servlet.ModelAndView;
+<#if (sqlType!'xml') != "plus">
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+</#if>
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 
 <#list table.importPackages as pkg>
 <#if pkg?has_content>
@@ -27,11 +32,13 @@ import ${pkg!};
 </#if>
 </#list>
 
-<#if VUE??>
-<#if global.modules?? && global.modules?size gt 1>
+<#if VUE?? || THYMELEAF??>
+<#if global.modules?? && global.modules?size gt 1 && api_dtoPackage?? && api_dtoPackage != ''>
 import ${api_dtoPackage!}.Result;
+import ${api_dtoPackage!}.PageResult;
 <#else>
 import ${dtoPackage!}.Result;
+import ${dtoPackage!}.PageResult;
 </#if>
 </#if>
 
@@ -39,6 +46,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ${dtoPackage!}.${dtoName!};
 import ${servicePackage!}.${serviceName!};
 import ${entityPackage!}.${entityName!};
+<#if sqlType!="plus" && table.isCompositePrimaryKey()>
+import ${rootPackage!}.key.${table.beanName}Key;
+</#if>
 
 <#if superControllerClass?? && !superControllerClass?contains('.')>
 import ${controllerPackage!}.commons.${superControllerClass!};
@@ -46,7 +56,7 @@ import ${controllerPackage!}.commons.${superControllerClass!};
 
 <#include 'comments/comment.ftl'>
 
-@Tag(name = "${table.comment!}")
+@Tag(name = "${(table.comment!'')?j_string}")
 <#if springboot_version??>
 @org.springframework.web.bind.annotation.RestController
 <#else>
@@ -54,7 +64,7 @@ import ${controllerPackage!}.commons.${superControllerClass!};
 </#if>
 @RequestMapping("/${table.beanName!}")
 <#-- 复合主键的表不继承BaseController，因为BaseController不支持复合主键 -->
-public class ${controllerName!} <#if superControllerClass?? && table.primarykeyFields?size lte 1>extends ${superControllerClass!}<${serviceName!},${entityName!}></#if> {
+public class ${controllerName!} <#if superControllerClass?? && table.primarykeyFields?size == 1>extends ${superControllerClass!}<${serviceName!},${entityName!}></#if> {
 
 <#-- 判断是否需要重写方法：
    1. 主键不是 id
@@ -70,7 +80,7 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 </#if>
 
 <#-- 如果需要重写方法 -->
-<#if needOverride && "plus" == mapperType>
+<#if needOverride && "plus" == sqlType && superControllerClass?has_content>
 <#list table.primarykeyFields as field>
 <#assign pkParamTypes = "">
 <#assign pkParamNames = "">
@@ -83,15 +93,15 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 </#if>
 </#list>
 
-	@GetMapping(value = "/<#list table.primarykeyFields as f>${f.propertyName}<#if f?has_next>/</#if></#list>")
-	@Operation(summary = "根据<#list table.primarykeyFields as f>${f.comment!f.propertyName}<#if f?has_next>、</#if></#list>获取数据", description = "根据<#list table.primarykeyFields as f>${f.comment!f.propertyName}<#if f?has_next>、</#if></#list>获取数据")
+	@GetMapping(value = "${table.primaryKeyPathPattern}")
+	@Operation(summary = "根据<#list table.primarykeyFields as f>${(f.comment!f.propertyName)?j_string}<#if f?has_next>、</#if></#list>获取数据", description = "根据<#list table.primarykeyFields as f>${(f.comment!f.propertyName)?j_string}<#if f?has_next>、</#if></#list>获取数据")
 	@ResponseBody
 	public Result<${entityName!}> getInfo(<#list table.primarykeyFields as f>@PathVariable("${f.propertyName}") final ${f.fieldType.type} ${f.propertyName}<#if f?has_next>, </#if></#list>) {
 	    return new Result<>((${entityName!}) bizService.getById(<#list table.primarykeyFields as f>${f.propertyName}<#if f?has_next>, </#if></#list>));
 	}
 
-	@DeleteMapping(value = "/<#list table.primarykeyFields as f>${f.propertyName}<#if f?has_next>/</#if></#list>")
-	@Operation(summary = "根据<#list table.primarykeyFields as f>${f.comment!f.propertyName}<#if f?has_next>、</#if></#list>删除数据", description = "根据<#list table.primarykeyFields as f>${f.comment!f.propertyName}<#if f?has_next>、</#if></#list>删除数据")
+	@DeleteMapping(value = "${table.primaryKeyPathPattern}")
+	@Operation(summary = "根据<#list table.primarykeyFields as f>${(f.comment!f.propertyName)?j_string}<#if f?has_next>、</#if></#list>删除数据", description = "根据<#list table.primarykeyFields as f>${(f.comment!f.propertyName)?j_string}<#if f?has_next>、</#if></#list>删除数据")
 	@ResponseBody
 	public Result remove(<#list table.primarykeyFields as f>@PathVariable("${f.propertyName}") final ${f.fieldType.type} ${f.propertyName}<#if f?has_next>, </#if></#list>) {
 	    bizService.removeById(<#list table.primarykeyFields as f>${f.propertyName}<#if f?has_next>, </#if></#list>);
@@ -100,12 +110,81 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 	<#break>
 </#list>
 </#if>
-<#if "plus"!=mapperType>
+<#if "plus"!=sqlType>
 <#assign sName = StringUtils.lowercaseFirst(serviceName)!>
 	
     @Autowired
     private ${serviceName!} ${sName!};
 
+<#if VUE??>
+	@Operation(summary = "${(table.comment!'')?j_string}-分页列表查询", description = "${(table.comment!'')?j_string}-分页列表查询")
+	@GetMapping(value="/page")
+	public Result<PageResult<${dtoName!}>> page(@RequestParam Map<String, Object> map,
+			@RequestParam(required = false, defaultValue = "1") int pageNum,
+			@RequestParam(required = false, defaultValue = "10") int pageSize) {
+		PageHelper.startPage(pageNum, pageSize);
+		List<${dtoName!}> list = ${sName!}.findAll(map);
+		PageInfo<${dtoName!}> page = new PageInfo<>(list);
+		return Result.ok(PageResult.of(page.getList(), page.getPageNum(), page.getPageSize(), page.getTotal()));
+	}
+
+<#if table.primarykeyFields?size gt 0>
+	@GetMapping(value="${table.primaryKeyPathPattern}")
+	@Operation(summary = "${(table.comment!'')?j_string}-详情", description = "${(table.comment!'')?j_string}-详情")
+	public Result<${dtoName!}> detail(${table.primaryKeyMethodParameters}) {
+<#if table.primarykeyFields?size == 1>
+		return Result.ok(${sName!}.getById(${table.primaryKeyArgumentList}));
+<#else>
+		${table.beanName}Key key = new ${table.beanName}Key();
+<#list table.primarykeyFields as field>
+		key.set${field.capitalName}(${field.propertyName});
+</#list>
+		return Result.ok(${sName!}.getById(key));
+</#if>
+	}
+</#if>
+
+	@PostMapping(value="")
+	@Operation(summary = "${(table.comment!'')?j_string}-添加", description = "${(table.comment!'')?j_string}-添加")
+	public Result<?> create(@Valid @RequestBody ${dtoName!} bean) {
+		return Result.ok("添加成功", ${sName!}.save(bean));
+	}
+
+	@PutMapping(value="")
+	@Operation(summary = "${(table.comment!'')?j_string}-更新", description = "${(table.comment!'')?j_string}-更新")
+	public Result<?> modify(@Valid @RequestBody ${dtoName!} bean) {
+		return Result.ok("更新" + (${sName!}.update(bean) > 0 ? "成功" : "失败"));
+	}
+
+<#if table.primarykeyFields?size gt 0>
+	@DeleteMapping(value="${table.primaryKeyPathPattern}")
+	@Operation(summary = "${(table.comment!'')?j_string}-删除", description = "${(table.comment!'')?j_string}-删除")
+	public Result<?> remove(${table.primaryKeyMethodParameters}) {
+<#if table.primarykeyFields?size == 1>
+		${sName!}.deleteById(${table.primaryKeyArgumentList});
+<#else>
+		${table.beanName}Key key = new ${table.beanName}Key();
+<#list table.primarykeyFields as field>
+		key.set${field.capitalName}(${field.propertyName});
+</#list>
+		${sName!}.deleteById(key);
+</#if>
+		return Result.ok();
+	}
+</#if>
+<#if table.primarykeyFields?size == 1>
+
+	@DeleteMapping(value="/batch")
+	@Operation(summary = "${(table.comment!'')?j_string}-批量删除", description = "${(table.comment!'')?j_string}-批量删除")
+	public Result<?> removeBatch(@RequestBody List<${table.primaryKeyField.fieldType.type}> ids) {
+		for (${table.primaryKeyField.fieldType.type} id : ids) {
+			${sName!}.deleteById(id);
+		}
+		return Result.ok();
+	}
+</#if>
+</#if>
+	
 <#if table.primarykeyFields?size gt 0>
 	@GetMapping(value="/view/<#list table.primarykeyFields as field>${field.propertyName}<#if field?has_next>,</#if></#list>/{method}")
     public <#if THYMELEAF??>${dtoName!}<#else> ModelAndView </#if> getInfo(<#list table.primarykeyFields as field>@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} <#if field?has_next>,</#if> </#list>,@PathVariable(value = "method")String method){
@@ -115,8 +194,8 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 </#if>
 
 </#if>
-<#if "plus"!=mapperType>
-	@Operation(summary = "${table.comment!}-分页列表查询", description = "${table.comment!}-分页列表查询")
+<#if "plus"!=sqlType>
+	@Operation(summary = "${(table.comment!'')?j_string}-分页列表查询", description = "${(table.comment!'')?j_string}-分页列表查询")
 	@GetMapping(value="/list")
     public <#if THYMELEAF??>Result<?><#else> ModelAndView </#if> list(HttpServletRequest req,@RequestParam Map<String, Object> map ,@RequestParam(required = false, defaultValue = "1") int pageNo,@RequestParam(required = false, defaultValue = "10") int pageRows, Model model){
         PageHelper.startPage(pageNo, pageRows);
@@ -130,14 +209,14 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
     }
 
 <#if !THYMELEAF??>
-	@Operation(summary = "${table.comment!}-添加", description = "${table.comment!}-添加")
+	@Operation(summary = "${(table.comment!'')?j_string}-添加", description = "${(table.comment!'')?j_string}-添加")
     @GetMapping(value="/add")
     public ModelAndView toAdd(HttpServletRequest req,@ModelAttribute("bean") ${dtoName!} bean){
         return new ModelAndView("/${table.beanName!}/create");
     }
 </#if>
     
-	@ApiOperation(value = "${table.comment!}-添加", notes = "${table.comment!}-添加")
+	@Operation(summary = "${(table.comment!'')?j_string}-添加", description = "${(table.comment!'')?j_string}-添加")
     @PostMapping(value="/add")
     public <#if THYMELEAF??>Result<?><#else> ModelAndView </#if> save(HttpServletRequest req,@Validated @ModelAttribute("bean") ${dtoName!} bean,BindingResult result){
 <#if THYMELEAF??>
@@ -150,7 +229,7 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 </#if>
     }
 	
-	@Operation(summary = "${table.comment!}-更新", description = "${table.comment!}-更新")
+	@Operation(summary = "${(table.comment!'')?j_string}-更新", description = "${(table.comment!'')?j_string}-更新")
 	@PostMapping(value="/update")
     public <#if THYMELEAF??>Result<?><#else> ModelAndView </#if> update(@Valid ${dtoName!} bean){
 <#if THYMELEAF??>		
@@ -163,7 +242,8 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 	/*
 	 * 注意:数据更新操作一般必须是post请求
 	 */
-	@Operation(summary = "${table.comment!}-删除", description = "${table.comment!}-删除")
+<#if table.primarykeyFields?size gt 0>
+	@Operation(summary = "${(table.comment!'')?j_string}-删除", description = "${(table.comment!'')?j_string}-删除")
     @GetMapping(value="/del/<#list table.primarykeyFields as field>${field.propertyName}<#if field?has_next>,</#if></#list>")
     public <#if THYMELEAF??>Result<?><#else> ModelAndView </#if> delete(<#list table.primarykeyFields as field>@PathVariable(value = "${field.propertyName}") final ${field.fieldType.type} ${field.propertyName} <#if field?has_next>,</#if></#list>){
 		${sName!}.deleteById(<#list table.primarykeyFields as field>${field.propertyName}<#if field?has_next>,</#if></#list>);
@@ -173,5 +253,6 @@ public class ${controllerName!} <#if superControllerClass?? && table.primarykeyF
 		return new ModelAndView("redirect:/${table.beanName!}/list","flag",true);
 </#if>
 	}
+</#if>
 </#if>
 }

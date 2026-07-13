@@ -1,0 +1,229 @@
+# Java/framework compatibility matrix used by cmd, web, and templates.
+# Keep profiles shallow: one entry is the default stack for one Java version.
+# 同一 Java 版本可配置多 profile（如 Java17 既能 Boot2 也能 Boot3）；
+# defaultProfile=true 表示该 Java 版本的默认档位，按 javaVersion 选档时优先返回它；
+# 用户可通过 global.platformId 显式指定档位，绕过 default 选择。
+defaultJava: 17
+
+profiles:
+  - java: 8
+    id: java8-boot2
+    defaultProfile: true
+    name: Java 8 / Spring Boot 2
+    templateFamily: boot2
+    namespace: javax
+    release: 8
+    versions:
+      SPRINGBOOT:
+        springboot_version: 2.7.18
+        lombok_version: 1.18.30
+      SPRINGCLOUD:
+        springcloud_version: 2021.0.9
+        springcloud_alibaba_version: 2021.0.6.2
+        gateway_starter_artifact: spring-cloud-starter-gateway
+        spring_cloud_zookeeper_version: 3.1.9
+      DUBBO:
+        dubbo_version: 3.2.15
+      SENTINEL:
+        sentinel_version: 1.8.8
+      JWT:
+        jwt_version: 0.12.6
+      MYBATIS:
+        mybatis_spring_boot_version: 2.3.2
+        mybatis_plus_version: 3.5.5
+        mybatis_plus_starter_artifact: mybatis-plus-boot-starter
+        pagehelper_version: 1.4.7
+        druid_version: 1.2.23
+        druid_starter_artifact: druid-spring-boot-starter
+        mysql_connector_version: 8.0.33
+        postgresql_version: 42.7.3
+        oracle_version: 21.13.0.0
+        mssql_version: 12.6.1.jre8
+      SWAGGER2:
+        api_doc_family: swagger2
+        knife4j_version: 3.0.3
+        knife4j_starter_artifact: knife4j-spring-boot-starter
+      OPENAPI:
+        springdoc_version: 1.8.0
+      SHIRO:
+        shiro_version: 1.13.0
+    allowOverride:
+      SPRINGBOOT.springboot_version: 2.7.*
+      SPRINGCLOUD.springcloud_version: 2021.0.*
+      SPRINGCLOUD.springcloud_alibaba_version: 2021.0.*
+      MYBATIS.mybatis_plus_version: 3.5.*
+      MYBATIS.druid_version: 1.2.*
+      MYBATIS.mysql_connector_version: 8.0.*
+      DUBBO.dubbo_version: 3.2.*
+      SENTINEL.sentinel_version: 1.8.*
+
+  - java: 11
+    id: java11-boot2
+    defaultProfile: true
+    extends: java8-boot2
+    name: Java 11 / Spring Boot 2
+    release: 11
+
+  - java: 17
+    id: java17-boot3
+    defaultProfile: true
+    name: Java 17 / Spring Boot 3
+    templateFamily: boot3
+    namespace: jakarta
+    release: 17
+    versions:
+      SPRINGBOOT:
+        springboot_version: 3.2.12
+        lombok_version: 1.18.44
+      SPRINGCLOUD:
+        springcloud_version: 2023.0.0
+        springcloud_alibaba_version: 2023.0.1.0
+        gateway_starter_artifact: spring-cloud-starter-gateway
+        spring_cloud_zookeeper_version: 4.1.0
+      DUBBO:
+        dubbo_version: 3.3.0
+      SENTINEL:
+        sentinel_version: 1.8.8
+      JWT:
+        jwt_version: 0.12.6
+      MYBATIS:
+        mybatis_spring_boot_version: 3.0.3
+        mybatis_plus_version: 3.5.8
+        mybatis_plus_starter_artifact: mybatis-plus-spring-boot3-starter
+        pagehelper_version: 2.1.0
+        druid_version: 1.2.23
+        druid_starter_artifact: druid-spring-boot-3-starter
+        mysql_connector_version: 8.0.33
+        postgresql_version: 42.7.3
+        oracle_version: 21.13.0.0
+        mssql_version: 12.6.1.jre11
+      SWAGGER2:
+        api_doc_family: openapi3
+        knife4j_version: 4.5.0
+        knife4j_starter_artifact: knife4j-openapi3-jakarta-spring-boot-starter
+      OPENAPI:
+        springdoc_version: 2.8.17
+    allowOverride:
+      SPRINGBOOT.springboot_version: 3.[0-4].*
+      SPRINGCLOUD.springcloud_version: 202[2-4].*
+      SPRINGCLOUD.springcloud_alibaba_version: 202[2-4].*
+      MYBATIS.mybatis_plus_version: 3.5.*
+      MYBATIS.druid_version: 1.2.*
+      MYBATIS.mysql_connector_version: 8.0.*
+      DUBBO.dubbo_version: 3.3.*
+      SENTINEL.sentinel_version: 1.8.*
+    componentConstraints:
+      MYBATIS:
+        requires:
+          - SPRINGBOOT.springboot_version=3.*
+      SWAGGER2:
+        requires:
+          - SPRINGBOOT.springboot_version=3.*
+
+  # Java 17 + Boot 2 过渡档：用于已升级 JDK 但暂不迁移到 jakarta 命名空间的项目。
+  # 不是 default，需用户在 global.platformId 显式指定该 id 才会启用。
+  - java: 17
+    id: java17-boot2
+    extends: java8-boot2
+    name: Java 17 / Spring Boot 2 (transitional)
+    release: 17
+
+  - java: 21
+    id: java21-boot3
+    defaultProfile: true
+    extends: java17-boot3
+    name: Java 21 / Spring Boot 3
+    release: 21
+
+  # Java 21 + Spring Boot 3.2 + Dubbo 3.3 通用工程档位。
+  # 需在 generator.yaml 中显式配置 global.platformId=java21-boot3-dubbo 才会启用。
+  - java: 21
+    id: java21-boot3-dubbo
+    defaultProfile: false
+    extends: java21-boot3
+    name: Java 21 / Spring Boot 3.2 / Dubbo 3.3
+    templateFamily: boot3
+    namespace: jakarta
+    release: 21
+    versions:
+      SPRINGBOOT:
+        springboot_version: 3.2.4
+        lombok_version: 1.18.30
+      SPRINGCLOUD:
+        springcloud_version: 2023.0.1
+        springcloud_alibaba_version: 2023.0.1.0
+        gateway_starter_artifact: spring-cloud-starter-gateway
+        spring_cloud_zookeeper_version: 4.1.0
+      DUBBO:
+        dubbo_version: 3.3.2
+      SENTINEL:
+        sentinel_version: 1.8.8
+      JWT:
+        jwt_version: 0.12.5
+      MYBATIS:
+        mybatis_spring_boot_version: 3.0.3
+        mybatis_plus_version: 3.5.5
+        mybatis_plus_starter_artifact: mybatis-plus-spring-boot3-starter
+        pagehelper_version: 2.1.0
+        druid_version: 1.2.27
+        mysql_connector_version: 8.0.33
+        postgresql_version: 42.7.3
+        oracle_version: 21.13.0.0
+        mssql_version: 12.6.1.jre11
+      ROCKETMQ:
+        spring_boot_starter_rocketmq_version: 2.3.0
+      SWAGGER2:
+        api_doc_family: openapi3
+        knife4j_version: 4.5.0
+        knife4j_starter_artifact: knife4j-openapi3-jakarta-spring-boot-starter
+    allowOverride:
+      SPRINGBOOT.springboot_version: 3.[2-4].*
+      SPRINGCLOUD.springcloud_version: 202[3-4].0.*
+      SPRINGCLOUD.springcloud_alibaba_version: 202[3-4].*
+      MYBATIS.mybatis_plus_version: 3.5.*
+      MYBATIS.druid_version: 1.2.*
+      MYBATIS.mysql_connector_version: 8.0.*
+      DUBBO.dubbo_version: 3.3.*
+      SENTINEL.sentinel_version: 1.8.*
+      ROCKETMQ.spring_boot_starter_rocketmq_version: 2.3.*
+
+  # Java 21 + Spring Boot 4 实验档。默认仍使用 java21-boot3；只有显式指定
+  # global.platformId=java21-boot4 时才启用。当前仅承诺 presets/java21-boot4.yaml
+  # 所列组件组合，其他中间件需在纳入 preset 前单独验证。
+  - java: 21
+    id: java21-boot4
+    defaultProfile: false
+    name: Java 21 / Spring Boot 4 (experimental)
+    templateFamily: boot4
+    namespace: jakarta
+    release: 21
+    versions:
+      SPRINGBOOT:
+        springboot_version: 4.0.7
+        lombok_version: 1.18.44
+      SPRINGCLOUD:
+        springcloud_version: 2025.1.2
+        springcloud_alibaba_version: 2025.1.0.0
+        gateway_starter_artifact: spring-cloud-starter-gateway-server-webflux
+        sentinel_webmvc_adapter_artifact: sentinel-spring-webmvc-6x-adapter
+      JWT:
+        jwt_version: 0.12.6
+      MYBATIS:
+        mybatis_spring_boot_version: 4.0.0
+        mybatis_plus_version: 3.5.16
+        mybatis_plus_starter_artifact: mybatis-plus-spring-boot4-starter
+        pagehelper_version: 2.1.0
+        druid_version: 1.2.28
+        druid_starter_artifact: druid-spring-boot-4-starter
+        mysql_connector_version: 9.5.0
+        postgresql_version: 42.7.8
+        oracle_version: 23.9.0.25.07
+        mssql_version: 12.10.2.jre11
+      OPENAPI:
+        springdoc_version: 3.0.3
+    allowOverride:
+      SPRINGBOOT.springboot_version: 4.0.*
+      SPRINGCLOUD.springcloud_version: 2025.1.*
+      MYBATIS.mybatis_plus_version: 3.5.*
+      MYBATIS.druid_version: 1.2.*
+      MYBATIS.mysql_connector_version: 9.*

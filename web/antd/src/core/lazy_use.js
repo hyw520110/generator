@@ -44,7 +44,6 @@ import {
   message,
   notification
 } from 'ant-design-vue'
-// import Viser from 'viser-vue' // Vue 2 only
 
 // ext library
 // import VueCropper from 'vue-cropper' // Vue 2 only

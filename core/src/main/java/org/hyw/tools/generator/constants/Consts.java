@@ -46,8 +46,13 @@ public final class Consts {
 
 	// 上下文变量名
 	public static final String CTX_TABLES = "tables";
+	public static final String CTX_TABLE = "table";
 	public static final String CTX_MODULE_NAME = "moduleName";
 	public static final String CTX_CLASS_NAME = "className";
+	public static final String CTX_ENTITY_NAME = "entityName";
+	public static final String CTX_GLOBAL = "global";
+	public static final String CTX_DATA_SOURCE = "dataSource";
+	public static final String CTX_CONFIG = "config";
 
 	/**
 	 * 模板根目录

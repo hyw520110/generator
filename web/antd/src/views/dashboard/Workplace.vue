@@ -126,17 +126,13 @@
 <script>
 import { timeFix } from '@/utils/util'
 import { mapState } from 'vuex'
-import { PageHeaderWrapper } from '@ant-design-vue/pro-layout'
 import { Radar } from '@/components'
 
 import { getRoleList, getServiceList } from '@/api/manage'
 
-const DataSet = require('@antv/data-set')
-
 export default {
   name: 'Workplace',
   components: {
-    PageHeaderWrapper,
     Radar
   },
   data () {
@@ -210,11 +206,9 @@ export default {
     this.avatar = this.userInfo.avatar
 
     getRoleList().then(res => {
-      // console.log('workplace -> call getRoleList()', res)
     })
 
     getServiceList().then(res => {
-      // console.log('workplace -> call getServiceList()', res)
     })
   },
   mounted () {
@@ -248,15 +242,12 @@ export default {
 
       this.$http.get('/workplace/radar')
         .then(res => {
-          const dv = new DataSet.View().source(res.result)
-          dv.transform({
-            type: 'fold',
-            fields: ['个人', '团队', '部门'],
-            key: 'user',
-            value: 'score'
-          })
-
-          this.radarData = dv.rows
+          const fields = ['个人', '团队', '部门']
+          this.radarData = (res.result || []).flatMap(row => fields.map(field => ({
+            item: row.item,
+            user: field,
+            score: row[field] || 0
+          })))
           this.radarLoading = false
         })
     }

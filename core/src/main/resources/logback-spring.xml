@@ -72,6 +72,11 @@
 	<logger name="org.hibernate.util" level="ERROR" />
 	<logger name="org.hibernate.cfg" level="WARN" />
 
+	<!-- Generator 自身日志（默认 INFO，调试时通过 -Dlog.generator.level=DEBUG 切换） -->
+	<logger name="org.hyw.tools.generator" level="${log.generator.level:-INFO}" />
+	<!-- Druid 连接池告警以下静默 -->
+	<logger name="com.alibaba.druid.pool" level="WARN" />
+
 	<logger name="org.springframework" level="INFO" />
 	<logger name="org.springframework.web" level="INFO" />
 

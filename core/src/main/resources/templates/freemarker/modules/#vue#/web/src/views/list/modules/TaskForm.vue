@@ -70,7 +70,6 @@ export default {
       this.visible = true
       validateFields((errors, values) => {
         if (!errors) {
-          console.log('values', values)
         }
       })
     }

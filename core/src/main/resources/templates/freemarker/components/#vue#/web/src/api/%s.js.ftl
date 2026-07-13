@@ -1,11 +1,44 @@
 /* eslint-disable no-undef */
 import { axios } from '@/utils/request'
 
-const moudulePath = '/${table.beanName!}'
+const modulePath = '/${table.beanName!}'
+const primaryKeyFields = ${table.primaryKeyJsArray}
+const hasPrimaryKey = primaryKeyFields.length > 0
+
+function rejectNoPrimaryKey () {
+  return Promise.reject(new Error('当前表未定义主键，不能执行按主键查询、编辑或删除'))
+}
+
+function buildPrimaryKeyPath (record) {
+  if (!hasPrimaryKey) {
+    return ''
+  }
+  if (record && typeof record === 'object') {
+    return primaryKeyFields.map(key => encodeURIComponent(record[key])).join('/')
+  }
+  return encodeURIComponent(record)
+}
+
+function buildPrimaryKeyPayload (record) {
+  if (!hasPrimaryKey) {
+    return {}
+  }
+  if (primaryKeyFields.length === 1) {
+    return record && typeof record === 'object' ? record[primaryKeyFields[0]] : record
+  }
+  if (record && typeof record === 'object') {
+    return primaryKeyFields.reduce((payload, key) => {
+      payload[key] = record[key]
+      return payload
+    }, {})
+  }
+  return { [primaryKeyFields[0]]: record }
+}
 
 const api = {
-  pageList: moudulePath + '/page',
-  add${table.beanName!}: moudulePath + '/add'
+  pageList: modulePath + '/page',
+  add${table.beanName?cap_first}: modulePath,
+  batchDelete${table.beanName?cap_first}: modulePath + '/batch'
 }
 
 export default api
@@ -18,31 +51,46 @@ export function getList (parameter) {
   })
 }
 
-export function getInfo (<#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>) {
+export function getInfo (record) {
+  if (!hasPrimaryKey) {
+    return rejectNoPrimaryKey()
+  }
   return axios({
-    url: moudulePath + '/' + <#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>,
+    url: modulePath + '/' + buildPrimaryKeyPath(record),
     method: 'get'
   })
 }
-export function add${table.beanName!} (parameter) {
+export function add${table.beanName?cap_first} (parameter) {
   return axios({
-    url: api.add${table.beanName!},
+    url: api.add${table.beanName?cap_first},
     method: 'post',
     data: parameter
   })
 }
-export function edit${table.beanName!} (parameter) {
-  console.log('parameter', parameter)
+export function edit${table.beanName?cap_first} (parameter) {
   return axios({
-    url: moudulePath,
+    url: modulePath,
     method: 'put',
     data: parameter
   })
 }
-export function del${table.beanName!} (<#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>) {
-  console.log('parameter', <#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>)
+export function del${table.beanName?cap_first} (record) {
+  if (!hasPrimaryKey) {
+    return rejectNoPrimaryKey()
+  }
   return axios({
-    url: moudulePath + '/' + <#if table.primarykeyFieldsNames!?length == 0>id<#else>${table.primarykeyFieldsNames!}</#if>,
+    url: modulePath + '/' + buildPrimaryKeyPath(record),
     method: 'delete'
+  })
+}
+
+export function batchDel${table.beanName?cap_first} (records) {
+  if (!hasPrimaryKey) {
+    return rejectNoPrimaryKey()
+  }
+  return axios({
+    url: api.batchDelete${table.beanName?cap_first},
+    method: 'delete',
+    data: records.map(buildPrimaryKeyPayload)
   })
 }

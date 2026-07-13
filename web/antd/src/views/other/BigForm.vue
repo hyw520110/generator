@@ -190,27 +190,22 @@ export default {
     
     const handleForm1Submit = (e) => {
       e.preventDefault()
-      console.log('Form 1 values:', formState1)
     }
     
     const handleForm2Submit = (e) => {
       e.preventDefault()
-      console.log('Form 2 values:', formState2)
     }
     
     const handleForm3Submit = (e) => {
       e.preventDefault()
-      console.log('Form 3 values:', formState3)
     }
     
     const handleForm4Submit = (e) => {
       e.preventDefault()
-      console.log('Form 4 values:', formState4)
     }
     
     const handleForm5Submit = (e) => {
       e.preventDefault()
-      console.log('Form 5 values:', formState5)
     }
     
     return {

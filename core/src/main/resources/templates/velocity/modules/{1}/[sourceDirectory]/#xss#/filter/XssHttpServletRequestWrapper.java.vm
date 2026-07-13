@@ -1,0 +1,68 @@
+package ${packagePath};
+
+import org.springframework.util.StringUtils;
+
+#if($global.javaVersion == '8' || $global.javaVersion == '11')
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+#else
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+#end
+
+/**
+ * XSS过滤处理
+ */
+public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
+
+    public XssHttpServletRequestWrapper(HttpServletRequest request) {
+        super(request);
+    }
+
+    @Override
+    public String[] getParameterValues(String name) {
+        String[] values = super.getParameterValues(name);
+        if (values != null) {
+            int length = values.length;
+            String[] escapseValues = new String[length];
+            for (int i = 0; i < length; i++) {
+                // 防xss攻击和过滤前后空格
+                escapseValues[i] = cleanXSS(values[i]).trim();
+            }
+            return escapseValues;
+        }
+        return super.getParameterValues(name);
+    }
+
+    @Override
+    public String getParameter(String name) {
+        String value = super.getParameter(name);
+        if (!StringUtils.hasText(value)) {
+            return value;
+        }
+        return cleanXSS(value).trim();
+    }
+
+    @Override
+    public String getHeader(String name) {
+        String value = super.getHeader(name);
+        if (!StringUtils.hasText(value)) {
+            return value;
+        }
+        return cleanXSS(value).trim();
+    }
+
+    private String cleanXSS(String value) {
+        if (!StringUtils.hasText(value)) {
+            return value;
+        }
+        // 这里只是做个简单示例，可替换成 Jsoup 等专用工具或 Apache Commons Text
+        value = value.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+        value = value.replaceAll("\\(", "&#40;").replaceAll("\\)", "&#41;");
+        value = value.replaceAll("'", "&#39;");
+        value = value.replaceAll("eval\\((.*)\\)", "");
+        value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']", "\"\"");
+        value = value.replaceAll("script", "");
+        return value;
+    }
+}

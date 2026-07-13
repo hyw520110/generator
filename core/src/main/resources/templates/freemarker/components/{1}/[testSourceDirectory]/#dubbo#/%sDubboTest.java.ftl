@@ -2,15 +2,12 @@
 package ${dubboPackage!};
 
 import org.apache.dubbo.config.annotation.Reference;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import ${rootPackage!}.${projectName!}<#if moduleName?has_content>.${moduleName!}</#if>.Booter;
 import ${servicePackage!}.${table.beanName!}Service;
 
-@RunWith(SpringRunner.class)
 //@ContextConfiguration or @SpringBootTest(classes=Booter.class)
 @SpringBootTest(classes=Booter.class)
 public class ${table.beanName!}DubboTest {

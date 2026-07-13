@@ -31,6 +31,7 @@ import org.hyw.tools.generator.constants.ValidationConstants;
 import org.hyw.tools.generator.enums.Component;
 import org.hyw.tools.generator.enums.ComponentGroup;
 import org.hyw.tools.generator.enums.ExportFormat;
+import org.hyw.tools.generator.enums.JavaVersion;
 import org.hyw.tools.generator.enums.db.DBType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,8 @@ public class CmdGenerator {
 	private static final String ARG_DB_NAME = "--db-name";
 	private static final String ARG_QUICK = "--quick";
 	private static final String ARG_HELP = "--help";
+	private static final String ARG_SQL_DIR = "--sql-dir";
+	private static final String ARG_CONFIG = "--config";
 
 	public static void main(String[] args) {
 		Map<String, String> argMap = parseArgs(args);
@@ -56,13 +59,17 @@ public class CmdGenerator {
 		boolean quickMode = argMap.containsKey(ARG_QUICK);
 
 		try (Scanner scanner = new Scanner(System.in)) {
-			Generator generator = Generator.getInstance();
+			Generator generator = loadGenerator(argMap);
 
 			if (!quickMode)
 				displayWelcomeMessage();
 
 			// 1. 初始化数据源 (第一步，所有操作的前提)
 			DataSourceConf ds = generator.getDataSource();
+			if (argMap.containsKey(ARG_SQL_DIR)) {
+				ds.setSqlPath(argMap.get(ARG_SQL_DIR));
+				ds.setSourceType("SQL_FILE");
+			}
 			if (quickMode)
 				applyCommandLineArgsToDataSource(ds, argMap);
 			initDataSourceConf(ds, scanner, argMap, quickMode);
@@ -80,10 +87,24 @@ public class CmdGenerator {
 				operationLoop(generator, scanner);
 			}
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.error("程序运行异常:", e);
 			System.exit(1);
 		}
+	}
+
+	private static Generator loadGenerator(Map<String, String> argMap) {
+		String configPath = argMap.get(ARG_CONFIG);
+		if (StringUtils.isBlank(configPath)) {
+			return Generator.getInstance();
+		}
+		File configFile = new File(configPath).getAbsoluteFile();
+		Generator loaded = Generator.loadFrom(configFile);
+		if (loaded == null) {
+			throw new IllegalArgumentException("无法加载配置文件: " + configFile);
+		}
+		logger.info("使用配置文件: {}", configFile);
+		return loaded;
 	}
 
 	// 使用BufferedReader替代Scanner解决交互式输入问题
@@ -138,6 +159,10 @@ public class CmdGenerator {
 		global.setFileOverride(
 				Boolean.parseBoolean(ask(scanner, "是否覆盖已有文件", ValueType.REQUIRE_SINGLE, "true", "false")));
 		global.setDescription(ask(scanner, "项目描述", ValueType.NOT_REQUIRE_SINGLE, global.getDescription()));
+		String javaVersions = Arrays.toString(Arrays.stream(JavaVersion.values())
+				.map(v -> String.valueOf(v.getVersion()))
+				.toArray(String[]::new));
+		global.setJavaVersion(ask(scanner, "Java版本" + javaVersions, ValueType.REQUIRE_SINGLE, global.getJavaVersion()));
 
 		String modules = ask(scanner, "工程模块(逗号分隔)", ValueType.REQUIRE_MULTIPLE, String.join(",", global.getModules()));
 		global.setModules(modules.split(","));
@@ -146,6 +171,10 @@ public class CmdGenerator {
 
 	private static void initDataSourceConf(DataSourceConf ds, Scanner scanner, Map<String, String> argMap,
 			boolean quickMode) throws SQLException {
+		if ("SQL_FILE".equalsIgnoreCase(ds.getSourceType())) {
+			System.out.println("当前为 SQL_FILE 模式，跳过数据库连接配置...");
+			return;
+		}
 		if (quickMode) {
 			if (StringUtils.isBlank(ds.getPassword())) {
 				System.err.println("错误：快速模式必须提供密码！使用 --db-password 参数");
@@ -250,7 +279,7 @@ public class CmdGenerator {
 			socket.connect(new java.net.InetSocketAddress(host, port), 3000);
 			socket.close();
 			return true;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			return false;
 		}
 	}
@@ -341,7 +370,7 @@ public class CmdGenerator {
 					}
 				}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.error("扫描 SQL 失败", e);
 		}
 		return sqlFiles;
@@ -353,8 +382,8 @@ public class CmdGenerator {
 			long start = System.currentTimeMillis();
 			generator.execute();
 			System.out.println("\n[完成] 耗时：" + (System.currentTimeMillis() - start) + "ms");
-		} catch (Exception e) {
-			logger.error("代码生成失败:", e);
+		} catch (Throwable e) {
+			throw new IllegalStateException("代码生成失败", e);
 		}
 	}
 
@@ -364,7 +393,11 @@ public class CmdGenerator {
 			if (exportFormat == null) {
 				exportFormat = ExportFormat.WORD;
 			}
-			String defaultName = generator.getDataSource().getDbName() + "." + exportFormat.getExtension();
+			String dbName = generator.getDataSource().getDbName();
+			if (StringUtils.isBlank(dbName)) {
+				dbName = "project_docs";
+			}
+			String defaultName = dbName + "." + exportFormat.getExtension();
 			String fileName = ask(scanner, "保存文件名", ValueType.REQUIRE_SINGLE, defaultName);
 			File outputFile = new File(generator.getGlobal().getOutputDir(), fileName);
 
@@ -373,7 +406,7 @@ public class CmdGenerator {
 			generator.generateDoc(outputFile, format, null);
 			System.out.println("\n[完成] 文档已生成至: " + outputFile.getAbsolutePath());
 			System.out.println("耗时：" + (System.currentTimeMillis() - start) + "ms");
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.error("导出文档失败:", e);
 		}
 	}
@@ -406,7 +439,8 @@ public class CmdGenerator {
 	}
 
 	private static void printHelp() {
-		System.out.println("用法: ./run.sh --quick --db-password <password>");
+		System.out.println("用法: ./run.sh --quick [--config <yaml>] [--sql-dir <目录>] [--db-password <密码>]");
+		System.out.println("默认配置生成后台单体；领域服务可使用 --config ../core/src/main/resources/presets/java21-boot4.yaml");
 	}
 
 	private static String ask(Scanner scanner, String tip, ValueType valType, String... defaults) {

@@ -2,11 +2,13 @@ package ${dtoPackage};
 
 import java.io.Serializable;
 #foreach($pkg in $table.importPackages)
-#if($pkg && !$pkg.contains("jakarta.validation") && !$pkg.contains("org.apache.commons"))
+#if($pkg && !$pkg.contains($validationPackage) && !$pkg.contains("org.apache.commons"))
 import ${pkg};
 #end
 #end
 
+import ${validationPackage}.constraints.NotBlank;
+import ${validationPackage}.constraints.NotNull;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 #parse('comments/comment.vm')
@@ -27,6 +29,8 @@ public class ${dtoName} implements Serializable {
 
 #end
 
+#if(!$field.isPrimarykey() && !$field.isNullAble())#if($field.propertyType == "String")	@NotBlank#else	@NotNull#end
+#end
 	@Schema(name = "${field.propertyName}", description = #if($field.comment)"${field.comment}"#else"${field.name}"#end)
     private ${field.fieldType.type} ${field.propertyName};
     

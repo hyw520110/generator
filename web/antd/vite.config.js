@@ -5,11 +5,22 @@ import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 import path from 'path'
 
+function vendorChunk (id) {
+  if (!id.includes('node_modules')) return undefined
+  if (id.includes('/vue/') || id.includes('/vue-router/') || id.includes('/pinia/') || id.includes('/vue-i18n/')) {
+    return 'vue'
+  }
+  if (id.includes('/@ant-design/icons-vue/')) return 'antd-icons'
+  if (id.includes('/ant-design-vue/')) return 'antd'
+  return 'vendor'
+}
+
 export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
     Components({
+      globs: ['src/components/**/*.vue', '!src/components/Charts/Trend.vue'],
       resolvers: [
         AntDesignVueResolver({
           importStyle: false, // Ant Design Vue 4.x 默认使用 CSS-in-JS
@@ -52,6 +63,14 @@ export default defineConfig({
     ],
     exclude: ['webpack-theme-color-replacer'],
   },
+  build: {
+    chunkSizeWarningLimit: 2500,
+    rollupOptions: {
+      output: {
+        manualChunks: vendorChunk
+      }
+    }
+  },
   css: {
     preprocessorOptions: {
       less: {
@@ -63,6 +82,11 @@ export default defineConfig({
     port: 9000,
     strictPort: true,
     proxy: {
+      '/api': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      },
       '/v1': {
         target: 'http://localhost:8081',
         changeOrigin: true

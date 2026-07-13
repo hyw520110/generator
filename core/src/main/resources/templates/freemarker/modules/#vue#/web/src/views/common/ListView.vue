@@ -125,23 +125,19 @@ export default {
   },
   methods: {
     handleEdit (record) {
-      console.log(record)
       this.$refs.createModal.edit(record)
     },
     handleEditOk (values) {
-      console.log('handleEditOk', values)
       editRole(values.roleId, { roleName: values.roleName, roleDesc: values.roleDesc }).then(res => {
         this.$refs.table.refresh()
       })
     },
     handleDel (record) {
-      console.log(record)
       delRole(record.roleId).then(res => {
         this.$refs.table.refresh()
       })
     },
     handleAddOk (values) {
-      console.log('valuesss', values)
       addRole(values).then(res => {
         this.$message.info('添加成功')
         this.$refs.table.refresh()

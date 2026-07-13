@@ -1,11 +1,11 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/media'
+const modulePath = '/v1/media'
 
 const api = {
-  mediaList: moudulePath + '/page',
-  mediaAll: moudulePath + '/all',
-  addMedia: moudulePath
+  mediaList: modulePath + '/page',
+  mediaAll: modulePath + '/all',
+  addMedia: modulePath
 }
 
 export default api
@@ -28,7 +28,7 @@ export function getMediaAll (parameter) {
 
 export function getMediaInfo (id) {
   return axios({
-    url: moudulePath + '/' + id,
+    url: modulePath + '/' + id,
     method: 'get'
   })
 }
@@ -42,18 +42,16 @@ export function addMedia (parameter) {
 }
 
 export function editMedia (parameter) {
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath,
+    url: modulePath,
     method: 'put',
     params: parameter
   })
 }
 
 export function delMedia (id) {
-  console.log('id', id)
   return axios({
-    url: moudulePath + '/' + id,
+    url: modulePath + '/' + id,
     method: 'delete'
   })
 }

@@ -9,12 +9,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hyw.tools.generator.constants.Consts;
 import org.hyw.tools.generator.enums.Component;
+import org.hyw.tools.generator.enums.Feature;
 import org.hyw.tools.generator.enums.Naming;
 import org.hyw.tools.generator.enums.ProjectBuilder;
+import org.hyw.tools.generator.enums.SecurityScheme;
 import org.hyw.tools.generator.enums.EngineType;
 import org.hyw.tools.generator.utils.StringUtils;
 import org.slf4j.Logger;
@@ -57,6 +59,16 @@ public class GlobalConf extends BaseBean {
 	private boolean openDir = true;
 
 	/**
+	 * 是否启用元数据缓存（表结构稳定时启用可加速重复生成；频繁改表结构时建议关闭）
+	 */
+	private boolean enableCache = false;
+
+	/**
+	 * 是否并行渲染表（多表场景下显著提速；表内组件仍按依赖顺序串行）
+	 */
+	private boolean parallelTables = true;
+
+	/**
 	 * 父包名,如果为空，将下面子包名必须写全部， 否则就只需写子包名
 	 */
 	private String rootPackage = "com.hyw";
@@ -82,6 +94,8 @@ public class GlobalConf extends BaseBean {
 	 * 组件配置
 	 */
 	private Component[] components;
+	private Feature[] features;
+	private SecurityScheme security;
 
 	/**
 	 * 需要包含的表名（与exclude二选一配置）
@@ -133,6 +147,31 @@ public class GlobalConf extends BaseBean {
 	 * jdk版本
 	 */
 	private String javaVersion;
+
+	/**
+	 * 兼容性矩阵解析后的平台标识
+	 */
+	private String platformId;
+
+	/**
+	 * 模板代际，如 boot2 / boot3 / boot4
+	 */
+	private String templateFamily;
+
+	/**
+	 * Java EE / Jakarta EE 命名空间，如 javax / jakarta
+	 */
+	private String namespace;
+
+	/**
+	 * 编译目标 release
+	 */
+	private String bytecodeRelease;
+
+	/**
+	 * 兼容性矩阵派生出的模板变量
+	 */
+	private Map<String, Object> platformVariables;
 
 	/**
 	 * 生成文件的编码
@@ -208,14 +247,28 @@ public class GlobalConf extends BaseBean {
 	}
 
 	/**
-	 * 获取项目名获取输出路径的子目录名
-	 * 
-	 * @author: heyiwu
-	 * @return
+	 * 获取项目名称
+	 */
+	private String projectName;
+
+	/**
+	 * 获取项目名称
 	 */
 	public String getProjectName() {
-		File file = new File(outputDir);
-		return file.getName();
+		if (StringUtils.isBlank(projectName)) {
+			// 如果没有显式设置 projectName，则默认使用输出目录名（去除临时后缀）
+			File file = new File(outputDir);
+			String name = file.getName();
+			if (name.contains(".tmp.")) {
+				name = name.substring(0, name.indexOf(".tmp."));
+			}
+			return name;
+		}
+		return projectName;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
 	}
 
 	public boolean isDelOutputDir() {
@@ -242,12 +295,45 @@ public class GlobalConf extends BaseBean {
 		this.openDir = openDir;
 	}
 
+	public boolean isEnableCache() {
+		return enableCache;
+	}
+
+	public void setEnableCache(boolean enableCache) {
+		this.enableCache = enableCache;
+	}
+
+	public boolean isParallelTables() {
+		return parallelTables;
+	}
+
+	public void setParallelTables(boolean parallelTables) {
+		this.parallelTables = parallelTables;
+	}
+
+	public boolean isDryRun() {
+		return dryRun;
+	}
+
+	public void setDryRun(boolean dryRun) {
+		this.dryRun = dryRun;
+	}
+
 	public String getAuthor() {
 		return author;
 	}
 
 	public void setAuthor(String author) {
 		this.author = author;
+	}
+
+	
+	public Feature[] getFeatures() {
+		return features;
+	}
+
+	public void setFeatures(Feature[] features) {
+		this.features = features;
 	}
 
 	public Component[] getComponents() {
@@ -268,6 +354,18 @@ public class GlobalConf extends BaseBean {
 	}
 	public void setComponents(Component[] components) {
 		this.components = components;
+	}
+
+	public SecurityScheme getSecurity() {
+		return security;
+	}
+
+	public void setSecurity(SecurityScheme security) {
+		this.security = security;
+	}
+
+	public void setSecurity(String security) {
+		this.security = SecurityScheme.from(security);
 	}
 
 	public String[] getModules() {
@@ -508,6 +606,46 @@ public class GlobalConf extends BaseBean {
 
 	public void setJavaVersion(String javaVersion) {
 		this.javaVersion = javaVersion;
+	}
+
+	public String getPlatformId() {
+		return platformId;
+	}
+
+	public void setPlatformId(String platformId) {
+		this.platformId = platformId;
+	}
+
+	public String getTemplateFamily() {
+		return templateFamily;
+	}
+
+	public void setTemplateFamily(String templateFamily) {
+		this.templateFamily = templateFamily;
+	}
+
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
+
+	public String getBytecodeRelease() {
+		return bytecodeRelease;
+	}
+
+	public void setBytecodeRelease(String bytecodeRelease) {
+		this.bytecodeRelease = bytecodeRelease;
+	}
+
+	public Map<String, Object> getPlatformVariables() {
+		return platformVariables;
+	}
+
+	public void setPlatformVariables(Map<String, Object> platformVariables) {
+		this.platformVariables = platformVariables;
 	}
 
 	public String[] getResources() {

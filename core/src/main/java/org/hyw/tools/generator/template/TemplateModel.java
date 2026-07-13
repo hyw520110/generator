@@ -61,6 +61,14 @@ public class TemplateModel {
         return components != null && components.contains(component);
     }
 
+    public boolean hasFeature(org.hyw.tools.generator.enums.Feature feature) {
+        if (config == null || config.getFeatures() == null) return false;
+        for (org.hyw.tools.generator.enums.Feature f : config.getFeatures()) {
+            if (f == feature) return true;
+        }
+        return false;
+    }
+
     public boolean isMybatis() { return hasComponent(Component.MYBATIS); }
     public boolean isJpa() { return hasComponent(Component.JPA); }
 

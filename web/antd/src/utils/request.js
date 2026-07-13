@@ -5,8 +5,27 @@ import notification from 'ant-design-vue/es/notification'
 import { VueAxios } from './axios'
 import { ACCESS_TOKEN } from '@/store/mutation-types'
 
-// 开发环境使用代理，生产环境使用绝对路径
-const baseHost = import.meta.env.DEV ? '' : 'http://localhost:8080'
+// 开发环境使用相对路径，通过 Vite 代理转发；生产环境使用完整 URL
+const isDev = import.meta.env.DEV
+const baseHost = isDev ? '/api' : (import.meta.env.VITE_API_BASE_URL || '')
+const generatorClientIdKey = 'GENERATOR_CLIENT_ID'
+
+const createClientId = () => {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID()
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+const getGeneratorClientId = () => {
+  let clientId = window.localStorage.getItem(generatorClientIdKey)
+  if (!clientId) {
+    clientId = createClientId()
+    window.localStorage.setItem(generatorClientIdKey, clientId)
+  }
+  document.cookie = `${generatorClientIdKey}=${encodeURIComponent(clientId)}; path=/; max-age=31536000; SameSite=Lax`
+  return clientId
+}
 
 // 创建 axios 实例
 const request = axios.create({
@@ -52,6 +71,7 @@ request.interceptors.request.use(config => {
   if (token) {
     config.headers['X-USER-TOKEN'] = token
   }
+  config.headers['X-Generator-Client-Id'] = getGeneratorClientId()
   return config
 }, errorHandler)
 

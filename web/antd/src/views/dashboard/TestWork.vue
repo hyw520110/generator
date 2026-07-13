@@ -71,24 +71,18 @@ export default {
     
     const handleCloseCurrentTab = () => {
       // MultiTab functionality would need to be refactored for Vue 3
-      console.log('close current tab')
     }
     
     const handleOpenTab = () => {
-      console.log('open tab: /features/task')
     }
     
     const handleOpenLoading = () => {
-      console.log('show loading')
       setTimeout(() => {
-        console.log('hide loading')
       }, 5000)
     }
     
     const handleOpenLoadingCustomTip = () => {
-      console.log('show loading with custom tip')
       setTimeout(() => {
-        console.log('hide loading')
       }, 5000)
     }
     
@@ -97,7 +91,6 @@ export default {
       if (!formState.tabName) {
         return
       }
-      console.log('rename tab:', route.path, formState.tabName)
       visible.value = false
     }
     
@@ -110,7 +103,6 @@ export default {
       if (!formState2.tabName) {
         return
       }
-      console.log('rename tab:', formState2.tabKey, formState2.tabName)
       visible2.value = false
     }
     

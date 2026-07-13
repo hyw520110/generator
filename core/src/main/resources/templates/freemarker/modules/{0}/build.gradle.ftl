@@ -1,6 +1,5 @@
 <#if "GRADLE"=="${global.projectBuilder}">
 apply plugin: 'java'
-apply plugin: 'maven'
 apply plugin: 'eclipse'
 
 group = '${rootPackage!}'
@@ -8,8 +7,8 @@ version = '${version!}'
 
 description = ''
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = JavaVersion.VERSION_${(bytecodeRelease!javaVersion!)?replace(".", "_")}
+targetCompatibility = JavaVersion.VERSION_${(bytecodeRelease!javaVersion!)?replace(".", "_")}
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
@@ -17,15 +16,10 @@ tasks.withType(JavaCompile) {
 
 
 repositories {
-
-     maven { url "http://dev.maven.com:8081/nexus/content/groups/public" }
-     maven { url "http://dev.maven.com:8081/nexus/content/repositories/releases/" }
-     maven { url "http://dev.maven.com:8081/nexus/content/repositories/snapshots/" }
-     maven { url "http://dev.maven.com:8081/nexus/content/repositories/thirdparty/" }
-     maven { url "http://repo.maven.apache.org/maven2" }
+     mavenCentral()
 }
 dependencies {
-    compile group: 'commons-lang', name: 'commons-lang', version:'2.4'
-    testCompile group: 'junit', name: 'junit', version:'4.12'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version:'3.14.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version:'5.10.2'
 }
 </#if>

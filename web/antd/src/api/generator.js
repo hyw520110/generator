@@ -1,19 +1,22 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/gen'
+const modulePath = '/v1/gen'
+/** 全量代码生成允许的最长等待时间（10 分钟）。 */
+const CODE_GENERATION_TIMEOUT_MS = 10 * 60 * 1000
 
 const api = {
-  tableList: moudulePath + '/tables',
-  databases: moudulePath + '/databases',
-  step1: moudulePath + '/step1',
-  step2: moudulePath + '/step2',
-  genCode: moudulePath + '/exec',
-  genDoc: moudulePath + '/doc',
-  downloads: moudulePath + '/downloads',
-  download: moudulePath + '/download',
-  relations: moudulePath + '/relations',
-  validateOutputDir: moudulePath + '/validateOutputDir',
-  config: moudulePath + '/config'
+  tableList: modulePath + '/tables',
+  sqlFiles: modulePath + '/sql-files',
+  databases: modulePath + '/databases',
+  step1: modulePath + '/step1',
+  step2: modulePath + '/step2',
+  genCode: modulePath + '/exec',
+  genDoc: modulePath + '/doc',
+  downloads: modulePath + '/downloads',
+  download: modulePath + '/download',
+  relations: modulePath + '/relations',
+  validateOutputDir: modulePath + '/validateOutputDir',
+  config: modulePath + '/config'
 }
 
 export function getTableList (parameter) {
@@ -22,6 +25,17 @@ export function getTableList (parameter) {
     method: 'post',
     params: parameter,
     timeout: 10000
+  })
+}
+
+export function uploadSqlFiles (files) {
+  const data = new FormData()
+  files.forEach(file => data.append('files', file))
+  return axios({
+    url: api.sqlFiles,
+    method: 'post',
+    data,
+    timeout: 120000
   })
 }
 
@@ -54,7 +68,8 @@ export function genCode (parameter) {
   return axios({
     url: api.genCode,
     method: 'post',
-    params: parameter
+    params: parameter,
+    timeout: CODE_GENERATION_TIMEOUT_MS
   })
 }
 

@@ -1,7 +1,9 @@
 #生成器配置
 #数据源配置
 dataSource:
-    driverClassName: com.mysql.jdbc.Driver
+    sourceType: SQL_FILE
+    sqlPath: ../sql
+    driverClassName: com.mysql.cj.jdbc.Driver
     #明文密码
     url: jdbc:mysql://127.0.0.1:3306/db_20260317202850?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
     username: root
@@ -11,11 +13,19 @@ dataSource:
     #filters: config
     # 明文密码时值留空或注释;
     #conProperties: "druid.log.stmt.executableSql=true;druid.stat.logSlowSql=true;druid.stat.slowSqlMillis=5000;config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKvoVokPjMkBOPtHoWk9WC2FWa1Uq+thjE3fvYY6+BB0dn4SZ7NLOGLR+6l1Qc/XBPBBaiy33MlSUjvkS4cd+vUCAwEAAQ=="
+    # Druid 连接池高级参数（DataSourceConf 继承 DruidDataSource，setter 直接对应）
+    # 大库元数据查询并发场景下推荐显式配置以防连接枯竭
+    #initialSize: 5
+    #minIdle: 5
+    #maxActive: 50
+    #maxWait: 60000
+    #timeBetweenEvictionRunsMillis: 60000
+    #minEvictableIdleTimeMillis: 300000
 
 #全局配置
 global:
     #生成文件的输出目录(注意此目录需要有写权限),最后一个子目录为项目名,如:/output/test，项目名为test
-    outputDir: ./demo
+    outputDir: output
     # PDF 中文字体配置
     # 格式：目录路径:文件名模式（支持 * 通配符），多项用逗号分隔
     # 系统按配置顺序依次查找，返回第一个匹配的字体文件
@@ -25,23 +35,25 @@ global:
     #项目描述
     description: 代码生成器
     #是否删除输出目录,默认为false，注意：修改需谨慎！ 
-    delOutputDir: false
+    delOutputDir: true
     #是否覆盖已有文件      
     fileOverride: true
     #文件生成后是否打开输出目录
     openDir: false
     #父包名
     rootPackage: com.hyw.generator
-    #工程模块配置:单工程配置空；多模块工程配置模块名数组，如：['api','app'] 
-    modules: ['api','app'] 
+    # 默认生成后台管理后端单体工程；前台领域服务使用 presets/java21-boot4.yaml 的 api/service 两模块配置。
+    modules: ['server'] 
     #需要包含的表名（exclude优先级高）示例：[ 'user','order'] 
     include: 
     #需要排除的表名
     exclude: 
     #表前缀
     tablePrefix: ['cw_','batch_','tb_']
-    #支持组件见枚举类Component，可选组件：SENTINEL,SKYWALKING
-    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,SPRINGCLOUD,SWAGGER2,REDIS,JWT,SHIRO,VUE,SENTINEL,SKYWALKING]
+    # 后台单体不生成 Gateway；网关属于前台多服务架构的独立基础设施工程。
+    components: [MYBATIS,SPRINGMVC,SPRINGBOOT,REDIS,SPRINGSECURITY,VUE,OPENAPI]
+    features: []
+    security: SPRING_SECURITY_OAUTH2
     #生成构建脚本/工程构建工具,可选值MAVEN:生成pom.xml、GRADLE:生成build.gradle、不配置:不生成构建脚本
     projectBuilder: MAVEN
     #工程默认版本号
@@ -50,8 +62,9 @@ global:
     author: heyw
     #版权
     copyright: hyw Copyright (c) 2017-2020 All Rights Reserved.
-    #jdk版本
-    javaVersion: 17
+    #jdk版本：支持 8/11/17/21。生成器会根据 compatibility.yml 自动匹配框架和组件版本。
+    javaVersion: 21
+    platformId: java21-boot4
     #表名、字段名、是否使用下划线命名
     separators: [_,-]
     #是否大写命名
@@ -69,7 +82,7 @@ global:
     #资源文件目录
     resourceDirectory: src/main/resources
     #非模板文件排除渲染 
-    resources: [ 'css','dll','exe','eot','png','jpg','gif','swf','svg','ttf','woff','woff2','eot','min.js','min.css']
+    resources: [ 'css','dll','exe','eot','png','jpg','jpeg','gif','webp','ico','swf','svg','ttf','woff','woff2','map','min.js','min.css']
     #模板引擎类型，可选值：freemarker, velocity
     templateEngine: freemarker
 # 组件配置    
@@ -111,7 +124,7 @@ components:
   JWT:
     jwt_version: 0.12.6
   SHIRO:
-    shiro_version: 2.0.2
+    shiro_version: 1.13.0
   SWAGGER2: 
     title: "RESTful API"   
     desc: "Swagger2构建RESTful API"
@@ -121,9 +134,8 @@ components:
     zipkin_version: '1.0.2'
     zipkin_baseUrl: http://zipkin-server:9411
   MYBATIS: 
-    # TODO mapperType改为sqlType: xml(XML mapper文件) / annotation(SQL注解)
-    #sqlType: xml
-    mapperType: plus
+    # 持久层生成模式：xml / annotation / plus
+    sqlType: plus
     #版本号配置
     mybatis_spring_boot_version: 3.0.3
     mybatis_plus_version: 3.5.8
@@ -168,6 +180,13 @@ components:
 
   JPA: 
     version: 1.5.6.RELEASE
+
+# 用户小版本覆盖配置，按组件分组；必须符合 compatibility.yml 中 allowOverride 规则。
+#versionOverrides:
+#  SPRINGBOOT:
+#    springboot_version: 3.2.13
+#  MYBATIS:
+#    mybatis_plus_version: 3.5.8
     
   SPRINGMVC: 
     controllerName: '%sController'
@@ -176,7 +195,7 @@ components:
     rest: true
     crud: true
     superControllerClass: BaseController
-    json_type: fastjson
+    json_type: jackson
     jsonp: false
   THYMELEAF: 
     suffix: .html

@@ -132,14 +132,12 @@ export default {
     const handleSubmit = async () => {
       try {
         await formRef.value.validate()
-        console.log('Received values of form: ', formState)
       } catch (err) {
         // validation failed
       }
     }
     
     const loadEditInfo = (data) => {
-      console.log(`将加载信息到表单`)
       new Promise((resolve) => {
         setTimeout(resolve, 1500)
       }).then(() => {
@@ -148,7 +146,6 @@ export default {
         formState.status = data.status
         formState.description = data.description
         formState.updatedAt = moment(data.updatedAt)
-        console.log('formData', formState)
       })
     }
     

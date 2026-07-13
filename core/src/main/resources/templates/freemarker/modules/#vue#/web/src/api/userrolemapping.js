@@ -1,11 +1,11 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/userRoleMapping'
+const modulePath = '/v1/userRoleMapping'
 
 const api = {
-  userrolemappingList: moudulePath + '/page',
-  userrolemappingAll: moudulePath + '/all',
-  addUserRoleMapping: moudulePath
+  userrolemappingList: modulePath + '/page',
+  userrolemappingAll: modulePath + '/all',
+  addUserRoleMapping: modulePath
 }
 
 export default api
@@ -28,7 +28,7 @@ export function getUserRoleMappingAll (parameter) {
 
 export function getUserRoleMappingInfo (id) {
   return axios({
-    url: moudulePath + '/' + id,
+    url: modulePath + '/' + id,
     method: 'get'
   })
 }
@@ -42,18 +42,16 @@ export function addUserRoleMapping (parameter) {
 }
 
 export function editUserRoleMapping (parameter) {
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath,
+    url: modulePath,
     method: 'put',
     params: parameter
   })
 }
 
 export function delUserRoleMapping (id) {
-  console.log('id', id)
   return axios({
-    url: moudulePath + '/' + id,
+    url: modulePath + '/' + id,
     method: 'delete'
   })
 }

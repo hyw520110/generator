@@ -13,26 +13,34 @@
 	<artifactId>${projectName!}-${moduleName!}</artifactId>
 	<version>${version!}</version>
 	<packaging>jar</packaging>
-	<properties>
-		<maven.compiler.source>${javaVersion!}</maven.compiler.source>
-		<maven.compiler.target>${javaVersion!}</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<properties>
+			<maven.compiler.source>${javaVersion!}</maven.compiler.source>
+			<maven.compiler.target>${javaVersion!}</maven.compiler.target>
+			<maven.compiler.release>${bytecodeRelease!javaVersion!}</maven.compiler.release>
+			<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
+	<#if (sqlType!'xml') == "plus">
 		<dependency>
-		 	<groupId>commons-lang</groupId>
-		  	<artifactId>commons-lang</artifactId>
-		  	<version>2.4</version>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-spring</artifactId>
+			<version>${mybatis_plus_version!'3.5.16'}</version>
+		</dependency>
+	</#if>
+		<dependency>
+		 	<groupId>org.apache.commons</groupId>
+		  	<artifactId>commons-lang3</artifactId>
+		  	<version>${commons_lang3_version!'3.14.0'}</version>
 		</dependency>
 		<dependency>
-			    <groupId>org.hibernate</groupId>
+			    <groupId>org.hibernate.validator</groupId>
 			    <artifactId>hibernate-validator</artifactId>
-			    <#if springboot?has_content><version>8.0.1.Final</version></#if>
+			    <#if !(SPRINGBOOT?? && SPRINGBOOT)><version>6.2.5.Final</version></#if>
 			</dependency>
 			<dependency>
-			    <groupId>jakarta.validation</groupId>
-			    <artifactId>jakarta.validation-api</artifactId>
-			</dependency><#if springboot && !jpa?has_content>		
+			    <groupId>${validationApiGroupId}</groupId>
+			    <artifactId>${validationApiArtifactId}</artifactId>
+			</dependency><#if JPA?? && JPA>		
 		<dependency>
 		  <groupId>org.springframework.boot</groupId>
 		  <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -49,7 +57,8 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
-<#if mapperType?? && mapperType == "plus">
+<#if MYBATIS?? && MYBATIS>
+<#if sqlType?? && sqlType == "plus">
 		<dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-core</artifactId>
@@ -58,27 +67,27 @@
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-extension</artifactId>
 		</dependency>
+</#if>
 </#if>				
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.10.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<!-- 编译插件：设置编译版本、编码 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
-				<configuration>
-					<source><#noparse>${maven.compiler.source}</#noparse></source>
-					<target><#noparse>${maven.compiler.target}</#noparse></target>
-					<encoding><#noparse>${project.build.sourceEncoding}</#noparse></encoding>
-				</configuration>
-			</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.13.0</version>
+					<configuration>
+						<release><#noparse>${maven.compiler.release}</#noparse></release>
+						<encoding><#noparse>${project.build.sourceEncoding}</#noparse></encoding>
+					</configuration>
+				</plugin>
 			<!-- 源码jar插件 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -95,21 +104,6 @@
 			</plugin>
 		</plugins>
 	</build>
-	<!-- 发布节点 -->
-	<distributionManagement>
-		<!-- mvn deploy -Pprod 发布正式版本到nexus私服 -->
-		<repository>
-			<id>prod</id>
-			<name>dev-nexus-release</name>
-			<url>http://dev.maven.com:8081/nexus/content/repositories/releases/</url>
-		</repository>
-		<!-- mvn deploy 发布默认快照版本到nexus私服 -->
-		<snapshotRepository>
-			<id>dev</id>
-			<name>dev-nexus-snapshot</name>
-			<url>http://dev.maven.com:8081/nexus/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 	<profiles>
 		<!-- 生产环境,调用开发环境配置,默认激活 -->
 		<profile>

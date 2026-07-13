@@ -48,6 +48,17 @@ public class DataSourceConf extends DruidDataSource {
 	private String filter;
 
 	private String conProperties;
+	
+	/**
+	 * 元数据来源类型：JDBC (默认) 或 SQL_FILE
+	 */
+	private String sourceType = "JDBC";
+	
+	/**
+	 * 当 sourceType 为 SQL_FILE 时生效，指定 sql 文件或目录
+	 */
+	private String sqlPath;
+
 	/**
 	 * 当前选择的数据库名（独立于URL，用于动态切换数据库）
 	 */
@@ -245,6 +256,22 @@ public class DataSourceConf extends DruidDataSource {
 	public void setConProperties(String connectionProperties) {
 		this.conProperties = connectionProperties;
 		super.setConnectionProperties(connectionProperties);
+	}
+
+	public String getSourceType() {
+		return sourceType;
+	}
+
+	public void setSourceType(String sourceType) {
+		this.sourceType = sourceType;
+	}
+
+	public String getSqlPath() {
+		return sqlPath;
+	}
+
+	public void setSqlPath(String sqlPath) {
+		this.sqlPath = sqlPath;
 	}
 
 	public void setIpAndPort(String ipAndPort) {
@@ -511,7 +538,7 @@ public class DataSourceConf extends DruidDataSource {
 						logger.warn("找不到 SQL 文件: {}", fileName);
 						continue;
 					}
-					String sqlContent = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+					String sqlContent = new String(org.apache.commons.io.IOUtils.toByteArray(is), java.nio.charset.StandardCharsets.UTF_8);
 					// 执行 SQL 脚本（可能包含多个语句）
 					Statement st = conn.createStatement();
 					// 分割 SQL 语句（以分号分隔）

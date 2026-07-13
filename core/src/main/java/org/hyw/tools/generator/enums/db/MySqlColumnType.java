@@ -1,6 +1,6 @@
 package org.hyw.tools.generator.enums.db;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hyw.tools.generator.enums.FieldType;
 
 /**

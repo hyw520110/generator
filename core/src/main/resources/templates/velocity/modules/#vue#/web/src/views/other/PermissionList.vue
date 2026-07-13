@@ -240,7 +240,6 @@ export default {
     },
     handleEdit (record) {
       this.mdl = Object.assign({}, record)
-      console.log(this.mdl)
       this.visible = true
     },
     handleOk () {

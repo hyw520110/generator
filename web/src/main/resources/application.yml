@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: generator-web
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
 
 # Knife4j 配置
 springdoc:
@@ -28,4 +32,16 @@ app:
   download-dir: ${user.home}/Downloads/generator
   # 代码默认输出目录 (用于前端默认值)
   output-dir: ${user.home}/output/demo
-
+  # 用户配置目录：按客户端维度保存配置，避免局域网多人覆盖同一份运行时配置
+  user-config-dir: ${user.home}/.generator/users
+  # 用户配置隔离策略：ip 适合局域网工具；client/session 可用于更强隔离
+  user-config-strategy: ip
+  # 显式“保存为全局默认配置”时写入的位置
+  global-config-file: ${user.home}/.generator/default.yml
+  # 默认不持久化数据库密码，避免明文落盘
+  persist-password: false
+  # 仅在部署在可信反向代理后面时开启，开启后会读取 X-Forwarded-For/X-Real-IP
+  trusted-proxy-enabled: false
+  cors:
+    # CORS 来源白名单。默认只允许本机前端开发；局域网前后端分离部署时显式追加来源，例如 http://192.168.1.10:5173
+    allowed-origin-patterns: http://localhost:*,http://127.0.0.1:*,http://[::1]:*

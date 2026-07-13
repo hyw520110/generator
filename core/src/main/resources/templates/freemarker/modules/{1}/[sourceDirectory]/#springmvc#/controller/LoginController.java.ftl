@@ -1,4 +1,5 @@
 <#if VUE>
+<#if TokenServicePackage?? && TokenServicePackage?has_content>
 package ${controllerPackage!};
 
 import java.io.File;
@@ -12,10 +13,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
+import ${annotationPackage}.PostConstruct;
+import ${servletPackage}.http.HttpServletRequest;
+import ${servletPackage}.http.HttpServletResponse;
+import ${validationPackage}.Valid;
 
 import org.springframework.web.servlet.ModelAndView;
 
@@ -43,7 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -153,4 +154,5 @@ public class LoginController {
 	}
 
 }
+</#if>
 </#if>

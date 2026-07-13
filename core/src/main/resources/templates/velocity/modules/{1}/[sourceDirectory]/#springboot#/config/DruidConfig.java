@@ -1,7 +1,7 @@
 package ${rootPackage}.${projectName}#if($moduleName).${moduleName}#end.config;
 
-import com.alibaba.druid.support.jakarta.StatViewServlet;
-import com.alibaba.druid.support.jakarta.WebStatFilter;
+import ${druidSupportPackage}.StatViewServlet;
+import ${druidSupportPackage}.WebStatFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;

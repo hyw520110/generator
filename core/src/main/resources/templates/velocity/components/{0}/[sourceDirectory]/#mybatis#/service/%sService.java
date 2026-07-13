@@ -5,7 +5,7 @@ import ${entityPackage}.${entityName};
 import #if($StringUtils.indexOf("$superServiceClass",'.')==-1)${servicePackage}.#end${superServiceClass};
 #end
 #if($table.isCompositePrimaryKey())
-import ${entityPackage}.key.${table.beanName}Key;
+import ${rootPackage}.key.${table.beanName}Key;
 #end
 
 #parse('/templates/comments/comment.vm')

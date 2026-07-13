@@ -25,7 +25,7 @@
     </sql>
 #end
 
-#if($findById)
+#if($findById && $table.hasPrimarykeys())
 	<select id="findById" resultMap="BaseResultMap" >
 	    SELECT #if(${columns}) <include refid="columns"/> #else  ${table.fieldNames} #end from ${table.name} WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount <${table.primarykeyFields.size()}) and #end #end 
 	</select>	
@@ -45,23 +45,26 @@
 #if($findPage)	
 	<select id="findPage" resultMap="BaseResultMap" parameterType="java.util.Map">
 		select <include refid="columns"/>  from ${table.name} where 1=1 <include refid="queryWhere"/> 
-	    <![CDATA[ ORDER BY #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount <${table.primarykeyFields.size()}) and #end #end  DESC ]]>
+#if($table.hasPrimarykeys())
+	    <![CDATA[ ORDER BY #foreach($field in ${table.primarykeyFields}) ${field.name}#if($velocityCount <${table.primarykeyFields.size()}), #end#end DESC ]]>
+#end
         <![CDATA[ LIMIT #{startRecord},#{endRecord} ]]>
 	</select>
 #end	
 #if($findAll)
     <select id="findAll" resultMap="BaseResultMap" parameterType="java.util.Map">
-		select	* from ${table.name} where 1=1 <include refid="queryWhere"/>  order by #foreach($field in ${table.primarykeyFields}) ${field.name} #if($velocityCount <${table.primarykeyFields.size()}) , #end#end desc
+		select	* from ${table.name} where 1=1 <include refid="queryWhere"/>#if($table.hasPrimarykeys())  order by #foreach($field in ${table.primarykeyFields}) ${field.name} #if($velocityCount <${table.primarykeyFields.size()}) , #end#end desc#end
 	</select>
 #end
 #end	
 #if($insert)
-	<!-- TODO 	1. 返回复合主键 	2. 主键处理 -->
+	<!-- 复合主键返回与处理机制说明： -->
 	<!-- 返回主键：
 	1. insert节点中添加useGeneratedKey和keyProperty属性
 	2. insert节点下添加selectKey子节点的方式
 	 -->
-	<insert id="insert" parameterType="${entityPackage}.${entityName}" useGeneratedKeys="true" keyProperty="${table.primaryKeyField.propertyName}">
+	<insert id="insert" parameterType="${entityPackage}.${entityName}"#if($table.primaryKeyCount == 1) useGeneratedKeys="true" keyProperty="${table.primaryKeyField.propertyName}"#end>
+#if($table.primaryKeyCount == 1)
 		<!-- 
 		<selectKey resultType="#if(${table.primaryKeyField.fieldType.claz})${table.primaryKeyField.fieldType.claz}#else java.lang.${table.primaryKeyField.fieldType.type}#end" order="AFTER" keyProperty="${table.primaryKeyField.propertyName}">
 			SELECT LAST_INSERT_ID()  
@@ -70,15 +73,16 @@
 		   SELECT @@IDENTITY AS id
 		   </selectKey>
 		 -->
+#end
 		<![CDATA[
-		INSERT INTO ${table.name} (#foreach($field in ${table.fields})#if(!${field.isIdentity()})${field.name} #if($velocityCount <${table.fields.size()}),#end#end#end
-		) VALUES (#foreach($field in ${table.fields})#if(!${field.isIdentity()})#{${field.propertyName},jdbcType=${field.jdbcType}}#if($velocityCount <${table.fields.size()}),#end#end#end)
+		INSERT INTO ${table.name} (#foreach($field in ${table.insertableFields})${field.name}#if($foreach.hasNext), #end#end
+		) VALUES (#foreach($field in ${table.insertableFields})#{${field.propertyName},jdbcType=${field.jdbcType}}#if($foreach.hasNext), #end#end)
 		]]>
 	</insert>
 #end
 
 #if("plus"!="$mapperType")
-#if($update)
+#if($update && $table.hasPrimarykeys())
 
 	<update id="update" parameterType="${entityPackage}.${entityName}">
 		UPDATE ${table.name} 
@@ -98,7 +102,7 @@
 #end
 #end
 
-#if($deleteById)
+#if($deleteById && $table.hasPrimarykeys())
 
 	<delete id="deleteById"  >
 		<![CDATA[DELETE FROM ${table.name}  WHERE #foreach($field in ${table.primarykeyFields}) ${field.name} = #{${field.propertyName},jdbcType=${field.jdbcType}} #if($velocityCount <${table.primarykeyFields.size()}) and #end #end]]>

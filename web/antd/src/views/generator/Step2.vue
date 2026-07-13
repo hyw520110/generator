@@ -23,17 +23,17 @@
         </a-form-item>
       </template>
 
-      <!-- 非互斥组（多选）- 认证授权 -->
-      <a-form-item label="认证授权" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+      <!-- 安全方案（二选一） -->
+      <a-form-item label="安全方案" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
         <template #label>
-          认证授权
-          <a-tag color="blue">可多选</a-tag>
+          安全方案
+          <a-tag color="blue">二选一</a-tag>
         </template>
-        <a-checkbox-group v-model:value="formState.secure">
-          <a-checkbox v-for="opt in authOptions" :key="opt.value" :value="opt.value">
+        <a-radio-group button-style="solid" v-model:value="formState.secure">
+          <a-radio-button v-for="opt in authOptions" :key="opt.value" :value="opt.value">
             {{ opt.label }}
-          </a-checkbox>
-        </a-checkbox-group>
+          </a-radio-button>
+        </a-radio-group>
       </a-form-item>
 
       <!-- 构建工具 -->
@@ -47,6 +47,21 @@
             {{ opt.label }}
           </a-radio-button>
         </a-radio-group>
+      </a-form-item>
+
+      <!-- 高级特性 -->
+      <a-form-item label="高级特性" :labelCol="labelCol" :wrapperCol="wrapperCol" class="stepFormText">
+        <template #label>
+          高级特性
+          <a-tag color="blue">多选</a-tag>
+        </template>
+        <a-checkbox-group v-model:value="formState.features">
+          <a-row>
+            <a-col :span="8" v-for="opt in advancedFeatures" :key="opt.value">
+              <a-checkbox :value="opt.value">{{ opt.label }}</a-checkbox>
+            </a-col>
+          </a-row>
+        </a-checkbox-group>
       </a-form-item>
 
       <!-- 组件配置（根据选择动态显示） -->
@@ -141,8 +156,11 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { step2, getConfig } from '@/api/generator'
+
+/** 第 2 步表单的会话草稿存储键。 */
+const STEP2_DRAFT_KEY = 'generator.step2Draft'
 
 // Java版本对应的组件版本组合
 const JAVA_VERSION_PRESETS = {
@@ -183,14 +201,14 @@ const JAVA_VERSION_PRESETS = {
     }
   },
   '21': {
-    springBoot: ['3.2.12', '3.4.0'],
-    springCloud: ['2023.0.0', '2024.0.0'],
-    springCloudAlibaba: ['2023.0.1.0', '2023.0.3.2'],
-    dubbo: ['3.3.0', ''],
+    springBoot: ['3.2.4', '3.2.12', '3.4.0', '4.0.7'],
+    springCloud: ['2023.0.0', '2023.0.1', '2024.0.0', '2025.1.2'],
+    springCloudAlibaba: ['2023.0.1.0', '2023.0.3.2', '2025.1.0.0'],
+    dubbo: ['3.3.0', '3.3.2', ''],
     defaults: {
-      springBoot: '3.4.0',
-      springCloud: '2024.0.0',
-      springCloudAlibaba: '2023.0.3.2',
+      springBoot: '4.0.7',
+      springCloud: '2025.1.2',
+      springCloudAlibaba: '2025.1.0.0',
       dubbo: ''
     }
   }
@@ -290,10 +308,24 @@ const buildTools = [
   { value: 'GRADLE', label: 'Gradle' }
 ]
 
-// 认证授权选项（非互斥，可多选）
+// 高级特性选项
+const advancedFeatures = [
+  { value: 'AUDITLOG', label: '操作日志 (AOP)' },
+  { value: 'TENANT', label: '多租户支持' },
+  { value: 'DATAPERMISSION', label: '数据权限' },
+  { value: 'EXCEL', label: 'Excel 导出/导入' },
+  { value: 'WORKFLOW', label: '工作流 (Flowable)' },
+  { value: 'XSS', label: 'XSS 防范' },
+  { value: 'IDEMPOTENCY', label: '接口防重放/幂等' }
+]
+
+/** 高级特性的默认值：首次进入第 2 步时全部选中。 */
+const DEFAULT_ADVANCED_FEATURES = advancedFeatures.map(feature => feature.value)
+
+// 安全方案选项（二选一）
 const authOptions = [
-  { value: 'SHIRO', label: 'Shiro' },
-  { value: 'JWT', label: 'JWT' }
+  { value: 'SPRINGSECURITY_OAUTH2', label: 'Spring Security / OAuth2' },
+  { value: 'SHIRO', label: 'Shiro (Boot2)' }
 ]
 
 export default {
@@ -307,13 +339,13 @@ export default {
     const wrapperCol = { lg: { span: 19 }, sm: { span: 19 } }
 
     const formState = reactive({
-      javaVersion: '17',
+      javaVersion: '21',
       view: 'VUE',
       projectBuilder: 'MAVEN',
       microservice: '',
-      springBootVersion: '3.2.12',
-      springCloudVersion: '2023.0.0',
-      springCloudAlibabaVersion: '2023.0.1.0',
+      springBootVersion: '4.0.7',
+      springCloudVersion: '2025.1.2',
+      springCloudAlibabaVersion: '2025.1.0.0',
       dubboVersion: '',
       registryCenter: '',
       mybatisType: 'plus',
@@ -330,8 +362,29 @@ export default {
       redisEnabled: '',
       sentinelEnabled: '',
       swaggerEnabled: '',
-      secure: []
+      secure: 'SPRINGSECURITY_OAUTH2',
+      features: [...DEFAULT_ADVANCED_FEATURES]
     })
+
+    const readDraft = () => {
+      try {
+        const draft = JSON.parse(sessionStorage.getItem(STEP2_DRAFT_KEY) || 'null')
+        return draft && typeof draft === 'object' ? draft : null
+      } catch (error) {
+        console.warn('读取第2步配置草稿失败:', error)
+        return null
+      }
+    }
+
+    const savedDraft = readDraft()
+
+    watch(formState, state => {
+      try {
+        sessionStorage.setItem(STEP2_DRAFT_KEY, JSON.stringify(state))
+      } catch (error) {
+        console.warn('保存第2步配置草稿失败:', error)
+      }
+    }, { deep: true })
 
     // 根据Java版本计算可选版本
     const versionOptions = computed(() => {
@@ -436,23 +489,45 @@ export default {
             }
           })
 
-          // 认证组件
-          const secure = globalComps.filter(c => c === 'JWT' || c === 'SHIRO')
-          if (secure.length > 0) formState.secure = secure
+          // 安全方案与高级特性
+          const globalFeatures = global.features || []
+          const configuredAdvancedFeatures = globalFeatures.filter(feature => DEFAULT_ADVANCED_FEATURES.includes(feature))
+          if (configuredAdvancedFeatures.length > 0) {
+            formState.features = configuredAdvancedFeatures
+          }
+          
+          if (globalComps.includes('SHIRO')) {
+            formState.secure = 'SHIRO'
+          } else if (globalComps.includes('SPRINGSECURITY') || globalFeatures.includes('OAUTH2')) {
+            formState.secure = 'SPRINGSECURITY_OAUTH2'
+          }
+        }
+
+        // 会话草稿优先于服务端已保存配置，确保刷新后保留尚未提交的选择（包括全不选）。
+        if (savedDraft) {
+          Object.assign(formState, savedDraft)
         }
       } catch (err) {
         console.error('获取配置失败:', err)
+        if (savedDraft) {
+          Object.assign(formState, savedDraft)
+        }
       }
     })
 
     const nextStep = async () => {
       loading.value = true
       try {
-        await step2(formState)
+        await step2({ ...formState, secure: formState.secure })
         loading.value = false
         emit('nextStep')
       } catch (error) {
         loading.value = false
+        // 显示具体的后端报错信息，否则显示默认错误
+        const errorMsg = error.response?.data?.message || error.message || '保存配置失败，请检查所选版本组合是否兼容'
+        import('ant-design-vue').then(({ message }) => {
+          message.error(errorMsg)
+        })
       }
     }
 
@@ -470,6 +545,7 @@ export default {
       exclusiveGroups,
       authOptions,
       buildTools,
+      advancedFeatures,
       onJavaVersionChange,
       onDubboVersionChange,
       nextStep,

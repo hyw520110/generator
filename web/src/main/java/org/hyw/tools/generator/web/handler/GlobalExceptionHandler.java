@@ -2,7 +2,7 @@ package org.hyw.tools.generator.web.handler;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hyw.tools.generator.web.enums.StatusCode;
 import org.hyw.tools.generator.web.model.Result;
 import org.slf4j.Logger;

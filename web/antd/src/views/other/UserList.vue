@@ -218,7 +218,6 @@ export default {
     const loadData = (parameter) => {
       return getRoleList(parameter)
         .then(res => {
-          console.log('getRoleList', res)
           expandedRowKeys.value = res.result.data.map(item => item.id)
           return res.result
         })
@@ -226,7 +225,6 @@ export default {
     
     const handleEdit = (record) => {
       visible.value = true
-      console.log('record', record)
       
       permissions.value = record.permissions.map(permission => {
         const actionsOptions = permission.actionEntitySet.map(action => {
@@ -254,14 +252,12 @@ export default {
     const handleOk = async (e) => {
       try {
         await formRef.value.validate()
-        console.log('form values', formState)
       } catch (err) {
         // validation failed
       }
     }
     
     const handleExpand = (expanded, record) => {
-      console.log('expanded', expanded, record)
       if (expanded) {
         expandedRowKeys.value.push(record.id)
       } else {
@@ -271,11 +267,9 @@ export default {
     
     onMounted(() => {
       getServiceList().then(res => {
-        console.log('getServiceList.call()', res)
       })
       
       getRoleList().then(res => {
-        console.log('getRoleList.call()', res)
       })
     })
     
@@ -301,7 +295,7 @@ export default {
 
 <style lang="less" scoped>
 .permission-form {
-  /deep/ .permission-group {
+  :deep(.permission-group) {
     margin-top: 0;
     margin-bottom: 0;
   }

@@ -1,10 +1,10 @@
 import { axios } from '@/utils/request'
 
-const moudulePath = '/v1/user'
+const modulePath = '/v1/user'
 
 const api = {
-  userList: moudulePath + '/page',
-  addUser: moudulePath
+  userList: modulePath + '/page',
+  addUser: modulePath
 }
 
 export default api
@@ -19,7 +19,7 @@ export function getUserList (parameter) {
 
 export function getUserInfo (userId) {
   return axios({
-    url: api.moudulePath + '/' + userId,
+    url: api.modulePath + '/' + userId,
     method: 'get'
   })
 }
@@ -33,19 +33,16 @@ export function addUser (parameter) {
 }
 
 export function editUser (userId, parameter) {
-  console.log('userId', userId)
-  console.log('parameter', parameter)
   return axios({
-    url: moudulePath + '/' + userId,
+    url: modulePath + '/' + userId,
     method: 'put',
     params: parameter
   })
 }
 
 export function delUser (userId) {
-  console.log('userId', userId)
   return axios({
-    url: moudulePath + '/' + userId,
+    url: modulePath + '/' + userId,
     method: 'delete'
   })
 }

@@ -162,7 +162,7 @@ export default {
         }
       } catch (err) {
         dirValid.value = false
-        dirValidMsg.value = err.response?.data?.message || '验证失败'
+        dirValidMsg.value = err.response?.data?.message || err.message || '网络连接或服务端异常，验证失败'
       } finally {
         dirValidating.value = false
       }

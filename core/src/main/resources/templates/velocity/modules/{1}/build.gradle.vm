@@ -1,63 +1,42 @@
 #if("GRADLE"=="${global.projectBuilder}")
-apply plugin: 'java'
-apply plugin: 'maven'
-//eclipse users only
-apply plugin: 'eclipse'
-//apply plugin: 'idea'
-//provided依赖支持,方式三
-//apply plugin: 'propdeps'
+plugins {
+    id 'java'
+}
 
 group = '${rootPackage}'
 version = '${version}'
-
 description = '${projectName}-${moduleName}'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+java {
+    sourceCompatibility = JavaVersion.VERSION_${bytecodeRelease}
+    targetCompatibility = JavaVersion.VERSION_${bytecodeRelease}
 }
 
-configurations {
-    provided
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
-//provided依赖支持(引入eclipse插件),方式一
-sourceSets {
-    main.compileClasspath += configurations.provided
-    test.compileClasspath += configurations.provided
-    test.runtimeClasspath += configurations.provided
-}
-//eclipse users only
-eclipse.classpath.plusConfigurations += configurations.provided
-
-//idea { module { scopes.PROVIDED.plus += [configurations.provided] } }
 
 repositories {
-        
-     maven { url "http://dev.maven.com:8081/nexus/content/groups/public" }
-     maven { url "http://dev.maven.com:8081/nexus/content/repositories/releases/" }
-     maven { url "http://dev.maven.com:8081/nexus/content/repositories/snapshots/" }
-     maven { url "http://dev.maven.com:8081/nexus/content/repositories/thirdparty/" }
-     maven { url "http://repo.maven.apache.org/maven2" }
+    mavenCentral()
 }
+
 dependencies {
-    compile group: '${rootPackage}', name: '${projectName}-${moduleName}', version:'${version}'
-    compile group: 'org.mybatis', name: 'mybatis', version:'3.4.4'
-#if($!{enableCache})    
-    compile group: 'net.sf.ehcache', name: 'ehcache', version:'2.8.3'
-    compile group: 'org.mybatis.caches', name: 'mybatis-ehcache', version:'1.1.0'
-#end    
-    compile group: 'org.springframework', name: 'spring-context', version:'4.3.9.RELEASE'
-    compile group: 'org.springframework', name: 'spring-web', version:'4.3.9.RELEASE'
-#if("mysql"=="${dbType}")
-    compile group: 'mysql', name: 'mysql-connector-java', version:'5.1.40'
+    implementation project(':${projectName}-${moduleName}')
+    implementation group: 'org.mybatis', name: 'mybatis', version:'3.4.4'
+#if($!{enableCache})
+    implementation group: 'net.sf.ehcache', name: 'ehcache', version:'2.8.3'
+    implementation group: 'org.mybatis.caches', name: 'mybatis-ehcache', version:'1.1.0'
 #end
-    //方式一    
-    provided group: 'jakarta.servlet', name: 'servlet-api', version:'3.0-alpha-1'
-    //方式二
-//  compileOnly 'jakarta.servlet:servlet-api:3.0-alpha-1'
-    //方式三
-//    provided('jakarta.servlet:servlet-api:3.0-alpha-1')
-    testCompile group: 'junit', name: 'junit', version:'4.12'
+    implementation group: 'org.springframework', name: 'spring-context', version:'4.3.9.RELEASE'
+    implementation group: 'org.springframework', name: 'spring-web', version:'4.3.9.RELEASE'
+#if("mysql"=="${dbType}")
+    runtimeOnly group: 'com.mysql', name: 'mysql-connector-j', version:'${mysql_connector_version}'
+#end
+    compileOnly group: '${servletApiGroupId}', name: '${servletApiArtifactId}', version:'3.0-alpha-1'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version:'5.10.2'
+}
+
+test {
+    useJUnitPlatform()
 }
 #end

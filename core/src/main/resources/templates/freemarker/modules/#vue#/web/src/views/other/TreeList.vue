@@ -121,22 +121,18 @@ export default {
   },
   methods: {
     handleClick (e) {
-      console.log('handleClick', e)
       this.queryParam = {
         key: e.key
       }
       this.$refs.table.refresh(true)
     },
     handleAdd (item) {
-      console.log('add button, item', item)
       this.$message.info(`提示：你点了 ${item.key} - ${item.title} `)
       this.$refs.modal.add(item.key)
     },
     handleTitleClick (item) {
-      console.log('handleTitleClick', item)
     },
     titleClick (e) {
-      console.log('titleClick', e)
     },
     handleSaveOk () {
 
@@ -156,7 +152,7 @@ export default {
 <style lang="less">
   .custom-tree {
 
-    /deep/ .ant-menu-item-group-title {
+    :deep(.ant-menu-item-group-title) {
       position: relative;
       &:hover {
         .btn {
@@ -165,7 +161,7 @@ export default {
       }
     }
 
-    /deep/ .ant-menu-item {
+    :deep(.ant-menu-item) {
       &:hover {
         .btn {
           display: block;
@@ -173,7 +169,7 @@ export default {
       }
     }
 
-    /deep/ .btn {
+    :deep(.btn) {
       display: none;
       position: absolute;
       top: 0;

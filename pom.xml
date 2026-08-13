@@ -27,7 +27,7 @@
 		<pdfbox.version>2.0.27</pdfbox.version>
 		<poi.version>5.2.5</poi.version>
 		<jgrapht.version>1.5.2</jgrapht.version>
-		<log4j.version>2.22.0</log4j.version>
+		<log4j.version>2.25.5</log4j.version>
 		<druid.version>1.2.20</druid.version>
 		<junit.version>4.13.2</junit.version>
 		<mysql.version>8.0.33</mysql.version>
